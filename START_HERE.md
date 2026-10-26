@@ -12,7 +12,7 @@ Written 2026-10-26 by the Part One session so the two don't get mixed up.
 | | Part One (finished, being play-tested) | Part Two (this folder) |
 |---|---|---|
 | Folder | `C:\Users\big_g\Desktop\david-sling` | `C:\Users\big_g\Desktop\david-sling-2` |
-| Repo | github.com/Glen-collab/david-sling (public) | none yet: ask Glen before making one |
+| Repo | github.com/Glen-collab/david-sling (public) | github.com/Glen-collab/david-sling-2 (public) |
 | Art drop | `C:\Users\big_g\Desktop\david-sling-art` | `C:\Users\big_g\Desktop\david-sling-2-art` (make it when the first art comes) |
 | Story | 1 Samuel 16-17: shepherd boy to Goliath | 1 Samuel 18 to 2 Samuel 6: hero, hunted, king |
 | Psalm | Psalm 23 (Glen's song "The Shepherd Leads Me") | Psalm 57 |
