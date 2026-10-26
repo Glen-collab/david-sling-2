@@ -1,0 +1,196 @@
+"""Turn a green-screen AI video clip into a smooth sprite sheet (Pixar look, no pixel step).
+
+usage:
+  python tools/vid2sprite.py <clip.mp4> <out_prefix> [--loop | --once] [--frames N] [--height H]
+
+  --loop    find one clean repeating cycle (walk, run, idle). Default.
+  --once    keep the whole move start to finish (jump, throw, roll, flip).
+  --frames  how many frames to keep (default 12).
+  --height  character height in the sheet, in pixels (default 240; the game scales it down smoothly).
+  --start / --end   use only these video frames (1-based, inclusive).
+  --align   feet (default: walking, standing), center (in the air: flips spin around the middle),
+            or ground (tumbling on the floor: rolls).
+  --mirror  flip left-right (most animal clips face left; every sheet should face right).
+  --ref     start:end frames where the character is seen at full height, for consistent scale (default 4:end).
+  --soft    a gentler key for furry, greenish characters (the ram): only clearly green screen is removed, and holes
+            inside the body (green eyes, spill in the fur) are filled back in.
+  --thin W  measure the body without anything thinner than W video pixels (a spear or bow sticking up above the head),
+            so the size and the head line-up come from the man, not the spear tip.
+  --headroom H  add H pixels of empty space above the top of the sheet (room to paint in a spear tip cut off by the video).
+  --pad P   add P pixels of empty space on the left, right and top of every frame (room in Photoshop to paint back a
+            spear, bow or sling the video cut off). The feet stay on the bottom line; the anchors move to match.
+  --green   also write <out_prefix>_green.png: the same frames, same layout, straight from the video (green screen
+            and all), for borrowing parts in Photoshop.
+
+Writes <out_prefix>_sheet.png (one row, transparent), <out_prefix>_preview.gif and <out_prefix>.json.
+Needs ffmpeg on the PATH, numpy and Pillow.
+"""
+import argparse, glob, json, os, subprocess, tempfile
+import numpy as np
+from scipy import ndimage
+from PIL import Image, ImageFilter
+
+ap = argparse.ArgumentParser()
+ap.add_argument("clip"); ap.add_argument("out")
+ap.add_argument("--once", action="store_true"); ap.add_argument("--loop", action="store_true")
+ap.add_argument("--frames", type=int, default=12); ap.add_argument("--height", type=int, default=240)
+ap.add_argument("--start", type=int, default=1); ap.add_argument("--end", type=int, default=0)
+ap.add_argument("--align", choices=["feet", "center", "ground"], default="feet")
+ap.add_argument("--mirror", action="store_true", help="flip left-right so the character faces right (the game's convention)")
+ap.add_argument("--soft", action="store_true"); ap.add_argument("--green", action="store_true")
+ap.add_argument("--white", action="store_true", help="the clip is on a white background (not green): key out white and its soft grey shadows")
+ap.add_argument("--ref", default="4:0", help="frames used to measure full standing height, start:end (default 4 to the end)")
+ap.add_argument("--min-loop", type=float, default=0.5, help="shortest loop in seconds (raise it if it finds half a stride)")
+ap.add_argument("--thin", type=int, default=0); ap.add_argument("--headroom", type=int, default=0)
+ap.add_argument("--pad", type=int, default=0)
+args = ap.parse_args()
+
+tmp = tempfile.mkdtemp()
+subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", args.clip, "-map", "0:v:0", os.path.join(tmp, "f%04d.png")], check=True)
+fps_txt = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=r_frame_rate",
+                          "-of", "csv=p=0", args.clip], capture_output=True, text=True).stdout.strip().split("\n")[0]
+num, den = (fps_txt.split("/") + ["1"])[:2]; fps = float(num) / float(den)
+files = sorted(glob.glob(os.path.join(tmp, "*.png")))
+all_files = files
+files = files[args.start - 1:(args.end or len(files))]
+
+def green_mask(a):
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    return ((g > r + 30) & (g > b + 30)) | ((g > 50) & (g > r * 1.25) & (g > b * 1.25)) | \
+           ((g > 90) & (g >= r * 0.85) & (g > b * 1.6))
+
+def key(path):
+    a = np.asarray(Image.open(path).convert("RGB")).astype(float)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    ex = g - np.maximum(r, b)
+    raw = Image.fromarray(a.astype(np.uint8)).convert("RGBA")
+    if args.white:   # white screen: near-white, colourless pixels go (and the pale grey shadow on the floor)
+        lo, sat = np.minimum(np.minimum(r, g), b), np.maximum(np.maximum(r, g), b) - np.minimum(np.minimum(r, g), b)
+        alpha = np.clip((215 - lo) / 45, 0, 1)
+        alpha[sat > 34] = 1
+        alpha[(lo > 228) & (sat < 22)] = 0
+        inside = ndimage.binary_fill_holes(alpha > 0.5); alpha[inside & (alpha < 1) & (sat > 18)] = 1
+    elif args.soft:   # only the screen itself goes: its green is far above red and blue (fur with green spill stays)
+        alpha = np.clip(1 - (ex - 45) / 55, 0, 1)
+        alpha[(ex > 85) & (g > 110)] = 0
+        inside = ndimage.binary_fill_holes(alpha > 0.5)   # green eyes, gaps in the fur: back in
+        alpha[inside] = np.maximum(alpha[inside], 1.0)
+    else:
+        alpha = np.clip(1 - (ex - 15) / 45, 0, 1)
+        alpha[green_mask(a)] = 0
+    if not args.white: a[..., 1] = np.minimum(g, np.maximum(r, b) + 6)          # remove green spill on edges
+    al = Image.fromarray((alpha * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6))
+    alpha = np.asarray(al).copy()
+    alpha[:4, :] = 0; alpha[-4:, :] = 0; alpha[:, :4] = 0; alpha[:, -4:] = 0
+    # keep only the largest connected figure (drops specks)
+    m = alpha > 128
+    ys, xs = np.where(m)
+    if len(ys):
+        im = Image.fromarray(a.clip(0, 255).astype(np.uint8)).convert("RGBA"); im.putalpha(Image.fromarray(alpha))
+        im.raw = raw
+        return im
+    return None
+
+# skip frames that aren't on the green screen (e.g. a reference screenshot at the start)
+def on_green(path):
+    if args.white: return True
+    return green_mask(np.asarray(Image.open(path).convert("RGB")).astype(int)).mean() > 0.4
+files = [f for f in files if on_green(f)]
+
+def body(m):   # the mask without thin things (spear, bow) when --thin is set
+    if not args.thin: return m
+    o = ndimage.maximum_filter(ndimage.minimum_filter(m.astype(np.uint8), args.thin), args.thin) > 0   # square opening, fast
+    return o if o.any() else m
+
+def anchor(im):
+    m = np.asarray(im)[..., 3] > 128; ys, xs = np.where(m)
+    foot = ys.max(); top = ys.min(); xl, xr = xs.min(), xs.max()
+    if args.thin:   # head line-up and the height from the body; the box (xl, top, xr) still holds the spear
+        bys, bxs = np.where(body(m))
+        cx = int(np.median(bxs[bys < bys.min() + max(10, (foot - bys.min()) // 4)]))
+        return foot, cx, xl, top, xr, foot
+    if args.align == "ground":   # on the floor but tumbling: lowest point on the ground line, centred by the whole body
+        cx = int((xs.min() + xs.max()) / 2)
+        return foot, cx, xs.min(), top, xs.max(), foot
+    if args.align == "center":
+        cy = int((ys.min() + ys.max()) / 2); cx = int((xs.min() + xs.max()) / 2)
+        return cy, cx, xs.min(), top, xs.max(), foot
+    cx = int(np.median(xs[ys < top + max(10, (foot - top) // 4)]))   # head/shoulders centre
+    return foot, cx, xs.min(), top, xs.max(), foot
+
+# loop finding on small aligned silhouettes
+def sil(im, a):
+    foot, cx = a[0], a[1]
+    m = (np.asarray(im)[..., 3] > 128).astype(np.uint8) * 255
+    can = Image.new("L", (600, 800)); can.paste(Image.fromarray(m), (300 - cx, 780 - foot))
+    return np.asarray(can.resize((90, 120), Image.BOX)) > 100
+
+keyed = [key(f) for f in files]
+keyed = [k for k in keyed if k is not None]
+anchors = [anchor(k) for k in keyed]
+n = len(keyed)
+
+if args.once:
+    s, length = 0, n
+else:
+    sils = [sil(k, a) for k, a in zip(keyed, anchors)]
+    best = None
+    for s0 in range(0, max(1, min(n // 2, n - 15))):
+        for lag in range(max(10, int(fps * args.min_loop)), min(n - s0, int(fps * 2.5))):
+            d = (sils[s0] ^ sils[s0 + lag]).mean()
+            if best is None or d < best[0]:
+                best = (d, s0, lag)
+    _, s, length = best
+    print(f"loop: starts at frame {s}, {length} frames long ({length / fps:.2f}s), mismatch {best[0]:.4f}")
+
+N = min(args.frames, length)
+idx = [s + round(i * length / N) for i in range(N)] if not args.once else [round(i * (n - 1) / (N - 1)) for i in range(N)]
+
+# one shared box around all chosen frames, aligned on feet + head centre
+sel = [(keyed[i], anchors[i]) for i in idx]
+L = min(a[2] - a[1] for _, a in sel) - 12
+T = min(a[3] - a[0] for _, a in sel) - 12
+R = max(a[4] - a[1] for _, a in sel) + 12
+B = max(a[5] - a[0] for _, a in sel) + 6
+crops = [im.crop((a[1] + L, a[0] + T, a[1] + R, a[0] + B)) for im, a in sel]
+
+# scale so the character's standing height = --height (measured from the tallest frame)
+# the character's full standing height, measured across the whole clip, so every move is the same scale
+def height_of(path):
+    k = key(path)
+    if k is None: return 0
+    m = body(np.asarray(k)[..., 3] > 128); ys, xs = np.where(m)
+    return (ys.max() - ys.min()) if len(ys) else 0
+r0, r1 = (int(v) for v in args.ref.split(":"))
+char_h = max(height_of(f) for f in all_files[r0 - 1:(r1 or len(all_files))][::6] if on_green(f))
+sc = args.height / char_h
+cw, ch = round(crops[0].width * sc), round(crops[0].height * sc)
+frames = [c.resize((cw, ch), Image.LANCZOS) for c in crops]
+anchor_x = round(-L * sc)
+if args.mirror:
+    frames = [f.transpose(Image.FLIP_LEFT_RIGHT) for f in frames]
+    anchor_x = cw - anchor_x
+
+hr, pd = args.headroom + args.pad, args.pad
+fw = cw + 2 * pd
+sheet = Image.new("RGBA", (fw * N, ch + hr))
+for k, f in enumerate(frames): sheet.alpha_composite(f, (k * fw + pd, hr))
+sheet.save(args.out + "_sheet.png")
+if args.green:   # the untouched video frames, cut and laid out exactly like the sheet
+    gf = [im.raw.crop((a[1] + L, a[0] + T, a[1] + R, a[0] + B)).resize((cw, ch), Image.LANCZOS) for im, a in sel]
+    if args.mirror: gf = [f.transpose(Image.FLIP_LEFT_RIGHT) for f in gf]
+    gs = Image.new("RGBA", (fw * N, ch + hr), (53, 188, 54, 255))
+    for k, f in enumerate(gf): gs.alpha_composite(f, (k * fw + pd, hr))
+    gs.save(args.out + "_green.png")
+
+ms = round(1000 * (length / fps) / N)
+gif = []
+for f in frames:
+    bg = Image.new("RGBA", f.size, (110, 160, 210, 255)); bg.alpha_composite(f)
+    gif.append(bg.convert("RGB").resize((cw // 2 * 2 // 1, ch), Image.LANCZOS))
+gif[0].save(args.out + "_preview.gif", save_all=True, append_images=gif[1:], duration=ms, loop=0)
+
+json.dump({"frames": N, "frame_w": fw, "frame_h": ch + hr, "ms_per_frame": ms, "loop": not args.once,
+           "align": args.align, "anchor_x": anchor_x + pd, "anchor_y": round(-T * sc) + hr,
+           "source": os.path.basename(args.clip), "video_frames": [args.start + i for i in idx]}, open(args.out + ".json", "w"), indent=2)
+print(f"{N} frames of {fw}x{ch + hr}, {ms} ms each -> {args.out}_sheet.png")
