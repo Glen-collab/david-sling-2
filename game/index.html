@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>David, Part Two</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #111; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { background: #000; max-width: 100vw; max-height: 100vh; aspect-ratio: 16 / 9; width: 100vw; }
+</style>
+</head>
+<body>
+<canvas id="game" width="1280" height="720"></canvas>
+<script>
+  // Always load fresh copies (so edited sprites and new code show up on a normal reload).
+  window.BUILD = Date.now();
+  document.write('<script src="sprites.js?v=' + BUILD + '"><\/script><script src="main.js?v=' + BUILD + '"><\/script><script src="world1.js?v=' + BUILD + '"><\/script><script src="caves.js?v=' + BUILD + '"><\/script>'
+    + '<script src="journal_font.js?v=' + BUILD + '"><\/script><script src="journal.js?v=' + BUILD + '"><\/script>'
+    + '<script src="map.js?v=' + BUILD + '"><\/script><script src="home.js?v=' + BUILD + '"><\/script><script src="menu.js?v=' + BUILD + '"><\/script><script src="engedi.js?v=' + BUILD + '"><\/script><script>if (!location.hash && !JOURNAL_AT) Menu.boot();<\/script>');
+</script>
+</body>
+</html>

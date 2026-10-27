@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 143,
+  "frame_h": 245,
+  "ms_per_frame": 45,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 76,
+  "anchor_y": 243,
+  "source": "raddai_3.mp4",
+  "video_frames": [
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    121,
+    122,
+    123,
+    124,
+    125
+  ]
+}

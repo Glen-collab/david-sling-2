@@ -1,0 +1,26 @@
+{
+  "frames": 12,
+  "frame_w": 499,
+  "frame_h": 306,
+  "ms_per_frame": 201,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 323,
+  "anchor_y": 302,
+  "source": "ram_stand.mp4",
+  "video_frames": [
+    1,
+    6,
+    11,
+    17,
+    22,
+    27,
+    32,
+    37,
+    42,
+    48,
+    53,
+    58
+  ],
+  "pingpong": true
+}

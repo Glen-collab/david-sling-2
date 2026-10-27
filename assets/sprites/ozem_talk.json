@@ -1,0 +1,28 @@
+{
+  "frames": 14,
+  "frame_w": 74,
+  "frame_h": 230,
+  "ms_per_frame": 260,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 38,
+  "anchor_y": 228,
+  "source": "elihu_2.mp4",
+  "video_frames": [
+    1,
+    12,
+    23,
+    34,
+    45,
+    56,
+    67,
+    79,
+    90,
+    101,
+    112,
+    123,
+    134,
+    145
+  ],
+  "pingpong": true
+}

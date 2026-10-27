@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 499,
+  "frame_h": 306,
+  "ms_per_frame": 90,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 323,
+  "anchor_y": 302,
+  "source": "ram_walk_leap.mp4",
+  "video_frames": [
+    28,
+    30,
+    32,
+    34,
+    37,
+    39,
+    41,
+    43,
+    45,
+    48,
+    50,
+    52
+  ]
+}
