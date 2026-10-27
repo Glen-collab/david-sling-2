@@ -1152,6 +1152,18 @@ window.SPRITE_DATA = {
   "ay": 245,
   "align": "feet"
  },
+ "david_run_sling": {
+  "src": "../assets/sprites/david_run_sling.png",
+  "frames": 12,
+  "w": 294,
+  "h": 286,
+  "ms": 97,
+  "loop": true,
+  "pingpong": false,
+  "ax": 154,
+  "ay": 284,
+  "align": "feet"
+ },
  "david_shield_block": {
   "src": "../assets/sprites/david_shield_block.png",
   "frames": 12,

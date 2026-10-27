@@ -64,7 +64,7 @@ def join(parts, name, ms, loop=False):
 
 
 # Glen's sheets as they are, under their own names (david_sword_slash, david_shield_block, david_swim, david_hit, ...)
-WAITING = {"david_run_sling"}   # waiting on Glen's Photoshop pass (the engine falls back to the standing throw)
+WAITING = set()   # sheets waiting on Glen's Photoshop pass (none now; the run-sling was painted 2026-10-26)
 for fn in sorted(os.listdir(ART)):
     if fn.endswith(".json") and fn[:-5] not in WAITING:
         same(fn[:-5])
