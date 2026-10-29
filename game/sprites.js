@@ -1094,14 +1094,14 @@ window.SPRITE_DATA = {
  },
  "david_play_harp": {
   "src": "../assets/sprites/david_play_harp.png",
-  "frames": 12,
-  "w": 187,
-  "h": 250,
-  "ms": 150,
+  "frames": 10,
+  "w": 185,
+  "h": 200,
+  "ms": 42,
   "loop": true,
-  "pingpong": true,
-  "ax": 87,
-  "ay": 248,
+  "pingpong": false,
+  "ax": 110,
+  "ay": 197,
   "align": "feet"
  },
  "david_rip_page": {
@@ -1203,13 +1203,13 @@ window.SPRITE_DATA = {
  "david_sit_harp": {
   "src": "../assets/sprites/david_sit_harp.png",
   "frames": 14,
-  "w": 189,
-  "h": 251,
-  "ms": 152,
+  "w": 194,
+  "h": 221,
+  "ms": 182,
   "loop": false,
   "pingpong": false,
-  "ax": 99,
-  "ay": 249,
+  "ax": 122,
+  "ay": 218,
   "align": "feet"
  },
  "david_sling_spin": {

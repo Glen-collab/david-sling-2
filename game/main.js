@@ -80,7 +80,7 @@ const TUNE = {
   BOSS_MUSIC_LEAD: 4,     // tiles before the lion's arena that the boss music starts ("uh oh"), before you can see him
   HARP_MUSIC_DELAY: 1.7,  // seconds after pressing Select until his hands start playing; the music starts then
   // size of each of the 14 sit-down frames, measured so his head matches standing David (the clip's camera crept closer)
-  SIT_HARP_SIZES: [0.89, 0.87, 0.86, 0.80, 0.75, 0.74, 0.74, 0.72, 0.72, 0.72, 0.71, 0.72, 0.72, 0.72],
+  SIT_HARP_SIZES: [],     // (Part One's harp clip zoomed in; the older David's was un-zoomed when cut, so every frame is 1)
   LAMB_CATCHUP: 1.2,      // seconds the lamb can be stuck or left behind before it pops back next to David
   CARRY_JUMP2: 0.95,      // second jump while carrying the lamb (1 = as strong as the flip)
   TILE: 36,
@@ -124,7 +124,6 @@ const TUNE = {
     lion_run: 1.3, lion_pounce: 1.3, lion_prowl: 1.3, lion_roar: 1.3, lion_sit_roar: 1.3, lion_dazed: 1.3,
     cobra_hood: 1.5, snake_strike: 1.5,
     bee_fly: 0.6, hornet_fly: 1.0,
-    david_play_harp: 0.66,       // the harp clip zoomed in as he sat down
     // lambs are about two-thirds the size of a grown sheep
     lamb_still: 0.4, lamb_jump: 0.4,   // (Glen's standing lamb and her jump: cut bigger, the same size as these on screen)
     lamb_run: 0.75, lamb_hop: 0.75, lamb_walk: 0.75, lamb_stand: 0.75, lamb_graze: 0.75,
@@ -2542,12 +2541,8 @@ function drawDavid(camX) {
     case "crawl": drawSprite("david_crawl", frameOf("david_crawl", t), x, y, d.facing); break;
     case "kneel": { const i = frameOf("david_sit_harp", t, 95); drawSprite("david_sit_harp", i, x, y, d.facing, sitHarpScale(i)); break; }
     case "harp": {
-      // frames 1-8 once (settling in), then loop the calm strumming frames 9-12 back and forth
-      const settle = 8 * TUNE.HARP_SETTLE_MS / 1000;
-      let i;
-      if (t < settle) i = Math.floor(t * 1000 / TUNE.HARP_SETTLE_MS);
-      else { const k = Math.floor((t - settle) * 1000 / TUNE.HARP_LOOP_MS) % 6; i = 8 + (k < 4 ? k : 6 - k); }
-      drawSprite("david_play_harp", i, x, y, d.facing); break;
+      // the older David's strumming is one clean loop (the sit-down sheet already ends with the harp up)
+      drawSprite("david_play_harp", frameOf("david_play_harp", t), x, y, d.facing); break;
     }
     case "standup": {   // the sit-down played backwards: harp back in the satchel, stand up
       const n = SPR.david_sit_harp.frames;

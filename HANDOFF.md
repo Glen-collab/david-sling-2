@@ -43,6 +43,9 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 - Glen plays En-Gedi and says how it feels (soldier speed, sight length, hiding, the cave).
 - Art Glen is making: the armor-bearer (reference done: `david-sling-2-art\armor-bearer.png`), then Jonathan, Benaiah,
   Asahel, Abishai; Photoshop passes on the sling spin/throw, the hit, and the run-sling.
+- The harp (2026-10-28): Glen's clip zooms in about 31%; it was un-zoomed frame by frame before cutting (copy in
+  `david-sling-2-artharp_dezoomed.mp4`), so `david_sit_harp` (sit down, harp out) and `david_play_harp` (a 10-frame
+  strum loop) are one size and `SIT_HARP_SIZES` is empty. The sandal soles touch the bottom of the video in the loop.
 - Clips that would replace stand-ins: older David lighting the lamp, walking into a cave (back view), holding up the robe
   corner, bowing; Saul sitting in the cave; Saul's soldiers walking and looking.
 - Not yet built: wall climbing and swimming in play (the sprites exist), the lamp/olive maze caves, the Steps of Faith,
