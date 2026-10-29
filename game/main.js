@@ -395,6 +395,7 @@ const STAGE_NUM = +LEVEL_STAGE.split("-")[1];
 const STAGE_INFO = {
   test:  { cols: 150, bg: "w1" },
   "9-1": { cols: 214, bg: "w2_3", ter: "w2s", name: "The Rocks of the Wild Goats" },   // Part Two test: En-Gedi (engedi.js)
+  "9-2": { cols: 92, bg: "w2_3", ter: "w2s", name: "The Leap of Faith" },             // Part Two test: the hidden bridge (leap.js)
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
   "1-2": { cols: 228, bg: "w1_2", name: "The Wandering Flock" },
   "1-3": { cols: 258, bg: "w1_3", name: "The Rocky Pastures" },
@@ -1033,6 +1034,18 @@ if (LEVEL_NAME === "test") {
     hangRock(c + 12, 3, 2, 2); hangRock(c + 24, 3, 3, 3); hangRock(c + 36, 3, 2, 2);
     setPiece("cave9", c, GR - 1, { w: 46 });                   // David's men in the innermost part; Saul comes in (engedi.js)
   }
+} else if (LEVEL_NAME === "9-2") {
+  // ---- 9-2 The Leap of Faith (the Part Two test of a Step of Faith; leap.js): a chasm. A ledge above, too high; a ledge
+  //      below, too far. The way across is a bridge straight out from the edge, the color of the rock: each stone shows
+  //      itself as David walks onto it, and a jump finds nothing. ----
+  ground(0, 30);
+  deco("rock_pile_tan", 5, 16, 0.3); oliveRow(9, 16, 4); campfire(15, GR - 1);
+  talk(24, "David", "Too high to climb, too far to jump. “For we walk by faith, not by sight.” (2 Corinthians 5:7)");
+  plat(39, 7, 4);                                              // the ledge above: 360 px up (a full jump and flip reach ~320)
+  plat(52, 19, 4);                                             // the ledge below: 22 tiles out (a running double jump carries ~15)
+  setPiece("leapbridge", 31, GR, { to: 61 });                  // the hidden bridge (leap.js)
+  ground(62, 91);
+  oliveRow(70, 16, 4); deco("rock_pile_tan", 80, 16, 0.3);
 } else if (LEVEL_NAME === "2-4") {
   // ---- 2-4 The Bear's Ravine, at dusk: wolves hunting in pairs, claw marks, a tree crashing down off in the trees,
   //      Hanan's last campfire, then the Bear at the pen wall ----
@@ -2205,6 +2218,7 @@ function updateDavid(dt) {
   d.t += dt;
   for (const b in aimAgo) aimAgo[b] = held(b) ? 0 : aimAgo[b] + dt;
   if (typeof w9HoldDavid === "function" && w9HoldDavid(d, dt)) return;   // engedi.js: a scene has the controls
+  if (typeof leapHoldDavid === "function" && leapHoldDavid(d, dt)) return;   // leap.js: the end card
   if (caveDavid(d, dt)) return;   // walking into or out of a cave (world1.js)
   if (updateCodeEntry(d, dt)) return;   // entering the throw at a carved wall (world1.js)
   if (typeof updateHarpDuel === "function" && updateHarpDuel(d, dt)) return;   // playing the harp for a frightened animal (world2.js)
@@ -3115,6 +3129,7 @@ function hurtDavid(fromX, why = "", still = false) {   // why: what hurt him (th
 }
 // a pit costs a heart and puts him back on the last solid ground he stood on (it's never back to the start)
 function pitFall() {
+  if (typeof leapFall === "function" && leapFall()) return;   // leap.js: no heart lost at the Leap of Faith
   const d = david;
   d.vx = d.vy = 0;
   if (d.hearts <= 1) { d.x = (d.safe || checkpoint).x; d.y = (d.safe || checkpoint).y; d.inv = 0; d.hearts = 1; hurtDavid(d.x); return; }
@@ -4593,6 +4608,7 @@ function updateWorld(dt) {
   if (typeof updateWorld6 === "function") updateWorld6(dt);
   if (typeof updateWorld7 === "function") updateWorld7(dt);
   if (typeof updateWorld9 === "function") updateWorld9(dt);   // Part Two: En-Gedi (engedi.js)
+  if (typeof updateLeap === "function") updateLeap(dt);       // Part Two: the Leap of Faith (leap.js)
   if (typeof updateWorld8 === "function") updateWorld8(dt);   // world8.js: the words, the duel   // world7.js: Saul's armor   // world6.js: the frightened soldiers, the tents, Eliab
   if (typeof updateRange === "function") updateRange(dt);   // range.js: Gera's sling range
   if (typeof updateWorld5 === "function") updateWorld5(dt);   // world5.js: the provisions, raiders, the fleeing father   // world4.js: gifts on the road, the vineyard keeper   // the crows in the barley, the rats in the granary (world3.js)
@@ -4875,6 +4891,7 @@ function frame(now) {
   drawFlock(camX);
   drawLamb(camX); if (typeof drawBoy === "function") { drawClaws(camX); drawBoy(camX); drawIbexes(camX); drawBear(camX); }   // world2.js
   if (typeof drawWorld9 === "function") drawWorld9(camX);   // engedi.js: Saul's men, the hiding rocks, Saul in the cave
+  if (typeof drawLeap === "function") drawLeap(camX);       // leap.js: the hidden bridge
   if (inCutscene() || !(david.inv > 0 && Math.floor(now / 70) % 2)) drawDavid(camX);
   if (oilingSheep()) drawSheepOne(david.helpSheep, camX, true);   // the sheep he's oiling stands in front of him, kneeling
   drawFoldFront(camX);
@@ -4891,6 +4908,7 @@ function frame(now) {
   if (typeof drawWorld7Over === "function") drawWorld7Over();   // 7-1: the helmet slips down over his eyes (world7.js)   // 3-4: rain, the dark, lightning (world3.js)
   drawCaveDarkness(camX);
   if (typeof drawWorld9Over === "function") drawWorld9Over(camX);   // engedi.js: over the dark (the end card)
+  if (typeof drawLeapOver === "function") drawLeapOver(camX);       // leap.js: the fade after a fall, the end card
   drawFinalBlow();
   if (david.deadT > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(0.8, 1.2 - david.deadT)})`; ctx.fillRect(0, 0, W, H); }
   if (debug) {

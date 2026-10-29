@@ -28,6 +28,13 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
     behind him (walking upright near him or getting in front of him = "Saul stirs", back to the dark); X behind him
     cuts the robe (24:4-7); out at the mouth: 24:8, 24:11, 24:12, 24:16-17; end card with Psalm 57:6.
   - Scripture checked on ebible.org (WEB) 2026-10-26, "the LORD" for "Yahweh". 24:3's reason Saul went in is left out.
+- **9-2 The Leap of Faith** (`Play Leap of Faith.bat`; layout in `game/main.js`, rules in `game/leap.js`): Glen's film
+  first (`assets/video/leap_film.mp4`: the walk to the edge, the look down, the first step, cut before any stone shows).
+  A chasm with a ledge above (too high) and a ledge below (too far). The real way is a hidden bridge straight out from
+  the edge: each stone shows itself (golden edge, as in the film) as David walks onto it; a jump finds nothing and he
+  falls through (no heart lost, back where he last stood, found stones stay). Across: Glen's sand-toss film
+  (`leap_end.mp4`) shows the whole bridge, then the end card (Psalm 18:36). `?nofilm` skips the opening film.
+  Words are draft: 2 Corinthians 5:7 at the edge, Psalm 18:36 on the card (both checked on ebible.org 2026-10-29).
 - Stand-ins: Saul's men are Part One's young soldiers; Saul is Part One's `saul_sad`; David's men are `soldier_sit` and
   `guard_big_idle` darkened; Abishai at the campfire is Part One's campfire person. In caves David uses his idle and walk
   (no lamp in his hand yet).
