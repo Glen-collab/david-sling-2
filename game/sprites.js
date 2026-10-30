@@ -3732,6 +3732,54 @@ window.SPRITE_DATA = {
   "ay": 303,
   "align": "feet"
  },
+ "saul_soldier_alert": {
+  "src": "../assets/sprites/saul_soldier_alert.png",
+  "frames": 10,
+  "w": 205,
+  "h": 305,
+  "ms": 188,
+  "loop": false,
+  "pingpong": false,
+  "ax": 104,
+  "ay": 304,
+  "align": "feet"
+ },
+ "saul_soldier_look": {
+  "src": "../assets/sprites/saul_soldier_look.png",
+  "frames": 10,
+  "w": 126,
+  "h": 256,
+  "ms": 212,
+  "loop": false,
+  "pingpong": false,
+  "ax": 61,
+  "ay": 255,
+  "align": "feet"
+ },
+ "saul_soldier_turn": {
+  "src": "../assets/sprites/saul_soldier_turn.png",
+  "frames": 8,
+  "w": 102,
+  "h": 254,
+  "ms": 109,
+  "loop": false,
+  "pingpong": false,
+  "ax": 49,
+  "ay": 253,
+  "align": "feet"
+ },
+ "saul_soldier_walk": {
+  "src": "../assets/sprites/saul_soldier_walk.png",
+  "frames": 12,
+  "w": 115,
+  "h": 257,
+  "ms": 111,
+  "loop": true,
+  "pingpong": false,
+  "ax": 59,
+  "ay": 256,
+  "align": "feet"
+ },
  "saul_talk": {
   "src": "../assets/sprites/saul_talk.png",
   "frames": 48,

@@ -13,6 +13,8 @@ const W9 = {
   SWORD_REACH: [34, 84],         // how far in front of him the edge sweeps, px
   PATROL_WALK: 62,               // Saul's men's walking speed, px/s
   PATROL_WAIT: 1.8,              // how long one stands and looks at each end of his walk
+  LOOK_UP: 1.0,                  // ...his hand comes up to shade his eyes this fast (Glen's look clip), and goes down again at the end
+  TURN_T: 0.8,                   // then he turns around (the first half of Glen's turn clip)
   SIGHT: 7 * 36,                 // how far a soldier sees a standing David, px
   SIGHT_LOW: 2.2 * 36,           // ...and a crouching one
   HIDE_NEAR: 2.4 * 36,           // crouched this close to a rock (the soldier on its far side): hidden (the boulders are ~4 tiles wide)
@@ -83,7 +85,8 @@ function updatePatrols(dt) {
     if (p.state === "walk") {
       p.x += p.facing * W9.PATROL_WALK * dt;
       if ((p.facing > 0 && p.x >= p.to) || (p.facing < 0 && p.x <= p.from)) { p.x = Math.max(p.from, Math.min(p.to, p.x)); p.state = "look"; p.t = 0; }
-    } else if (p.state === "look" && p.t > p.wait) { p.facing *= -1; p.state = "walk"; p.t = 0; }
+    } else if (p.state === "look" && p.t > p.wait) { p.state = "turn"; p.t = 0; }
+    else if (p.state === "turn" && p.t > W9.TURN_T) { p.facing *= -1; p.state = "walk"; p.t = 0; }
     if (!w9.toldSoldier && Math.abs(david.x - p.x) < 11 * T && !cave.room) {
       w9.toldSoldier = true;
       toast("One of Saul's men! Crouch behind a rock (hold Down) while he looks your way. Go when his back is turned.");
@@ -106,10 +109,21 @@ function drawPatrols(camX) {
     ctx.save(); ctx.fillStyle = g; ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.lineWidth = 3; ctx.setLineDash([12, 9]);
     ctx.beginPath(); ctx.moveTo(x + p.facing * 20, p.y - 112); ctx.lineTo(x + p.facing * reach, p.y - 150); ctx.lineTo(x + p.facing * reach, p.y); ctx.lineTo(x + p.facing * 20, p.y - 70); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(x + p.facing * 20, p.y - 112); ctx.lineTo(x + p.facing * reach, p.y - 150); ctx.moveTo(x + p.facing * 20, p.y - 70); ctx.lineTo(x + p.facing * reach, p.y); ctx.stroke(); ctx.restore();
-    if (p.state === "walk") drawSprite("soldier_run", frameOf("soldier_run", p.t, 150), x, p.y, p.facing, 0.82);
-    else drawSprite("guard_young_idle", frameOf("guard_young_idle", p.t), x, p.y, p.facing, 0.86);
+    drawSoldier(p, x);
     if (alert) { ctx.fillStyle = "#ffdc4a"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("!", x, p.y - 150); ctx.textAlign = "left"; }
   }
+}
+
+// Glen's soldier clips (2026-10-29): walk; stop and shade his eyes (the hand comes down again by playing it backwards);
+// half of the turn; and the shout when he spots David, timed to the "!" (it plays back down if David hides in time)
+function drawSoldier(p, x) {
+  const last = n => SPR[n].frames - 1;
+  if (p.seen > 0) { const n = "saul_soldier_alert"; drawSprite(n, Math.min(last(n), Math.floor(p.seen / W9.SEEN_T * SPR[n].frames)), x, p.y, p.facing); return; }
+  if (p.state === "walk") { drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", p.t), x, p.y, p.facing); return; }
+  if (p.state === "turn") { const n = "saul_soldier_turn"; drawSprite(n, Math.min(last(n), Math.floor(p.t / W9.TURN_T * SPR[n].frames)), x, p.y, p.facing); return; }
+  const n = "saul_soldier_look", m = last(n), down = Math.min(W9.LOOK_UP * 0.6, p.wait / 3);
+  const k = p.t < W9.LOOK_UP ? p.t / W9.LOOK_UP : p.t > p.wait - down ? Math.max(0, (p.wait - p.t) / down) : 1;
+  drawSprite(n, Math.min(m, Math.floor(k * m + 0.5)), x, p.y, p.facing);
 }
 
 // ---------------------------------------------------------------------------
