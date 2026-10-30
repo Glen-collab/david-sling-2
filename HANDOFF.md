@@ -35,7 +35,13 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   falls through (no heart lost, back where he last stood, found stones stay). Across: Glen's sand-toss film
   (`leap_end.mp4`) shows the whole bridge, then the end card (Psalm 18:36). `?nofilm` skips the opening film.
   Words are draft: 2 Corinthians 5:7 at the edge, Psalm 18:36 on the card (both checked on ebible.org 2026-10-29).
-- Stand-ins: Saul's men are Part One's young soldiers; Saul is Part One's `saul_sad`; David's men are `soldier_sit` and
+- Saul (2026-10-30, Glen's clips, sheets in the art folder with `_green` copies for Photoshop): `saul_walk`, `saul_sit`,
+  `saul_stand` (the sit backwards, built by install_david2.py), `saul_look_back`, `saul_weep`, `saul_throw` (the harp
+  scene, 18:11; not used yet), `saul_sleep` (spear in the ground, water jug: 1 Samuel 26; not used yet), and
+  `saul_robe_cut`: Glen's two-shot of David cutting the robe, played in place of both of them (`W9.SCENE_*` in engedi.js;
+  `vid2sprite.py --fixed X` keeps the camera still for two-character clips). The David in that clip is the younger look.
+  A little light (`caveLights()`) shows Saul in the dark cave. Saul's men use Glen's soldier clips.
+- Stand-ins: David's men are `soldier_sit` and
   `guard_big_idle` darkened; Abishai at the campfire is Part One's campfire person. In caves David uses his idle and walk
   (no lamp in his hand yet).
 
@@ -54,6 +60,6 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   `david-sling-2-artharp_dezoomed.mp4`), so `david_sit_harp` (sit down, harp out) and `david_play_harp` (a 10-frame
   strum loop) are one size and `SIT_HARP_SIZES` is empty. The sandal soles touch the bottom of the video in the loop.
 - Clips that would replace stand-ins: older David lighting the lamp, walking into a cave (back view), holding up the robe
-  corner, bowing; Saul sitting in the cave; Saul's soldiers walking and looking.
+  corner, bowing; 
 - Not yet built: wall climbing and swimming in play (the sprites exist), the lamp/olive maze caves, the Steps of Faith,
   Truths, Player 2, the world map for Part Two.

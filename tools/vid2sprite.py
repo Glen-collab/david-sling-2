@@ -19,6 +19,7 @@ usage:
   --headroom H  add H pixels of empty space above the top of the sheet (room to paint in a spear tip cut off by the video).
   --pad P   add P pixels of empty space on the left, right and top of every frame (room in Photoshop to paint back a
             spear, bow or sling the video cut off). The feet stay on the bottom line; the anchors move to match.
+  --fixed X a scene with two characters (one moving): keep the camera still, anchored at video x = X (the still one).
   --green   also write <out_prefix>_green.png: the same frames, same layout, straight from the video (green screen
             and all), for borrowing parts in Photoshop.
 
@@ -43,6 +44,7 @@ ap.add_argument("--ref", default="4:0", help="frames used to measure full standi
 ap.add_argument("--min-loop", type=float, default=0.5, help="shortest loop in seconds (raise it if it finds half a stride)")
 ap.add_argument("--thin", type=int, default=0); ap.add_argument("--headroom", type=int, default=0)
 ap.add_argument("--pad", type=int, default=0)
+ap.add_argument("--fixed", type=int, default=-1, help="a scene with two characters: one still camera box for every frame, anchored at this video x (the still one's head) instead of following the head")
 args = ap.parse_args()
 
 tmp = tempfile.mkdtemp()
@@ -128,6 +130,9 @@ def sil(im, a):
 keyed = [key(f) for f in files]
 keyed = [k for k in keyed if k is not None]
 anchors = [anchor(k) for k in keyed]
+if args.fixed >= 0:   # two characters (one moving): don't follow a head, keep the camera still
+    F = max(a[0] for a in anchors)
+    anchors = [(F, args.fixed) + tuple(a[2:]) for a in anchors]
 n = len(keyed)
 
 if args.once:

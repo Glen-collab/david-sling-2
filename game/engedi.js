@@ -8,6 +8,10 @@
 // Scripture: the World English Bible, checked on ebible.org 2026-10-26; "the LORD" where the WEB says "Yahweh".
 
 const W9 = {
+  SCENE_MS: 160,                 // Glen's robe-cut two-shot (saul_robe_cut), ms a frame
+  SCENE_END: 20,                 // ...its last frame: David up, the corner in his hand (after this he walks off the video)
+  SCENE_DAVID: [213, 196],       // where David is in it at the start and the end, sheet px right of Saul's head
+  SAUL_WALK: 38,                 // Saul's slow walk, px/s
   SWORD_TIME: 0.33,              // the whole slash, seconds (Glen: fast)
   SWORD_HIT: [0.08, 0.24],       // when the edge can hit
   SWORD_REACH: [34, 84],         // how far in front of him the edge sweeps, px
@@ -52,6 +56,7 @@ function updateSword(d, dt, busy) {
 
 // drawn instead of the usual legs: mid-slash, behind the shield, or a pose a scene asks for
 function drawSwordDavid(d, x, y) {
+  if (w9.pose && w9.pose.hide) return true;   // he's in Glen's two-shot (saul_robe_cut) instead
   if (w9.pose) { const p = w9.pose; drawSprite(p.name, p.frame !== undefined ? p.frame : frameOf(p.name, d.t), x, y, p.facing || d.facing); return true; }
   if (d.swordT >= 0) { drawSprite("david_sword_slash", Math.min(5, Math.floor(d.swordT / W9.SWORD_TIME * 6)), x, y, d.facing); return true; }
   if (d.shield) { drawSprite("david_shield_block", frameOf("david_shield_block", d.t), x, y, d.facing); return true; }
@@ -165,7 +170,7 @@ function updateCave9(dt) {
     C.step = "saul";
     play([
       { say: ["", "Now David and his men were staying in the innermost parts of the cave. (1 Samuel 24:3)"] },
-      { fn() { w9.saul = { on: true, x: (C.c0 + 9) * T, y: GR * T, alpha: 0, t: 0 }; }, wait: 1.4 },
+      { fn() { w9.saul = { on: true, x: (C.c0 + 9) * T, y: GR * T, alpha: 0, t: 0, facing: -1, mode: "sit" }; }, wait: 2.4 },
       { say: ["", "Saul came into the cave, alone. He didn't see them in the dark."] },
       { say: ["David's men", "“Behold, the day of which the LORD said to you, ‘Behold, I will deliver your enemy into your hand, and you shall do to him as it shall seem good to you.’” (1 Samuel 24:4)"] },
       { fn() { toast("Creep up behind Saul (hold Down). The sword (X) can only cut the corner of his robe."); } },
@@ -184,15 +189,17 @@ function updateCave9(dt) {
   }
 }
 function cutRobe() {
-  const s = w9.saul; w9.cave.step = "cut"; s.cut = true; sfx("paper_rip", undefined, 0.5, 0.8);
-  david.x = s.x + 74; david.facing = -1;   // just behind him, not in his robe
+  const s = w9.saul; w9.cave.step = "cut"; s.cut = true;
+  const off = k => k * SCALE * TUNE.SPRITE_SIZE.saul_robe_cut;   // where David is in the two-shot, from Saul's head (sheet px)
+  david.x = s.x + off(W9.SCENE_DAVID[0]); david.facing = -1;
   play([
-    { fn() { w9.pose = { name: "david_kneel_hold", facing: -1 }; }, wait: 0.9 },
+    { fn() { w9.pose = { hide: true }; s.mode = "scene"; s.t = 0; }, wait: W9.SCENE_END * W9.SCENE_MS / 1000 * 0.55 },
+    { fn() { sfx("paper_rip", undefined, 0.5, 0.8); }, wait: W9.SCENE_END * W9.SCENE_MS / 1000 * 0.45 + 0.3 },
     { say: ["", "Then David arose and cut off the skirt of Saul’s robe secretly. Afterward, David’s heart struck him because he had cut off Saul’s skirt. (1 Samuel 24:4-5)"] },
-    { fn() { w9.pose = null; david.facing = 1; } },
+    { fn() { w9.pose = null; s.mode = "sit"; s.t = 99; david.x = s.x + off(W9.SCENE_DAVID[1]); david.facing = 1; } },
     { say: ["David", "“The LORD forbid that I should do this thing to my lord, the LORD’s anointed, to stretch out my hand against him, since he is the LORD’s anointed.” (1 Samuel 24:6)"] },
     { say: ["", "So David checked his men with these words, and didn’t allow them to rise against Saul. Saul rose up out of the cave, and went on his way. (1 Samuel 24:7)"] },
-    { fn() { s.leaving = true; }, wait: 1.2 },
+    { fn() { s.leaving = true; s.mode = "stand"; s.t = 0; }, wait: 4 },
     { fn() { s.on = false; w9.cave.step = "out"; toast("Follow Saul out of the cave (Up at the daylight)."); } },
   ]);
 }
@@ -201,20 +208,31 @@ function updateMouth9() {
   const C = w9.cave; if (!C || C.step !== "out" || cave.room || david.state === "cave" || w9.script.length) return;
   C.step = "done";
   const d = david, door = doors.find(o => o.room && o.room.c0 === C.c0);
-  w9.saul = { on: true, outside: true, x: door.x - 7 * T, y: GR * T, alpha: 1, t: 0, facing: 1 };
+  w9.saul = { on: true, outside: true, x: door.x - 6 * T, y: GR * T, alpha: 1, t: 0, facing: -1, mode: "walk" };   // walking away
   d.facing = -1;
   play([
     { say: ["David", "“My lord the king!” (1 Samuel 24:8)"] },
-    { fn() { w9.saul.facing = -1; w9.pose = { name: "david_kneel_hold", facing: -1 }; } },   // he looks back
+    { fn() { w9.saul.mode = "look"; w9.saul.t = 0; w9.pose = { name: "david_kneel_hold", facing: -1 }; } },   // he looks back
     { say: ["", "When Saul looked behind him, David bowed with his face to the earth, and showed respect. (1 Samuel 24:8)"] },
     { fn() { w9.pose = null; d.facing = -1; w9.showCorner = true; } },
     { say: ["David", "“...see the skirt of your robe in my hand; for in that I cut off the skirt of your robe and didn’t kill you, know and see that there is neither evil nor disobedience in my hand.” (1 Samuel 24:11)"] },
     { say: ["David", "“May the LORD judge between me and you, and may the LORD avenge me of you; but my hand will not be on you.” (1 Samuel 24:12)"] },
     { say: ["Saul", "“Is that your voice, my son David?” (1 Samuel 24:16)"] },
+    { fn() { w9.saul.mode = "weep"; w9.saul.t = 0; w9.saul.facing = 1; } },
     { say: ["", "Saul lifted up his voice and wept. (1 Samuel 24:16)"] },
     { say: ["Saul", "“You are more righteous than I; for you have done good to me, whereas I have done evil to you.” (1 Samuel 24:17)"] },
     { fn() { w9.end = { t: 0 }; } },
   ]);
+}
+// a little light on the king in the dark (caves.js), so the player can see who David is creeping up on
+function caveLights() { const s = w9.saul; return s && s.on && !s.outside && inThisCave() ? [[s.x, s.y - 80, 150 * s.alpha]] : []; }
+// Glen's Saul (sheets face right; facing -1 = toward the cave mouth): sits, the two-shot of the cut, stands, walks, looks back, weeps
+function drawSaul(s, x) {
+  if (s.mode === "scene") {   // Glen's two-shot: David creeps up, cuts the corner, stands holding it (stops before he walks off)
+    drawSprite("saul_robe_cut", Math.min(W9.SCENE_END, frameOf("saul_robe_cut", s.t, W9.SCENE_MS)), x, s.y, 1, 1, s.alpha); return;
+  }
+  const n = { sit: "saul_sit", stand: "saul_stand", walk: "saul_walk", look: "saul_look_back", weep: "saul_weep" }[s.mode] || "saul_sit";
+  drawSprite(n, frameOf(n, s.t), x, s.y, s.facing, 1, s.alpha);
 }
 function drawCave9(camX) {
   const C = w9.cave; if (!C) return;
@@ -227,18 +245,14 @@ function drawCave9(camX) {
   const s = w9.saul;
   if (s && s.on && (s.outside ? !cave.room : inThisCave())) {
     s.t += 1 / 60;
-    if (s.leaving) s.alpha = Math.max(0, s.alpha - 1 / 70); else s.alpha = Math.min(1, s.alpha + 1 / 50);
-    const x = s.x - camX;
-    drawSprite("saul_sad", frameOf("saul_sad", s.t), x, s.y, s.facing || 1, 0.9, s.alpha);   // (his sheet faces left: 1 = his back to the cave's depths)
-    if (s.cut) {   // the missing corner of his robe
-      ctx.save(); ctx.globalAlpha = s.alpha; ctx.fillStyle = "#1a1210";
-      const fx = x + (s.facing || 1) * 26;
-      ctx.beginPath(); ctx.moveTo(fx, s.y - 2); ctx.lineTo(fx + (s.facing || 1) * 26, s.y - 2); ctx.lineTo(fx + (s.facing || 1) * 26, s.y - 34); ctx.closePath(); ctx.fill(); ctx.restore();
-    }
+    if (s.mode === "stand" && s.t > SPR.saul_stand.frames * SPR.saul_stand.ms / 1000) { s.mode = "walk"; s.t = 0; }
+    if (s.mode === "walk") s.x += s.facing * W9.SAUL_WALK / 60;
+    if (s.leaving && s.mode === "walk") s.alpha = Math.max(0, s.alpha - 1 / 90); else if (!s.leaving) s.alpha = Math.min(1, s.alpha + 1 / 50);
+    drawSaul(s, s.x - camX);
   }
   if (w9.showCorner && !cave.room) {   // the corner of the robe, held up
     const d = david, hx = d.x - camX + d.facing * 22, hy = d.y - 92;   // in his hand, at his side
-    ctx.save(); ctx.fillStyle = "#9a1f2e"; ctx.strokeStyle = "#5a0f18"; ctx.lineWidth = 2;
+    ctx.save(); ctx.fillStyle = "#5b2a86"; ctx.strokeStyle = "#2e1248"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + d.facing * 30, hy + 6); ctx.lineTo(hx + d.facing * 8, hy + 34); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
   }
 }

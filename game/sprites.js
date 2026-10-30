@@ -3708,6 +3708,18 @@ window.SPRITE_DATA = {
   "ay": 333,
   "align": "feet"
  },
+ "saul_look_back": {
+  "src": "../assets/sprites/saul_look_back.png",
+  "frames": 10,
+  "w": 153,
+  "h": 254,
+  "ms": 154,
+  "loop": false,
+  "pingpong": false,
+  "ax": 74,
+  "ay": 253,
+  "align": "feet"
+ },
  "saul_off": {
   "src": "../assets/sprites/saul_off.png",
   "frames": 24,
@@ -3720,6 +3732,18 @@ window.SPRITE_DATA = {
   "ay": 317,
   "align": "feet"
  },
+ "saul_robe_cut": {
+  "src": "../assets/sprites/saul_robe_cut.png",
+  "frames": 24,
+  "w": 335,
+  "h": 192,
+  "ms": 347,
+  "loop": false,
+  "pingpong": false,
+  "ax": 55,
+  "ay": 191,
+  "align": "feet"
+ },
  "saul_sad": {
   "src": "../assets/sprites/saul_sad.png",
   "frames": 6,
@@ -3730,6 +3754,30 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 65,
   "ay": 303,
+  "align": "feet"
+ },
+ "saul_sit": {
+  "src": "../assets/sprites/saul_sit.png",
+  "frames": 14,
+  "w": 177,
+  "h": 240,
+  "ms": 167,
+  "loop": false,
+  "pingpong": false,
+  "ax": 90,
+  "ay": 238,
+  "align": "feet"
+ },
+ "saul_sleep": {
+  "src": "../assets/sprites/saul_sleep.png",
+  "frames": 16,
+  "w": 198,
+  "h": 263,
+  "ms": 133,
+  "loop": true,
+  "pingpong": false,
+  "ax": 189,
+  "ay": 261,
   "align": "feet"
  },
  "saul_soldier_alert": {
@@ -3780,6 +3828,18 @@ window.SPRITE_DATA = {
   "ay": 256,
   "align": "feet"
  },
+ "saul_stand": {
+  "src": "../assets/sprites/saul_stand.png",
+  "frames": 14,
+  "w": 177,
+  "h": 240,
+  "ms": 167,
+  "loop": false,
+  "pingpong": false,
+  "ax": 90,
+  "ay": 238,
+  "align": "feet"
+ },
  "saul_talk": {
   "src": "../assets/sprites/saul_talk.png",
   "frames": 48,
@@ -3792,6 +3852,18 @@ window.SPRITE_DATA = {
   "ay": 315,
   "align": "feet"
  },
+ "saul_throw": {
+  "src": "../assets/sprites/saul_throw.png",
+  "frames": 14,
+  "w": 232,
+  "h": 294,
+  "ms": 217,
+  "loop": false,
+  "pingpong": false,
+  "ax": 120,
+  "ay": 292,
+  "align": "feet"
+ },
  "saul_torment": {
   "src": "../assets/sprites/saul_torment.png",
   "frames": 6,
@@ -3802,6 +3874,30 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 121,
   "ay": 333,
+  "align": "feet"
+ },
+ "saul_walk": {
+  "src": "../assets/sprites/saul_walk.png",
+  "frames": 12,
+  "w": 153,
+  "h": 253,
+  "ms": 153,
+  "loop": true,
+  "pingpong": false,
+  "ax": 92,
+  "ay": 251,
+  "align": "feet"
+ },
+ "saul_weep": {
+  "src": "../assets/sprites/saul_weep.png",
+  "frames": 18,
+  "w": 130,
+  "h": 254,
+  "ms": 336,
+  "loop": false,
+  "pingpong": false,
+  "ax": 52,
+  "ay": 252,
   "align": "feet"
  },
  "sb_charge": {

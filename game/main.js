@@ -120,6 +120,8 @@ const TUNE = {
     david_sling_throw_up: 1.15,
     david_crawl: 0.92,
     saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1,   // Saul's men: a head taller than David
+    saul_walk: 1.15, saul_sit: 1.15, saul_stand: 1.15, saul_look_back: 1.15, saul_weep: 1.15, saul_throw: 1.15, saul_sleep: 1.15,   // Saul: taller than any of them (1 Samuel 9:2)
+    saul_robe_cut: 1.08,   // Glen's two-shot (Saul and David): Saul kneels as tall as in saul_sit
     david_slip: 0.8,      // Glen's slip strip draws him chunkier: matched to his head size on the other sprites
     lion_prowl_carry_lamb: 1.3, lion_sit_carry_lamb: 1.3, lion_set_lamb_down: 1.24,
     lion_run: 1.3, lion_pounce: 1.3, lion_prowl: 1.3, lion_roar: 1.3, lion_sit_roar: 1.3, lion_dazed: 1.3,

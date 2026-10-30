@@ -90,4 +90,6 @@ join([("david_sling_spin", [0, 2, 4, 6, 8, 10]), ("david_sling_throw", [2, 3, 4,
 pick("david_idle", [i % 12 for i in range(16)], "david_light_lamp", loop=False)
 pick("david_idle", list(range(8)), "david_turn_away", loop=False)
 same("david_walk", "david_walk_away")
+# Saul standing up: his sit-down played backwards (the same old man, the same spear on the ground)
+pick("saul_sit", list(range(13, -1, -1)), "saul_stand")
 print("installed")
