@@ -116,6 +116,7 @@ function drawDeadfalls(camX) {   // logs stacked up the pile, a little crooked, 
 Object.assign(TUNE.SPRITE_SIZE, { eliab_walk: 1.08, eliab_arms_crossed: 1.08, eliab_draw_sword: 1.08 });   // the eldest: a bit taller than David
 Object.assign(TUNE.SPRITE_SIZE, { shammah_walk: 1.1, shammah_talk: 1.1, shammah_idle: 1.1 });   // the third son: a grown man too
 Object.assign(TUNE.SPRITE_SIZE, { abinadab_walk: 1.1, abinadab_idle: 1.1, abinadab_point: 1.1 });   // the second son
+Object.assign(TUNE.SPRITE_SIZE, { abishai_idle: 1.2, abishai_talk: 1.2, abishai_walk: 1.2, abishai_thrust: 1.2, abishai_kneel_point: 1.2, abishai_sneak: 1.2 });   // Part Two: David's nephew, a grown man (his clips cut a little shorter than David's)
 function drawCampfirePeople(camX) {
   const now = performance.now() / 1000;
   for (const f of fires) {
@@ -127,6 +128,10 @@ function drawCampfirePeople(camX) {
     if (f.who === "The shepherd girl" && SPR.girl_sit_talk) {   // sitting by her fire; she talks while her words are up
       const talking = dialog.t > 0 && dialog.who === f.who;
       drawSprite("girl_sit_talk", talking ? frameOf("girl_sit_talk", now) : 0, x, f.y, 1);
+    }
+    if (f.who === "Abishai" && SPR.abishai_idle) {   // Part Two, En-Gedi: standing by the fire with his spear, facing David
+      const nm = dialog.t > 0 && dialog.who === f.who && SPR.abishai_talk ? "abishai_talk" : "abishai_idle";
+      drawSprite(nm, frameOf(nm, now), x, f.y, Math.sign(david.x - (f.x - 62)) || 1);
     }
   }
   // people who speak as David passes (talk() in main.js) and have art: standing there, facing him
