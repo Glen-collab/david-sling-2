@@ -51,7 +51,7 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 - Jonathan (2026-11-01, Glen's two long clips, several moves each; installed, not in the game yet): `jonathan_idle`,
   `_talk`, `_walk` (from `jonathan_idle_talk_walk.mp4`), `_run`, `_jump`, `_shoot`, `_shoot2` (from
   `jonathan_run_jump_shoot.mp4`: run 14-110, jump 112-144, shoot 148-250, shoot2 284-350, turned a little toward us).
-  The jump's head leaves the video at the top (`--pad 60` left room to paint it). Yellow/pink tint on the run's legs
+  Glen painted the jump's head back in and touched up both shots (2026-11-01). Yellow/pink tint on the run's legs
   is in Grok's video. Still to come: sword, hit, the robe gift.
 - Stand-ins: David's men are `soldier_sit` and
   `guard_big_idle` darkened; Abishai stands at both En-Gedi campfires (idle, talk while his words are up; `drawCampfirePeople` in world2.js, size 1.2). In caves David uses his idle and walk
