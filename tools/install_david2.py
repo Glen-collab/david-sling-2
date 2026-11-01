@@ -94,4 +94,7 @@ same("david_walk", "david_walk_away")
 pick("saul_sit", list(range(13, -1, -1)), "saul_stand")
 # Glen's spear on its own (2026-11-01): an item picture, for the throw in the harp room and the spear by the sleeping Saul
 shutil.copy(os.path.join(ART, "saul_spear.png"), os.path.join(OUT, "..", "items", "saul_spear.png"))
+# Glen's arrow on its own (2026-11-01): what flies when Jonathan shoots. Drawn tilted up about 14 degrees, tip on the
+# right: the game turns it back level and then along its flight
+shutil.copy(os.path.join(ART, "jonathan_arrow.png"), os.path.join(OUT, "..", "items", "jonathan_arrow.png"))
 print("installed")
