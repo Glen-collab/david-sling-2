@@ -135,18 +135,6 @@ window.SPRITE_DATA = {
  "abishai_walk": {
   "src": "../assets/sprites/abishai_walk.png",
   "frames": 12,
-  "w": 188,
-  "h": 281,
-  "ms": 149,
-  "loop": true,
-  "pingpong": false,
-  "ax": 92,
-  "ay": 280,
-  "align": "feet"
- },
- "abishai_walk_a": {
-  "src": "../assets/sprites/abishai_walk_a.png",
-  "frames": 12,
   "w": 181,
   "h": 284,
   "ms": 201,
