@@ -45,6 +45,9 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   (spear planted, no high step; Glen's pick over the tilted-spear walk), `abishai_thrust`, `abishai_kneel_point`
   (1 Samuel 26:8), `abishai_sneak`. Thrust and sneak were cut with `--pad 160` and Glen painted the spear back in; the
   sneak he painted is the 72-92 cut (0.9 s loop), and its json and `_green` match that cut.
+- The armor-bearer (2026-11-01, Glen's clips; installed, not in the game yet: Player 2 isn't built): `armorbearer_idle`,
+  `_walk`, `_run`, `_jump`, `_lamp_up`, `_pickup`, `_crawl` (the tiny tunnels), `_hit`, `_talk`. Cut with `--ref 1:20`
+  (his standing frames) so the raised lamp doesn't shrink him. Jump, lamp-up and pick-up play at the clips' slow pace.
 - Stand-ins: David's men are `soldier_sit` and
   `guard_big_idle` darkened; Abishai stands at both En-Gedi campfires (idle, talk while his words are up; `drawCampfirePeople` in world2.js, size 1.2). In caves David uses his idle and walk
   (no lamp in his hand yet).
