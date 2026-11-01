@@ -37,7 +37,7 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   Words are draft: 2 Corinthians 5:7 at the edge, Psalm 18:36 on the card (both checked on ebible.org 2026-10-29).
 - Saul (2026-10-30, Glen's clips, sheets in the art folder with `_green` copies for Photoshop): `saul_walk`, `saul_sit`,
   `saul_stand` (the sit backwards, built by install_david2.py), `saul_look_back`, `saul_weep`, `saul_throw` (the harp
-  scene, 18:11; not used yet), `saul_sleep` (spear in the ground, water jug: 1 Samuel 26; not used yet), and
+  scene, 18:11; not used yet), `saul_sleep` (spear in the ground, water jug: 1 Samuel 26; not used yet), `saul_spear` (Glen's spear on its own, an item in `assets/items`, for the harp-room throw and the sleeping camp; not used yet), and
   `saul_robe_cut`: Glen's two-shot of David cutting the robe, played in place of both of them (`W9.SCENE_*` in engedi.js;
   `vid2sprite.py --fixed X` keeps the camera still for two-character clips). The David in that clip is the younger look.
   A little light (`caveLights()`) shows Saul in the dark cave. Saul's men use Glen's soldier clips.
@@ -55,7 +55,7 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 ## Next
 - Glen plays En-Gedi and says how it feels (soldier speed, sight length, hiding, the cave).
 - Art Glen is making: the armor-bearer (reference done: `david-sling-2-art\armor-bearer.png`), then Jonathan, Benaiah,
-  Asahel, Abishai; Photoshop passes on the sling spin/throw, the hit, and the run-sling.
+  Asahel, Abishai. (Photoshop passes on the sling, run-sling and hit are all done.)
 - The harp (2026-10-28): Glen's clip zooms in about 31%; it was un-zoomed frame by frame before cutting (copy in
   `david-sling-2-artharp_dezoomed.mp4`), so `david_sit_harp` (sit down, harp out) and `david_play_harp` (a 10-frame
   strum loop) are one size and `SIT_HARP_SIZES` is empty. The sandal soles touch the bottom of the video in the loop.

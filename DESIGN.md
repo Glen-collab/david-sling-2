@@ -78,7 +78,7 @@ One line per world (see START_HERE.md for the WEB text and the first try at the 
 
 ## Art
 **Older David: done (2026-10-26).** 25 moves cut from Glen's Grok clips into `david-sling-2-art\sprites` (previews in `Desktop\game previews\Part Two`): idle, walk, run, jump, forward flip, backflip, landing, roll, sword draw / ready / walk / slash, shield raise / block, sling spin / throw, crouch-walk, kneel, kneel hold, dive, swim, rope climb, wall climb side / back, hit.
-Waiting on Glen's Photoshop: sling spin and throw (draw a proper sling), hit (remove the arrow).
+Glen's Photoshop passes are all in (sling spin and throw, run-sling, hit with the arrow removed).
 
 **Still to make:** Jonathan, the armor-bearer, Abishai, Asahel, Benaiah (playable); Saul (older, troubled), Michal, Abigail, Nabal, Ahimelech, Achish, Samuel (reuse Part One's), Philistine soldiers, Saul's soldiers, raiders; places for every world.
 

@@ -92,4 +92,6 @@ pick("david_idle", list(range(8)), "david_turn_away", loop=False)
 same("david_walk", "david_walk_away")
 # Saul standing up: his sit-down played backwards (the same old man, the same spear on the ground)
 pick("saul_sit", list(range(13, -1, -1)), "saul_stand")
+# Glen's spear on its own (2026-11-01): an item picture, for the throw in the harp room and the spear by the sleeping Saul
+shutil.copy(os.path.join(ART, "saul_spear.png"), os.path.join(OUT, "..", "items", "saul_spear.png"))
 print("installed")
