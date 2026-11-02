@@ -67,6 +67,10 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   `benaiah_swing_turning_unused.mp4`),
   `_lift` (clip7, staff dropped on the ground), `_hit` (clip8, 1-76), `_push_start` (clip9, 1-40) and `_push` (clip9 from
   40, a loop at 150 ms). The one-shot moves still play at the clips' slow pace; speed them up when he goes in.
+- `david_hold_robe` (2026-11-02, Glen's two-shot `david_hold_robe_talk.mp4` with Saul masked out first
+  (`_only.mp4`), mirrored to face right): at the cave mouth David holds up the corner of Saul's robe while he talks (24:11),
+  in place of the painted purple triangle. Saul's men are drawn after the front decor now (`drawWorld9Front`): they walk
+  the near path and David crouches behind the rocks on the far side.
 - Jonathan (2026-11-01, Glen's two long clips, several moves each; installed, not in the game yet): `jonathan_idle`,
   `_talk`, `_walk` (from `jonathan_idle_talk_walk.mp4`), `_run`, `_jump`, `_shoot`, `_shoot2` (from
   `jonathan_run_jump_shoot.mp4`: run 14-110, jump 112-144, shoot 148-250, shoot2 284-350, turned a little toward us).

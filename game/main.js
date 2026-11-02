@@ -4903,6 +4903,7 @@ function frame(now) {
   if (typeof drawStreamFront === "function") drawStreamFront(camX);   // world6.js
   drawStones(camX); if (typeof drawFlood === "function") { drawPools(camX); drawFalls(camX); drawFlood(camX); drawEagles(camX); drawWind(); }   // world2.js
   drawDecor(camX, "front");
+  if (typeof drawWorld9Front === "function") drawWorld9Front(camX);   // engedi.js: Saul's men, in front of the hiding rocks
   drawFakeRock(camX);
   drawCodeWalls(camX); if (typeof drawDeadfalls === "function") drawDeadfalls(camX);
   ctx.restore();

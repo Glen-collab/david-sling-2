@@ -214,7 +214,7 @@ function updateMouth9() {
     { say: ["David", "“My lord the king!” (1 Samuel 24:8)"] },
     { fn() { w9.saul.mode = "look"; w9.saul.t = 0; w9.pose = { name: "david_kneel_hold", facing: -1 }; } },   // he looks back
     { say: ["", "When Saul looked behind him, David bowed with his face to the earth, and showed respect. (1 Samuel 24:8)"] },
-    { fn() { w9.pose = null; d.facing = -1; w9.showCorner = true; } },
+    { fn() { d.facing = -1; w9.pose = { name: "david_hold_robe", facing: -1 }; } },   // Glen's clip: he holds up the corner and talks
     { say: ["David", "“...see the skirt of your robe in my hand; for in that I cut off the skirt of your robe and didn’t kill you, know and see that there is neither evil nor disobedience in my hand.” (1 Samuel 24:11)"] },
     { say: ["David", "“May the LORD judge between me and you, and may the LORD avenge me of you; but my hand will not be on you.” (1 Samuel 24:12)"] },
     { say: ["Saul", "“Is that your voice, my son David?” (1 Samuel 24:16)"] },
@@ -249,11 +249,6 @@ function drawCave9(camX) {
     if (s.mode === "walk") s.x += s.facing * W9.SAUL_WALK / 60;
     if (s.leaving && s.mode === "walk") s.alpha = Math.max(0, s.alpha - 1 / 90); else if (!s.leaving) s.alpha = Math.min(1, s.alpha + 1 / 50);
     drawSaul(s, s.x - camX);
-  }
-  if (w9.showCorner && !cave.room) {   // the corner of the robe, held up
-    const d = david, hx = d.x - camX + d.facing * 22, hy = d.y - 92;   // in his hand, at his side
-    ctx.save(); ctx.fillStyle = "#5b2a86"; ctx.strokeStyle = "#2e1248"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + d.facing * 30, hy + 6); ctx.lineTo(hx + d.facing * 8, hy + 34); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
   }
 }
 
@@ -296,8 +291,13 @@ function updateWorld9(dt) {
 }
 function drawWorld9(camX) {
   if (WORLD !== 9) return;
-  drawPatrols(camX);
   drawCave9(camX);
+}
+// Saul's men walk the near path, in front of the hiding rocks; David crouches on the far side, the rock drawn over him
+// (Glen 2026-11-02: "like they are on two different paths")
+function drawWorld9Front(camX) {
+  if (WORLD !== 9) return;
+  drawPatrols(camX);
 }
 function drawWorld9Over(camX) {
   if (WORLD !== 9) return;

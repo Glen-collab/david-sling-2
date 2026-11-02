@@ -1392,6 +1392,18 @@ window.SPRITE_DATA = {
   "ay": 262,
   "align": "feet"
  },
+ "david_hold_robe": {
+  "src": "../assets/sprites/david_hold_robe.png",
+  "frames": 12,
+  "w": 240,
+  "h": 275,
+  "ms": 177,
+  "loop": true,
+  "pingpong": false,
+  "ax": 118,
+  "ay": 272,
+  "align": "feet"
+ },
  "david_idle": {
   "src": "../assets/sprites/david_idle.png",
   "frames": 12,
