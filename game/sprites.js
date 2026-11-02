@@ -336,6 +336,18 @@ window.SPRITE_DATA = {
   "ay": 293,
   "align": "feet"
  },
+ "asahel_skid": {
+  "src": "../assets/sprites/asahel_skid.png",
+  "frames": 12,
+  "w": 373,
+  "h": 308,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 203,
+  "ay": 305,
+  "align": "feet"
+ },
  "asahel_slide": {
   "src": "../assets/sprites/asahel_slide.png",
   "frames": 6,

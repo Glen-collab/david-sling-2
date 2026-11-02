@@ -53,7 +53,8 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   loop), `_run` (clip5, 24-136, 60 ms), `_sprint` (clip5, 140-232, 48 ms), `_long_jump` (clip5, 232-324, ends crouched
   then standing), `_throw` (clip7, 1-62, padded 120 for the javelin), `_hit` (clip7, 88-134, starts mid-step),
   `_slide` (6 frames from `asahel_slide.mp4`: video 9, 13, 17, 60, 114, 120; Grok made front splits; Glen painted the
-  legs into a sitting slide 2026-11-02; the game holds frame 4 while he slides).
+  legs into a sitting slide 2026-11-02; the game holds frame 4 while he slides), `_skid` (`asahel_skid.mp4`, 78-124, 70 ms: last running stride, skids
+  leaning back, comes upright into his idle; after 124 the clip turns him to face us).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
