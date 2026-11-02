@@ -45,10 +45,12 @@ function updateLeap(dt) {
   const d = david;
   if (!d.onGround || d.deadT > 0) return;
   if (d.y > GR * T + 10) { leapFall(); return; }   // somehow down on the low ledge: there's no way on from there
-  leap.stand = { x: d.x, y: d.y };
+  // where a fall puts him back: only where there's a whole tile of found ground ahead and behind, so he never comes back
+  // standing half over the edge (Glen 2026-11-02: after running off, he came back with the next stone already showing)
+  if (leapGround(Math.floor((d.x + T) / T)) && leapGround(Math.floor((d.x - T) / T))) leap.stand = { x: d.x, y: d.y };
   // walking: a stone shows itself only once his middle is out over it (only next to ground he could already stand on)
   const c = Math.floor((d.x - d.facing * LEAP.REVEAL_IN) / T);
-  const walking = Math.abs(d.vx) <= TUNE.WALK_SPEED + 5;
+  const walking = Math.abs(d.vx) > 20 && Math.abs(d.vx) <= TUNE.WALK_SPEED + 5 && Math.sign(d.vx) === d.facing;   // stepping out, not standing
   if (walking && c >= leap.c0 && c <= leap.c1 && leap.found[c] === undefined && leapGround(c - d.facing)) findStone(c);
   // across: Glen's sand toss shows the whole bridge
   if (!leap.ended && d.x > (leap.c1 + LEAP.END_AT) * T) {
