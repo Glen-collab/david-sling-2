@@ -33,7 +33,8 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   A chasm with a ledge above (too high) and a ledge below (too far). The real way is a hidden bridge straight out from
   the edge: each stone shows itself (golden edge, as in the film) as David walks onto it; a jump finds nothing and he
   falls through (no heart lost, back where he last stood, found stones stay). Across: Glen's sand-toss film
-  (`leap_end.mp4`) shows the whole bridge, then the end card (Psalm 18:36). `?nofilm` skips the opening film.
+  (`leap_end.mp4`, Glen's 2026-11-02 clip with the young David; the first one had a bearded David and is kept in
+  `david-sling-2-artNusedeap_end_bearded_david.mp4`) shows the whole bridge, then the end card (Psalm 18:36). `?nofilm` skips the opening film.
   Words are draft: 2 Corinthians 5:7 at the edge, Psalm 18:36 on the card (both checked on ebible.org 2026-10-29).
 - Saul (2026-10-30, Glen's clips, sheets in the art folder with `_green` copies for Photoshop): `saul_walk`, `saul_sit`,
   `saul_stand` (the sit backwards, built by install_david2.py), `saul_look_back`, `saul_weep`, `saul_throw` (the harp
