@@ -289,14 +289,20 @@ function defaultPadState(p) {
 const input = { now: {}, prev: {} };
 const input2 = { now: {}, prev: {} };   // the second controller: the lamb (only the D-pad and A matter)
 function padState(p) { const m = mapFor(p); return m ? Object.fromEntries(BUTTONS.map(b => [b, padControl(p, m[b])])) : defaultPadState(p); }
+// (Part Two) Player 2 on the keyboard: the number pad. p2Swap (key P, player2.js): the one controller plays Player 2
+const P2_KEYMAP = { up: ["Numpad8"], down: ["Numpad5", "Numpad2"], left: ["Numpad4"], right: ["Numpad6"], a: ["Numpad0"], b: ["NumpadDecimal"],
+  select: ["NumpadAdd"], start: [], x: ["Numpad3"], y: [] };
+let p2Swap = false;
 function pollInput() {
   input2.prev = input2.now;
-  const p2 = readPads()[1];
-  input2.now = p2 && !setup.active ? padState(p2) : {};
+  const p2pad = p2Swap ? readPads()[0] : readPads()[1];
+  const s2 = p2pad && !setup.active ? padState(p2pad) : {};
+  for (const b of BUTTONS) if (P2_KEYMAP[b].some(k => keys[k])) s2[b] = true;
+  input2.now = s2;
   input.prev = input.now;
   const s = {};
   for (const b of BUTTONS) s[b] = KEYMAP[b].some(k => keys[k]);
-  const p = readPad();
+  const p = p2Swap ? null : readPad();
   padMap = mapFor(p);
   if (p && !setup.active) {
     const ps = padMap ? Object.fromEntries(BUTTONS.map(b => [b, padControl(p, padMap[b])])) : defaultPadState(p);
@@ -401,6 +407,7 @@ const STAGE_INFO = {
   test:  { cols: 150, bg: "w1" },
   "9-1": { cols: 214, bg: "w2_3", ter: "w2s", name: "The Rocks of the Wild Goats" },   // Part Two test: En-Gedi (engedi.js)
   "9-2": { cols: 92, bg: "w2_3", ter: "w2s", name: "The Leap of Faith" },             // Part Two test: the hidden bridge (leap.js)
+  "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
   "1-2": { cols: 228, bg: "w1_2", name: "The Wandering Flock" },
   "1-3": { cols: 258, bg: "w1_3", name: "The Rocky Pastures" },
@@ -1051,6 +1058,28 @@ if (LEVEL_NAME === "test") {
   setPiece("leapbridge", 31, GR, { to: 61 });                  // the hidden bridge (leap.js)
   ground(62, 91);
   oliveRow(70, 16, 4); deco("rock_pile_tan", 80, 16, 0.3);
+} else if (LEVEL_NAME === "9-3") {
+  // ---- 9-3 The Training Ground (the Part Two test of Player 2; player2.js): a station for each Player 2, each a little
+  //      secret for two players. David can play it alone; the secrets need the second player. Built to grow. ----
+  ground(0, 119); ground(135, 199);
+  campfire(5, GR - 1);
+  // the armor-bearer's tunnel: a crawlway one tile high under a rock shelf (too low for David), olives and a golden one in it
+  rock(18, 13, 16, 3); oliveRow(21, 16, 4); olive(29 * T + T / 2, 17 * T - 14, "golden"); oliveRow(21, 12, 3);
+  // Benaiah's boulder: push it under the high ledge, and it's the step up
+  setPiece("pushrock", 40, 14, { w: 3, h: 3 }); rock(53, 15, 1, 2);
+  plat(47, 7, 6); oliveRow(48, 6, 4); olive(52 * T + T / 2, 7 * T - 14, "golden");
+  // the nook in the hill: dead branches across its door (Benaiah's smash, or a charged stone)
+  rock(64, 13, 16, 4); for (let c = 65; c <= 77; c++) for (let r = 14; r <= 16; r++) solid[r][c] = 0;
+  deadfall(64, 14, 1, 3); oliveRow(68, 16, 6); olive(76 * T + T / 2, 17 * T - 14, "golden");
+  campfire(84, GR - 1);
+  // animals: Abishai's spear, Jonathan's bow and sword, Asahel's javelins (or David's sling)
+  snake("viper", 94); critter("scorpion", 100); critter("fox", 109);
+  // the gap: stepping stones for David; Asahel's running jump clears it
+  plat(123, 14, 2); plat(128, 13, 2); plat(132, 14, 2); olive(127 * T + T / 2, 10 * T, "golden");
+  // Jonathan's targets: gourds hung high (his high shot, or David's sling aimed up)
+  gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
+  campfire(170, GR - 1);
+  setPiece("p2end", 186);
 } else if (LEVEL_NAME === "2-4") {
   // ---- 2-4 The Bear's Ravine, at dusk: wolves hunting in pairs, claw marks, a tree crashing down off in the trees,
   //      Hanan's last campfire, then the Bear at the pen wall ----
@@ -2224,6 +2253,7 @@ function updateDavid(dt) {
   for (const b in aimAgo) aimAgo[b] = held(b) ? 0 : aimAgo[b] + dt;
   if (typeof w9HoldDavid === "function" && w9HoldDavid(d, dt)) return;   // engedi.js: a scene has the controls
   if (typeof leapHoldDavid === "function" && leapHoldDavid(d, dt)) return;   // leap.js: the end card
+  if (typeof p2HoldDavid === "function" && p2HoldDavid(d, dt)) return;   // player2.js: 9-3's end card
   if (caveDavid(d, dt)) return;   // walking into or out of a cave (world1.js)
   if (updateCodeEntry(d, dt)) return;   // entering the throw at a carved wall (world1.js)
   if (typeof updateHarpDuel === "function" && updateHarpDuel(d, dt)) return;   // playing the harp for a frightened animal (world2.js)
@@ -2702,7 +2732,7 @@ function drawLamb(camX) {
 const bits = [];
 function updateStones(dt) {
   for (const s of stones) {
-    s.life -= dt; s.vy += TUNE.STONE_GRAVITY * dt * (s.power ? 0.08 : s.charged ? 0.45 : 1);
+    s.life -= dt; s.vy += TUNE.STONE_GRAVITY * dt * (s.grav ?? (s.power ? 0.08 : s.charged ? 0.45 : 1));   // (s.grav: Player 2's arrows and javelins)
     s.x += s.vx * dt; s.y += s.vy * dt;
     if (s.power) { s.trail.push([s.x, s.y]); if (s.trail.length > 10) s.trail.shift(); }
     if (isSolid(Math.floor(s.x / T), Math.floor(s.y / T))) { s.life = 0; if (!(typeof stoneHitsDeadfall === "function" && stoneHitsDeadfall(s))) stoneHit(s); }
@@ -2976,7 +3006,7 @@ function drawStones(camX) {
     drawStoneItem("stone", s.x - camX, s.y, 17, s);
   }
   for (const s of stones) {
-    if (s.power || s.sword) continue;   // (s.sword: the sword's edge, engedi.js)
+    if (s.power || s.sword || s.p2) continue;   // (s.sword: the sword's edge, engedi.js; s.p2: Player 2's arrows, drawn by player2.js)
     if (s.charged) {
       ctx.save(); ctx.globalCompositeOperation = "lighter";
       ctx.fillStyle = "rgba(255,200,80,0.45)"; ctx.beginPath(); ctx.arc(s.x - camX, s.y, 12, 0, Math.PI * 2); ctx.fill(); ctx.restore();
@@ -4859,7 +4889,7 @@ function frame(now) {
   else if (typeof passScene !== "undefined" && passScene.active) { if (!stepsRun.paused) { stepsRun.pause(); runVol = 0; } updatePassScene(real); }   // world3.js: back in town, before Samuel (no footsteps under it)
   else if (typeof w7Hold === "function" && w7Hold(real)) { hushLoops(true); }   // 7-3: looking at a stone (world7.js)
   else if (dialogHeld()) { hushLoops(true); if (pressed("a") || pressed("b")) { dialog.hold = false; dialog.t = Math.min(dialog.t, 0.25); } }   // someone's talking: the stage waits until A (or B), so every line can be read
-  else if (!setup.active) { if (david.deadT <= 0) updateDavid(dt); updateLamb(dt); updateStones(dt); updateWorld(dt); }
+  else if (!setup.active) { if (david.deadT <= 0) updateDavid(dt); updateLamb(dt); if (typeof updateP2 === "function") updateP2(dt); updateStones(dt); updateWorld(dt); }   // updateP2: Part Two's Player 2 (player2.js)
   const [camLo, camHi] = camLimits();   // the stage, or the cave David is in (world1.js)
   const targetCam = Math.max(camLo, Math.min(camHi, david.x - W * 0.4 + david.facing * 80));
   camX += (targetCam - camX) * Math.min(1, real * 6);
@@ -4894,14 +4924,15 @@ function frame(now) {
   drawTakenLamb(camX);
   drawSheep(camX);
   drawFlock(camX);
-  drawLamb(camX); if (typeof drawBoy === "function") { drawClaws(camX); drawBoy(camX); drawIbexes(camX); drawBear(camX); }   // world2.js
+  drawLamb(camX); if (typeof drawP2 === "function") drawP2(camX);   // Part Two's Player 2 (player2.js)
+  if (typeof drawBoy === "function") { drawClaws(camX); drawBoy(camX); drawIbexes(camX); drawBear(camX); }   // world2.js
   if (typeof drawWorld9 === "function") drawWorld9(camX);   // engedi.js: Saul's men, the hiding rocks, Saul in the cave
   if (typeof drawLeap === "function") drawLeap(camX);       // leap.js: the hidden bridge
   if (inCutscene() || !(david.inv > 0 && Math.floor(now / 70) % 2)) drawDavid(camX);
   if (oilingSheep()) drawSheepOne(david.helpSheep, camX, true);   // the sheep he's oiling stands in front of him, kneeling
   drawFoldFront(camX);
   if (typeof drawStreamFront === "function") drawStreamFront(camX);   // world6.js
-  drawStones(camX); if (typeof drawFlood === "function") { drawPools(camX); drawFalls(camX); drawFlood(camX); drawEagles(camX); drawWind(); }   // world2.js
+  drawStones(camX); if (typeof drawP2Shots === "function") drawP2Shots(camX); if (typeof drawFlood === "function") { drawPools(camX); drawFalls(camX); drawFlood(camX); drawEagles(camX); drawWind(); }   // world2.js
   drawDecor(camX, "front");
   if (typeof drawWorld9Front === "function") drawWorld9Front(camX);   // engedi.js: Saul's men, in front of the hiding rocks
   drawFakeRock(camX);
@@ -4915,6 +4946,7 @@ function frame(now) {
   drawCaveDarkness(camX);
   if (typeof drawWorld9Over === "function") drawWorld9Over(camX);   // engedi.js: over the dark (the end card)
   if (typeof drawLeapOver === "function") drawLeapOver(camX);       // leap.js: the fade after a fall, the end card
+  if (typeof drawP2Over === "function") drawP2Over();               // player2.js: 9-3's end card
   drawFinalBlow();
   if (david.deadT > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(0.8, 1.2 - david.deadT)})`; ctx.fillRect(0, 0, W, H); }
   if (debug) {

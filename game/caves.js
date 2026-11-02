@@ -250,7 +250,8 @@ function drawCaveDarkness(camX) {
     hole(lx, ly, R);
     hole(cave.room.exitX - camX, GR * T - 70, 200);
     if (cave.room.backX) hole(cave.room.backX - camX, GR * T - 70, 170);   // the crack of daylight at the back
-    if (typeof caveLights === "function") for (const [x, y, r] of caveLights()) hole(x - camX, y, r);   // a stage's own (engedi.js: Saul)
+    if (typeof caveLights === "function") for (const [x, y, r] of caveLights()) hole(x - camX, y, r);
+    if (typeof p2CaveLights === "function") for (const [x, y, r] of p2CaveLights()) hole(x - camX, y, r);   // the armor-bearer's lamp (player2.js)   // a stage's own (engedi.js: Saul)
     ctx.drawImage(darkCanvas, 0, 0);
     // the lamp's warm light
     ctx.save(); ctx.globalCompositeOperation = "lighter";

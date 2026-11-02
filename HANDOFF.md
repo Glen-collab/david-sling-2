@@ -36,6 +36,22 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   (`leap_end.mp4`, Glen's 2026-11-02 clip with the young David; the first one had a bearded David and is kept in
   `david-sling-2-art\unused\leap_end_bearded_david.mp4`) shows the whole bridge, then the end card (Psalm 18:36). `?nofilm` skips the opening film.
   Words are draft: 2 Corinthians 5:7 at the edge, Psalm 18:36 on the card (both checked on ebible.org 2026-10-29).
+- **Player 2** (2026-11-02, `game/player2.js`; Part Two stages only, WORLD 9): a second controller joins with any button
+  (or the number pad: 8 4 5 6 move, 0 = A, . = B, 3 = X, + = Select; or key P hands the one controller to Player 2 and
+  the keyboard plays David). Select changes who: `P2_ROSTER` per stage (or `STAGE_INFO.p2`). Never costs David a heart:
+  a fall, a cave door or getting far behind brings him back beside David; animals knock him back.
+  - armor-bearer (0.7 size): crawls (Down) under rock one tile high, gathers olives (B bends down and reaches), lamp
+    lights caves (`p2CaveLights`, caves.js)
+  - Jonathan (1.08): B = arrow (Glen's `jonathan_arrow` item), Up + B = high shot, X or Down + B = sword
+  - Abishai: B = spear thrust; Down = sneak. Benaiah: B = staff swing, Up + B or X = smash (counts as a charged stone:
+    breaks deadfalls), walks boulders along (`setPiece("pushrock", c, r, { w, h })`, they drop into pits)
+  - Asahel: sprints after holding a run, long running jump, javelin (B; on the run it's the running throw), slide
+    (Down at a run), skids when he lets go at a sprint
+  - Attacks are stones (`s.p2`; melee = `s.sword`), so anything a sling stone hits works. Thrown straight ahead with a
+    snake or scorpion on the ground in front, it flies low. In En-Gedi, Saul's men see Player 2 too (hidden the same way).
+- **9-3 The Training Ground** (`Play Training Ground (2 players).bat`; Glen's fortress set): a station for each Player 2
+  (the tunnel, the boulder under the high ledge, the dead branches over the nook, the animals, the gap, the hung gourds),
+  toasts at each (only with a Player 2), end card. A test bed to grow; the real worlds come when they're designed.
 - Saul (2026-10-30, Glen's clips, sheets in the art folder with `_green` copies for Photoshop): `saul_walk`, `saul_sit`,
   `saul_stand` (the sit backwards, built by install_david2.py), `saul_look_back`, `saul_weep`, `saul_throw` (the harp
   scene, 18:11; not used yet), `saul_sleep` (spear in the ground, water jug: 1 Samuel 26; not used yet), `saul_spear` (Glen's spear on its own, an item in `assets/items`, for the harp-room throw and the sleeping camp; not used yet), and

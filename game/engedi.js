@@ -21,7 +21,7 @@ const W9 = {
   TURN_T: 0.8,                   // then he turns around (the first half of Glen's turn clip)
   SIGHT: 7 * 36,                 // how far a soldier sees a standing David, px
   SIGHT_LOW: 2.2 * 36,           // ...and a crouching one
-  HIDE_NEAR: 2.0 * 36,           // crouched this close to a rock's middle (behind it): hidden (the boulders are ~3.7 tiles wide)
+  HIDE_NEAR: 2.3 * 36,           // crouched this close to a rock's middle (behind it, or tucked against its edge): hidden (the boulders are ~3.7 tiles wide)
   SEEN_T: 0.55,                  // the "!" before he calls out
   CAUGHT_FADE: 1.1,
   SAUL_HEAR: 7 * 36,             // in the cave: walking upright this close to Saul, he stirs
@@ -98,7 +98,7 @@ function updatePatrols(dt) {
       w9.toldSoldier = true;
       toast("One of Saul's men! Crouch behind a rock (hold Down) while he looks your way. Go when his back is turned.");
     }
-    if (sees(p)) { p.seen += dt; if (p.seen > W9.SEEN_T) caught(p); } else p.seen = Math.max(0, p.seen - dt * 2);
+    if (sees(p) || (typeof p2SeenBy === "function" && p2SeenBy(p))) { p.seen += dt; if (p.seen > W9.SEEN_T) caught(p); } else p.seen = Math.max(0, p.seen - dt * 2);
   }
 }
 function caught(p) {

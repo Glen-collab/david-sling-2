@@ -131,7 +131,7 @@ function drawCampfirePeople(camX) {
       const talking = dialog.t > 0 && dialog.who === f.who;
       drawSprite("girl_sit_talk", talking ? frameOf("girl_sit_talk", now) : 0, x, f.y, 1);
     }
-    if (f.who === "Abishai" && SPR.abishai_idle) {   // Part Two, En-Gedi: standing by the fire with his spear, facing David
+    if (f.who === "Abishai" && SPR.abishai_idle && !(typeof p2 !== "undefined" && p2.on && p2.who === "abishai")) {   // (not while Player 2 is Abishai)   // Part Two, En-Gedi: standing by the fire with his spear, facing David
       const nm = dialog.t > 0 && dialog.who === f.who && SPR.abishai_talk ? "abishai_talk" : "abishai_idle";
       drawSprite(nm, frameOf(nm, now), x, f.y, Math.sign(david.x - (f.x - 62)) || 1);
     }
