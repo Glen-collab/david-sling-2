@@ -60,6 +60,19 @@ One second player at a time. Who it is depends on where you are:
 | Benjamin slingers | sling with either hand | 1 Chronicles 12:2 *(check)* | maybe later |
 | Abigail | co-op on the gift run in World 6 | 1 Samuel 25 | that stretch only |
 
+## The drills (Glen 2026-11-02)
+Where the story is a rush, or something has to be done right, the moment is **played as a drill** (game/drill.js): a row of arrows (later A and B) pressed in order against a clock, the scene moving with each right press. With two players, Player 2 does the drill while David waits (or both race the clock); alone, Player 1 does. A miss repeats the round; nothing is lost. **Not the majority of the game:** about one or two per world, only at moments the Bible makes urgent. The rest is running, jumping and exploring.
+
+Planned drill moments (draft, one or two per world):
+- **World 1:** the harp room: the strings in rhythm to calm Saul (18:10), then the dodge when the spear comes (18:11).
+- **World 2:** Michal lets David down by the rope, and the figure in the bed (19:11-13; built as test stage 9-4). The arrow field: Jonathan's signal (20:35-38).
+- **World 3:** Gath: scribbling on the gate doors while Achish's servants watch (21:13).
+- **World 4:** Keilah: the escape before the town hands David over (23:12-13).
+- **World 5:** the robe corner cut in the dark, steady hands (24:4), if the creep-up wants more.
+- **World 6:** Abigail loading the donkeys in a hurry (25:18).
+- **World 7:** taking the spear and the water jar from beside the sleeping Saul (26:12). Ziklag: the pursuit (30:8-10).
+- **World 8:** the water shaft climb into Jerusalem (2 Samuel 5:8); waiting for the sound in the mulberry trees (5:24).
+
 ## The eight worlds (macro)
 1. **The Palace (Gibeah), 1 Samuel 18.** Jonathan's covenant and gifts; the women's song; Saul's jealousy. Fighting stages leading Saul's army against Philistine raids; cellars and cisterns under the palace. Get the sword and robe. First Step of Faith (bow down). *Boss:* the harp room: a rhythm game calming Saul, then dodge the spear twice (18:11). Psalm 57:4.
 2. **The Window, 1 Samuel 19-20.** Michal lets David down by rope; the figure in the bed. Night rooftop stealth (Saul's men: no sword). Hidden area: Naioth in Ramah, where Samuel waits and Saul's men end up prophesying (19:20-24). Get rope climb and crouch-walk. *Boss moment:* the arrow field (Player 2 Jonathan shoots, Player 1 reads), then the goodbye (20:41-42). Psalm 57:1.
