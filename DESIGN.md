@@ -55,7 +55,7 @@ One second player at a time. Who it is depends on where you are:
 | Jonathan | bow, sword | 1 Samuel 18-20; 23:16-18 | yes |
 | Armor-bearer | small, quick, carries the lamp, fits tiny tunnels | (game character) | yes |
 | Abishai | spear; joins for the sleeping camp | 1 Samuel 26 | yes |
-| Asahel | fastest runner, long jumps | 2 Samuel 2:18 *(check)* | yes |
+| Asahel | fastest runner, long jumps | 2 Samuel 2:18 ("as light of foot as a wild gazelle"; Abishai's brother) | yes |
 | Benaiah | strongest: pushes boulders, breaks things | 2 Samuel 23:20-21 | yes |
 | Benjamin slingers | sling with either hand | 1 Chronicles 12:2 *(check)* | maybe later |
 | Abigail | co-op on the gift run in World 6 | 1 Samuel 25 | that stretch only |
