@@ -117,6 +117,7 @@ Object.assign(TUNE.SPRITE_SIZE, { eliab_walk: 1.08, eliab_arms_crossed: 1.08, el
 Object.assign(TUNE.SPRITE_SIZE, { shammah_walk: 1.1, shammah_talk: 1.1, shammah_idle: 1.1 });   // the third son: a grown man too
 Object.assign(TUNE.SPRITE_SIZE, { abinadab_walk: 1.1, abinadab_idle: 1.1, abinadab_point: 1.1 });   // the second son
 Object.assign(TUNE.SPRITE_SIZE, { abishai_idle: 1.2, abishai_talk: 1.2, abishai_walk: 1.2, abishai_thrust: 1.2, abishai_kneel_point: 1.2, abishai_sneak: 1.2 });   // Part Two: David's nephew, a grown man (his clips cut a little shorter than David's)
+Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "run", "smash", "swing", "lift", "hit", "push_start", "push"].map(n => ["benaiah_" + n, 1.3])));   // Part Two: Benaiah, the strongest of the mighty men, half a head taller than David
 function drawCampfirePeople(camX) {
   const now = performance.now() / 1000;
   for (const f of fires) {

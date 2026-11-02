@@ -56,7 +56,7 @@ One second player at a time. Who it is depends on where you are:
 | Armor-bearer | small, quick, carries the lamp, fits tiny tunnels | (game character) | yes |
 | Abishai | spear; joins for the sleeping camp | 1 Samuel 26 | yes |
 | Asahel | fastest runner, long jumps | 2 Samuel 2:18 *(check)* | yes |
-| Benaiah | strongest: pushes boulders, breaks things | 2 Samuel 23:20 *(check)* | yes |
+| Benaiah | strongest: pushes boulders, breaks things | 2 Samuel 23:20-21 | yes |
 | Benjamin slingers | sling with either hand | 1 Chronicles 12:2 *(check)* | maybe later |
 | Abigail | co-op on the gift run in World 6 | 1 Samuel 25 | that stretch only |
 

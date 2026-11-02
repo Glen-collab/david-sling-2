@@ -48,6 +48,12 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 - The armor-bearer (2026-11-01, Glen's clips; installed, not in the game yet: Player 2 isn't built): `armorbearer_idle`,
   `_walk`, `_run`, `_jump`, `_lamp_up`, `_pickup`, `_crawl` (the tiny tunnels), `_hit`, `_talk`. Cut with `--ref 1:20`
   (his standing frames) so the raised lamp doesn't shrink him. Jump, lamp-up and pick-up play at the clips' slow pace.
+- Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
+  `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
+  turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
+  frames, sheet padded 80 for Glen to paint), `_swing` (clip6; he turns his back then faces us, not a clean side swing),
+  `_lift` (clip7, staff dropped on the ground), `_hit` (clip8, 1-76), `_push_start` (clip9, 1-40) and `_push` (clip9 from
+  40, a loop at 150 ms). The one-shot moves still play at the clips' slow pace; speed them up when he goes in.
 - Jonathan (2026-11-01, Glen's two long clips, several moves each; installed, not in the game yet): `jonathan_idle`,
   `_talk`, `_walk` (from `jonathan_idle_talk_walk.mp4`), `_run`, `_jump`, `_shoot`, `_shoot2` (from
   `jonathan_run_jump_shoot.mp4`: run 14-110, jump 112-144, shoot 148-250, shoot2 284-350, turned a little toward us).
