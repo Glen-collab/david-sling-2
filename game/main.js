@@ -2411,6 +2411,7 @@ function updateDavid(dt) {
     if (lowPose) target = dir * TUNE.CRAWL_SPEED;
     if (d.carrying) target *= 0.8;
     if (ARMORED()) target = dir * TUNE.WALK_SPEED * armorSpeed();   // clank, clank: no running in a coat of armor
+    if (typeof leapCareful === "function" && leapCareful(d)) target = dir * TUNE.WALK_SPEED * LEAP.CAREFUL;   // leap.js: slow, careful steps at the edge
     const mud = d.onGround && typeof onMud === "function" && onMud(d.x, d.y) ? TUNE.MUD_GRIP : 1;   // 3-4's mud slicks (world3.js)
     const acc = (d.onGround ? (dir !== 0 ? TUNE.ACCEL_GROUND : TUNE.FRICTION) : TUNE.ACCEL_AIR) * mud;
     if (d.vx < target) d.vx = Math.min(target, d.vx + acc * dt);

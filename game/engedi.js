@@ -21,7 +21,7 @@ const W9 = {
   TURN_T: 0.8,                   // then he turns around (the first half of Glen's turn clip)
   SIGHT: 7 * 36,                 // how far a soldier sees a standing David, px
   SIGHT_LOW: 2.2 * 36,           // ...and a crouching one
-  HIDE_NEAR: 2.4 * 36,           // crouched this close to a rock (the soldier on its far side): hidden (the boulders are ~4 tiles wide)
+  HIDE_NEAR: 2.0 * 36,           // crouched this close to a rock's middle (behind it): hidden (the boulders are ~3.7 tiles wide)
   SEEN_T: 0.55,                  // the "!" before he calls out
   CAUGHT_FADE: 1.1,
   SAUL_HEAR: 7 * 36,             // in the cave: walking upright this close to Saul, he stirs
@@ -76,7 +76,9 @@ const patrols = setPieces.filter(p => p.kind === "patrol").map(p => ({
 function davidHidden(p) {   // crouched right behind a rock that stands between him and the soldier
   const d = david;
   if (d.h !== LOW_H) return false;
-  return hides.some(hx => Math.abs(hx - d.x) < W9.HIDE_NEAR && Math.sign(hx - d.x) === Math.sign(p.x - d.x));
+  // (Glen 2026-11-02) the men walk the near path, in front of the rocks: crouched anywhere behind a rock is hidden, whichever
+  // side the soldier is on (before, it had to be between them, and he saw you as soon as he walked past it)
+  return hides.some(hx => Math.abs(hx - d.x) < W9.HIDE_NEAR);
 }
 function sees(p) {
   const d = david, dx = d.x - p.x;

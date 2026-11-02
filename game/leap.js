@@ -14,6 +14,12 @@ const LEAP = {
   GLOW_T: 1.6,           // ...and glows this long (the film's golden edge)
   FALL_FADE: 0.9,        // the black after a fall, seconds
   END_AT: 5,             // the sand-toss film plays this many tiles past the bridge
+  // (Glen 2026-11-02: more suspense) no running near the chasm: careful steps from this many tiles before the edge to the
+  // far side, at this part of his walking speed; and a stone shows only once his middle is this far out over the drop,
+  // half of him over nothing, as if he's about to walk off
+  CAREFUL_FROM: 4,
+  CAREFUL: 0.55,
+  REVEAL_IN: 6,
 };
 const leap = { on: false, c0: 0, c1: -1, found: {}, stand: null, fade: 0, falls: 0, ended: false, card: null, first: true };
 
@@ -43,8 +49,8 @@ function updateLeap(dt) {
   if (!d.onGround || d.deadT > 0) return;
   if (d.y > GR * T + 10) { leapFall(); return; }   // somehow down on the low ledge: there's no way on from there
   leap.stand = { x: d.x, y: d.y };
-  // walking: the stone just ahead of his front foot shows itself (only next to ground he could already stand on)
-  const c = Math.floor((d.x + d.facing * (BODY_W / 2 + 6)) / T);
+  // walking: a stone shows itself only once his middle is out over it (only next to ground he could already stand on)
+  const c = Math.floor((d.x - d.facing * LEAP.REVEAL_IN) / T);
   if (c >= leap.c0 && c <= leap.c1 && leap.found[c] === undefined && leapGround(c - d.facing)) findStone(c);
   // across: Glen's sand toss shows the whole bridge
   if (!leap.ended && d.x > (leap.c1 + LEAP.END_AT) * T) {
@@ -54,6 +60,11 @@ function updateLeap(dt) {
       leap.card = { t: 0 };
     });
   }
+}
+
+// careful steps by the chasm (main.js caps his speed with this): walking, never running
+function leapCareful(d) {
+  return leap.on && !leap.card && d.x > (leap.c0 - LEAP.CAREFUL_FROM) * T && d.x < (leap.c1 + 1) * T + BODY_W;
 }
 
 // the pit (main.js pitFall): no heart lost here, back to where he last stood
