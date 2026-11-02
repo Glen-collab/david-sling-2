@@ -3840,6 +3840,54 @@ window.SPRITE_DATA = {
   "ay": 326,
   "align": "feet"
  },
+ "michal_idle": {
+  "src": "../assets/sprites/michal_idle.png",
+  "frames": 12,
+  "w": 129,
+  "h": 276,
+  "ms": 83,
+  "loop": true,
+  "pingpong": false,
+  "ax": 66,
+  "ay": 274,
+  "align": "feet"
+ },
+ "michal_jump": {
+  "src": "../assets/sprites/michal_jump.png",
+  "frames": 10,
+  "w": 185,
+  "h": 283,
+  "ms": 90,
+  "loop": false,
+  "pingpong": false,
+  "ax": 93,
+  "ay": 280,
+  "align": "feet"
+ },
+ "michal_run": {
+  "src": "../assets/sprites/michal_run.png",
+  "frames": 12,
+  "w": 302,
+  "h": 277,
+  "ms": 128,
+  "loop": true,
+  "pingpong": false,
+  "ax": 181,
+  "ay": 275,
+  "align": "feet"
+ },
+ "michal_walk": {
+  "src": "../assets/sprites/michal_walk.png",
+  "frames": 12,
+  "w": 214,
+  "h": 275,
+  "ms": 184,
+  "loop": true,
+  "pingpong": false,
+  "ax": 105,
+  "ay": 273,
+  "align": "feet"
+ },
  "mud_settle": {
   "src": "../assets/sprites/mud_settle.webp",
   "frames": 15,

@@ -77,6 +77,10 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   `_throw2` (`asahel_throw_b.mp4`, 24-168: a standing wind-up throw; Glen painted the javelins back on his back after the
   throw 2026-11-02; 110 ms), `_skid` (`asahel_skid.mp4`, 78-124, 70 ms: last running stride, skids
   leaning back, comes upright into his idle; after 124 the clip turns him to face us).
+- Michal (2026-11-02, Glen's clips `michal_clip1-3.mp4`, `michal_stand.jpg`; installed, not in the game yet; drawn at
+  0.95): `michal_walk` (clip1), `michal_idle` (clip2, 1-38), `michal_run` (clip2, from 70), `michal_jump` (built by
+  hand: clip3's feet are cut off whenever she's on the ground, so the air frames 60-74 scaled to her standing height,
+  with Glen's standing picture for the takeoff and the landing).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
