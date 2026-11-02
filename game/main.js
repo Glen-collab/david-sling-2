@@ -4803,6 +4803,11 @@ function frame(now) {
   if (loaded < total || typeof WorldMap === "undefined" || typeof Journal === "undefined" || typeof updateCritters === "undefined" || typeof camLimits === "undefined" || typeof Courtyard === "undefined" || typeof Menu === "undefined") {
     ctx.fillStyle = "#111"; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#fff"; ctx.font = "24px sans-serif"; ctx.fillText(`Loading sprites ${loaded} / ${total}`, 40, 60);
+    loadWatch.scriptT = (loadWatch.scriptT || 0) + real;   // the pictures are in but a script never came: say so, and Enter reloads
+    if (loaded >= total && loadWatch.scriptT > 12) {
+      ctx.fillStyle = "#ffd76a"; ctx.fillText("Part of the game didn't load. Press Enter (or Start) to try again.", 40, 110);
+      if (keys.Enter || keys.Escape || (readPad() && readPad().buttons.some(b => b.pressed))) location.reload();
+    }
     requestAnimationFrame(frame); return;
   }
   if (Menu.active || Journal.active || WorldMap.active || Courtyard.active) {   // the menu, the Journal, a map or the home base covers the screen

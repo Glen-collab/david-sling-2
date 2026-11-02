@@ -73,7 +73,31 @@ Planned drill moments (draft, one or two per world):
 - **World 7:** taking the spear and the water jar from beside the sleeping Saul (26:12). Ziklag: the pursuit (30:8-10).
 - **World 8:** the water shaft climb into Jerusalem (2 Samuel 5:8); waiting for the sound in the mulberry trees (5:24).
 
-## The eight worlds (macro)
+## The pivotal-moment challenges (Glen 2026-11-02: "change it up")
+Not only D-pad drills: each big story moment gets its own kind of thinking. All of these are the plan; we build and try
+them world by world and keep what's fun. Kept short and few: the game is still mostly running and playing.
+Already in the game to build on: Part One's harp rhythm game (harp_songs.js), the carved code walls, the Leap of Faith,
+the D-pad drills (drill.js).
+
+| World | Moment | Challenge | The strategy |
+|---|---|---|---|
+| 1 | The harp room (18:10-11) | Rhythm, then dodge: play to calm Saul; when his eyes change, stop and duck the spear | Watch Saul, not only the notes |
+| 2 | Michal lets David down (19:11-13) | D-pad drills: the rope, the figure in the bed (built: 9-4) | Speed under pressure |
+| 2 | Michal stalls Saul's men (19:14-17) | Bluff: the men search the room; send them anywhere but the bed before time runs out | Misdirection |
+| 2 | Jonathan's arrow signal (20:20-22) | Secret code: "beyond you" = run, "on this side" = stay. Player 2 shoots, Player 1 reads where it lands and decides | Two players share a secret |
+| 3 | Nob, the holy bread (21:4-6) | Temple trial: tiles of the twelve tribes, stepped in the order a Journal clue gives | Read the clue |
+| 3 | Gath (21:13) | Watched or not: act silly when the guards look, sneak when they don't, scribble on the gates unseen | Read the room |
+| 4 | Adullam's dark cave | Light beams: turn bronze shields to bounce the lamp's light onto a carved wall; a hidden room opens | Angles |
+| 4 | Keilah (23:12-13) | Escape chase: the gate closing, the town coming apart behind; run, roll, slide | Reflexes |
+| 5 | En-Gedi's springs | Water channels: block and open them to lower the pool and find the cave behind the falls | Think ahead |
+| 5 | The robe corner (24:4) | Steady hands (a drill), only if the creep-up needs more | Calm |
+| 6 | Abigail's gifts (25:18) | Balance: load the donkeys evenly or one tips on the trail; then a quick loading drill | Weights, counting |
+| 7 | The sleeping camp (26:7-12) | The heist: noisy ground and sleepers who stir; take the spear and the jar and get out; Player 2 (Abishai) has to be held back from striking | A sneak-in-and-out mission |
+| 7 | Ziklag, the Egyptian servant (30:11-16) | Tracking: footprints and clues across the desert; the wrong trail loops back | Detective work |
+| 8 | Jerusalem's water shaft (2 Samuel 5:8) | Rising water: climb before it reaches you | A climb against the clock |
+| 8 | The mulberry trees (2 Samuel 5:23-24) | Wait for the sign: attacking early fails; watch and listen for the treetops, then go | Patience: wait on the LORD |
+
+
 1. **The Palace (Gibeah), 1 Samuel 18.** Jonathan's covenant and gifts; the women's song; Saul's jealousy. Fighting stages leading Saul's army against Philistine raids; cellars and cisterns under the palace. Get the sword and robe. First Step of Faith (bow down). *Boss:* the harp room: a rhythm game calming Saul, then dodge the spear twice (18:11). Psalm 57:4.
 2. **The Window, 1 Samuel 19-20.** Michal lets David down by rope; the figure in the bed. Night rooftop stealth (Saul's men: no sword). Hidden area: Naioth in Ramah, where Samuel waits and Saul's men end up prophesying (19:20-24). Get rope climb and crouch-walk. *Boss moment:* the arrow field (Player 2 Jonathan shoots, Player 1 reads), then the goodbye (20:41-42). Psalm 57:1.
 3. **Nob and Gath, 1 Samuel 21.** Holy bread (five full heals) and Goliath's sword (breaks cracked walls). Gath: act silly when watched, sneak when not; scribbling on the gates. Hidden: Goliath's family house, everything giant-sized. *Boss:* King Achish's court. Psalm 57:2-3.
