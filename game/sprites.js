@@ -338,7 +338,7 @@ window.SPRITE_DATA = {
  },
  "asahel_run_throw": {
   "src": "../assets/sprites/asahel_run_throw.png",
-  "frames": 18,
+  "frames": 16,
   "w": 588,
   "h": 368,
   "ms": 90,
