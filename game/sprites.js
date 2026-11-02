@@ -2808,6 +2808,30 @@ window.SPRITE_DATA = {
   "ay": 306,
   "align": "feet"
  },
+ "jonathan_gifts": {
+  "src": "../assets/sprites/jonathan_gifts.png",
+  "frames": 24,
+  "w": 562,
+  "h": 371,
+  "ms": 418,
+  "loop": false,
+  "pingpong": false,
+  "ax": 292,
+  "ay": 369,
+  "align": "feet"
+ },
+ "jonathan_gives_david": {
+  "src": "../assets/sprites/jonathan_gives_david.png",
+  "frames": 16,
+  "w": 389,
+  "h": 309,
+  "ms": 378,
+  "loop": false,
+  "pingpong": false,
+  "ax": 112,
+  "ay": 306,
+  "align": "feet"
+ },
  "jonathan_idle": {
   "src": "../assets/sprites/jonathan_idle.png",
   "frames": 12,
@@ -2866,6 +2890,78 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 108,
   "ay": 303,
+  "align": "feet"
+ },
+ "jonathan_shoot_high": {
+  "src": "../assets/sprites/jonathan_shoot_high.png",
+  "frames": 16,
+  "w": 440,
+  "h": 355,
+  "ms": 276,
+  "loop": false,
+  "pingpong": false,
+  "ax": 179,
+  "ay": 353,
+  "align": "feet"
+ },
+ "jonathan_shoot_straight": {
+  "src": "../assets/sprites/jonathan_shoot_straight.png",
+  "frames": 16,
+  "w": 515,
+  "h": 365,
+  "ms": 341,
+  "loop": false,
+  "pingpong": false,
+  "ax": 170,
+  "ay": 363,
+  "align": "feet"
+ },
+ "jonathan_stow_bow": {
+  "src": "../assets/sprites/jonathan_stow_bow.png",
+  "frames": 12,
+  "w": 305,
+  "h": 333,
+  "ms": 208,
+  "loop": false,
+  "pingpong": false,
+  "ax": 147,
+  "ay": 331,
+  "align": "feet"
+ },
+ "jonathan_sword_draw": {
+  "src": "../assets/sprites/jonathan_sword_draw.png",
+  "frames": 8,
+  "w": 390,
+  "h": 353,
+  "ms": 182,
+  "loop": false,
+  "pingpong": false,
+  "ax": 232,
+  "ay": 351,
+  "align": "feet"
+ },
+ "jonathan_sword_sheath": {
+  "src": "../assets/sprites/jonathan_sword_sheath.png",
+  "frames": 8,
+  "w": 341,
+  "h": 345,
+  "ms": 188,
+  "loop": false,
+  "pingpong": false,
+  "ax": 169,
+  "ay": 342,
+  "align": "feet"
+ },
+ "jonathan_sword_slash": {
+  "src": "../assets/sprites/jonathan_sword_slash.png",
+  "frames": 12,
+  "w": 538,
+  "h": 353,
+  "ms": 191,
+  "loop": false,
+  "pingpong": false,
+  "ax": 253,
+  "ay": 351,
   "align": "feet"
  },
  "jonathan_talk": {

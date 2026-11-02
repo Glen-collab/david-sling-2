@@ -52,7 +52,10 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   `_talk`, `_walk` (from `jonathan_idle_talk_walk.mp4`), `_run`, `_jump`, `_shoot`, `_shoot2` (from
   `jonathan_run_jump_shoot.mp4`: run 14-110, jump 112-144, shoot 148-250, shoot2 284-350, turned a little toward us).
   Glen painted the jump's head back in and touched up both shots (2026-11-01). Yellow/pink tint on the run's legs
-  is in Grok's video. Still to come: sword, hit, the robe gift.
+  is in Grok's video. 2026-11-02, Glen's 16:9 clips: `jonathan_stow_bow`, `_sword_draw`, `_sword_slash`, `_sword_sheath`
+  (`jonathan_stowbow_sword.mp4`), `_shoot_high` (the arrow signal), `_shoot_straight`, `_gifts` (robe off, offers the
+  sword and bow, 1 Samuel 18:4) and `_gives_david` (two-shot, `--fixed 440`). Cut with 60-120 px of room for painting.
+  Still to come: hit.
   `jonathan_arrow` (Glen's arrow on its own, an item in `assets/items`, tilted up ~14 degrees) is what flies when he shoots.
 - Stand-ins: David's men are `soldier_sit` and
   `guard_big_idle` darkened; Abishai stands at both En-Gedi campfires (idle, talk while his words are up; `drawCampfirePeople` in world2.js, size 1.2). In caves David uses his idle and walk
