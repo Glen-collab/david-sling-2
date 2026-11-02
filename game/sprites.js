@@ -3840,6 +3840,18 @@ window.SPRITE_DATA = {
   "ay": 326,
   "align": "feet"
  },
+ "michal_bed": {
+  "src": "../assets/sprites/michal_bed.png",
+  "frames": 18,
+  "w": 373,
+  "h": 277,
+  "ms": 315,
+  "loop": false,
+  "pingpong": false,
+  "ax": 202,
+  "ay": 275,
+  "align": "feet"
+ },
  "michal_idle": {
   "src": "../assets/sprites/michal_idle.png",
   "frames": 12,
@@ -3864,6 +3876,42 @@ window.SPRITE_DATA = {
   "ay": 280,
   "align": "feet"
  },
+ "michal_point": {
+  "src": "../assets/sprites/michal_point.png",
+  "frames": 16,
+  "w": 235,
+  "h": 277,
+  "ms": 378,
+  "loop": false,
+  "pingpong": false,
+  "ax": 114,
+  "ay": 275,
+  "align": "feet"
+ },
+ "michal_rope": {
+  "src": "../assets/sprites/michal_rope.png",
+  "frames": 16,
+  "w": 169,
+  "h": 299,
+  "ms": 378,
+  "loop": false,
+  "pingpong": false,
+  "ax": 89,
+  "ay": 296,
+  "align": "feet"
+ },
+ "michal_rope_loop": {
+  "src": "../assets/sprites/michal_rope_loop.png",
+  "frames": 12,
+  "w": 148,
+  "h": 298,
+  "ms": 83,
+  "loop": true,
+  "pingpong": false,
+  "ax": 74,
+  "ay": 295,
+  "align": "feet"
+ },
  "michal_run": {
   "src": "../assets/sprites/michal_run.png",
   "frames": 12,
@@ -3874,6 +3922,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 181,
   "ay": 275,
+  "align": "feet"
+ },
+ "michal_talk": {
+  "src": "../assets/sprites/michal_talk.png",
+  "frames": 12,
+  "w": 170,
+  "h": 275,
+  "ms": 205,
+  "loop": true,
+  "pingpong": false,
+  "ax": 92,
+  "ay": 273,
   "align": "feet"
  },
  "michal_walk": {

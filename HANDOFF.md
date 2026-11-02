@@ -81,6 +81,10 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   0.95): `michal_walk` (clip1), `michal_idle` (clip2, 1-38), `michal_run` (clip2, from 70), `michal_jump` (built by
   hand: clip3's feet are cut off whenever she's on the ground, so the air frames 60-74 scaled to her standing height,
   with Glen's standing picture for the takeoff and the landing).
+  Second batch: `michal_rope` (clip4: takes up the rope and starts lowering it), `michal_rope_loop` (clip4 from 60:
+  hand over hand), `michal_talk` (clip5 from 30, a loop), `michal_bed` (clip6 from 10: she lays the household idol in the
+  bed, 1 Samuel 19:13; Grok drew the bed green, so it keyed out: the game draws a bed under it, specks cleaned),
+  `michal_point` (clip7: urging David to go).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
