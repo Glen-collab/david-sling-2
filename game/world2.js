@@ -744,7 +744,11 @@ function drawFalls(camX) {
     if (SPR.waterfall && SPR.waterfall.img.naturalWidth) {
       const x = f.c * T - camX; if (x < -900 || x > W + 400) continue;
       const k = (f.bottom - f.r) * T / (SPR.waterfall.h * SCALE);
-      drawSprite("waterfall", frameOf("waterfall", performance.now() / 1000), x + (f.dx || 0), f.r * T, 1, k);
+      // fromTop (Glen 2026-11-02, En-Gedi): from row r it hung in the air in front of the painted rocks as you walked. Now it pours from above
+      // the top of the screen (stretched taller, not wider), so it always comes off the cliffs up out of sight
+      const sp = SPR.waterfall, top = f.fromTop ? -1.5 * T : f.r * T, sx = SCALE * k, sy = f.fromTop ? (f.bottom * T - top) / sp.h : sx;
+      const fi = frameOf("waterfall", performance.now() / 1000);
+      ctx.drawImage(sp.img, fi * sp.w, 0, sp.w, sp.h, Math.round(x + (f.dx || 0) - sp.ax * sx), top, sp.w * sx, sp.h * sy);
       continue;
     }
     const x0 = f.c * T - camX, w = f.w * T, y0 = f.r * T, y1 = f.bottom * T; if (x0 > W + 50 || x0 + w < -50) continue;

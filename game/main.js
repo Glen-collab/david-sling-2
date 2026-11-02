@@ -116,8 +116,10 @@ const TUNE = {
   SHEEP_CALL_SPEED: 150,  // how fast a called sheep walks over
   // Per-sprite size nudges (1 = normal). Some clips came out a little bigger or smaller than the others.
   SPRITE_SIZE: {
-    david_sling_throw: 1.15,
-    david_sling_throw_up: 1.15,
+    // the older David, matched by head size to his idle (Glen 2026-11-02: the throw drew him nearly a head taller, the harp
+    // bigger still; the 1.15 here was Part One's boy)
+    david_sling_throw: 0.92,
+    david_play_harp: 0.81, david_sit_harp: 0.81,
     david_crawl: 0.92,
     saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1,   // Saul's men: a head taller than David
     saul_walk: 1.15, saul_sit: 1.15, saul_stand: 1.15, saul_look_back: 1.15, saul_weep: 1.15, saul_throw: 1.15, saul_sleep: 1.15,   // Saul: taller than any of them (1 Samuel 9:2)
@@ -1021,7 +1023,7 @@ if (LEVEL_NAME === "test") {
   campfire(90, GR - 1);
   // the spring: stepping stones over the pool, the falls behind
   setPiece("pool", 93, GR, { w: 12 }); stepStone(96); stepStone(100);
-  setPiece("falls", 99, 4, { bottom: GR, dx: 0 });
+  setPiece("falls", 99, 4, { bottom: GR, dx: 0, fromTop: true });   // pours from above the screen: there is no cliff to fall from here
   ground(105, 214);
   // two of Saul's men on the open ground by the sheep pens
   setPiece("hide", 112); setPiece("hide", 124); setPiece("hide", 137); setPiece("hide", 149);
