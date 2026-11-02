@@ -2832,6 +2832,18 @@ window.SPRITE_DATA = {
   "ay": 306,
   "align": "feet"
  },
+ "jonathan_hit": {
+  "src": "../assets/sprites/jonathan_hit.png",
+  "frames": 16,
+  "w": 327,
+  "h": 293,
+  "ms": 65,
+  "loop": false,
+  "pingpong": false,
+  "ax": 104,
+  "ay": 291,
+  "align": "feet"
+ },
  "jonathan_idle": {
   "src": "../assets/sprites/jonathan_idle.png",
   "frames": 12,
