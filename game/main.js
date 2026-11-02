@@ -4777,6 +4777,21 @@ function drawChargeRing() {
 // ============================================================================
 // Main loop
 // ============================================================================
+// (Glen 2026-11-02: the loading stopped 1 or 2 short.) With ~900 pictures asked of the little local server at once, a
+// request now and then never answers (no load, no error), and the count waits forever. When the count hasn't moved for
+// 3 seconds, ask again for every picture still missing; if it still hasn't moved 5 seconds after that, start anyway
+// (a missing picture just isn't drawn).
+const loadWatch = { last: -1, still: 0, retried: false };
+function loadStalled(real) {
+  if (loaded !== loadWatch.last) { loadWatch.last = loaded; loadWatch.still = 0; return false; }
+  loadWatch.still += real;
+  if (loadWatch.still > 3 && !loadWatch.retried) {
+    loadWatch.retried = true;
+    const imgs = [...Object.values(SPR).map(s => s.img), ...Object.values(ITEM), ...Object.values(TER), ...Object.values(HUD), ...Object.values(BG).flatMap(b => Object.values(b))];
+    for (const im of imgs) if (im && !im.complete && im.src) { const u = im.src; im.src = ""; im.src = u + (u.includes("?") ? "&" : "?") + "retry=1"; }
+  }
+  return loadWatch.still > 8;
+}
 let camX = 0, last = performance.now();
 function frame(now) {
   const real = Math.max(0, Math.min(1 / 30, (now - last) / 1000)); last = Math.max(last, now);   // never let time run backwards
@@ -4784,6 +4799,7 @@ function frame(now) {
   if (toastTime > 0) toastTime -= real;
   if (helpT > 0 && helpT < 9000) helpT -= dt;
   // (also wait for the other scripts: world1.js, the Journal and the map load after this one)
+  if (loaded < total && loadStalled(real)) loaded = total;   // a picture or two that never answered: go on without them
   if (loaded < total || typeof WorldMap === "undefined" || typeof Journal === "undefined" || typeof updateCritters === "undefined" || typeof camLimits === "undefined" || typeof Courtyard === "undefined" || typeof Menu === "undefined") {
     ctx.fillStyle = "#111"; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#fff"; ctx.font = "24px sans-serif"; ctx.fillText(`Loading sprites ${loaded} / ${total}`, 40, 60);
