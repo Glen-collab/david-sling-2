@@ -82,8 +82,9 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   hand: clip3's feet are cut off whenever she's on the ground, so the air frames 60-74 scaled to her standing height,
   with Glen's standing picture for the takeoff and the landing).
   Second batch: `michal_rope` (clip4: takes up the rope and starts lowering it), `michal_rope_loop` (clip4 from 60:
-  hand over hand), `michal_talk` (clip5 from 30, a loop), `michal_bed` (clip6 from 10: she lays the household idol in the
-  bed, 1 Samuel 19:13; Grok drew the bed green, so it keyed out: the game draws a bed under it, specks cleaned),
+  hand over hand), `michal_talk` (clip5 from 30, a loop), `michal_bed` (`michal_bed2.mp4`, Glen's re-roll with a brown bed, still camera: she lays the wrapped figure
+  in the bed, the goat-hair pillow, the blanket, then looks round, 1 Samuel 19:13; the green-bed try is
+  `michal_bed_greenbed_unused.mp4`),
   `michal_point` (clip7: urging David to go).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he

@@ -3842,14 +3842,14 @@ window.SPRITE_DATA = {
  },
  "michal_bed": {
   "src": "../assets/sprites/michal_bed.png",
-  "frames": 18,
-  "w": 373,
-  "h": 277,
-  "ms": 315,
+  "frames": 20,
+  "w": 377,
+  "h": 278,
+  "ms": 302,
   "loop": false,
   "pingpong": false,
-  "ax": 202,
-  "ay": 275,
+  "ax": 86,
+  "ay": 276,
   "align": "feet"
  },
  "michal_idle": {
