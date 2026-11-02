@@ -71,6 +71,7 @@ const P2_ROSTER = {
   "9-1": ["armorbearer", "abishai", "benaiah", "asahel"],                 // En-Gedi: Saul's men are about, so no Jonathan
   "9-2": ["armorbearer", "jonathan", "abishai", "benaiah", "asahel"],
   "9-3": ["armorbearer", "jonathan", "abishai", "benaiah", "asahel"],
+  "9-4": ["jonathan", "armorbearer"],
 };
 const p2Roster = () => STAGE_INFO.p2 || P2_ROSTER[LEVEL_NAME] || ["armorbearer"];
 
@@ -130,7 +131,7 @@ function updateP2(dt) {
   updateP2Stage(dt);
   if (!p2.on) { if (["left", "right", "up", "down", "a", "b", "x"].some(pressed2)) p2Join(); return; }
   if (pressed2("select")) p2Switch();
-  if (david.deadT > 0 || inCutscene()) { p2.vx = 0; return; }
+  if (david.deadT > 0 || inCutscene() || (typeof drill !== "undefined" && drill.on)) { p2.vx = 0; return; }   // (a drill: Player 2's hands are busy)
   const C = P2C(); p2.t += dt;
   p2.inv = Math.max(0, p2.inv - dt);
   // too far from David (left behind, run off ahead, or he went into a cave): back beside him

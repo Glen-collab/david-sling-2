@@ -52,6 +52,15 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 - **9-3 The Training Ground** (`Play Training Ground (2 players).bat`; Glen's fortress set): a station for each Player 2
   (the tunnel, the boulder under the high ledge, the dead branches over the nook, the animals, the gap, the hung gourds),
   toasts at each (only with a Player 2), end card. A test bed to grow; the real worlds come when they're designed.
+- **The D-pad drills** (2026-11-02, Glen's idea, `game/drill.js`): story moments are played, not watched. A row of
+  arrows (later rounds can add A and B) to press in order before the clock runs out; each round moves the scene on; a
+  wrong press or running out of time repeats that round (nothing lost). With a Player 2 on, Player 2 plays the drill
+  (David waits); alone, Player 1 does. `startDrill({ title, rounds: [4, 5, 6], perKey: 0.95, buttons, onDone })`;
+  `drill.progress` (0-1) drives the scene's animation.
+- **9-4 The Window** (`Play The Window (drills).bat`; Glen's palace-at-night set): 1 Samuel 19:11-13 (WEB, checked on
+  ebible.org 2026-11-02). Michal warns David (19:11), the rope drill (her rope loop plays, the rope lowers out the
+  window), 19:12, then the bed drill (Glen's `michal_bed` plays frame by frame with the presses), 19:13, end card.
+  The window is drawn by the game for now. Words are draft.
 - Saul (2026-10-30, Glen's clips, sheets in the art folder with `_green` copies for Photoshop): `saul_walk`, `saul_sit`,
   `saul_stand` (the sit backwards, built by install_david2.py), `saul_look_back`, `saul_weep`, `saul_throw` (the harp
   scene, 18:11; not used yet), `saul_sleep` (spear in the ground, water jug: 1 Samuel 26; not used yet), `saul_spear` (Glen's spear on its own, an item in `assets/items`, for the harp-room throw and the sleeping camp; not used yet), and

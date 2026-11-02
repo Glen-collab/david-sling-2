@@ -407,6 +407,7 @@ const STAGE_INFO = {
   test:  { cols: 150, bg: "w1" },
   "9-1": { cols: 214, bg: "w2_3", ter: "w2s", name: "The Rocks of the Wild Goats" },   // Part Two test: En-Gedi (engedi.js)
   "9-2": { cols: 92, bg: "w2_3", ter: "w2s", name: "The Leap of Faith" },             // Part Two test: the hidden bridge (leap.js)
+  "9-4": { cols: 60, bg: "w4_4", ter: "w4p", name: "The Window" },                      // Part Two test: the D-pad drills (drill.js); Glen's palace at night
   "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
   "1-2": { cols: 228, bg: "w1_2", name: "The Wandering Flock" },
@@ -1080,6 +1081,13 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
+} else if (LEVEL_NAME === "9-4") {
+  // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets
+  //      him down by a rope (a drill), then lays the figure in the bed (a drill). With two players, Player 2 plays the
+  //      drills; alone, Player 1 does. ----
+  ground(0, 59);
+  talk(2, "", "Saul sent messengers to David’s house to watch him and to kill him in the morning. (1 Samuel 19:11)");
+  setPiece("michal", 18); setPiece("window94", 21); setPiece("bed94", 44);
 } else if (LEVEL_NAME === "2-4") {
   // ---- 2-4 The Bear's Ravine, at dusk: wolves hunting in pairs, claw marks, a tree crashing down off in the trees,
   //      Hanan's last campfire, then the Bear at the pen wall ----
@@ -2253,7 +2261,8 @@ function updateDavid(dt) {
   for (const b in aimAgo) aimAgo[b] = held(b) ? 0 : aimAgo[b] + dt;
   if (typeof w9HoldDavid === "function" && w9HoldDavid(d, dt)) return;   // engedi.js: a scene has the controls
   if (typeof leapHoldDavid === "function" && leapHoldDavid(d, dt)) return;   // leap.js: the end card
-  if (typeof p2HoldDavid === "function" && p2HoldDavid(d, dt)) return;   // player2.js: 9-3's end card
+  if (typeof p2HoldDavid === "function" && p2HoldDavid(d, dt)) return;
+  if (typeof drillHold === "function" && drillHold(d, dt)) return;   // drill.js: David waits while a drill is played   // player2.js: 9-3's end card
   if (caveDavid(d, dt)) return;   // walking into or out of a cave (world1.js)
   if (updateCodeEntry(d, dt)) return;   // entering the throw at a carved wall (world1.js)
   if (typeof updateHarpDuel === "function" && updateHarpDuel(d, dt)) return;   // playing the harp for a frightened animal (world2.js)
@@ -4889,7 +4898,7 @@ function frame(now) {
   else if (typeof passScene !== "undefined" && passScene.active) { if (!stepsRun.paused) { stepsRun.pause(); runVol = 0; } updatePassScene(real); }   // world3.js: back in town, before Samuel (no footsteps under it)
   else if (typeof w7Hold === "function" && w7Hold(real)) { hushLoops(true); }   // 7-3: looking at a stone (world7.js)
   else if (dialogHeld()) { hushLoops(true); if (pressed("a") || pressed("b")) { dialog.hold = false; dialog.t = Math.min(dialog.t, 0.25); } }   // someone's talking: the stage waits until A (or B), so every line can be read
-  else if (!setup.active) { if (david.deadT <= 0) updateDavid(dt); updateLamb(dt); if (typeof updateP2 === "function") updateP2(dt); updateStones(dt); updateWorld(dt); }   // updateP2: Part Two's Player 2 (player2.js)
+  else if (!setup.active) { if (david.deadT <= 0) updateDavid(dt); updateLamb(dt); if (typeof updateP2 === "function") updateP2(dt); if (typeof updateDrill === "function") { updateDrill(dt); updateW94(dt); } updateStones(dt); updateWorld(dt); }   // updateP2: Part Two's Player 2 (player2.js)
   const [camLo, camHi] = camLimits();   // the stage, or the cave David is in (world1.js)
   const targetCam = Math.max(camLo, Math.min(camHi, david.x - W * 0.4 + david.facing * 80));
   camX += (targetCam - camX) * Math.min(1, real * 6);
@@ -4924,6 +4933,7 @@ function frame(now) {
   drawTakenLamb(camX);
   drawSheep(camX);
   drawFlock(camX);
+  if (typeof drawW94 === "function") drawW94(camX);   // drill.js: 9-4's window, rope, Michal and the bed
   drawLamb(camX); if (typeof drawP2 === "function") drawP2(camX);   // Part Two's Player 2 (player2.js)
   if (typeof drawBoy === "function") { drawClaws(camX); drawBoy(camX); drawIbexes(camX); drawBear(camX); }   // world2.js
   if (typeof drawWorld9 === "function") drawWorld9(camX);   // engedi.js: Saul's men, the hiding rocks, Saul in the cave
@@ -4946,7 +4956,8 @@ function frame(now) {
   drawCaveDarkness(camX);
   if (typeof drawWorld9Over === "function") drawWorld9Over(camX);   // engedi.js: over the dark (the end card)
   if (typeof drawLeapOver === "function") drawLeapOver(camX);       // leap.js: the fade after a fall, the end card
-  if (typeof drawP2Over === "function") drawP2Over();               // player2.js: 9-3's end card
+  if (typeof drawP2Over === "function") drawP2Over();
+  if (typeof drawDrill === "function") { drawW94Over(); drawDrill(); }   // drill.js: the drill row, 9-4's fades and end card               // player2.js: 9-3's end card
   drawFinalBlow();
   if (david.deadT > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(0.8, 1.2 - david.deadT)})`; ctx.fillRect(0, 0, W, H); }
   if (debug) {
