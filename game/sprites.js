@@ -351,13 +351,13 @@ window.SPRITE_DATA = {
  "asahel_slide": {
   "src": "../assets/sprites/asahel_slide.png",
   "frames": 6,
-  "w": 480,
-  "h": 329,
+  "w": 422,
+  "h": 298,
   "ms": 80,
   "loop": false,
   "pingpong": false,
-  "ax": 280,
-  "ay": 327,
+  "ax": 202,
+  "ay": 294,
   "align": "feet"
  },
  "asahel_sprint": {
