@@ -542,14 +542,14 @@ window.SPRITE_DATA = {
  },
  "benaiah_swing": {
   "src": "../assets/sprites/benaiah_swing.png",
-  "frames": 18,
-  "w": 604,
-  "h": 348,
-  "ms": 336,
+  "frames": 20,
+  "w": 598,
+  "h": 347,
+  "ms": 302,
   "loop": false,
   "pingpong": false,
-  "ax": 308,
-  "ay": 345,
+  "ax": 324,
+  "ay": 344,
   "align": "feet"
  },
  "benaiah_talk": {

@@ -51,7 +51,8 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
-  frames, sheet padded 80 for Glen to paint), `_swing` (clip6; he turns his back then faces us, not a clean side swing),
+  frames, sheet padded 80 for Glen to paint), `_swing` (`benaiah_swing.mp4`, Glen's harder swing: winds up facing us, whips it round; the first try is kept as
+  `benaiah_swing_turning_unused.mp4`),
   `_lift` (clip7, staff dropped on the ground), `_hit` (clip8, 1-76), `_push_start` (clip9, 1-40) and `_push` (clip9 from
   40, a loop at 150 ms). The one-shot moves still play at the clips' slow pace; speed them up when he goes in.
 - Jonathan (2026-11-01, Glen's two long clips, several moves each; installed, not in the game yet): `jonathan_idle`,
