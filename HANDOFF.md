@@ -55,7 +55,9 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   `_slide` (6 frames from Glen's second clip `asahel_slide2.mp4`, filmed close, so scaled by head size x0.236 to match:
   video 113, 116 dropping, 132, 138 on his side (frame 4 held while he slides), then 132, 116 back up; the clip's running
   frames run off the top and bottom of the video. The first, painted splits version is kept in
-  `david-sling-2-art\unused\asahel_slide_painted_splits_version.png`), `_skid` (`asahel_skid.mp4`, 78-124, 70 ms: last running stride, skids
+  `david-sling-2-art\unused\asahel_slide_painted_splits_version.png`), `_run_throw` (`asahel_throw_a.mp4`, 52-160: runs with the javelin cocked, throws, lunges, stands; 90 ms),
+  `_throw2` (`asahel_throw_b.mp4`, 24-168: a standing wind-up throw; his back is empty after, Glen may paint the javelins
+  back; 110 ms), `_skid` (`asahel_skid.mp4`, 78-124, 70 ms: last running stride, skids
   leaning back, comes upright into his idle; after 124 the clip turns him to face us).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; installed, not in the game yet; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he

@@ -336,6 +336,18 @@ window.SPRITE_DATA = {
   "ay": 293,
   "align": "feet"
  },
+ "asahel_run_throw": {
+  "src": "../assets/sprites/asahel_run_throw.png",
+  "frames": 18,
+  "w": 588,
+  "h": 368,
+  "ms": 90,
+  "loop": false,
+  "pingpong": false,
+  "ax": 343,
+  "ay": 366,
+  "align": "feet"
+ },
  "asahel_skid": {
   "src": "../assets/sprites/asahel_skid.png",
   "frames": 12,
@@ -394,6 +406,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 280,
   "ay": 380,
+  "align": "feet"
+ },
+ "asahel_throw2": {
+  "src": "../assets/sprites/asahel_throw2.png",
+  "frames": 18,
+  "w": 655,
+  "h": 384,
+  "ms": 110,
+  "loop": false,
+  "pingpong": false,
+  "ax": 291,
+  "ay": 382,
   "align": "feet"
  },
  "asahel_walk": {
