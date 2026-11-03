@@ -8,7 +8,7 @@ A Castlevania-style adventure: each world is one big connected place full of cav
 
 ## Decided with Glen (2026-10-26)
 - **Macro first, then micro:** each world is planned as a whole first, then its stages one by one.
-- **Castlevania-style worlds:** one connected map per world. Skills learned later open sealed spots in earlier worlds.
+- **Castlevania-style worlds:** one connected map per world. Skills learned later open sealed spots in earlier worlds. (2026-11-03: full Castlevania, not Part One's stage list. See "The land and its regions".)
 - **David already knows Part One's moves** (double jump, roll). Part Two teaches new skills (table below).
 - **Weapons:** David keeps the sling all game, and adds a sword (World 1) and a shield (World 4). The bow belongs to Jonathan.
 - **No blood.** Beaten enemies burst into dust and vanish.
@@ -16,6 +16,50 @@ A Castlevania-style adventure: each world is one big connected place full of cav
 - **Player 2:** Jonathan in his worlds; the armor-bearer and the mighty men the rest of the time (see below).
 - **The secret ending stays** (Mephibosheth, below).
 - **Own repo:** github.com/Glen-collab/david-sling-2 (public). Art lives in `Desktop\david-sling-2-art`.
+
+## The land and its regions (Glen 2026-11-03: "full Castlevania"; "I like the idea of breaking it up into different regions")
+Like the Castlevania games that travel place to place (Order of Ecclesia, Portrait of Ruin): **each world is a region**,
+one connected map of rooms joined by doors (cave mouths, gates, wells, stairs, roads off the edge of a room), explored
+back and forth like Symphony of the Night. **The regions are joined by a painted travel map of the land** (Benjamin and
+Judah): pick a place you've opened and walk there. Olive presses are the save points and the fast-travel stops.
+
+| World | Region | Like a Castlevania… |
+|---|---|---|
+| 1 | Gibeah: Saul's hilltop fortress, the town, the fields | the castle entrance |
+| 2 | Gibeah by night, Ramah (Naioth), the field of the arrows | the same castle, now hostile |
+| 3 | Nob, then Gath on the coast | the sanctuary, then the enemy keep |
+| 4 | Adullam and Keilah | the catacombs: the biggest map, the hub of the game |
+| 5 | En-Gedi | the high cliffs and the underground waters |
+| 6 | Carmel and Maon | the open pastures |
+| 7 | Ziph, Horesh, Ziklag and the Negev | the far wilderness |
+| 8 | Hebron, then Jerusalem | the final keep |
+
+- **Jerusalem is seen all game and entered last.** It's on the travel map from the start, a Jebusite city behind huge
+  walls; World 8's water shaft (2 Samuel 5:8) is the only way in.
+- **Bethlehem** is on the map too: home, and the well of 2 Samuel 23:15-16.
+- **Roads open with the story or a skill:** the way to Adullam opens when David flees there (22:1); En-Gedi's cliffs
+  need the wall climb; and so on.
+- **Going back changes:** Gibeah is home in World 1; later Saul's men hold it, and you sneak back in with the rope,
+  crouch-walk and silent step to reach what you missed.
+- **Each region needs:** rooms and doors; a map screen of the rooms you've explored, with a mark on every sealed spot
+  you've seen (and the skill it needs, once you have it) and every item you've missed; and saving per room
+  (what's been collected, opened, beaten).
+- **What's worth going back for** (all art in hand): pomegranates (4 = +1 heart for good), oil jars (a bigger, longer
+  lamp), stones of remembrance (12 per region, Power Sling stones that pay off at Rephaim), golden olives (lives),
+  Truths, Jonathan's gifts (18:4 *(check)*: robe +1 heart, sash carries more stones, sword), and mighty men found only
+  by going back (Benaiah's lion in a pit, 2 Samuel 23:20). **A missed upgrade makes you stronger, never stuck.**
+- **Build order:** Gibeah first, as one whole region, doors, map screen and saves working and fun; then outward.
+
+### Gibeah (World 1), draft rooms
+| Area | First visit | Sealed until… | Behind it |
+|---|---|---|---|
+| The fields and the border | Philistine raids, sword fights | wall climb (W5): the watchtower cliff | pomegranate |
+| The town | the women's song (18:6-7) | crouch-walk (W2): under the city wall | Truth |
+| The palace halls | Jonathan's covenant and gifts (18:1-4); Michal | silent step (W7): past the guards' sleeping room | stone of remembrance |
+| The cellars | the olive press (save) and storerooms | Goliath's sword (W3): the cracked storeroom wall | oil jar |
+| The cisterns | a well you can see down but can't reach | rope (W2) down; swim (W5) through the flooded cistern | pomegranate, Truth |
+| The walls | archers on the towers | shield (W4): the arrow-slit walkway | stone of remembrance |
+| The harp room | the boss: calm Saul, dodge the spear twice (18:10-11) | | |
 
 ## Big systems
 **Truths.** Every hidden spot holds a Truth: a short Bible moment, scroll or verse piece that fills in the Journal. All Truths in a world open something extra; all Truths in the game open the secret ending.
@@ -149,7 +193,8 @@ Glen's Photoshop passes are all in (sling spin and throw, run-sling, hit with th
 
 **Done since:** Saul and his soldiers, Abishai, the armor-bearer (2026-10-29 to 11-01); Jonathan, Benaiah, Asahel, Michal (11-02).
 **Reused from Part One:** Philistine soldiers and archers (phil_*), Samuel.
-**Still to make:** Abigail (playable, World 6), Nabal; Ahimelech the priest and King Achish (World 3); raiders and the Egyptian servant (World 7); places for every world.
+**Done 11-03:** Abigail, Nabal, Ahimelech, Achish, the raiders, the Egyptian servant (faint, sitting, eating, drinking, getting up).
+**Still to make:** the Egyptian servant's talk, point, walk and run; places for every region; the travel map of the land.
 
 ## Open
 - Engine: copy Part One's engine into this folder and change the copy (recommended in START_HERE.md).
