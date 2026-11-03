@@ -34,7 +34,7 @@ const SEAL_SKILL = {
 const REGION = {
   key: "gibeah", name: "Gibeah",
   rooms: [
-    { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, right: "town" },
+    { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town" },   // "@road": off the left edge, out of Gibeah
     { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls" },
     { id: "walls",   name: "The Walls",        w: 64, bg: "w4_2", mx: 6, my: 2, mw: 2, left: "town" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
@@ -81,7 +81,8 @@ function buildRegion() {
   plat(c + 18, 13, 4); plat(c + 24, 10, 4); plat(c + 30, 7, 3); oliveRow(c + 24, 9, 4);
   rRelic("g_stone_fields", "stone", c + 31, 6);
   snake("viper", c + 38); critter("scorpion", c + 44);
-  rock(c + 52, 4, 7, 13);                                        // the watchtower rock: too tall and sheer to get up
+  rock(c + 52, 4, 7, 9);                                         // the watchtower rock: too tall and sheer to get up (Glen 11-03: it
+                                                                 // blocked the whole way on; now an arch you walk under, the top out of reach)
   rSeal("g_seal_tower", "fields", c + 50, "wallClimb", "The watchtower rock is too sheer to climb. Not yet.", c + 46, c + 52);
   if (hasSkill("wallClimb")) { plat(c + 49, 13, 2); plat(c + 47, 10, 2); plat(c + 49, 7, 2); plat(c + 50, 4, 2); }   // (stand-in for the wall climb)
   rRelic("g_pom_tower", "pomegranate", c + 55, 3);
@@ -180,6 +181,11 @@ function updateRegion(dt) {
   const tr = region.trans;
   if (tr) {
     tr.t += dt;
+    if (tr.leave) {   // out of Gibeah: for now, back to the game's map (the travel map of the land comes later)
+      region.fade = Math.min(1, tr.t / (RTUNE.FADE * 2));
+      if (tr.t > RTUNE.FADE * 2 + 0.2 && !tr.gone) { tr.gone = true; location.href = "index.html"; }
+      return;
+    }
     if (!tr.moved) {
       region.fade = Math.min(1, tr.t / RTUNE.FADE);
       if (tr.t >= RTUNE.FADE) { tr.moved = true; tr.t0 = tr.t; d.facing = tr.facing; moveParty(tr.x, GR * T); if (typeof p2 !== "undefined" && p2.on) { p2.x = tr.x - tr.facing * 60; p2.y = GR * T; p2.vx = p2.vy = 0; } }
@@ -192,7 +198,8 @@ function updateRegion(dt) {
   if (d.deadT > 0) return;
   // off the edge of the room, into the next
   const left = r.c0 * T, right = (r.c0 + r.w) * T;
-  if (r.left && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
+  if (r.left === "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { region.trans = { t: 0, leave: true }; return; }   // the road out (Glen 11-03)
+  if (r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
   if (r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
   // a door, a stair, a well: Up
   if (pressed("up") && d.onGround) {
