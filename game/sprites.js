@@ -1752,6 +1752,18 @@ window.SPRITE_DATA = {
   "ay": 233,
   "align": "feet"
  },
+ "david_ledge_climb": {
+  "src": "../assets/sprites/david_ledge_climb.png",
+  "frames": 16,
+  "w": 202,
+  "h": 255,
+  "ms": 104,
+  "loop": false,
+  "pingpong": false,
+  "ax": 79,
+  "ay": 253,
+  "align": "feet"
+ },
  "david_lift_lamb": {
   "src": "../assets/sprites/david_lift_lamb.png",
   "frames": 10,
