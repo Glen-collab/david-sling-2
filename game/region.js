@@ -21,7 +21,7 @@ const RTUNE = {
   WALL_SPEED: 150,   // the rock face, px/s
   WALL_STRIDE: 28,   // px climbed per frame of david_wallclimb_side
   FACE_REACH: 46,    // Up this close to a rock face starts the climb
-  ROPE_W: 12,        // how wide the rope is drawn (Glen's rope picture, repeated down its length)
+  ROPE_W: 7,         // (Glen 11-03: half to 5/8 of the first 12) how wide the rope is drawn (Glen's rope picture, repeated down its length)
   ROPE_IN_HANDS: 29, // where the rope is in his hands in david_climb (sheet px from the left of a frame)
   FACE_OFF: 14,      // his feet this far out from the face while he climbs (Glen 11-03: close, so his hands and knee are on the rock)
   TOP_OUT: 70,       // feet this close below the top: he's over it
