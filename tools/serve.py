@@ -29,4 +29,4 @@ class Server(ThreadingHTTPServer):
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
     print(f"David 2 server on http://localhost:{port}  (close this window to stop it)")
-    Server(("", port), Handler).serve_forever()
+    Server(("127.0.0.1", port), Handler).serve_forever()
