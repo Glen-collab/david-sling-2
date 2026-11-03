@@ -2262,6 +2262,7 @@ function updateDavid(dt) {
   const d = david;
   d.t += dt;
   for (const b in aimAgo) aimAgo[b] = held(b) ? 0 : aimAgo[b] + dt;
+  if (typeof regionClimbHold === "function" && regionClimbHold(d, dt)) return;   // region.js: on a rope or a rock face
   if (typeof w9HoldDavid === "function" && w9HoldDavid(d, dt)) return;   // engedi.js: a scene has the controls
   if (typeof leapHoldDavid === "function" && leapHoldDavid(d, dt)) return;   // leap.js: the end card
   if (typeof p2HoldDavid === "function" && p2HoldDavid(d, dt)) return;
@@ -2517,6 +2518,7 @@ function sitHarpScale(i) { const a = TUNE.SIT_HARP_SIZES; return a[Math.min(i, a
 function drawDavid(camX) {
   const d = david, x = d.x - camX, y = d.y;
   if (drawCaveDavid(d, x, y)) return;
+  if (typeof drawRegionClimb === "function" && drawRegionClimb(d, x, y)) return;   // region.js: climbing
   if (typeof drawSwordDavid === "function" && drawSwordDavid(d, x, y)) return;   // engedi.js: mid-swing, the shield, the scenes
   if (ARMORED() && drawArmorDavid(d, x, y)) return;   // world7.js
   // the sling throw is drawn on top of whatever the legs are doing when standing; in the air we use the throw frames too

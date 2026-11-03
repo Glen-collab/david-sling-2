@@ -16,7 +16,15 @@ const REGION_ON = location.hash === "#9-5";
 const RTUNE = {
   GAP: 6,            // columns of solid rock between rooms
   FADE: 0.22,        // seconds to fade out (and back in) when going through
-  EDGE: 10,          // px from a room's edge that takes you through
+  EDGE: 10,
+  CLIMB_SPEED: 170,  // the rope, px/s
+  WALL_SPEED: 150,   // the rock face, px/s
+  WALL_STRIDE: 28,   // px climbed per frame of david_wallclimb_side
+  FACE_REACH: 46,    // Up this close to a rock face starts the climb
+  FACE_OFF: 30,      // his feet this far out from the face while he climbs
+  TOP_OUT: 70,       // feet this close below the top: he's over it
+  WELL_RIM: 17 * 36 - 52, WELL_DEEP: 150,   // the well's rim (y), and how far he goes down before the fade
+  ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
   DOOR_REACH: 46,    // px from a door's middle where Up works
   RELIC_H: { pomegranate: 44, oil: 52, stone: 34, truth: 46 },   // how tall each find is drawn
@@ -49,7 +57,7 @@ const roomById = id => REGION.rooms.find(r => r.id === id);
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], seals: [], walls: [], climb: null, save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
@@ -81,10 +89,12 @@ function buildRegion() {
   plat(c + 18, 13, 4); plat(c + 24, 10, 4); plat(c + 30, 7, 3); oliveRow(c + 24, 9, 4);
   rRelic("g_stone_fields", "stone", c + 31, 6);
   snake("viper", c + 38); critter("scorpion", c + 44);
-  rock(c + 52, 4, 7, 9);                                         // the watchtower rock: too tall and sheer to get up (Glen 11-03: it
-                                                                 // blocked the whole way on; now an arch you walk under, the top out of reach)
+  // the watchtower rock: too sheer to climb without the wall climb (Up at either face, then Up / Down; it tops out onto
+  // the top). Glen 11-03: it blocked the way on, so there's a gap along the ground he walks under (3 rows: crawling
+  // meant holding Down, which picks up the lamb when he's by it).
+  rock(c + 52, 4, 7, 10);
+  region.walls.push({ room: "fields", x0: (c + 52) * T, x1: (c + 59) * T, top: 4 * T, need: "wallClimb", seal: "g_seal_tower" });
   rSeal("g_seal_tower", "fields", c + 50, "wallClimb", "The watchtower rock is too sheer to climb. Not yet.", c + 46, c + 52);
-  if (hasSkill("wallClimb")) { plat(c + 49, 13, 2); plat(c + 47, 10, 2); plat(c + 49, 7, 2); plat(c + 50, 4, 2); }   // (stand-in for the wall climb)
   rRelic("g_pom_tower", "pomegranate", c + 55, 3);
   oliveArc(c + 62, 16, 6); deco("olive_tree", c + 70, 16, 1.05, "back", "golden_olive");
   snake("whip", c + 76);
@@ -154,7 +164,7 @@ function buildRegion() {
 const roomAt = x => REGION.rooms.find(r => x >= (r.c0 - RTUNE.GAP) * T && x < (r.c0 + r.w) * T) || REGION.rooms[0];
 function regionCam() {
   if (!REGION_ON) return null;
-  const r = region.room || roomAt(david.x), a = r.c0 * T + RTUNE.CAM_TRIM, b = (r.c0 + r.w) * T - W - RTUNE.CAM_TRIM;
+  const r = roomAt(david.x), a = r.c0 * T + RTUNE.CAM_TRIM, b = (r.c0 + r.w) * T - W - RTUNE.CAM_TRIM;
   return a > b ? [(a + b) / 2, (a + b) / 2] : [a, b];
 }
 function regionInit() {
@@ -163,8 +173,8 @@ function regionInit() {
   const extra = Math.floor(poms / 4); david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: one more heart, for good
   david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
 }
-function regionGo(x, facing) {   // fade out, move, fade in
-  region.trans = { t: 0, x, facing, moved: false };
+function regionGo(x, facing, after = null) {   // fade out, move, fade in (after: what happens once he's moved, e.g. onto a rope)
+  region.trans = { t: 0, x, facing, moved: false, after };
 }
 function updateRegion(dt) {
   if (!REGION_ON) return;
@@ -188,7 +198,7 @@ function updateRegion(dt) {
     }
     if (!tr.moved) {
       region.fade = Math.min(1, tr.t / RTUNE.FADE);
-      if (tr.t >= RTUNE.FADE) { tr.moved = true; tr.t0 = tr.t; d.facing = tr.facing; moveParty(tr.x, GR * T); if (typeof p2 !== "undefined" && p2.on) { p2.x = tr.x - tr.facing * 60; p2.y = GR * T; p2.vx = p2.vy = 0; } }
+      if (tr.t >= RTUNE.FADE) { tr.moved = true; tr.t0 = tr.t; d.facing = tr.facing; moveParty(tr.x, GR * T); if (typeof p2 !== "undefined" && p2.on) { p2.x = tr.x - tr.facing * 60; p2.y = GR * T; p2.vx = p2.vy = 0; } if (tr.after) tr.after(); }
     } else {
       region.fade = Math.max(0, 1 - (tr.t - tr.t0) / RTUNE.FADE);
       if (region.fade <= 0) region.trans = null;
@@ -202,6 +212,8 @@ function updateRegion(dt) {
   if (r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
   if (r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
   // a door, a stair, a well: Up
+  if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
+  if (pressed("up") && d.onGround && regionClimbStart(d)) return;
   if (pressed("up") && d.onGround) {
     const door = region.doors.find(o => Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
     if (door) {
@@ -222,6 +234,81 @@ function updateRegion(dt) {
     if (Math.abs(f.x - d.x) < W * 0.6 && roomAt(f.x) === r) regionAdd("seen", f.id);
     if (Math.abs(f.x - d.x) < 34 && d.y > f.y - 70 && d.y - d.h < f.y + 10) takeRelic(f);
   }
+}
+// ---- climbing (Glen 11-03): the rope down the well and back up (david_climb, his back to us), and the watchtower's
+//      face (david_wallclimb_side). region.climb while he's on one: { kind: "rope" | "well" | "wall", ... }
+function regionClimbStart(d) {   // Up on the ground: by the well, the rope in the cisterns, or a rock face
+  const r = roomAt(d.x);
+  for (const o of region.doors) {
+    if (Math.abs(d.x - o.x) > RTUNE.DOOR_REACH) continue;
+    if (o.kind === "well" && hasSkill("rope")) {   // over the rim and down
+      region.climb = { kind: "well", dir: 1, x: o.x, dist: 0 }; d.x = o.x; d.y = RTUNE.WELL_RIM; d.vx = d.vy = 0; d.facing = 1;
+      sfx("jump", undefined, 0.3, 0.8); return true;
+    }
+    if (o.kind === "rope") { region.climb = { kind: "rope", x: o.x, dist: 0 }; d.x = o.x; d.vx = d.vy = 0; return true; }
+  }
+  for (const w of region.walls) {
+    if (w.room !== r.id) continue;
+    const face = Math.abs(d.x - w.x0) < RTUNE.FACE_REACH && d.x < w.x0 + 4 ? { x: w.x0, f: 1 }
+               : Math.abs(d.x - w.x1) < RTUNE.FACE_REACH && d.x > w.x1 - 4 ? { x: w.x1, f: -1 } : null;
+    if (!face) continue;
+    if (!hasSkill(w.need)) { const s = region.seals.find(q => q.id === w.seal); if (s) sealSay(s); return true; }
+    region.climb = { kind: "wall", wall: w, fx: face.x, f: face.f, dist: 0 }; d.facing = face.f; d.vx = d.vy = 0; d.x = face.x - face.f * RTUNE.FACE_OFF;
+    return true;
+  }
+  return false;
+}
+function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's climbing (no gravity, no walking)
+  const c = REGION_ON && region.climb; if (!c) return false;
+  d.vx = 0; d.vy = 0; d.onGround = false; d.swordT = -1; d.shield = false; d.charging = false; d.throwT = -1;
+  if (d.state !== "idle") setState("idle");
+  if (region.trans) return true;   // fading between rooms: hold still
+  const v = (held("down") ? 1 : 0) - (held("up") ? 1 : 0);
+  if (c.kind === "well") {   // into the well (down to the cisterns) or up out of it (back into the town)
+    const sp = RTUNE.CLIMB_SPEED * 0.8;
+    d.x = c.x; d.y += c.dir * sp * dt; c.dist += sp * dt;
+    if (c.dir > 0 && d.y > RTUNE.WELL_RIM + RTUNE.WELL_DEEP && !c.gone) {   // down out of sight: on to the rope in the cisterns
+      c.gone = true; const to = region.doors.find(o => o.id === "d_wellrope");
+      regionGo(to.x, 1, () => {
+        region.climb = { kind: "rope", x: to.x, dist: 0 }; david.x = to.x; david.y = RTUNE.ROPE_TOP + RTUNE.ROPE_HANG; snapCamera();
+        if (!region.ropeTold) { region.ropeTold = true; toast("Down the rope: hold Down. Up climbs back out. A lets go."); }
+      });
+    }
+    if (c.dir < 0 && d.y <= RTUNE.WELL_RIM) {   // over the rim and out
+      d.y = GR * T; d.x = c.x + 64; d.onGround = true; d.facing = 1; region.climb = null;
+    }
+    return true;
+  }
+  if (c.kind === "rope") {
+    d.x = c.x; d.y += v * RTUNE.CLIMB_SPEED * dt; c.dist += Math.abs(v) * RTUNE.CLIMB_SPEED * dt;
+    if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }   // down on the floor
+    if (d.y <= RTUNE.ROPE_TOP + RTUNE.ROPE_HANG - 10 && !c.gone) {   // up into the well shaft: out into the town
+      c.gone = true; const w = region.doors.find(o => o.id === "d_well");
+      regionGo(w.x, 1, () => { region.climb = { kind: "well", dir: -1, x: w.x, dist: 0 }; david.x = w.x; david.y = RTUNE.WELL_RIM + RTUNE.WELL_DEEP; snapCamera(); });
+    }
+    if (pressed("a") && !c.gone) { region.climb = null; setState("jump"); }   // let go
+    return true;
+  }
+  if (c.kind === "wall") {
+    const w = c.wall;
+    d.x = c.fx - c.f * RTUNE.FACE_OFF; d.y += v * RTUNE.WALL_SPEED * dt; c.dist += Math.abs(v) * RTUNE.WALL_SPEED * dt;
+    if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }
+    if (d.y <= w.top + RTUNE.TOP_OUT) { d.y = w.top; d.x = c.fx + c.f * 30; d.onGround = true; region.climb = null; return true; }   // over the top
+    if (pressed("a")) { region.climb = null; d.vx = -c.f * TUNE.WALK_SPEED * 0.6; d.vy = -TUNE.JUMP_SPEED * 0.5; d.facing = -c.f; setState("jump"); }   // push off
+    return true;
+  }
+  return true;
+}
+function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
+  const c = REGION_ON && region.climb; if (!c) return false;
+  if (c.kind === "wall") {
+    const n = "david_wallclimb_side"; drawSprite(n, Math.floor(c.dist / RTUNE.WALL_STRIDE) % SPR[n].frames, x, y, c.f); return true;
+  }
+  const n = "david_climb", i = Math.floor(c.dist / TUNE.CLIMB_STRIDE) % SPR[n].frames;
+  if (c.kind === "well") {   // the rim hides what's down in the well
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, RTUNE.WELL_RIM); ctx.clip(); drawSprite(n, i, x, y, 1); ctx.restore(); return true;
+  }
+  drawSprite(n, i, x, y, 1); return true;
 }
 function sealSay(s) {
   regionAdd("sealsSeen", s.id);
@@ -304,7 +391,11 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     ctx.fillStyle = up ? "rgba(255,226,160,0.35)" : "#1a120c"; ctx.beginPath(); ctx.roundRect(x - 40, y - 130, 80, 130, [10, 10, 0, 0]); ctx.fill();
     ctx.fillStyle = up ? "#8a7458" : "#4a3c2e";
     for (let k = 0; k < 5; k++) ctx.fillRect(x - 36 + k * 6, y - 22 - k * 22, 72 - k * 12, 8);
-  } else if (o.kind === "well") {   // a ring of stones
+  } else if (o.kind === "well") {   // a ring of stones (and with the rope: a beam over it and the rope tied on, hanging in)
+    if (hasSkill("rope")) {
+      ctx.fillStyle = "#6b4f33"; ctx.fillRect(x - 50, y - 190, 8, 140); ctx.fillRect(x + 42, y - 190, 8, 140); ctx.fillRect(x - 56, y - 196, 112, 10);
+      ctx.strokeStyle = "#a88a5a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, y - 190); ctx.lineTo(x, y - 52); ctx.stroke();
+    }
     ctx.fillStyle = "#1a120c"; ctx.beginPath(); ctx.ellipse(x, y - 52, 42, 12, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#7a6a55"; ctx.fillRect(x - 46, y - 52, 92, 52);
     ctx.strokeStyle = "#4e4234"; ctx.lineWidth = 2;
