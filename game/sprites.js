@@ -4548,6 +4548,18 @@ window.SPRITE_DATA = {
   "ay": 243,
   "align": "feet"
  },
+ "raider_attack": {
+  "src": "../assets/sprites/raider_attack.png",
+  "frames": 14,
+  "w": 510,
+  "h": 287,
+  "ms": 432,
+  "loop": false,
+  "pingpong": false,
+  "ax": 198,
+  "ay": 285,
+  "align": "feet"
+ },
  "raider_flee": {
   "src": "../assets/sprites/raider_flee.png",
   "frames": 4,
@@ -4584,16 +4596,40 @@ window.SPRITE_DATA = {
   "ay": 364,
   "align": "feet"
  },
- "raider_run": {
-  "src": "../assets/sprites/raider_run.png",
-  "frames": 6,
-  "w": 235,
-  "h": 315,
-  "ms": 85,
+ "raider_idle": {
+  "src": "../assets/sprites/raider_idle.png",
+  "frames": 12,
+  "w": 133,
+  "h": 246,
+  "ms": 205,
   "loop": true,
   "pingpong": false,
-  "ax": 150,
-  "ay": 313,
+  "ax": 60,
+  "ay": 244,
+  "align": "feet"
+ },
+ "raider_run": {
+  "src": "../assets/sprites/raider_run.png",
+  "frames": 18,
+  "w": 321,
+  "h": 248,
+  "ms": 106,
+  "loop": true,
+  "pingpong": false,
+  "ax": 176,
+  "ay": 246,
+  "align": "feet"
+ },
+ "raider_walk": {
+  "src": "../assets/sprites/raider_walk.png",
+  "frames": 18,
+  "w": 270,
+  "h": 245,
+  "ms": 104,
+  "loop": true,
+  "pingpong": false,
+  "ax": 152,
+  "ay": 243,
   "align": "feet"
  },
  "ram_butt": {

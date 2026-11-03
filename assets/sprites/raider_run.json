@@ -1,11 +1,11 @@
 {
-  "frames": 6,
-  "frame_w": 235,
-  "frame_h": 315,
-  "ms_per_frame": 85,
+  "frames": 18,
+  "frame_w": 321,
+  "frame_h": 248,
+  "ms_per_frame": 106,
   "loop": true,
   "align": "feet",
-  "anchor_x": 150,
-  "anchor_y": 313,
-  "source": "r_run_m.png"
+  "anchor_x": 176,
+  "anchor_y": 246,
+  "source": "david2"
 }

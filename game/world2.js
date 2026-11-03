@@ -125,6 +125,7 @@ TUNE.SPRITE_SIZE.donkey_trot = 0.8;   // her loaded donkey on its own (in her cl
 Object.assign(TUNE.SPRITE_SIZE, { nabal_idle: 0.92, nabal_stand: 0.92, nabal_talk: 0.92, nabal_shock: 0.92, nabal_feast: 0.65, nabal_feast_front: 0.9 });   // Part Two: Nabal (1 Samuel 25), by head size; the feasts are sitting
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "give_bread", "give_sword"].map(n => ["ahimelech_" + n, 0.95])));   // Part Two: Ahimelech the priest at Nob (1 Samuel 21)
 Object.assign(TUNE.SPRITE_SIZE, { achish_idle: 1.05, achish_exasperated: 1.11, achish_point: 1.0, achish_throne: 1.0 });   // Part Two: King Achish of Gath; each sheet evened to the same body height (the staff swings change the sheet sizes)
+Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "attack"].map(n => ["raider_" + n, 1.0])));   // Part Two: the Amalekite raiders of Ziklag (1 Samuel 30); clips faced left, sheets mirrored
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "walk_calm", "talk", "run", "sprint", "long_jump", "throw", "hit", "slide", "skid", "run_throw", "throw2"].map(n => ["asahel_" + n, 1.15])));   // Part Two: Asahel, Abishai's slim younger brother
 function drawCampfirePeople(camX) {
   const now = performance.now() / 1000;

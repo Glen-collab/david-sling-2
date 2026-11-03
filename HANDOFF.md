@@ -117,6 +117,10 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   `_idle` (clip2, 24-145, 1.05), `_exasperated` (clip1, 1-110: throws up his staff and hands, "Do I lack madmen?" 21:15;
   1.11), `_throne` (clip3: bored on his chair, chin on hand, then sits up; the chair is in the sheet; 1.0), `_point`
   (clip4, 18-145: orders his servants, twice; 1.0). Sizes even out his body height across the sheets.
+- Raider (2026-11-03, Glen's four clips `raider_clip1-4.mp4`, an Amalekite of 1 Samuel 30; the clips face left, so every
+  sheet is cut with `--mirror`; 1.0): `raider_idle` (clip3), `_walk` (clip1: sneaking, crouched, spear low, 18 frames),
+  `_run` (clip2: charging, 18 frames), `_attack` (clip4, the whole clip, `--pad 40`: the arm thrusts but Grok's spear
+  wanders, pulled back two-handed with the butt sticking out; **Glen is painting the spear** to follow the arm thrust).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; in 9-4 The Window; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
