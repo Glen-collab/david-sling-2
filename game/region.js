@@ -40,14 +40,17 @@ const RTUNE = {
   HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10 },   // how much each thing takes off with a hit
   HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
   // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
-  // leave the room and come in again. h: drawn this tall; dark: the picture once it's broken (none = it shatters away)
+  // leave the room and come in again. Glen's break sets (tools/cut_breakables.py): <art>, <art>_breaking, <art>_broken,
+  // all one size; h: the whole thing drawn this tall; fit / gap: how much of the picture's height it fills, and the
+  // space under it (the broken pieces reach lower). dark: a picture it stays as (the lamp-stands), instead of breaking away
   BREAK: {
-    jar:       { art: "camp_jar_small", h: 46, bits: ["#b8693a", "#8a4a26"] },
-    pots:      { art: "town_clay_pots", h: 58, bits: ["#b8693a", "#7a3f1e"] },
-    basket:    { art: "town_grain_baskets", h: 50, bits: ["#c9a25a", "#e6cf8a"] },
-    lamp:      { art: "lamp_lit", h: 26, bits: ["#b8693a", "#ffd25a"], light: true },
-    hall_lamp: { art: "hall_lamp_lit", h: 110, dark: "hall_lamp_unlit", bits: ["#d8b04a", "#ffd25a"], light: true },
+    jar:       { art: "storage_jar", h: 70, fit: 0.993, gap: 0.007, bits: ["#c0703e", "#8a4a26"] },
+    pots:      { art: "water_pitcher", h: 42, fit: 0.824, gap: 0.073, bits: ["#c0703e", "#7ab8e8"] },
+    basket:    { art: "grain_sacks", h: 56, fit: 0.859, gap: 0.038, bits: ["#c9a25a", "#e6cf8a"] },
+    lamp:      { art: "clay_lamp", h: 20, fit: 0.832, gap: 0.018, bits: ["#b8693a", "#ffd25a"], light: true },
+    hall_lamp: { art: "hall_lamp_lit", h: 110, fit: 1, gap: 0, dark: "hall_lamp_unlit", bits: ["#d8b04a", "#ffd25a"], light: true },
   },
+  BREAK_T: [0.14, 0.9, 0.5],   // breaking: the breaking picture this long, then the pieces this long, then they fade away this fast
   DROPS: [["heart_small", 50], ["olives", 30], ["heart_big", 8], ["none", 12]],   // what falls out, and how often (out of 100)
   METER_PX: 4,       // the health meter: px per point, so it grows as the cap goes up
 };
@@ -210,7 +213,7 @@ function updateRegion(dt) {
   if (r !== region.room) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
-    for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.fade = 0; }   // come back in: they're whole again
+    for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
     region.drops.length = 0;
   }
   updateBreaks(dt);
@@ -373,8 +376,9 @@ const regionHit = fromX => {   // what a hit takes off: by whatever's nearest wh
   if (typeof snakes !== "undefined") for (const s of snakes) near(s, s.kind);
   return RTUNE.HIT[best] ?? RTUNE.HIT.default;
 };
-function breakBox(b) {
-  const k = RTUNE.BREAK[b.kind], img = ITEM[k.art], w = img && img.naturalHeight ? img.naturalWidth * k.h / img.naturalHeight : k.h;
+const breakScale = (k, img) => k.h / (img.naturalHeight * k.fit);   // picture px to game px
+function breakBox(b) {   // the whole thing (about two thirds of its picture's width: Glen's sets leave room for the flying bits)
+  const k = RTUNE.BREAK[b.kind], img = ITEM[k.art], w = img && img.naturalHeight ? img.naturalWidth * breakScale(k, img) * (k.dark ? 1 : 0.68) : k.h;
   return { x0: b.x - w / 2, x1: b.x + w / 2, y0: b.y - k.h, y1: b.y };
 }
 function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
@@ -387,9 +391,9 @@ function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the swor
   return false;
 }
 function smash(b) {
-  const k = RTUNE.BREAK[b.kind]; b.broken = true; b.fade = 1;
+  const k = RTUNE.BREAK[b.kind]; b.broken = true; b.t = 0;
   const q = breakBox(b), cx = b.x, cy = (q.y0 + q.y1) / 2;
-  for (let i = 0; i < 16; i++) bits.push({ x: cx + (Math.random() - 0.5) * (q.x1 - q.x0) * 0.6, y: cy, vx: (Math.random() - 0.5) * 420, vy: -Math.random() * 460, life: 0.8, color: k.bits[i % 2] });
+  for (let i = 0; i < 8; i++) bits.push({ x: cx + (Math.random() - 0.5) * (q.x1 - q.x0) * 0.6, y: cy, vx: (Math.random() - 0.5) * 420, vy: -Math.random() * 460, life: 0.8, color: k.bits[i % 2] });
   let roll = Math.random() * 100, what = "none";
   for (const [name, n] of RTUNE.DROPS) { if (roll < n) { what = name; break; } roll -= n; }
   if (what === "olives") { for (let i = 0; i < 3; i++) olives.push({ x: cx + (i - 1) * 16, y: cy, vx: (i - 1) * 90, vy: -260 - Math.random() * 120, falling: true, kind: i % 2 ? "purple" : "green", taken: false, t: 0, placed: false }); }
@@ -397,7 +401,7 @@ function smash(b) {
 }
 function updateBreaks(dt) {
   const d = david;
-  for (const b of region.breaks) if (b.broken && b.fade > 0) b.fade = Math.max(0, b.fade - dt * 2.5);
+  for (const b of region.breaks) if (b.broken) b.t += dt;
   for (const o of region.drops) {
     if (o.taken) continue;
     fall(o, dt); o.t += dt;
@@ -418,9 +422,17 @@ function drawBreaks(camX) {
       const g = ctx.createRadialGradient(x, fy, 2, x, fy, r); g.addColorStop(0, "rgba(255,210,120,0.45)"); g.addColorStop(1, "rgba(255,190,90,0)");
       ctx.fillStyle = g; ctx.fillRect(x - r, fy - r, r * 2, r * 2);
     }
-    const art = b.broken ? k.dark : k.art, img = art && ITEM[art];
-    if (b.broken && !k.dark) { if (b.fade > 0 && ITEM[k.art]) drawItem(k.art, x, b.y, k.h / ITEM[k.art].naturalHeight, b.fade * 0.5); continue; }
-    if (img && img.naturalHeight) drawItem(art, x, b.y, k.h / img.naturalHeight);
+    const [t1, t2, t3] = RTUNE.BREAK_T;
+    let art = k.art, alpha = 1;
+    if (b.broken && k.dark) art = k.dark;
+    else if (b.broken) {   // Glen's breaking picture, then the pieces, then they fade away
+      if (b.t > t1 + t2 + t3) continue;
+      art = b.t < t1 ? k.art + "_breaking" : k.art + "_broken";
+      alpha = b.t < t1 + t2 ? 1 : 1 - (b.t - t1 - t2) / t3;
+    }
+    const img = ITEM[art]; if (!img || !img.naturalHeight) continue;
+    const sc = breakScale(k, img);
+    drawItem(art, x, b.y + img.naturalHeight * k.gap * sc, sc, alpha);
   }
   for (const o of region.drops) {
     const big = o.kind === "heart_big", h = big ? 34 : 20, img = HUD.heart_full;
