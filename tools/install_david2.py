@@ -12,9 +12,16 @@ ART = os.path.join(os.path.expanduser("~"), "Desktop", "david-sling-2-art", "spr
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "sprites")
 
 
+# a sheet name that comes from another file: name -> (its .json, its sheet picture)
+# (Glen 2026-11-03) David's idle without the talking (Glen's Photoshop pass) is the idle everywhere; the talking one is kept
+# as david_idle_talk, for when he stands talking to someone
+SRC = {"david_idle": ("david_idle", "david_idle_sheet_no_talking.png"), "david_idle_talk": ("david_idle", "david_idle_sheet.png")}
+
+
 def load(name):
-    j = json.load(open(os.path.join(ART, name + ".json")))
-    sheet = Image.open(os.path.join(ART, name + "_sheet.png")).convert("RGBA")
+    js, pic = SRC.get(name, (name, name + "_sheet.png"))
+    j = json.load(open(os.path.join(ART, js + ".json")))
+    sheet = Image.open(os.path.join(ART, pic)).convert("RGBA")
     w, h = j["frame_w"], sheet.height
     frames = [sheet.crop((i * w, 0, (i + 1) * w, h)) for i in range(j["frames"])]
     return j, frames
@@ -70,6 +77,7 @@ for fn in sorted(os.listdir(ART)):
         same(fn[:-5])
 
 # the engine's names
+same("david_idle_talk")   # (david_idle itself is Glen's no-talking sheet: SRC above)
 same("david_land", "david_jump_land", ms=45)
 same("david_land", "david_stop", ms=60)
 same("david_kneel", "david_crouch", ms=40)

@@ -2577,7 +2577,10 @@ function drawDavid(camX) {
   switch (d.state) {
     case "idle":
       if (cave.room) drawSprite("david_light_lamp", 15, x, y, d.facing);   // in a cave: holding up the lamp
-      else drawSprite("david_idle", frameOf("david_idle", t), x, y, d.facing);
+      else {   // (Glen 11-03) his idle is quiet; the talking one only while his own words are up
+        const nm = dialog.t > 0 && dialog.who === "David" && SPR.david_idle_talk ? "david_idle_talk" : "david_idle";
+        drawSprite(nm, frameOf(nm, t), x, y, d.facing);
+      }
       break;
     case "walk": {
       const rate = Math.max(0.6, Math.abs(d.vx) / TUNE.WALK_SPEED), nm = cave.room ? "david_walk_lamp" : "david_walk";

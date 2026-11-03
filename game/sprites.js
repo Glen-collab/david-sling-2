@@ -1644,6 +1644,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "david_idle_talk": {
+  "src": "../assets/sprites/david_idle_talk.png",
+  "frames": 12,
+  "w": 85,
+  "h": 247,
+  "ms": 49,
+  "loop": true,
+  "pingpong": false,
+  "ax": 54,
+  "ay": 244,
+  "align": "feet"
+ },
  "david_jump": {
   "src": "../assets/sprites/david_jump.png",
   "frames": 15,
