@@ -23,7 +23,7 @@ const RTUNE = {
   FACE_REACH: 46,    // Up this close to a rock face starts the climb
   ROPE_W: 12,        // how wide the rope is drawn (Glen's rope picture, repeated down its length)
   ROPE_IN_HANDS: 29, // where the rope is in his hands in david_climb (sheet px from the left of a frame)
-  FACE_OFF: 32,      // his feet this far out from the face while he climbs
+  FACE_OFF: 14,      // his feet this far out from the face while he climbs (Glen 11-03: close, so his hands and knee are on the rock)
   TOP_OUT: 70,       // feet this close below the top: he's over it
   WELL_RIM: 17 * 36 - 52, WELL_DEEP: 150,   // the well's rim (y), and how far he goes down before the fade
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
