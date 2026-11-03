@@ -123,8 +123,9 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   wanders, pulled back two-handed with the butt sticking out; **Glen is painting the spear** to follow the arm thrust).
   Second batch: `_hit` (clip5, 1-120: a stone to the head, flung back, spear flying, recovers into a crouch; the stone
   and the cartoon impact lines that floated free were removed), `_down` (clip6: sits dazed holding his head, spear on
-  the ground, then leans back; hold the last frame), `_flee` (clip11, Glen's side-view re-roll, 60-240: running away in a panic,
-  hands clawing the air, looking back; a thinner raider than the rest, fine for a fleeing one; 0.95. Clip7 not used).
+  the ground, then leans back; hold the last frame), `_flee_start` (clip12, 1-34: throws his hands up in panic as he
+  turns to run; play once) and `_flee` (clip12, from 24: running away hard, a loop; 0.95). Clip12 is Glen's bigger
+  raider, matching the others; the skinny try is `unused/raider_flee_skinny_unused.mp4`, clip7 not used.
   `_party` (clip8, 1-92: clapping and dancing by the fire, laughing, bandana down, 30:16; the clip's campfire was
   removed so the game's own fire goes there), `_camel_start` (clip10, 1-72: the camel walks, then breaks into a gallop; play once) and `_camel` (clip10,
   from 70: the gallop, a loop), 30:17; 1.35, the rider's head matched to the raider on foot. The first camel try (a small

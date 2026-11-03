@@ -1,11 +1,11 @@
 {
   "frames": 14,
-  "frame_w": 295,
-  "frame_h": 223,
-  "ms_per_frame": 86,
+  "frame_w": 267,
+  "frame_h": 243,
+  "ms_per_frame": 71,
   "loop": true,
   "align": "feet",
-  "anchor_x": 202,
-  "anchor_y": 221,
+  "anchor_x": 173,
+  "anchor_y": 241,
   "source": "david2"
 }

@@ -126,7 +126,7 @@ Object.assign(TUNE.SPRITE_SIZE, { nabal_idle: 0.92, nabal_stand: 0.92, nabal_tal
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "give_bread", "give_sword"].map(n => ["ahimelech_" + n, 0.95])));   // Part Two: Ahimelech the priest at Nob (1 Samuel 21)
 Object.assign(TUNE.SPRITE_SIZE, { achish_idle: 1.05, achish_exasperated: 1.11, achish_point: 1.0, achish_throne: 1.0 });   // Part Two: King Achish of Gath; each sheet evened to the same body height (the staff swings change the sheet sizes)
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "attack", "hit", "down", "party"].map(n => ["raider_" + n, 1.0])));
-TUNE.SPRITE_SIZE.raider_flee = 0.95;   // Glen's flee clip: evened to the raider's running height
+Object.assign(TUNE.SPRITE_SIZE, { raider_flee_start: 0.95, raider_flee: 0.95 });   // Glen's flee clip: evened to the raider's running height
 Object.assign(TUNE.SPRITE_SIZE, { raider_camel_start: 1.35, raider_camel: 1.35 });   // camel and rider; the rider's head matched to the raider on foot
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "walk_calm", "talk", "run", "sprint", "long_jump", "throw", "hit", "slide", "skid", "run_throw", "throw2"].map(n => ["asahel_" + n, 1.15])));   // Part Two: Asahel, Abishai's slim younger brother
 function drawCampfirePeople(camX) {
