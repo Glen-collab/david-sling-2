@@ -2376,6 +2376,66 @@ window.SPRITE_DATA = {
   "ay": 97,
   "align": "feet"
  },
+ "egyptian_drink": {
+  "src": "../assets/sprites/egyptian_drink.png",
+  "frames": 8,
+  "w": 288,
+  "h": 247,
+  "ms": 141,
+  "loop": false,
+  "pingpong": false,
+  "ax": 99,
+  "ay": 244,
+  "align": "feet"
+ },
+ "egyptian_eat": {
+  "src": "../assets/sprites/egyptian_eat.png",
+  "frames": 12,
+  "w": 278,
+  "h": 247,
+  "ms": 83,
+  "loop": true,
+  "pingpong": false,
+  "ax": 104,
+  "ay": 244,
+  "align": "feet"
+ },
+ "egyptian_revive": {
+  "src": "../assets/sprites/egyptian_revive.png",
+  "frames": 26,
+  "w": 299,
+  "h": 249,
+  "ms": 178,
+  "loop": false,
+  "pingpong": false,
+  "ax": 118,
+  "ay": 246,
+  "align": "feet"
+ },
+ "egyptian_sit": {
+  "src": "../assets/sprites/egyptian_sit.png",
+  "frames": 12,
+  "w": 310,
+  "h": 247,
+  "ms": 170,
+  "loop": true,
+  "pingpong": false,
+  "ax": 129,
+  "ay": 245,
+  "align": "feet"
+ },
+ "egyptian_weak": {
+  "src": "../assets/sprites/egyptian_weak.png",
+  "frames": 14,
+  "w": 104,
+  "h": 233,
+  "ms": 107,
+  "loop": true,
+  "pingpong": false,
+  "ax": 37,
+  "ay": 231,
+  "align": "feet"
+ },
  "eliab_angry": {
   "src": "../assets/sprites/eliab_angry.png",
   "frames": 16,
