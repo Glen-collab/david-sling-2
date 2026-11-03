@@ -21,6 +21,7 @@ const RTUNE = {
   WALL_SPEED: 150,   // the rock face, px/s
   WALL_STRIDE: 28,   // px climbed per frame of david_wallclimb_side
   FACE_REACH: 46,    // Up this close to a rock face starts the climb
+  ROPE_W: 12,        // how wide the rope is drawn (Glen's rope picture, repeated down its length)
   ROPE_IN_HANDS: 29, // where the rope is in his hands in david_climb (sheet px from the left of a frame)
   FACE_OFF: 32,      // his feet this far out from the face while he climbs
   TOP_OUT: 70,       // feet this close below the top: he's over it
@@ -386,6 +387,15 @@ function drawRegion(camX) {
     if (img && img.naturalHeight) drawItem(RELIC_ART[f.kind], x, f.y - 4 + Math.sin(now * 2.4 + f.t) * 4, h / img.naturalHeight);
   }
 }
+// a hanging rope from Glen's picture (assets/items/rope_tile.png: three twists, cut to repeat seamlessly), top to bottom
+function drawRope(x, y0, y1) {
+  const img = ITEM.rope_tile;
+  if (!img || !img.naturalWidth) { ctx.strokeStyle = "#a88a5a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y1); ctx.stroke(); return; }
+  const w = RTUNE.ROPE_W, sc = w / img.naturalWidth, h = img.naturalHeight * sc;
+  ctx.save(); ctx.beginPath(); ctx.rect(x - w, y0, w * 2, y1 - y0); ctx.clip();
+  for (let y = y0; y < y1; y += h) ctx.drawImage(img, x - w / 2, y, w, h);
+  ctx.restore();
+}
 function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   const y = GR * T;
   ctx.save();
@@ -400,7 +410,7 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   } else if (o.kind === "well") {   // a ring of stones (and with the rope: a beam over it and the rope tied on, hanging in)
     if (hasSkill("rope")) {
       ctx.fillStyle = "#6b4f33"; ctx.fillRect(x - 50, y - 190, 8, 140); ctx.fillRect(x + 42, y - 190, 8, 140); ctx.fillRect(x - 56, y - 196, 112, 10);
-      ctx.strokeStyle = "#a88a5a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, y - 190); ctx.lineTo(x, y - 52); ctx.stroke();
+      drawRope(x, y - 190, y - 52);
     }
     ctx.fillStyle = "#1a120c"; ctx.beginPath(); ctx.ellipse(x, y - 52, 42, 12, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#7a6a55"; ctx.fillRect(x - 46, y - 52, 92, 52);
@@ -410,7 +420,7 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     const lg = ctx.createRadialGradient(x, 2 * T, 4, x, 2 * T, 160);
     lg.addColorStop(0, "rgba(255,236,190,0.7)"); lg.addColorStop(1, "rgba(255,220,150,0)");
     ctx.fillStyle = lg; ctx.fillRect(x - 160, 0, 320, 260);
-    ctx.strokeStyle = "#a88a5a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, 2 * T); ctx.quadraticCurveTo(x + 6, y - 120, x - 2, y - 30); ctx.stroke();
+    drawRope(x, 2 * T, y - 24);
   }
   ctx.restore();
 }
