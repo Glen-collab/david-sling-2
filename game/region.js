@@ -25,7 +25,10 @@ const RTUNE = {
   ROPE_IN_HANDS: 29, // where the rope is in his hands in david_climb (sheet px from the left of a frame)
   FACE_OFF: 14,      // his feet this far out from the face while he climbs (Glen 11-03: close, so his hands and knee are on the rock)
   TOP_OUT: 70,       // feet this close below the top: he's over it
-  WELL_RIM: 17 * 36 - 52, WELL_DEEP: 150,   // the well's rim (y), and how far he goes down before the fade
+  WELL_W: 160,       // Glen's well picture (town_well, 1202 x 987) drawn this wide
+  WELL_OPEN_X: 700 / 1202,   // ...the middle of its open side, across the picture
+  WELL_SINK: 4,      // ...set this far into the ground
+  WELL_RIM: 17 * 36 + 4 - 987 * 160 / 1202 + 455 * 160 / 1202, WELL_DEEP: 150,   // the front rim's top (y): it hides him going down; how far he goes before the fade
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
   DOOR_REACH: 46,    // px from a door's middle where Up works
@@ -407,6 +410,10 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     ctx.fillStyle = up ? "rgba(255,226,160,0.35)" : "#1a120c"; ctx.beginPath(); ctx.roundRect(x - 40, y - 130, 80, 130, [10, 10, 0, 0]); ctx.fill();
     ctx.fillStyle = up ? "#8a7458" : "#4a3c2e";
     for (let k = 0; k < 5; k++) ctx.fillRect(x - 36 + k * 6, y - 22 - k * 22, 72 - k * 12, 8);
+  } else if (o.kind === "well" && ITEM.town_well && ITEM.town_well.naturalWidth) {   // Glen's well (11-03): the lid slid half
+    // off, the rope already tied on; drawn so its open side is over the well's spot (David goes down there)
+    const img = ITEM.town_well, w = RTUNE.WELL_W, h = img.naturalHeight * w / img.naturalWidth;
+    ctx.drawImage(img, x - RTUNE.WELL_OPEN_X * w, y - h + RTUNE.WELL_SINK, w, h);
   } else if (o.kind === "well") {   // a ring of stones (and with the rope: a beam over it and the rope tied on, hanging in)
     if (hasSkill("rope")) {
       ctx.fillStyle = "#6b4f33"; ctx.fillRect(x - 50, y - 190, 8, 140); ctx.fillRect(x + 42, y - 190, 8, 140); ctx.fillRect(x - 56, y - 196, 112, 10);
