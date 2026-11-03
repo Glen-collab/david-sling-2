@@ -111,9 +111,8 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   drinking and laughing, then the cup tips and spills; 0.9). Clip5 (a zoom-out to arms crossed, in a turban) not used.
 - Ahimelech (2026-11-03, Glen's five clips `ahimelech_clip1-5.mp4`; installed, not in a stage yet; 0.95): `_walk` (clip1:
   hurrying, hunched, hands wringing: he came to meet David trembling, 21:1), `_idle` (clip2, 20-145), `_talk` (clip5,
-  20-145), `_give_bread` (clip4, 1-84: holds out the stack of loaves, 21:6), `_give_sword` (clip3, 1-84: holds out
-  Goliath's sword in its cloth, 21:9). **Grok gave him two swords** in clip3; Glen to paint one out (the `_green.png` is
-  there for it), or re-roll.
+  20-145), `_give_bread` (clip4, 1-84: holds out the stack of loaves, 21:6), `_give_sword` (clip3, Glen's re-roll with one sword,
+  6-145: struggles to hold out Goliath's heavy sword with its cloth, 21:9; the two-sword try is in `unused/`).
 - Achish (2026-11-03, Glen's four clips `achish_clip1-4.mp4`; faces right like everyone; installed, not in a stage yet):
   `_idle` (clip2, 24-145, 1.05), `_exasperated` (clip1, 1-110: throws up his staff and hands, "Do I lack madmen?" 21:15;
   1.11), `_throne` (clip3: bored on his chair, chin on hand, then sits up; the chair is in the sheet; 1.0), `_point`

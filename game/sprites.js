@@ -362,13 +362,13 @@ window.SPRITE_DATA = {
  },
  "ahimelech_give_sword": {
   "src": "../assets/sprites/ahimelech_give_sword.png",
-  "frames": 12,
-  "w": 296,
+  "frames": 16,
+  "w": 350,
   "h": 246,
-  "ms": 292,
+  "ms": 365,
   "loop": false,
   "pingpong": false,
-  "ax": 138,
+  "ax": 117,
   "ay": 244,
   "align": "feet"
  },
