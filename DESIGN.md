@@ -147,8 +147,9 @@ One line per world (see START_HERE.md for the WEB text and the first try at the 
 **Older David: done (2026-10-26).** 25 moves cut from Glen's Grok clips into `david-sling-2-art\sprites` (previews in `Desktop\game previews\Part Two`): idle, walk, run, jump, forward flip, backflip, landing, roll, sword draw / ready / walk / slash, shield raise / block, sling spin / throw, crouch-walk, kneel, kneel hold, dive, swim, rope climb, wall climb side / back, hit.
 Glen's Photoshop passes are all in (sling spin and throw, run-sling, hit with the arrow removed).
 
-**Done since:** Saul and his soldiers, Abishai, the armor-bearer (2026-10-29 to 11-01).
-**Still to make:** Jonathan, Asahel, Benaiah (playable); Michal, Abigail, Nabal, Ahimelech, Achish, Samuel (reuse Part One's), Philistine soldiers, Saul's soldiers, raiders; places for every world.
+**Done since:** Saul and his soldiers, Abishai, the armor-bearer (2026-10-29 to 11-01); Jonathan, Benaiah, Asahel, Michal (11-02).
+**Reused from Part One:** Philistine soldiers and archers (phil_*), Samuel.
+**Still to make:** Abigail (playable, World 6), Nabal; Ahimelech the priest and King Achish (World 3); raiders and the Egyptian servant (World 7); places for every world.
 
 ## Open
 - Engine: copy Part One's engine into this folder and change the copy (recommended in START_HERE.md).
