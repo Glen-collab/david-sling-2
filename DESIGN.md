@@ -193,8 +193,8 @@ Glen's Photoshop passes are all in (sling spin and throw, run-sling, hit with th
 
 **Done since:** Saul and his soldiers, Abishai, the armor-bearer (2026-10-29 to 11-01); Jonathan, Benaiah, Asahel, Michal (11-02).
 **Reused from Part One:** Philistine soldiers and archers (phil_*), Samuel.
-**Done 11-03:** Abigail, Nabal, Ahimelech, Achish, the raiders, the Egyptian servant (faint, sitting, eating, drinking, getting up).
-**Still to make:** the Egyptian servant's talk, point, walk and run; places for every region; the travel map of the land.
+**Done 11-03:** Abigail, Nabal, Ahimelech, Achish, the raiders, the Egyptian servant (faint, sitting, eating, drinking, getting up, and walk, run, talk, point, a close-up talk).
+**Still to make:** places for every region; the travel map of the land.
 
 ## Open
 - Engine: copy Part One's engine into this folder and change the copy (recommended in START_HERE.md).

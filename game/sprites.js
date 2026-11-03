@@ -2412,6 +2412,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "egyptian_point": {
+  "src": "../assets/sprites/egyptian_point.png",
+  "frames": 12,
+  "w": 173,
+  "h": 247,
+  "ms": 212,
+  "loop": false,
+  "pingpong": false,
+  "ax": 57,
+  "ay": 244,
+  "align": "feet"
+ },
  "egyptian_revive": {
   "src": "../assets/sprites/egyptian_revive.png",
   "frames": 26,
@@ -2424,6 +2436,18 @@ window.SPRITE_DATA = {
   "ay": 246,
   "align": "feet"
  },
+ "egyptian_run": {
+  "src": "../assets/sprites/egyptian_run.png",
+  "frames": 18,
+  "w": 202,
+  "h": 236,
+  "ms": 81,
+  "loop": true,
+  "pingpong": false,
+  "ax": 135,
+  "ay": 234,
+  "align": "feet"
+ },
  "egyptian_sit": {
   "src": "../assets/sprites/egyptian_sit.png",
   "frames": 12,
@@ -2434,6 +2458,42 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 129,
   "ay": 245,
+  "align": "feet"
+ },
+ "egyptian_talk": {
+  "src": "../assets/sprites/egyptian_talk.png",
+  "frames": 20,
+  "w": 77,
+  "h": 241,
+  "ms": 88,
+  "loop": true,
+  "pingpong": false,
+  "ax": 36,
+  "ay": 239,
+  "align": "feet"
+ },
+ "egyptian_talk_close": {
+  "src": "../assets/sprites/egyptian_talk_close.png",
+  "frames": 24,
+  "w": 148,
+  "h": 244,
+  "ms": 83,
+  "loop": true,
+  "pingpong": false,
+  "ax": 68,
+  "ay": 241,
+  "align": "feet"
+ },
+ "egyptian_walk": {
+  "src": "../assets/sprites/egyptian_walk.png",
+  "frames": 12,
+  "w": 147,
+  "h": 242,
+  "ms": 104,
+  "loop": true,
+  "pingpong": false,
+  "ax": 82,
+  "ay": 240,
   "align": "feet"
  },
  "egyptian_weak": {

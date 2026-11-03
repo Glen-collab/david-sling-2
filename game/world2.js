@@ -128,7 +128,7 @@ Object.assign(TUNE.SPRITE_SIZE, { achish_idle: 1.05, achish_exasperated: 1.11, a
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "attack", "hit", "down", "party"].map(n => ["raider_" + n, 1.0])));
 Object.assign(TUNE.SPRITE_SIZE, { raider_flee_start: 0.95, raider_flee: 0.95 });   // Glen's flee clip: evened to the raider's running height
 Object.assign(TUNE.SPRITE_SIZE, { raider_camel_start: 1.35, raider_camel: 1.35 });   // camel and rider; the rider's head matched to the raider on foot
-Object.assign(TUNE.SPRITE_SIZE, { egyptian_weak: 0.95, egyptian_revive: 0.95, egyptian_sit: 0.55, egyptian_eat: 0.6, egyptian_drink: 0.6 });   // Meta clips zoom: the sitting sheets matched by head to the revive clip (sitting and standing at one scale)
+Object.assign(TUNE.SPRITE_SIZE, { egyptian_weak: 0.95, egyptian_revive: 0.95, egyptian_walk: 0.95, egyptian_run: 0.95, egyptian_talk: 0.95, egyptian_point: 0.95, egyptian_talk_close: 0.95, egyptian_sit: 0.55, egyptian_eat: 0.6, egyptian_drink: 0.6 });   // Meta clips zoom: the sitting sheets matched by head to the revive clip (sitting and standing at one scale)
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "walk_calm", "talk", "run", "sprint", "long_jump", "throw", "hit", "slide", "skid", "run_throw", "throw2"].map(n => ["asahel_" + n, 1.15])));   // Part Two: Asahel, Abishai's slim younger brother
 function drawCampfirePeople(camX) {
   const now = performance.now() / 1000;
