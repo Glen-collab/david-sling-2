@@ -4560,6 +4560,18 @@ window.SPRITE_DATA = {
   "ay": 285,
   "align": "feet"
  },
+ "raider_camel": {
+  "src": "../assets/sprites/raider_camel.png",
+  "frames": 16,
+  "w": 395,
+  "h": 240,
+  "ms": 104,
+  "loop": true,
+  "pingpong": false,
+  "ax": 225,
+  "ay": 238,
+  "align": "feet"
+ },
  "raider_down": {
   "src": "../assets/sprites/raider_down.png",
   "frames": 14,
@@ -4618,6 +4630,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 60,
   "ay": 244,
+  "align": "feet"
+ },
+ "raider_party": {
+  "src": "../assets/sprites/raider_party.png",
+  "frames": 16,
+  "w": 209,
+  "h": 239,
+  "ms": 73,
+  "loop": true,
+  "pingpong": false,
+  "ax": 67,
+  "ay": 237,
   "align": "feet"
  },
  "raider_run": {
