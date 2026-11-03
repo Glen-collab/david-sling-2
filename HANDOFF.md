@@ -126,8 +126,9 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   the ground, then leans back; hold the last frame), `_flee` (clip7, frames 1-13 only, a stand-in: after that Grok
   turns him to run away from the camera and then toward it; asked Glen for a side-view re-roll).
   `_party` (clip8, 1-92: clapping and dancing by the fire, laughing, bandana down, 30:16; the clip's campfire was
-  removed so the game's own fire goes there), `_camel` (clip9: galloping away on a camel, 30:17; dust removed; drawn at
-  0.75 so the rider's head matches; **Glen to paint the bandana** where the rider talks through it).
+  removed so the game's own fire goes there), `_camel_start` (clip10, 1-72: the camel walks, then breaks into a gallop; play once) and `_camel` (clip10,
+  from 70: the gallop, a loop), 30:17; 1.35, the rider's head matched to the raider on foot. The first camel try (a small
+  cartoon camel) is `unused/raider_camel_small_unused.mp4`.
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; in 9-4 The Window; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead

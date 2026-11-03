@@ -4562,14 +4562,26 @@ window.SPRITE_DATA = {
  },
  "raider_camel": {
   "src": "../assets/sprites/raider_camel.png",
-  "frames": 16,
-  "w": 395,
-  "h": 240,
-  "ms": 104,
+  "frames": 14,
+  "w": 339,
+  "h": 237,
+  "ms": 42,
   "loop": true,
   "pingpong": false,
-  "ax": 225,
-  "ay": 238,
+  "ax": 185,
+  "ay": 235,
+  "align": "feet"
+ },
+ "raider_camel_start": {
+  "src": "../assets/sprites/raider_camel_start.png",
+  "frames": 14,
+  "w": 341,
+  "h": 246,
+  "ms": 214,
+  "loop": false,
+  "pingpong": false,
+  "ax": 180,
+  "ay": 244,
   "align": "feet"
  },
  "raider_down": {
