@@ -95,6 +95,12 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   in the bed, the goat-hair pillow, the blanket, then looks round, 1 Samuel 19:13; the green-bed try is
   `michal_bed_greenbed_unused.mp4`),
   `michal_point` (clip7: urging David to go).
+- Abigail (2026-11-02, Glen's eight clips `abigail_clip1-8.mp4`; installed, not in a stage yet; drawn at 0.95 like Michal):
+  `abigail_walk` (clip1, 64-118; the start of clip1 fades in from a design sheet), `_run` (clip2, 16 frames),
+  `_jump` (clip3, 76-128), `_donkey_walk` (clip4: leading the loaded donkey by its rope), `_talk` (clip6, 10-90),
+  `_bow_small` (clip6, 88-140: hands together, a small bow, then open hands), `_kneel` (clip7: kneels, bows her face
+  to the ground, rises to plead with open hands, 1 Samuel 25:23-24; hold the last frame while she speaks), `_hit`
+  (clip8, 8-80), `_idle` (clip8, 100-145). `donkey_trot` (clip5: the loaded donkey alone, drawn at 0.8).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; in 9-4 The Window; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead
