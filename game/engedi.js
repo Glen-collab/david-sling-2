@@ -9,8 +9,9 @@
 
 const W9 = {
   SCENE_MS: 160,                 // Glen's robe-cut two-shot (saul_robe_cut), ms a frame
+  SCENE_START: 6,                // (Glen 2026-11-03) the first frame played: David already faces left, at the robe (0-5 he faces right and turns, but in the game he's already crept up facing left)
   SCENE_END: 20,                 // ...its last frame: David up, the corner in his hand (after this he walks off the video)
-  SCENE_DAVID: [213, 196],       // where David is in it at the start and the end, sheet px right of Saul's head
+  SCENE_DAVID: [198, 196],       // where David is in it at the start (frame 6) and the end, sheet px right of Saul's head
   SAUL_WALK: 38,                 // Saul's slow walk, px/s
   SWORD_TIME: 0.33,              // the whole slash, seconds (Glen: fast)
   SWORD_HIT: [0.08, 0.24],       // when the edge can hit
@@ -195,8 +196,8 @@ function cutRobe() {
   const off = k => k * SCALE * TUNE.SPRITE_SIZE.saul_robe_cut;   // where David is in the two-shot, from Saul's head (sheet px)
   david.x = s.x + off(W9.SCENE_DAVID[0]); david.facing = -1;
   play([
-    { fn() { w9.pose = { hide: true }; s.mode = "scene"; s.t = 0; }, wait: W9.SCENE_END * W9.SCENE_MS / 1000 * 0.55 },
-    { fn() { sfx("paper_rip", undefined, 0.5, 0.8); }, wait: W9.SCENE_END * W9.SCENE_MS / 1000 * 0.45 + 0.3 },
+    { fn() { w9.pose = { hide: true }; s.mode = "scene"; s.t = 0; }, wait: (W9.SCENE_END - W9.SCENE_START) * W9.SCENE_MS / 1000 * 0.55 },
+    { fn() { sfx("paper_rip", undefined, 0.5, 0.8); }, wait: (W9.SCENE_END - W9.SCENE_START) * W9.SCENE_MS / 1000 * 0.45 + 0.3 },
     { say: ["", "Then David arose and cut off the skirt of Saul’s robe secretly. Afterward, David’s heart struck him because he had cut off Saul’s skirt. (1 Samuel 24:4-5)"] },
     { fn() { w9.pose = null; s.mode = "sit"; s.t = 99; david.x = s.x + off(W9.SCENE_DAVID[1]); david.facing = 1; } },
     { say: ["David", "“The LORD forbid that I should do this thing to my lord, the LORD’s anointed, to stretch out my hand against him, since he is the LORD’s anointed.” (1 Samuel 24:6)"] },
@@ -231,7 +232,7 @@ function caveLights() { const s = w9.saul; return s && s.on && !s.outside && inT
 // Glen's Saul (sheets face right; facing -1 = toward the cave mouth): sits, the two-shot of the cut, stands, walks, looks back, weeps
 function drawSaul(s, x) {
   if (s.mode === "scene") {   // Glen's two-shot: David creeps up, cuts the corner, stands holding it (stops before he walks off)
-    drawSprite("saul_robe_cut", Math.min(W9.SCENE_END, frameOf("saul_robe_cut", s.t, W9.SCENE_MS)), x, s.y, 1, 1, s.alpha); return;
+    drawSprite("saul_robe_cut", Math.min(W9.SCENE_END, W9.SCENE_START + frameOf("saul_robe_cut", s.t, W9.SCENE_MS)), x, s.y, 1, 1, s.alpha); return;
   }
   const n = { sit: "saul_sit", stand: "saul_stand", walk: "saul_walk", look: "saul_look_back", weep: "saul_weep" }[s.mode] || "saul_sit";
   drawSprite(n, frameOf(n, s.t), x, s.y, s.facing, 1, s.alpha);
