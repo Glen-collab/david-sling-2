@@ -412,7 +412,9 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     for (let k = 0; k < 5; k++) ctx.fillRect(x - 36 + k * 6, y - 22 - k * 22, 72 - k * 12, 8);
   } else if (o.kind === "well" && ITEM.town_well && ITEM.town_well.naturalWidth) {   // Glen's well (11-03): the lid slid half
     // off, the rope already tied on; drawn so its open side is over the well's spot (David goes down there)
-    const img = ITEM.town_well, w = RTUNE.WELL_W, h = img.naturalHeight * w / img.naturalWidth;
+    // (before he has the rope: Glen's same well with no rope on it, town_well_no_rope, cut to the same frame)
+    const nr = ITEM.town_well_no_rope, img = !hasSkill("rope") && nr && nr.naturalWidth ? nr : ITEM.town_well;
+    const w = RTUNE.WELL_W, h = img.naturalHeight * w / img.naturalWidth;
     ctx.drawImage(img, x - RTUNE.WELL_OPEN_X * w, y - h + RTUNE.WELL_SINK, w, h);
   } else if (o.kind === "well") {   // a ring of stones (and with the rope: a beam over it and the rope tied on, hanging in)
     if (hasSkill("rope")) {
