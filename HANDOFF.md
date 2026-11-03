@@ -103,6 +103,12 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   (clip8, 8-80), `_idle` (clip8, 100-145). `donkey_trot` (clip5: the loaded donkey alone, drawn at 0.8).
   `abigail_ride` (clip9: riding the loaded donkey down the mountain, 1 Samuel 25:20; drawn at 1.1 so the donkey
   matches `donkey_trot`).
+- Nabal (2026-11-02, Glen's five clips `nabal_clip1-5.mp4`; installed, not in a stage yet; sized by head, 0.92 standing):
+  `nabal_idle` (clip3, 1-34: arms crossed, scowling), `_stand` (clip2, 72-145: arms down), `_talk` (clip2, 22-76: waves
+  David's men off, 25:10), `_shock` (clip3, 30-145: hears the news and drops his cup, 25:37), `_feast` (clip4: sitting,
+  raises his cup and laughs; played once, then hold; drawn at 0.65; the sage-green table keyed away with the screen, the
+  leftover edge removed, so the game draws its own table), `_feast_front` (clip1, 48-145: facing us behind his bench,
+  drinking and laughing, then the cup tips and spills; 0.9). Clip5 (a zoom-out to arms crossed, in a turban) not used.
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; in 9-4 The Window; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead

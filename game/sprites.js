@@ -4104,6 +4104,78 @@ window.SPRITE_DATA = {
   "ay": 607,
   "align": "feet"
  },
+ "nabal_feast": {
+  "src": "../assets/sprites/nabal_feast.png",
+  "frames": 16,
+  "w": 344,
+  "h": 247,
+  "ms": 378,
+  "loop": false,
+  "pingpong": false,
+  "ax": 125,
+  "ay": 244,
+  "align": "feet"
+ },
+ "nabal_feast_front": {
+  "src": "../assets/sprites/nabal_feast_front.png",
+  "frames": 16,
+  "w": 204,
+  "h": 247,
+  "ms": 255,
+  "loop": false,
+  "pingpong": false,
+  "ax": 95,
+  "ay": 245,
+  "align": "feet"
+ },
+ "nabal_idle": {
+  "src": "../assets/sprites/nabal_idle.png",
+  "frames": 12,
+  "w": 108,
+  "h": 246,
+  "ms": 83,
+  "loop": true,
+  "pingpong": false,
+  "ax": 48,
+  "ay": 244,
+  "align": "feet"
+ },
+ "nabal_shock": {
+  "src": "../assets/sprites/nabal_shock.png",
+  "frames": 14,
+  "w": 143,
+  "h": 246,
+  "ms": 345,
+  "loop": false,
+  "pingpong": false,
+  "ax": 58,
+  "ay": 244,
+  "align": "feet"
+ },
+ "nabal_stand": {
+  "src": "../assets/sprites/nabal_stand.png",
+  "frames": 12,
+  "w": 95,
+  "h": 246,
+  "ms": 42,
+  "loop": true,
+  "pingpong": false,
+  "ax": 56,
+  "ay": 244,
+  "align": "feet"
+ },
+ "nabal_talk": {
+  "src": "../assets/sprites/nabal_talk.png",
+  "frames": 12,
+  "w": 153,
+  "h": 246,
+  "ms": 191,
+  "loop": false,
+  "pingpong": false,
+  "ax": 75,
+  "ay": 244,
+  "align": "feet"
+ },
  "name_stone_crumble": {
   "src": "../assets/sprites/name_stone_crumble.png",
   "frames": 5,
