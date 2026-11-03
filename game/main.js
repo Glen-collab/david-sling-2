@@ -2306,7 +2306,7 @@ function updateDavid(dt) {
   // --- pick up / put down the lamb (Down, standing still, next to it)
   if (pressed("down") && d.onGround && !busy && !d.harp && d.throwT < 0 && Math.abs(d.vx) < 40 && !(typeof w7Down === "function" && !d.carrying && w7Down())) {   // (7-3: Down beside a stone looks at it)   // (not mid-throw: Down while charging is a crouch)
     if (d.carrying) { setState("putdown"); }
-    else if (!lamb.stolen && Math.abs(lamb.x - d.x) < 95 && Math.abs(lamb.y - d.y) < 70) { setState("pickup"); d.vx = 0; lamb.carried = true; d.facing = Math.sign(lamb.x - d.x) || d.facing; }
+    else if (WORLD !== 9 && !lamb.stolen && Math.abs(lamb.x - d.x) < 95 && Math.abs(lamb.y - d.y) < 70) { setState("pickup"); d.vx = 0; lamb.carried = true; d.facing = Math.sign(lamb.x - d.x) || d.facing; }
   }
 
   // --- roll: Down + A on the ground (running, or from a crouch: he rolls the way he's facing)
