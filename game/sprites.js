@@ -4598,14 +4598,14 @@ window.SPRITE_DATA = {
  },
  "raider_flee": {
   "src": "../assets/sprites/raider_flee.png",
-  "frames": 8,
-  "w": 269,
-  "h": 247,
-  "ms": 68,
-  "loop": false,
+  "frames": 14,
+  "w": 295,
+  "h": 223,
+  "ms": 86,
+  "loop": true,
   "pingpong": false,
-  "ax": 157,
-  "ay": 245,
+  "ax": 202,
+  "ay": 221,
   "align": "feet"
  },
  "raider_grab": {
