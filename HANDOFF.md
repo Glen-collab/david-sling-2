@@ -1,6 +1,6 @@
 # Where we left off (Part Two)
 
-Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
+Last updated 2026-11-03. Read START_HERE.md and DESIGN.md first.
 
 ## Play
 - Double-click **`Play David 2.bat`**. It serves the folder on port 8766 and opens Chrome with its own profile (sound on),
@@ -13,6 +13,19 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
 - **The engine** is a copy of Part One's `game/` and `assets/` (taken 2026-10-26 at Part One commit 6dbe924). Part One's
   stages are all still in the copy (`#1-1` etc.); Part Two's stages are World 9 for now (`WORLD === 9` switches off the
   lamb, makes Y the shield, and shows Part Two's controls).
+- **Regions, Castlevania-style (2026-11-03, `game/region.js`; DESIGN.md "The land and its regions"):** the test
+  region is **`#9-5` Gibeah**. Its rooms are built side by side in one level grid with rock between: the Fields, the
+  Town, the Walls, the Palace Halls, the Harp Room, the Cellars, the Cisterns. Walk off a room's edge, or press Up at a
+  door, stair or well, and it fades to the next room. The camera, background and map follow the room you're in
+  (`regionCam` in caves.js `camLimits`; `drawRegionBackdrop` per room). **Select opens the map** (in a region, Select
+  is the map, not the harp): explored rooms, you, olive presses (campfires for now), finds you saw but didn't get, and
+  seals you've seen. Seals: the town well (rope, W2), the cellar's cracked wall (Goliath's sword, W3), the watchtower
+  rock (wall climb, W5); `?allskills` opens them all. Finds: pomegranates (every 4 = one more heart, for good), oil
+  jars (lamp oil), stones of remembrance (Power Sling stones) and Truths (a held dialog). Saves in
+  `david2Region_gibeah`: rooms explored, finds taken and seen, seals seen, and the olive press you last lit (you start
+  there). Stand-in art throughout: Part One's World 4 sets and cave layers, drawn doorways, wells and the cracked wall.
+- **Fixed 2026-11-03:** `drillHold` (drill.js) read `w94.hold` when `w94` is null, which crashed every stage except
+  9-4 from d29d570 (11-02) on.
 - **The older David**: `tools/install_david2.py` copies Glen's sheets from `Desktop\david-sling-2-art\sprites` into
   `assets/sprites` under the engine's names and builds the combined ones (jump in the air, roll get-up, sling = spin +
   throw, cave stand-ins). After Glen repaints a sheet: `python tools/install_david2.py` then `python tools/make_manifest.py`.

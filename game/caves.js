@@ -20,6 +20,7 @@ let caveAmbVol = 0;
 const darkCanvas = document.createElement("canvas"); darkCanvas.width = W; darkCanvas.height = H;
 
 function camLimits() {
+  if (!cave.room) { const c = regionCam(); if (c) return c; }   // a region: the room David is in (region.js)
   if (!cave.room && typeof chariotCam === "function") { const c = chariotCam(); if (c) return c; }   // 5-4: the chariot fight (world5.js)
   if (!cave.room && typeof towerCam === "function") { const c = towerCam(); if (c) return c; }       // 6-4: the watchtower fight (world6.js)
   if (!cave.room && typeof shieldCam === "function") { const c = shieldCam(); if (c) return c; }      // 7-4: the shield-bearer (world7.js)

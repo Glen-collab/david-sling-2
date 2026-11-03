@@ -55,7 +55,7 @@ function drillMiss(say) {
 function drillFinish() { drill.on = false; drill.progress = 1; const f = drill.onDone; drill.onDone = null; if (f) f(); }
 // David waits while a drill is on (main.js updateDavid)
 function drillHold(d, dt) {
-  if (!drill.on && !(typeof w94 !== "undefined" && w94.hold)) return false;
+  if (!drill.on && !(typeof w94 !== "undefined" && w94 && w94.hold)) return false;
   d.vx = 0; d.charging = false; d.throwT = -1;
   d.vy = Math.min(TUNE.MAX_FALL, d.vy + TUNE.GRAVITY * dt); collideBody(d, BODY_W, d.h, dt);
   if (d.state !== "idle") setState("idle");

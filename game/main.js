@@ -408,6 +408,7 @@ const STAGE_INFO = {
   "9-1": { cols: 214, bg: "w2_3", ter: "w2s", name: "The Rocks of the Wild Goats" },   // Part Two test: En-Gedi (engedi.js)
   "9-2": { cols: 92, bg: "w2_3", ter: "w2s", name: "The Leap of Faith" },             // Part Two test: the hidden bridge (leap.js)
   "9-4": { cols: 60, bg: "w4_4", ter: "w4p", name: "The Window" },                      // Part Two test: the D-pad drills (drill.js); Glen's palace at night
+  "9-5": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Gibeah" },              // Part Two test: the first region, Castlevania-style (region.js)
   "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
   "1-2": { cols: 228, bg: "w1_2", name: "The Wandering Flock" },
@@ -1081,6 +1082,8 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
+} else if (LEVEL_NAME === "9-5") {
+  buildRegion();   // Gibeah, the first region: rooms, doors, seals and finds (region.js)
 } else if (LEVEL_NAME === "9-4") {
   // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets
   //      him down by a rope (a drill), then lays the figure in the bed (a drill). With two players, Player 2 plays the
@@ -2115,7 +2118,7 @@ if (POISON.STAGES.includes(LEVEL_NAME)) {
 }
 
 // "?at=160" in the address starts David at column 160 (handy for checking a spot in a level)
-const AT = Number(new URLSearchParams(location.search).get("at")) || 3;
+const AT = Number(new URLSearchParams(location.search).get("at")) || (REGION_ON ? regionStartCol() : 3);   // (a region: the olive press you last saved at)
 const spawn = { x: AT * T, y: GR * T }, lambSpawn = { x: (AT + 2) * T, y: GR * T };
 let checkpoint = { ...spawn };
 const isSolid = (c, r) => r >= 0 && r < ROWS && c >= 0 && c < COLS && solid[r][c] > 0 && solid[r][c] !== 5;
@@ -2293,7 +2296,7 @@ function updateDavid(dt) {
                (d.state === "slip" && d.t < TUNE.SLIP_LOCK) || d.state === "climb" || d.state === "topout" || (ARMORED() && armor.removing > 0) || (typeof w7Busy === "function" && w7Busy()) || (typeof w8Busy === "function" && w8Busy());   // 7-3: stuck on a wrong stone
 
   // --- harp (Select): kneel and play while standing still
-  if ((pressed("select") || (pressed("y") && WORLD !== 9)) && d.onGround && !d.carrying && !busy && Math.abs(d.vx) < 30 && !(ARMORED() && armorOff()) && !(typeof w7Select === "function" && w7Select())) {   // in Saul's armor, Select takes it off (world7.js)
+  if (((pressed("select") && !REGION_ON) || (pressed("y") && WORLD !== 9)) && d.onGround && !d.carrying && !busy && Math.abs(d.vx) < 30 && !(ARMORED() && armorOff()) && !(typeof w7Select === "function" && w7Select())) {   // in Saul's armor, Select takes it off (world7.js)
     if (d.harp) { d.harp = false; setState("standup"); } else if (!(typeof harpBroken === "function" && harpBroken())) { d.harp = true; setState("kneel"); }   // (4-3: a broken string)
   }
   // Up, any direction, A or B: put the harp away and stand up
@@ -3338,7 +3341,8 @@ function updateFires(dt) {
     if ((near || passed) && !f.lit) {
       f.lit = true; checkpoint = { x: f.x - 30, y: f.y };
       if (f.who && f.say) sayLine(f.who, f.say); else toast("Campfire: checkpoint. Play the harp here (Select) to rest.");
-      if (typeof fireLit === "function") fireLit(f);   // world3.js: 3-2's scenes back in town
+      if (typeof fireLit === "function") fireLit(f);
+      regionFireLit(f);   // region.js: an olive press saves your place   // world3.js: 3-2's scenes back in town
       learnSkill(f.teach);
     }
     if (near && david.state === "harp" && david.hearts < david.maxHearts) {
@@ -4685,7 +4689,7 @@ function drawLayerRepeating(img, camX, factor, bottomY, height, mirror = false) 
 function drawFarLayer(camX) {
   const far = BG[bgWorld].far;
   if (!far.naturalWidth) { ctx.fillStyle = "#cfe0ea"; ctx.fillRect(0, 0, W, H); return; }
-  const scroll = Math.max(0, MAIN_COLS * T - W) * TUNE.BG_FAR_SPEED;
+  const scroll = Math.max(0, (REGION_ON ? (region.room || REGION.rooms[0]).w : MAIN_COLS) * T - W) * TUNE.BG_FAR_SPEED;   // (a region: this room's width)
   let w = W + scroll, h = far.naturalHeight * w / far.naturalWidth;
   if (h < H + 40) { h = H + 40; w = far.naturalWidth * h / far.naturalHeight; }   // a very wide picture: fill the height instead
   ctx.drawImage(far, -camX * TUNE.BG_FAR_SPEED, H - h + (TUNE.BG_FAR_DROP[bgWorld] || 0), w, h);
@@ -4913,20 +4917,21 @@ function frame(now) {
   }
   if (setup.active) updateSetup(dt); else checkCombo(dt);
   pollInput();
+  if (regionMapFrame(real)) { requestAnimationFrame(frame); return; }   // region.js: the map screen (Select)
   // Start in a stage: pause (resume, settings, back to the map)
   if (pressed("start") && !setup.active && !oneMoment.active && !(typeof passScene !== "undefined" && passScene.active) && !finish.active && !codeEntry.active && david.deadT <= 0) { hushLoops(); for (const a of [...sfxAll, dayMusic, nightMusic, caveMusic, stageTheme, bossMusic].filter(Boolean)) if (!a.paused) a.pause(); Menu.open("pause", true); requestAnimationFrame(frame); return; }   // paused: everything stops at once (one-shot sounds too)
   if (oneMoment.active) { hushLoops(); updateOneMoment(real); }
   else if (typeof passScene !== "undefined" && passScene.active) { if (!stepsRun.paused) { stepsRun.pause(); runVol = 0; } updatePassScene(real); }   // world3.js: back in town, before Samuel (no footsteps under it)
   else if (typeof w7Hold === "function" && w7Hold(real)) { hushLoops(true); }   // 7-3: looking at a stone (world7.js)
   else if (dialogHeld()) { hushLoops(true); if (pressed("a") || pressed("b")) { dialog.hold = false; dialog.t = Math.min(dialog.t, 0.25); } }   // someone's talking: the stage waits until A (or B), so every line can be read
-  else if (!setup.active) { if (david.deadT <= 0) updateDavid(dt); updateLamb(dt); if (typeof updateP2 === "function") updateP2(dt); if (typeof updateDrill === "function") { updateDrill(dt); updateW94(dt); } updateStones(dt); updateWorld(dt); }   // updateP2: Part Two's Player 2 (player2.js)
+  else if (!setup.active) { if (david.deadT <= 0) updateDavid(dt); updateLamb(dt); if (typeof updateP2 === "function") updateP2(dt); if (typeof updateDrill === "function") { updateDrill(dt); updateW94(dt); } updateStones(dt); updateWorld(dt); updateRegion(dt); }   // updateP2: Part Two's Player 2 (player2.js)
   const [camLo, camHi] = camLimits();   // the stage, or the cave David is in (world1.js)
   const targetCam = Math.max(camLo, Math.min(camHi, david.x - W * 0.4 + david.facing * 80));
   camX += (targetCam - camX) * Math.min(1, real * 6);
   const shake = finalBlow.shake * finalBlow.shake * 14 + (typeof w2Shake !== "undefined" ? w2Shake.v * w2Shake.v * 12 : 0);   // + the bear's slam (world2.js)
   ctx.save(); if (shake > 0.3) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
 
-  if (cave.room) drawCaveBackdrop(camX); else drawBackground(camX);
+  if (cave.room) drawCaveBackdrop(camX); else if (!drawRegionBackdrop(camX)) drawBackground(camX);   // (a region: this room's own backdrop, region.js)
   drawLionRidge(camX);
   drawDecor(camX, "back");
   drawCaveDark(camX);
@@ -4935,7 +4940,7 @@ function frame(now) {
   if (WORLD === 8 && typeof drawCrowd8 === "function") drawCrowd8(camX);   // the crowd stands up the slope, behind the ground and the rocks (world8.js)
   drawTiles(camX);
   drawCaveFeatures(camX);
-  drawPlatforms(camX); if (typeof drawWorld3 === "function") drawWorld3(camX);
+  drawPlatforms(camX); drawRegion(camX); if (typeof drawWorld3 === "function") drawWorld3(camX);
   if (typeof drawWorld4 === "function") drawWorld4(camX);
   if (typeof drawWorld6 === "function") drawWorld6(camX);   // world6.js
   if (typeof drawWorld7 === "function") drawWorld7(camX);   // world7.js
@@ -4975,6 +4980,7 @@ function frame(now) {
   if (typeof drawWorld8Over === "function") drawWorld8Over();   // world8.js: David's answer, the duel's meter and the throw
   if (typeof drawWorld7Over === "function") drawWorld7Over();   // 7-1: the helmet slips down over his eyes (world7.js)   // 3-4: rain, the dark, lightning (world3.js)
   drawCaveDarkness(camX);
+  drawRegionOver();   // region.js: the fade between rooms
   if (typeof drawWorld9Over === "function") drawWorld9Over(camX);   // engedi.js: over the dark (the end card)
   if (typeof drawLeapOver === "function") drawLeapOver(camX);       // leap.js: the fade after a fall, the end card
   if (typeof drawP2Over === "function") drawP2Over();
