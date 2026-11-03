@@ -21,7 +21,8 @@ const RTUNE = {
   WALL_SPEED: 150,   // the rock face, px/s
   WALL_STRIDE: 28,   // px climbed per frame of david_wallclimb_side
   FACE_REACH: 46,    // Up this close to a rock face starts the climb
-  FACE_OFF: 30,      // his feet this far out from the face while he climbs
+  ROPE_IN_HANDS: 29, // where the rope is in his hands in david_climb (sheet px from the left of a frame)
+  FACE_OFF: 32,      // his feet this far out from the face while he climbs
   TOP_OUT: 70,       // feet this close below the top: he's over it
   WELL_RIM: 17 * 36 - 52, WELL_DEEP: 150,   // the well's rim (y), and how far he goes down before the fade
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
@@ -302,13 +303,18 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
 function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
   const c = REGION_ON && region.climb; if (!c) return false;
   if (c.kind === "wall") {
-    const n = "david_wallclimb_side"; drawSprite(n, Math.floor(c.dist / RTUNE.WALL_STRIDE) % SPR[n].frames, x, y, c.f); return true;
+    // (Glen 11-03: he climbed too low) the sheet's anchor is its middle, not his feet: lift it so his feet are at y
+    const n = "david_wallclimb_side", s = SPR[n], up = (s.h - 6 - s.ay) * SCALE * (TUNE.SPRITE_SIZE[n] || 1);
+    drawSprite(n, Math.floor(c.dist / RTUNE.WALL_STRIDE) % s.frames, x, y - up, c.f); return true;
   }
+  // (Glen 11-03: he was off the rope) the rope in his hands is at x 29 of the sheet's 130, left of its anchor: move him
+  // over so his hands are on our rope
   const n = "david_climb", i = Math.floor(c.dist / TUNE.CLIMB_STRIDE) % SPR[n].frames;
+  const hx = x + (SPR[n].ax - RTUNE.ROPE_IN_HANDS) * SCALE * (TUNE.SPRITE_SIZE[n] || 1);
   if (c.kind === "well") {   // the rim hides what's down in the well
-    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, RTUNE.WELL_RIM); ctx.clip(); drawSprite(n, i, x, y, 1); ctx.restore(); return true;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, RTUNE.WELL_RIM); ctx.clip(); drawSprite(n, i, hx, y, 1); ctx.restore(); return true;
   }
-  drawSprite(n, i, x, y, 1); return true;
+  drawSprite(n, i, hx, y, 1); return true;
 }
 function sealSay(s) {
   regionAdd("sealsSeen", s.id);
