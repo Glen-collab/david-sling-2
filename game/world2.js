@@ -120,6 +120,7 @@ Object.assign(TUNE.SPRITE_SIZE, { abishai_idle: 1.2, abishai_talk: 1.2, abishai_
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "run", "smash", "swing", "lift", "hit", "push_start", "push"].map(n => ["benaiah_" + n, 1.3])));   // Part Two: Benaiah, the strongest of the mighty men, half a head taller than David
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "jump", "talk", "rope", "rope_loop", "bed", "point"].map(n => ["michal_" + n, 0.95])));   // Part Two: Michal, Saul's daughter, a little shorter than David
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "jump", "talk", "bow_small", "kneel", "hit", "donkey_walk"].map(n => ["abigail_" + n, 0.95])));   // Part Two: Abigail of Carmel (1 Samuel 25), Michal's height
+TUNE.SPRITE_SIZE.abigail_ride = 1.1;   // riding: her head above the donkey, so the whole is taller than her standing
 TUNE.SPRITE_SIZE.donkey_trot = 0.8;   // her loaded donkey on its own (in her clip it stands about 0.84 of her height)
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "walk_calm", "talk", "run", "sprint", "long_jump", "throw", "hit", "slide", "skid", "run_throw", "throw2"].map(n => ["asahel_" + n, 1.15])));   // Part Two: Asahel, Abishai's slim younger brother
 function drawCampfirePeople(camX) {

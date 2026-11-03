@@ -72,6 +72,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "abigail_ride": {
+  "src": "../assets/sprites/abigail_ride.png",
+  "frames": 12,
+  "w": 258,
+  "h": 244,
+  "ms": 90,
+  "loop": true,
+  "pingpong": false,
+  "ax": 104,
+  "ay": 242,
+  "align": "feet"
+ },
  "abigail_run": {
   "src": "../assets/sprites/abigail_run.png",
   "frames": 16,
