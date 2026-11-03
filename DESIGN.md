@@ -97,6 +97,36 @@ the D-pad drills (drill.js).
 | 8 | Jerusalem's water shaft (2 Samuel 5:8) | Rising water: climb before it reaches you | A climb against the clock |
 | 8 | The mulberry trees (2 Samuel 5:23-24) | Wait for the sign: attacking early fails; watch and listen for the treetops, then go | Patience: wait on the LORD |
 
+### The challenge system: a few engines, many skins (Glen 2026-11-02, after a second opinion)
+**Not a series of minigames.** Every challenge above is built from one of four engines that live inside the
+normal level: David never leaves the stage for a separate game screen. The Bible picks the moment; a classic game
+picks how the player solves it.
+
+| Engine | What the player does | Built? | Used for |
+|---|---|---|---|
+| **Sequence** | Press the shown arrows/A/B in order against a clock. Variants: *rhythm* (in time with music), *memory* (watch, then repeat; one more each round), *decoys* (some signals mean nothing) | yes: drill.js; Part One's harp_songs.js | Harp, the rope and the bed, Jonathan's arrow code (memory + decoys), Keilah escape prompts, loading the donkeys |
+| **Sneak** | Read sightlines, hide, move when no one looks; patrols shift their timing on each retry so a route can't just be memorized | yes: engedi.js patrols and rocks | En-Gedi, Gath watched-or-not, the sleeping camp, Michal's bluff |
+| **Hidden path** | Find or remember the safe stones; a wrong step costs time, not a life | yes: leap.js | The Leap of Faith, Nob's tribe tiles (flash the route, then walk it), a crumbling crossing at Keilah |
+| **Symbols** | Turn or order carved stones to match a clue found elsewhere in the level; A locks a stone, B undoes | new (one small engine) | Part One's code walls, Adullam's hidden room, and **a Paleo-Hebrew inscription**: decode a word such as "water", and the answer is a place in the level (the cave behind En-Gedi's falls) *(check the Hebrew with someone who reads it)* |
+
+The bigger set pieces (light beams, water channels, rising water, the balance trail, the mulberry wait) are
+platforming in the level itself, not overlays.
+
+**Rules for every challenge:**
+- Show it, don't explain it: the first round teaches itself.
+- The same buttons always mean the same things.
+- A timer only where the Bible makes it urgent.
+- Failing costs time or a retry, never a restart.
+- An optional gold time for players who want more.
+
+**Taken from the second opinion:** the memory and decoy variants for Jonathan's signal; shifting patrols; the
+Paleo-Hebrew inscription; the flash-then-walk tiles; gold times; and a bonus **Wilderness Gauntlet** made from the
+Training Ground (test stage 9-3): a timed run with a code, a tile path and a sling target, rated bronze, silver or gold.
+
+**Left out (they would stop the game):** Sudoku grids, board games, packing puzzles, trading sums, counting quizzes,
+knucklebones. Also no "choose to attack Saul" option: in the cave and the camp the attack button can only cut the
+robe or take the spear (24:6, 26:11), as already planned.
+
 
 1. **The Palace (Gibeah), 1 Samuel 18.** Jonathan's covenant and gifts; the women's song; Saul's jealousy. Fighting stages leading Saul's army against Philistine raids; cellars and cisterns under the palace. Get the sword and robe. First Step of Faith (bow down). *Boss:* the harp room: a rhythm game calming Saul, then dodge the spear twice (18:11). Psalm 57:4.
 2. **The Window, 1 Samuel 19-20.** Michal lets David down by rope; the figure in the bed. Night rooftop stealth (Saul's men: no sword). Hidden area: Naioth in Ramah, where Samuel waits and Saul's men end up prophesying (19:20-24). Get rope climb and crouch-walk. *Boss moment:* the arrow field (Player 2 Jonathan shoots, Player 1 reads), then the goodbye (20:41-42). Psalm 57:1.
