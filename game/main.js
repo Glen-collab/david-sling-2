@@ -2775,6 +2775,7 @@ function updateStones(dt) {
     if (s.life > 0 && typeof stoneHitsWorld6 === "function" && stoneHitsWorld6(s)) s.life = 0;
     if (s.life > 0 && typeof stoneHitsWorld7 === "function" && stoneHitsWorld7(s)) s.life = 0;
     if (s.life > 0 && typeof stoneHitsWorld8 === "function" && stoneHitsWorld8(s)) s.life = 0;   // world8.js: Goliath's bronze, the javelin   // world7.js: the shield-bearer   // world6.js: the watchtower, the skirmishers   // world5.js: the leopard (5-2), the lookouts' torches (5-3)   // world4.js: 4-2's targets and jars       // world3.js (3-4)
+    if (s.life > 0 && stoneHitsRegion(s)) s.life = 0;   // region.js: jars, baskets and lamps
     if (s.life > 0 && !s.power && stoneHitsTree(s)) { s.life = 0; stoneHit(s); }
     if (s.life > 0 && !finalBlow.on) watchForFinalStone(s);
     if (s.life > 0 && !finalBlow.on && typeof bear !== "undefined" && bear.on) watchBearFinal(s);
@@ -3151,16 +3152,17 @@ const FOOD_TEXT = {
 };
 
 // hearts
-david.maxHearts = TUNE.HEARTS + DIFF.hearts; david.hearts = david.maxHearts; david.inv = 0; david.deadT = 0; david.specialStones = 0;
+const HPU = REGION_ON ? RTUNE.HP_PER_HEART : 1;   // in a region (region.js) health is a meter: one heart is this many points
+david.maxHearts = (TUNE.HEARTS + DIFF.hearts) * HPU; david.hearts = david.maxHearts; david.inv = 0; david.deadT = 0; david.specialStones = 0;
 david.lives = DIFF.lives; david.olives = 0; david.lampOil = 0; david.gathered = 0;   // gathered: every olive picked up this stage (for the tithe, home.js)
 // olives, lamp oil and a fig cake bought at the market carry over from the home base (map.js progress)
 try {
   const pr = JSON.parse(localStorage.getItem(slotKey("david2Progress")) || "{}");
   david.olives = pr.olives || 0; david.lampOil = pr.lampOil || 0;
-  if (pr.staff) { david.maxHearts++; david.hearts++; }   // Hanan's staff (End of World 3): one more heart, for good
-  if (pr.cloak) { david.maxHearts++; david.hearts++; }   // Tobi's scout cloak (End of World 5)
+  if (pr.staff) { david.maxHearts += HPU; david.hearts += HPU; }   // Hanan's staff (End of World 3): one more heart, for good
+  if (pr.cloak) { david.maxHearts += HPU; david.hearts += HPU; }   // Tobi's scout cloak (End of World 5)
   if (pr.figCake > 0 && LEVEL_NAME !== "test" && LEVEL_NAME !== "range" && !TRIAL) {   // eaten now: one extra heart for this stage
-    david.maxHearts++; david.hearts++; pr.figCake--; localStorage.setItem(slotKey("david2Progress"), JSON.stringify(pr));
+    david.maxHearts += HPU; david.hearts += HPU; pr.figCake--; localStorage.setItem(slotKey("david2Progress"), JSON.stringify(pr));
     setTimeout(() => toast("You ate the fig cake: an extra heart for this stage."), 1500);
   }
 } catch (e) {}
@@ -3170,7 +3172,7 @@ function hurtDavid(fromX, why = "", still = false) {   // why: what hurt him (th
   const d = david;
   if (d.inv > 0 || d.deadT > 0 || inCutscene()) return;
   if (ARMORED() && armorHit(fromX)) return;   // the armor's grey hearts go first (world7.js)
-  d.hearts -= DIFF.hit; d.inv = TUNE.HURT_INVINCIBLE * DIFF.inv;   // (Hard: a hit costs two hearts)
+  d.hearts -= REGION_ON ? regionHit(fromX) * DIFF.hit : DIFF.hit; d.inv = TUNE.HURT_INVINCIBLE * DIFF.inv;   // (Hard: a hit costs two hearts)
   if (!still) {
     d.vx = Math.sign(d.x - fromX || -d.facing) * 360; d.vy = -560; d.onGround = false;
     d.harp = false; d.charging = false; d.throwT = -1;
@@ -3184,8 +3186,8 @@ function pitFall() {
   if (typeof leapFall === "function" && leapFall()) return;   // leap.js: no heart lost at the Leap of Faith
   const d = david;
   d.vx = d.vy = 0;
-  if (d.hearts <= 1) { d.x = (d.safe || checkpoint).x; d.y = (d.safe || checkpoint).y; d.inv = 0; d.hearts = 1; hurtDavid(d.x); return; }
-  d.hearts--; d.inv = TUNE.HURT_INVINCIBLE;
+  if (d.hearts <= HPU) { d.x = (d.safe || checkpoint).x; d.y = (d.safe || checkpoint).y; d.inv = 0; d.hearts = 0.01; hurtDavid(d.x); return; }
+  d.hearts -= HPU; d.inv = TUNE.HURT_INVINCIBLE;
   const s = d.safe || checkpoint; d.x = s.x; d.y = s.y; setState("idle");
   lamb.x = d.x - d.facing * 50; lamb.y = d.y; trail.length = 0;
   toast("Ouch! Watch your step.");
@@ -3247,7 +3249,7 @@ function updatePickups(dt) {
       const v = p.lamb ? GRAIN.HEAL : FOOD[p.name] ?? 1;
       const said = p.lamb ? (byLamb ? GRAIN.TEXT : GRAIN.DAVID) : (byLamb && !byDavid ? (v < 0 ? "Oh no, the lamb ate it! " : "The lamb found it: ") : "") + (FOOD_TEXT[p.name] || p.name);
       toast((v < 0 || p.lamb ? "" : "+ ") + said);
-      if (v < 0) hurtDavid(p.x, said, byLamb && !byDavid); else { david.hearts = Math.min(david.maxHearts, david.hearts + v); sfx("heal", undefined, 0.6); }   // (after the message: a poison that costs a life keeps its verse in the new one)
+      if (v < 0) hurtDavid(p.x, said, byLamb && !byDavid); else { david.hearts = Math.min(david.maxHearts, david.hearts + v * HPU); sfx("heal", undefined, 0.6); }   // (after the message: a poison that costs a life keeps its verse in the new one)
       for (let k = 0; k < 10; k++) bits.push({ x: p.x, y: p.y - 20, vx: (Math.random() - 0.5) * 300, vy: -Math.random() * 380, life: 0.6, color: v < 0 ? "#7a2" : "#ffe9a0" });
     }
   }
@@ -3352,7 +3354,7 @@ function updateFires(dt) {
     }
     if (near && david.state === "harp" && david.hearts < david.maxHearts) {
       f.healT = (f.healT || 0) + dt;
-      if (f.healT > 0.8) { f.healT = 0; david.hearts++; sfx("heal", undefined, 0.35); }
+      if (f.healT > 0.8) { f.healT = 0; david.hearts = Math.min(david.maxHearts, david.hearts + HPU); sfx("heal", undefined, 0.35); }
     }
   }
 }
@@ -4744,6 +4746,7 @@ function hudText(t, x, y, size = 20) {
   ctx.strokeText(t, x, y); ctx.fillText(t, x, y);
 }
 function drawHearts() {   // right to left; half hearts when it's x.5
+  if (REGION_ON) { drawRegionHealth(); return; }   // a region: the health meter (region.js)
   for (let i = 0; i < david.maxHearts; i++) {
     const v = david.hearts - i, name = v >= 1 ? "heart_full" : v >= 0.5 ? "heart_half" : "heart_empty";
     hudIcon(name, W - 50 - (david.maxHearts - 1 - i) * 36, 12, 32);

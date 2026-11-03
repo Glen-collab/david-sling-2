@@ -34,6 +34,22 @@ const RTUNE = {
   DOOR_REACH: 46,    // px from a door's middle where Up works
   RELIC_H: { pomegranate: 44, oil: 52, stone: 34, truth: 46 },   // how tall each find is drawn
   MAP_CELL: 78,      // the map screen: px per map cell
+  // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
+  // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
+  HP_PER_HEART: 10,
+  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10 },   // how much each thing takes off with a hit
+  HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
+  // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
+  // leave the room and come in again. h: drawn this tall; dark: the picture once it's broken (none = it shatters away)
+  BREAK: {
+    jar:       { art: "camp_jar_small", h: 46, bits: ["#b8693a", "#8a4a26"] },
+    pots:      { art: "town_clay_pots", h: 58, bits: ["#b8693a", "#7a3f1e"] },
+    basket:    { art: "town_grain_baskets", h: 50, bits: ["#c9a25a", "#e6cf8a"] },
+    lamp:      { art: "lamp_lit", h: 26, bits: ["#b8693a", "#ffd25a"], light: true },
+    hall_lamp: { art: "hall_lamp_lit", h: 110, dark: "hall_lamp_unlit", bits: ["#d8b04a", "#ffd25a"], light: true },
+  },
+  DROPS: [["heart_small", 50], ["olives", 30], ["heart_big", 8], ["none", 12]],   // what falls out, and how often (out of 100)
+  METER_PX: 4,       // the health meter: px per point, so it grows as the cap goes up
 };
 const RELIC_ART = { pomegranate: "pomegranate", oil: "camp_jar_small", stone: "stone_remembrance", truth: "davids_journal" };
 const RELIC_NAME = { pomegranate: "Pomegranates", oil: "Oil jars", stone: "Stones of remembrance", truth: "Truths" };
@@ -62,7 +78,7 @@ const roomById = id => REGION.rooms.find(r => r.id === id);
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], walls: [], climb: null, save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], seals: [], walls: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
@@ -77,6 +93,7 @@ function rDoor(id, room, c, kind, to, need = null) { region.doors.push({ id, roo
 function rRelic(id, kind, c, r, text = null) { region.relics.push({ id, kind, c, r, x: c * T + T / 2, y: (r + 1) * T, text, t: Math.random() * 6 }); }
 function rSeal(id, room, c, need, say, x0, x1) { region.seals.push({ id, room, need, say, x: c * T + T / 2, x0: x0 * T, x1: x1 * T }); }
 const sealOpen = s => hasSkill(s.need);
+function rBreak(kind, room, c, r) { region.breaks.push({ kind, room, x: c * T + T / 2, y: (r + 1) * T, broken: false, fade: 0 }); }
 
 function buildRegion() {
   try { Object.assign(region.save, JSON.parse(localStorage.getItem(regionSaveKey()) || "{}")); } catch (e) {}
@@ -91,6 +108,7 @@ function buildRegion() {
   campfire(c + 4, GR - 1);   // (an olive press: the save point; a campfire until Glen paints one)
   label(c + 6, 6, "Gibeah of Saul: the region test. Select = the map.");
   oliveRow(c + 9, 16, 5);
+  rBreak("jar", "fields", c + 14, 16); rBreak("jar", "fields", c + 15, 16); rBreak("basket", "fields", c + 47, 16);
   plat(c + 18, 13, 4); plat(c + 24, 10, 4); plat(c + 30, 7, 3); oliveRow(c + 24, 9, 4);
   rRelic("g_stone_fields", "stone", c + 31, 6);
   snake("viper", c + 38); critter("scorpion", c + 44);
@@ -107,15 +125,15 @@ function buildRegion() {
   // -- The Town: the market, rooftops, and the old well (down into the cisterns: needs the rope)
   c = R("town");
   ground(c, c + 73);
-  deco("cloth_stall", c + 8, 16, 0.5); deco("town_clay_pots", c + 13, 16, 0.4); deco("town_fig_rack", c + 18, 16, 0.4);
+  deco("cloth_stall", c + 8, 16, 0.5); rBreak("pots", "town", c + 13, 16); deco("town_fig_rack", c + 18, 16, 0.4);
   wall(c + 22, 14, 6, 3); plat(c + 24, 11, 4); plat(c + 29, 8, 5); plat(c + 36, 5, 5);   // up over the rooftops
-  oliveRow(c + 29, 7, 5);
+  oliveRow(c + 29, 7, 5); rBreak("jar", "town", c + 33, 7); rBreak("lamp", "town", c + 38, 4);
   rRelic("g_truth_song", "truth", c + 39, 4,
     "The women came out of all the cities of Israel, singing and dancing, to meet King Saul. They sang: \"Saul has slain his thousands, and David his ten thousands.\" (1 Samuel 18:6-7)");
   campfire(c + 46, GR - 1);
   rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
   rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
-  deco("town_grain_baskets", c + 64, 16, 0.4); oliveRow(c + 62, 16, 6);
+  rBreak("basket", "town", c + 64, 16); rBreak("jar", "town", c + 50, 16); oliveRow(c + 62, 16, 6);
 
   // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars
   c = R("walls");
@@ -130,7 +148,7 @@ function buildRegion() {
   c = R("halls");
   ground(c, c + 61);
   rDoor("d_hallsgate", "halls", c + 4, "door", "d_gate");
-  deco("hall_lamp_lit", c + 14, 12, 0.6); deco("hall_lamp_lit", c + 34, 12, 0.6); deco("hall_lamp_lit", c + 54, 12, 0.6);
+  rBreak("hall_lamp", "halls", c + 14, 16); rBreak("hall_lamp", "halls", c + 34, 16); rBreak("hall_lamp", "halls", c + 54, 16);
   plat(c + 22, 12, 5); plat(c + 30, 9, 4); oliveRow(c + 22, 11, 5);
   rRelic("g_stone_halls", "stone", c + 32, 8);
   campfire(c + 44, GR - 1);
@@ -146,6 +164,7 @@ function buildRegion() {
   ground(c, c + 63);
   rDoor("d_cellarup", "cellars", c + 4, "stairs", "d_down");
   oliveRow(c + 10, 16, 6); plat(c + 18, 13, 4); plat(c + 24, 10, 4);
+  rBreak("jar", "cellars", c + 13, 16); rBreak("jar", "cellars", c + 14, 16); rBreak("pots", "cellars", c + 39, 16); rBreak("lamp", "cellars", c + 20, 12);
   rRelic("g_stone_cellar", "stone", c + 26, 9);
   critter("scorpion", c + 34);
   if (!hasSkill("heavySword")) wall(c + 46, 2, 2, 15);              // the cracked wall, floor to ceiling
@@ -160,6 +179,7 @@ function buildRegion() {
   rDoor("d_wellrope", "cisterns", c + 4, "rope", "d_well");
   pitFloor(c + 14, 3); plat(c + 14, 14, 3);
   plat(c + 22, 12, 4); plat(c + 28, 9, 4);
+  rBreak("jar", "cisterns", c + 9, 16); rBreak("lamp", "cisterns", c + 23, 11);
   rRelic("g_pom_cistern", "pomegranate", c + 30, 8);
   rRelic("g_truth_covenant", "truth", c + 44, 16,
     "Jonathan made a covenant with David, because he loved him as his own soul. Jonathan took off the robe that was on him and gave it to David, with his armor, even his sword, his bow, and his sash. (1 Samuel 18:3-4)");
@@ -175,7 +195,7 @@ function regionCam() {
 function regionInit() {
   region.inited = true;
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
-  const extra = Math.floor(poms / 4); david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: one more heart, for good
+  const extra = Math.floor(poms / 4) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: the meter grows by a heart's worth, for good
   david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
 }
 function regionGo(x, facing, after = null) {   // fade out, move, fade in (after: what happens once he's moved, e.g. onto a rope)
@@ -190,7 +210,10 @@ function updateRegion(dt) {
   if (r !== region.room) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
+    for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.fade = 0; }   // come back in: they're whole again
+    region.drops.length = 0;
   }
+  updateBreaks(dt);
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
@@ -333,13 +356,91 @@ function takeRelic(f) {
   if (f.kind === "oil") { david.lampOil += 20; toast("An oil jar! Your lamp will burn longer."); return; }
   if (f.kind === "pomegranate") {
     const n = region.save.taken.filter(id => id.startsWith("g_pom")).length;
-    if (n % 4 === 0) { david.maxHearts++; david.hearts = david.maxHearts; toast("A pomegranate! Four of them: one more heart, for good."); }
-    else { david.hearts = Math.min(david.maxHearts, david.hearts + 1); toast(`A pomegranate! (${n % 4} of 4 for one more heart)`); }
+    if (n % 4 === 0) { david.maxHearts += RTUNE.HP_PER_HEART; david.hearts = david.maxHearts; toast("A pomegranate! Four of them: your hearts go up for good."); }
+    else { david.hearts = Math.min(david.maxHearts, david.hearts + RTUNE.HP_PER_HEART); toast(`A pomegranate! (${n % 4} of 4 to raise your hearts)`); }
   }
 }
 function regionFireLit(f) {   // an olive press (a campfire, for now): save here
   if (!REGION_ON) return;
   region.save.at = Math.round((f.x - 30) / T); regionWrite();
+}
+
+// ---- health, and things to break (Glen 11-03: Castlevania-style) ----
+const regionHit = fromX => {   // what a hit takes off: by whatever's nearest where it came from
+  let best = null, bd = 90;
+  const near = (k, kind) => { const dd = Math.abs((k.x || 0) - fromX); if (dd < bd) { bd = dd; best = kind; } };
+  if (typeof critters !== "undefined") for (const k of critters) near(k, k.kind);
+  if (typeof snakes !== "undefined") for (const s of snakes) near(s, s.kind);
+  return RTUNE.HIT[best] ?? RTUNE.HIT.default;
+};
+function breakBox(b) {
+  const k = RTUNE.BREAK[b.kind], img = ITEM[k.art], w = img && img.naturalHeight ? img.naturalWidth * k.h / img.naturalHeight : k.h;
+  return { x0: b.x - w / 2, x1: b.x + w / 2, y0: b.y - k.h, y1: b.y };
+}
+function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
+  if (!REGION_ON) return false;
+  for (const b of region.breaks) {
+    if (b.broken) continue;
+    const q = breakBox(b);
+    if (s.x > q.x0 - 6 && s.x < q.x1 + 6 && s.y > q.y0 - 6 && s.y < q.y1) { smash(b); if (typeof stoneHit === "function") stoneHit(s, 0.6); return true; }
+  }
+  return false;
+}
+function smash(b) {
+  const k = RTUNE.BREAK[b.kind]; b.broken = true; b.fade = 1;
+  const q = breakBox(b), cx = b.x, cy = (q.y0 + q.y1) / 2;
+  for (let i = 0; i < 16; i++) bits.push({ x: cx + (Math.random() - 0.5) * (q.x1 - q.x0) * 0.6, y: cy, vx: (Math.random() - 0.5) * 420, vy: -Math.random() * 460, life: 0.8, color: k.bits[i % 2] });
+  let roll = Math.random() * 100, what = "none";
+  for (const [name, n] of RTUNE.DROPS) { if (roll < n) { what = name; break; } roll -= n; }
+  if (what === "olives") { for (let i = 0; i < 3; i++) olives.push({ x: cx + (i - 1) * 16, y: cy, vx: (i - 1) * 90, vy: -260 - Math.random() * 120, falling: true, kind: i % 2 ? "purple" : "green", taken: false, t: 0, placed: false }); }
+  else if (what !== "none") region.drops.push({ kind: what, x: cx, y: cy, vx: (Math.random() - 0.5) * 80, vy: -300, falling: true, t: 0 });
+}
+function updateBreaks(dt) {
+  const d = david;
+  for (const b of region.breaks) if (b.broken && b.fade > 0) b.fade = Math.max(0, b.fade - dt * 2.5);
+  for (const o of region.drops) {
+    if (o.taken) continue;
+    fall(o, dt); o.t += dt;
+    if (o.t > 12) { o.taken = true; continue; }   // gone if you leave it (it blinks first)
+    if (Math.abs(o.x - d.x) < 34 && d.y > o.y - 70 && d.y - d.h < o.y + 10 && d.deadT <= 0) {
+      o.taken = true; d.hearts = Math.min(d.maxHearts, d.hearts + RTUNE.HEAL[o.kind]); sfx("heal", undefined, 0.6);
+      for (let i = 0; i < 8; i++) bits.push({ x: o.x, y: o.y - 14, vx: (Math.random() - 0.5) * 260, vy: -Math.random() * 320, life: 0.5, color: "#ff8a8a" });
+    }
+  }
+  for (let i = region.drops.length - 1; i >= 0; i--) if (region.drops[i].taken) region.drops.splice(i, 1);
+}
+function drawBreaks(camX) {
+  const now = performance.now() / 1000;
+  for (const b of region.breaks) {
+    const k = RTUNE.BREAK[b.kind], x = b.x - camX; if (x < -150 || x > W + 150) continue;
+    if (k.light && !b.broken) {   // a flame's glow
+      const fy = b.y - k.h * 0.85, r = k.h * 0.9 + Math.sin(now * 7 + b.x) * 3;
+      const g = ctx.createRadialGradient(x, fy, 2, x, fy, r); g.addColorStop(0, "rgba(255,210,120,0.45)"); g.addColorStop(1, "rgba(255,190,90,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - r, fy - r, r * 2, r * 2);
+    }
+    const art = b.broken ? k.dark : k.art, img = art && ITEM[art];
+    if (b.broken && !k.dark) { if (b.fade > 0 && ITEM[k.art]) drawItem(k.art, x, b.y, k.h / ITEM[k.art].naturalHeight, b.fade * 0.5); continue; }
+    if (img && img.naturalHeight) drawItem(art, x, b.y, k.h / img.naturalHeight);
+  }
+  for (const o of region.drops) {
+    const big = o.kind === "heart_big", h = big ? 34 : 20, img = HUD.heart_full;
+    if (o.t > 9 && Math.floor(o.t * 8) % 2) continue;   // blinking: about to go
+    if (img && img.naturalWidth) { const w = img.naturalWidth * h / img.naturalHeight; ctx.drawImage(img, o.x - camX - w / 2, o.y - h - (o.falling ? 0 : 2 + Math.sin(o.t * 4) * 2), w, h); }
+  }
+}
+function drawRegionHealth() {   // main.js drawHearts: the health meter instead of a row of hearts
+  const d = david, px = RTUNE.METER_PX, bw = d.maxHearts * px, bh = 16, x1 = W - 20, x0 = x1 - bw, y = 22;
+  const f = Math.max(0, Math.min(1, d.hearts / d.maxHearts));
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fillRect(x0 - 3, y - 3, bw + 6, bh + 6);
+  ctx.fillStyle = "#4a1414"; ctx.fillRect(x0, y, bw, bh);
+  const g = ctx.createLinearGradient(0, y, 0, y + bh); g.addColorStop(0, "#ff6b5a"); g.addColorStop(1, "#b81d1d");
+  ctx.fillStyle = g; ctx.fillRect(x0, y, bw * f, bh);
+  ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1;   // a tick every heart's worth (10)
+  for (let v = RTUNE.HP_PER_HEART; v < d.maxHearts; v += RTUNE.HP_PER_HEART) { ctx.beginPath(); ctx.moveTo(x0 + v * px + 0.5, y); ctx.lineTo(x0 + v * px + 0.5, y + bh); ctx.stroke(); }
+  ctx.restore();
+  const iw = hudIcon("heart_full", x0 - 42, y - 8, 32);
+  ctx.textAlign = "right"; hudText(`${Math.ceil(Math.max(0, d.hearts))} / ${d.maxHearts}`, x1, y + bh + 24, 18); ctx.textAlign = "left";
 }
 
 // ---- drawing ----
@@ -361,6 +462,7 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
 function drawRegion(camX) {
   if (!REGION_ON) return;
   const d = david, now = performance.now() / 1000;
+  drawBreaks(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
     drawDoorArt(o, x);
