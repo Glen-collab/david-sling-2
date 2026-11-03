@@ -4560,16 +4560,28 @@ window.SPRITE_DATA = {
   "ay": 285,
   "align": "feet"
  },
+ "raider_down": {
+  "src": "../assets/sprites/raider_down.png",
+  "frames": 14,
+  "w": 445,
+  "h": 248,
+  "ms": 432,
+  "loop": false,
+  "pingpong": false,
+  "ax": 117,
+  "ay": 245,
+  "align": "feet"
+ },
  "raider_flee": {
   "src": "../assets/sprites/raider_flee.png",
-  "frames": 4,
-  "w": 241,
-  "h": 325,
-  "ms": 90,
-  "loop": true,
+  "frames": 8,
+  "w": 269,
+  "h": 247,
+  "ms": 68,
+  "loop": false,
   "pingpong": false,
-  "ax": 151,
-  "ay": 323,
+  "ax": 157,
+  "ay": 245,
   "align": "feet"
  },
  "raider_grab": {
@@ -4586,14 +4598,14 @@ window.SPRITE_DATA = {
  },
  "raider_hit": {
   "src": "../assets/sprites/raider_hit.png",
-  "frames": 1,
-  "w": 178,
-  "h": 365,
-  "ms": 120,
-  "loop": true,
+  "frames": 14,
+  "w": 437,
+  "h": 266,
+  "ms": 357,
+  "loop": false,
   "pingpong": false,
-  "ax": 88,
-  "ay": 364,
+  "ax": 168,
+  "ay": 264,
   "align": "feet"
  },
  "raider_idle": {

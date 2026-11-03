@@ -121,6 +121,10 @@ Last updated 2026-10-26. Read START_HERE.md and DESIGN.md first.
   sheet is cut with `--mirror`; 1.0): `raider_idle` (clip3), `_walk` (clip1: sneaking, crouched, spear low, 18 frames),
   `_run` (clip2: charging, 18 frames), `_attack` (clip4, the whole clip, `--pad 40`: the arm thrusts but Grok's spear
   wanders, pulled back two-handed with the butt sticking out; **Glen is painting the spear** to follow the arm thrust).
+  Second batch: `_hit` (clip5, 1-120: a stone to the head, flung back, spear flying, recovers into a crouch; the stone
+  and the cartoon impact lines that floated free were removed), `_down` (clip6: sits dazed holding his head, spear on
+  the ground, then leans back; hold the last frame), `_flee` (clip7, frames 1-13 only, a stand-in: after that Grok
+  turns him to run away from the camera and then toward it; asked Glen for a side-view re-roll).
 - Benaiah (2026-11-02, Glen's nine clips `benaiah_clip1-9.mp4`; in 9-4 The Window; drawn at 1.3):
   `benaiah_idle` (clip1), `_walk` (clip2), `_talk` (clip3, 70-118, played as a loop), `_run` (clip4, 20-88; after that he
   turns to the camera), `_smash` (clip5, staff overhead and down; the staff goes off the top of the video in the overhead

@@ -1,11 +1,11 @@
 {
-  "frames": 4,
-  "frame_w": 241,
-  "frame_h": 325,
-  "ms_per_frame": 90,
-  "loop": true,
+  "frames": 8,
+  "frame_w": 269,
+  "frame_h": 247,
+  "ms_per_frame": 68,
+  "loop": false,
   "align": "feet",
-  "anchor_x": 151,
-  "anchor_y": 323,
-  "source": "r_flee_m.png"
+  "anchor_x": 157,
+  "anchor_y": 245,
+  "source": "david2"
 }
