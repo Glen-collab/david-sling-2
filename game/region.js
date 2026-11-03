@@ -33,7 +33,6 @@ const RTUNE = {
   LEDGE_TOP: 24,     // ...the middle of him crouched on top at the end, px from the edge
   WELL_OPEN_X: 700 / 1202,   // ...the middle of its open side, across the picture
   WELL_SINK: 4,      // ...set this far into the ground
-  WELL_RIM: 17 * 36 + 4 - 987 * 108 / 1202 + 455 * 108 / 1202, WELL_DEEP: 120,   // the front rim's top (y): it hides him going down; how far he goes before the fade
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
   DOOR_REACH: 46,    // px from a door's middle where Up works
@@ -279,7 +278,7 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
     if (Math.abs(d.x - o.x) > RTUNE.DOOR_REACH) continue;
     if (o.kind === "well" && hasSkill("rope")) {   // up onto the rim (Glen's climb-over clip), then down inside
       const edge = wellLeft(o);
-      region.climb = { kind: "ledge", dir: 1, ax: edge, t: 0, then: () => { region.climb = { kind: "well", dir: 1, x: o.x, dist: 0 }; david.x = o.x; david.y = RTUNE.WELL_RIM; } };
+      region.climb = { kind: "ledge", dir: 1, ax: edge, t: 0, then: () => wellDown() };
       d.x = edge; d.y = GR * T; d.vx = d.vy = 0; d.facing = 1;
       return true;
     }
@@ -302,27 +301,10 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
   if (d.state !== "idle") setState("idle");
   if (region.trans) return true;   // fading between rooms: hold still
   const v = (held("down") ? 1 : 0) - (held("up") ? 1 : 0);
-  if (c.kind === "well") {   // into the well (down to the cisterns) or up out of it (back into the town)
-    const sp = RTUNE.CLIMB_SPEED * 0.8;
-    d.x = c.x; d.y += c.dir * sp * dt; c.dist += sp * dt;
-    if (c.dir > 0 && d.y > RTUNE.WELL_RIM + RTUNE.WELL_DEEP && !c.gone) {   // down out of sight: on to the rope in the cisterns
-      c.gone = true; const to = region.doors.find(o => o.id === "d_wellrope");
-      regionGo(to.x, 1, () => {
-        region.climb = { kind: "rope", x: to.x, dist: 0 }; david.x = to.x; david.y = RTUNE.ROPE_TOP + RTUNE.ROPE_HANG; snapCamera();
-        if (!region.ropeTold) { region.ropeTold = true; toast("Down the rope: hold Down. Up climbs back out. A lets go."); }
-      });
-    }
-    if (c.dir < 0 && d.y <= RTUNE.WELL_RIM) {   // up on the rim, then back down the outside (the climb-over clip, backwards)
-      const o = region.doors.find(q => q.kind === "well" && Math.abs(q.x - c.x) < 4), edge = wellLeft(o);
-      region.climb = { kind: "ledge", dir: -1, ax: edge, t: 0, then: () => { region.climb = null; david.x = edge + RTUNE.LEDGE_FEET; david.y = GR * T; david.onGround = true; david.facing = -1; } };
-      d.x = edge; d.y = GR * T;
-    }
-    return true;
-  }
   if (c.kind === "ledge") {   // one go of the climb-over clip, forwards (up) or backwards (down)
     const sh = SPR[RTUNE.LEDGE_SHEET];
     c.t += dt; d.x = c.ax; d.y = GR * T;
-    if (!sh || c.t >= sh.frames * sh.ms / 1000) c.then();
+    if ((!sh || c.t >= sh.frames * sh.ms / 1000) && !c.done) { c.done = true; c.then(); }   // (it holds the last frame after)
     return true;
   }
   if (c.kind === "rope") {
@@ -330,7 +312,7 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }   // down on the floor
     if (d.y <= RTUNE.ROPE_TOP + RTUNE.ROPE_HANG - 10 && !c.gone) {   // up into the well shaft: out into the town
       c.gone = true; const w = region.doors.find(o => o.id === "d_well");
-      regionGo(w.x, 1, () => { region.climb = { kind: "well", dir: -1, x: w.x, dist: 0 }; david.x = w.x; david.y = RTUNE.WELL_RIM + RTUNE.WELL_DEEP; snapCamera(); });
+      regionGo(w.x, 1, () => { wellOut(w); snapCamera(); });
     }
     if (pressed("a") && !c.gone) { region.climb = null; setState("jump"); }   // let go
     return true;
@@ -344,6 +326,18 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     return true;
   }
   return true;
+}
+function wellDown() {   // crouched on the rim: the fade, and he's on the rope in the cisterns
+  const to = region.doors.find(o => o.id === "d_wellrope");
+  regionGo(to.x, 1, () => {
+    region.climb = { kind: "rope", x: to.x, dist: 0 }; david.x = to.x; david.y = RTUNE.ROPE_TOP + RTUNE.ROPE_HANG; snapCamera();
+    if (!region.ropeTold) { region.ropeTold = true; toast("Down the rope: hold Down. Up climbs back out. A lets go."); }
+  });
+}
+function wellOut(o) {   // out of the well: crouched on the rim, he climbs down the outside (the climb-over clip, backwards)
+  const edge = wellLeft(o);
+  region.climb = { kind: "ledge", dir: -1, ax: edge, t: 0, then: () => { region.climb = null; david.x = edge + RTUNE.LEDGE_FEET; david.y = GR * T; david.onGround = true; david.facing = -1; } };
+  david.x = edge; david.y = GR * T;
 }
 const wellLeft = o => o.x - (RTUNE.WELL_OPEN_X - RTUNE.WELL_LEFT_X) * RTUNE.WELL_W;   // the well's left side (x)
 function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
@@ -362,9 +356,6 @@ function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
   // over so his hands are on our rope
   const n = "david_climb", i = Math.floor(c.dist / TUNE.CLIMB_STRIDE) % SPR[n].frames;
   const hx = x + (SPR[n].ax - RTUNE.ROPE_IN_HANDS) * SCALE * (TUNE.SPRITE_SIZE[n] || 1);
-  if (c.kind === "well") {   // the rim hides what's down in the well
-    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, RTUNE.WELL_RIM); ctx.clip(); drawSprite(n, i, hx, y, 1); ctx.restore(); return true;
-  }
   drawSprite(n, i, hx, y, 1); return true;
 }
 function sealSay(s) {
