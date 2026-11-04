@@ -85,6 +85,9 @@ const TUNE = {
   CARRY_JUMP2: 0.95,      // second jump while carrying the lamb (1 = as strong as the flip)
   TILE: 36,
   HEARTS: 4,
+  // (Glen 11-03, his jump-off-the-wall clip) a long drop: the falling pose past DROP_POSE px, and the heavy landing
+  // (crouch, then up) past HEAVY_FALL px, both measured below where he left the ground (off a wall or a ledge). The landing plays at LAND_HEAVY_MS a frame; walking or jumping cuts it short.
+  DROP_POSE: 50, HEAVY_FALL: 4 * 36, LAND_HEAVY_MS: 85,
   LIVES: 5,
   OLIVES_PER_LIFE: 100,   // olives to fill the oil flask = 1 extra life
   HURT_INVINCIBLE: 1.3,   // seconds of flashing after a hit
@@ -2473,6 +2476,7 @@ function updateDavid(dt) {
   // --- gravity + collisions
   d.vy = Math.min(TUNE.MAX_FALL, d.vy + TUNE.GRAVITY * dt);
   const wasAir = !d.onGround, fallSpeed = d.vy;
+  if (d.onGround || d.airTop === undefined) d.airTop = d.y;   // where he left the ground (a jump up and back down isn't a drop)
   collideBody(d, BODY_W, d.h, dt);
   // remember the last solid ground he stood on (not a ledge that might crumble), for climbing back out of a pit
   if (d.onGround) {
@@ -2496,9 +2500,11 @@ function updateDavid(dt) {
     if (fallSpeed > 600 && !d.carrying && LEVEL_STAGE === "3-4") {   // the muddy slope: his feet go out from under him
       setState("slip"); d.vx = d.facing * Math.max(TUNE.SLIP_SLIDE, Math.abs(d.vx) * 0.8); d.jumpBuf = 0; return;
     }
+    if (d.y - d.airTop > TUNE.HEAVY_FALL && !d.carrying && SPR.david_land_heavy) { setState("landHeavy"); d.vx *= 0.3; return; }   // off a wall
     if (fallSpeed > 600 && !d.carrying) { setState("land"); return; }
   }
   if (d.state === "land" && d.t < 0.2 && dir === 0) return;
+  if (d.state === "landHeavy" && !animDone("david_land_heavy", d.t, TUNE.LAND_HEAVY_MS) && dir === 0 && !d.jumpBuf) return;
   if (d.carrying) { setState("carry"); return; }
   if (d.h === LOW_H) { setState(Math.abs(d.vx) > 20 ? "crawl" : "crouch"); return; }
   const sp = Math.abs(d.vx);
@@ -2594,10 +2600,13 @@ function drawDavid(camX) {
       // pick the in-air frame from vertical speed: rising -> apex -> falling
       const k = Math.max(0, Math.min(1, (d.vy + TUNE.JUMP_SPEED) / (2 * TUNE.JUMP_SPEED)));
       const i = 1 + Math.round(k * 8);
+      const drop = d.vy > 0 && d.y - (d.airTop ?? d.y) > TUNE.DROP_POSE && SPR.david_drop;   // a long drop: Glen's falling pose
+      if (drop) { drawSprite("david_drop", Math.min(SPR.david_drop.frames - 1, Math.floor((d.y - d.airTop - TUNE.DROP_POSE) / 30)), x, y, d.facing); break; }
       drawSprite("david_jump_air", i, x, y - d.h / 2 - 6, d.facing); break;
     }
     case "flip": drawSprite("david_flip", frameOf("david_flip", t, 60), x, y - d.h / 2 - 6, d.facing); break;
     case "land": drawSprite("david_jump_land", frameOf("david_jump_land", t, 45), x, y, d.facing); break;
+    case "landHeavy": drawSprite("david_land_heavy", frameOf("david_land_heavy", t, TUNE.LAND_HEAVY_MS), x, y, d.facing); break;
     case "slip": drawSprite("david_slip", frameOf("david_slip", t, TUNE.SLIP_MS), x, y, d.facing); break;
     case "topout": drawSprite("david_topout", d.topK || 0, x, y, (d.topK || 0) < 2 ? 1 : d.topDir); break;   // back view, then from the side
     case "climb": drawSprite("david_climb", Math.floor((d.climbDist || 0) / TUNE.CLIMB_STRIDE) % SPR.david_climb.frames, x, y, 1); break;   // his back to us

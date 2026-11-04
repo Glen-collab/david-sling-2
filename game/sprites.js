@@ -1572,6 +1572,18 @@ window.SPRITE_DATA = {
   "ay": 115,
   "align": "center"
  },
+ "david_drop": {
+  "src": "../assets/sprites/david_drop.png",
+  "frames": 8,
+  "w": 172,
+  "h": 267,
+  "ms": 47,
+  "loop": false,
+  "pingpong": false,
+  "ax": 89,
+  "ay": 265,
+  "align": "feet"
+ },
  "david_flip": {
   "src": "../assets/sprites/david_flip.png",
   "frames": 12,
@@ -1750,6 +1762,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 99,
   "ay": 233,
+  "align": "feet"
+ },
+ "david_land_heavy": {
+  "src": "../assets/sprites/david_land_heavy.png",
+  "frames": 14,
+  "w": 182,
+  "h": 246,
+  "ms": 143,
+  "loop": false,
+  "pingpong": false,
+  "ax": 103,
+  "ay": 244,
   "align": "feet"
  },
  "david_ledge_climb": {
