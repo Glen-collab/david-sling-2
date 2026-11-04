@@ -37,7 +37,7 @@ const RTUNE = {
   LEDGE_SHEET: "david_ledge_climb",   // Glen's climb-over clip (11-03): walk up, hands on, hop up, crouched on top
   LEDGE_FEET: -11,   // ...his feet at the start, px from the wall's edge (the sheet's anchor)
   LEDGE_TOP: 24,     // ...the middle of him crouched on top at the end, px from the edge
-  WELL_SINK: 4,      // ...set this far into the ground
+  WELL_SINK: 18,     // ...set this far into the ground (Glen 11-04: down into the topsoil, so the round base doesn't show)
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
   DOOR_REACH: 46,    // px from a door's middle where Up works
