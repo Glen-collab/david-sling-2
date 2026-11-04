@@ -2184,6 +2184,18 @@ window.SPRITE_DATA = {
   "ay": 137,
   "align": "center"
  },
+ "david_well_climb": {
+  "src": "../assets/sprites/david_well_climb.png",
+  "frames": 16,
+  "w": 450,
+  "h": 350,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 288,
+  "ay": 342,
+  "align": "well"
+ },
  "dog_run": {
   "src": "../assets/sprites/dog_run.png",
   "frames": 6,

@@ -25,13 +25,18 @@ const RTUNE = {
   ROPE_IN_HANDS: 29, // where the rope is in his hands in david_climb (sheet px from the left of a frame)
   FACE_OFF: 14,      // his feet this far out from the face while he climbs (Glen 11-03: close, so his hands and knee are on the rock)
   TOP_OUT: 70,       // feet this close below the top: he's over it
-  WELL_W: 108,       // Glen's well picture (town_well, 1202 x 987) drawn this wide (Glen 11-03: 108 puts the rim at the
-                     // height of the wall in his climb-over clip, waist high on David)
-  WELL_LEFT_X: 130 / 1202,   // ...the left side of the well, across the picture: where he puts his hands to climb up
+  // Glen's well (11-04, tools/cut_well_climb.py): town_well (404 x 400) and his climb-out sheet david_well_climb, the
+  // well in every frame, on the picture's own grid. Both are drawn at David's sprite size times WELL_K (his David in the
+  // sheet is that much smaller than our sheets), so the sheet sits exactly over the well.
+  WELL_K: 1.03,
+  WELL_SHEET: "david_well_climb", WELL_MS: 100,
+  WELL_OPEN_X: 268,  // ...in the picture: the middle of the hole (where he stands in frame 0; the well's spot is here)
+  WELL_BOTTOM: 282,  // ...in the picture: the well's base
+  WELL_RIM: [62, 182],   // ...where he's crouched on the rim at the end: picture px right of the hole's middle, up from the base
+  WELL_HOP: 0.3,     // s: the hop from the ground up onto the rim, going in
   LEDGE_SHEET: "david_ledge_climb",   // Glen's climb-over clip (11-03): walk up, hands on, hop up, crouched on top
   LEDGE_FEET: -11,   // ...his feet at the start, px from the wall's edge (the sheet's anchor)
   LEDGE_TOP: 24,     // ...the middle of him crouched on top at the end, px from the edge
-  WELL_OPEN_X: 700 / 1202,   // ...the middle of its open side, across the picture
   WELL_SINK: 4,      // ...set this far into the ground
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
@@ -271,15 +276,14 @@ function updateRegion(dt) {
   }
 }
 // ---- climbing (Glen 11-03): the rope down the well and back up (david_climb, his back to us), and the watchtower's
-//      face (david_wallclimb_side). region.climb while he's on one: { kind: "rope" | "well" | "wall", ... }
+//      face (david_wallclimb_side). region.climb while he's on one: { kind: "rope" | "wellhop" | "well" | "wall" | "ledge", ... }
 function regionClimbStart(d) {   // Up on the ground: by the well, the rope in the cisterns, or a rock face
   const r = roomAt(d.x);
   for (const o of region.doors) {
     if (Math.abs(d.x - o.x) > RTUNE.DOOR_REACH) continue;
-    if (o.kind === "well" && hasSkill("rope")) {   // up onto the rim (Glen's climb-over clip), then down inside
-      const edge = wellLeft(o);
-      region.climb = { kind: "ledge", dir: 1, ax: edge, t: 0, then: () => wellDown() };
-      d.x = edge; d.y = GR * T; d.vx = d.vy = 0; d.facing = 1;
+    if (o.kind === "well" && hasSkill("rope")) {   // a hop up onto the rim, then down inside (Glen's sheet backwards)
+      region.climb = { kind: "wellhop", o, x0: d.x, t: 0 };
+      d.vx = d.vy = 0; d.facing = wellRim(o).x >= d.x ? 1 : -1;
       return true;
     }
     if (o.kind === "rope") { region.climb = { kind: "rope", x: o.x, dist: 0 }; d.x = o.x; d.vx = d.vy = 0; return true; }
@@ -301,6 +305,26 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
   if (d.state !== "idle") setState("idle");
   if (region.trans) return true;   // fading between rooms: hold still
   const v = (held("down") ? 1 : 0) - (held("up") ? 1 : 0);
+  if (c.kind === "wellhop") {   // up onto the rim
+    const r = wellRim(c.o), k = Math.min(1, (c.t += dt) / RTUNE.WELL_HOP);
+    d.x = c.x0 + (r.x - c.x0) * k; d.y = GR * T + (r.y - GR * T) * k - Math.sin(k * Math.PI) * 40;
+    if (k >= 1) { region.climb = { kind: "well", o: c.o, dir: -1, t: 0 }; d.x = c.o.x; d.y = GR * T; }
+    return true;
+  }
+  if (c.kind === "well") {   // Glen's climb-out sheet: forwards (out) or backwards (in); he's drawn by it, well and all
+    const sh = SPR[RTUNE.WELL_SHEET];
+    c.t += dt; d.x = c.o.x; d.y = GR * T;
+    if ((!sh || c.t >= sh.frames * RTUNE.WELL_MS / 1000) && !c.done) {
+      c.done = true;
+      if (c.dir < 0) wellDown();
+      else {   // crouched on the rim: he hops down off it, out to the right
+        const r = wellRim(c.o); region.climb = null;
+        d.x = r.x; d.y = r.y; d.facing = 1; d.onGround = false;
+        d.vx = TUNE.WALK_SPEED * 0.55; d.vy = -TUNE.JUMP_SPEED * 0.3; setState("jump");
+      }
+    }
+    return true;
+  }
   if (c.kind === "ledge") {   // one go of the climb-over clip, forwards (up) or backwards (down)
     const sh = SPR[RTUNE.LEDGE_SHEET];
     c.t += dt; d.x = c.ax; d.y = GR * T;
@@ -334,14 +358,20 @@ function wellDown() {   // crouched on the rim: the fade, and he's on the rope i
     if (!region.ropeTold) { region.ropeTold = true; toast("Down the rope: hold Down. Up climbs back out. A lets go."); }
   });
 }
-function wellOut(o) {   // out of the well: crouched on the rim, he climbs down the outside (the climb-over clip, backwards)
-  const edge = wellLeft(o);
-  region.climb = { kind: "ledge", dir: -1, ax: edge, t: 0, then: () => { region.climb = null; david.x = edge + RTUNE.LEDGE_FEET; david.y = GR * T; david.onGround = true; david.facing = -1; } };
-  david.x = edge; david.y = GR * T;
+function wellOut(o) {   // out of the well: Glen's climb-out sheet, then he hops down off the rim
+  region.climb = { kind: "well", o, dir: 1, t: 0 };
+  david.x = o.x; david.y = GR * T;
 }
-const wellLeft = o => o.x - (RTUNE.WELL_OPEN_X - RTUNE.WELL_LEFT_X) * RTUNE.WELL_W;   // the well's left side (x)
+const wellK = () => SCALE * RTUNE.WELL_K;   // game px per px of Glen's well picture
+const wellRim = o => ({ x: o.x + RTUNE.WELL_RIM[0] * wellK(), y: GR * T + RTUNE.WELL_SINK - RTUNE.WELL_RIM[1] * wellK() });
 function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
   const c = REGION_ON && region.climb; if (!c) return false;
+  if (c.kind === "wellhop") { drawSprite("david_jump_air", 4, x, y - d.h / 2 - 6, d.facing); return true; }
+  if (c.kind === "well") {   // the sheet's anchor is the hole's middle at the well's base, so it lands on the well
+    const sh = SPR[RTUNE.WELL_SHEET]; if (!sh) return false;
+    const k = Math.min(sh.frames - 1, Math.floor(c.t * 1000 / RTUNE.WELL_MS)), i = c.dir > 0 ? k : sh.frames - 1 - k;
+    drawSprite(RTUNE.WELL_SHEET, i, x, y + RTUNE.WELL_SINK, 1, RTUNE.WELL_K); return true;
+  }
   if (c.kind === "ledge") {
     const sh = SPR[RTUNE.LEDGE_SHEET]; if (!sh) return false;
     const k = Math.min(sh.frames - 1, Math.floor(c.t * 1000 / sh.ms)), i = c.dir > 0 ? k : sh.frames - 1 - k;
@@ -540,8 +570,8 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     // off, the rope already tied on; drawn so its open side is over the well's spot (David goes down there)
     // (before he has the rope: Glen's same well with no rope on it, town_well_no_rope, cut to the same frame)
     const nr = ITEM.town_well_no_rope, img = !hasSkill("rope") && nr && nr.naturalWidth ? nr : ITEM.town_well;
-    const w = RTUNE.WELL_W, h = img.naturalHeight * w / img.naturalWidth;
-    ctx.drawImage(img, x - RTUNE.WELL_OPEN_X * w, y - h + RTUNE.WELL_SINK, w, h);
+    const k = wellK();
+    ctx.drawImage(img, x - RTUNE.WELL_OPEN_X * k, y + RTUNE.WELL_SINK - RTUNE.WELL_BOTTOM * k, img.naturalWidth * k, img.naturalHeight * k);
   } else if (o.kind === "well") {   // a ring of stones (and with the rope: a beam over it and the rope tied on, hanging in)
     if (hasSkill("rope")) {
       ctx.fillStyle = "#6b4f33"; ctx.fillRect(x - 50, y - 190, 8, 140); ctx.fillRect(x + 42, y - 190, 8, 140); ctx.fillRect(x - 56, y - 196, 112, 10);
