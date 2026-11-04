@@ -4,7 +4,8 @@ python tools/cut_well_climb.py      (then: python tools/install_david2.py && pyt
 
 In:  david-sling-2-art/items/town_well_source_2.png        the well with the rope tied on (404 x 400)
      david-sling-2-art/items/town_well_source_no_rope.png  the same well, no rope
-     david-sling-2-art/sprites/david_well_climb.png        16 frames of 404 x 400: David climbing out, the well in every frame
+     david-sling-2-art/sprites/david_ledge_climb_sheet_2.png  16 frames of 404 x 400: David climbing out, the well in every frame
+                                                           (his lighter David; david_well_climb.png was the first, darker one)
 Out: assets/items/town_well.png, town_well_no_rope.png      (the no-rope one moved to sit exactly on the rope one)
      david-sling-2-art/sprites/david_well_climb_sheet.png + .json   (Glen's file is left as it is)
 
@@ -59,7 +60,9 @@ fixed.save(os.path.join(ITEMS, "town_well_no_rope.png"))
 print(f"no-rope well moved {-ndx},{-ndy}")
 
 # the climb
-src = Image.open(os.path.join(ART, "sprites", "david_well_climb.png")).convert("RGBA")
+# (Glen 11-04) his second pass, a lighter David (the first, david_well_climb.png, had the darker tunic)
+SRC = "david_ledge_climb_sheet_2.png"
+src = Image.open(os.path.join(ART, "sprites", SRC)).convert("RGBA")
 n = src.width // FW
 frames = []
 for i in range(n):
@@ -78,6 +81,6 @@ sheet = Image.new("RGBA", (CW * n, CH))
 for i, f in enumerate(frames): sheet.paste(f, (i * CW, 0))
 sheet.save(os.path.join(ART, "sprites", "david_well_climb_sheet.png"))
 j = {"frames": n, "frame_w": CW, "frame_h": CH, "ms_per_frame": MS, "loop": False, "align": "well",
-     "anchor_x": OPEN_X - X0, "anchor_y": BOTTOM - Y0, "source": "david_well_climb.png (Glen, 11-04), lined up on town_well_source_2.png"}
+     "anchor_x": OPEN_X - X0, "anchor_y": BOTTOM - Y0, "source": SRC + " (Glen, 11-04), lined up on town_well_source_2.png"}
 json.dump(j, open(os.path.join(ART, "sprites", "david_well_climb.json"), "w"), indent=2)
 print("->", n, "frames,", CW, "x", CH)
