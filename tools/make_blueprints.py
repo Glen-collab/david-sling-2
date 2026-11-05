@@ -17,6 +17,7 @@ Colors (no legend in the pictures, so the AI doesn't paint one):
   pale grey   a ledge he can jump up through (a beam, a shelf, a rooftop edge)
   black       a doorway or stairway        dark blue   a pit / water in the floor
   magenta     a passage that's sealed until later (paint it open: the game draws the seal on top)
+  red figures David's size (112 px tall), on the floor and the ledges: everything is painted to his scale, and they're left out
 The panels overlap by OVER px so the paintings can be blended where they meet.
 """
 import json, math, os, sys
@@ -53,7 +54,32 @@ def room_picture(r):
         if o["kind"] == "rope": d.rectangle([x - 50, 0, x + 50, 40], fill=DOOR)   # the bottom of the well shaft, up in the ceiling
     if r.get("crack"):
         k = r["crack"]; d.rectangle([k["c"] * T, k["r"] * T, (k["c"] + k["w"]) * T - 1, (k["r"] + k["h"]) * T - 1], fill=SEAL)
+    # (Glen 11-04: the cellars came out giant-sized, David tiny) red figures the size of David (112 px), standing on the
+    # floor and on the ledges, so the AI sizes the room to him
+    busy = [o["c"] * T + T // 2 for o in r["doors"]] + ([r["crack"]["c"] * T] if r.get("crack") else [])
+    busy += [c * T for c in range(r["w"]) if rows[GR][c] == "0"]
+    x = 240
+    while x < W - 100:
+        clear = all(rows[yy][cc] == "0" for yy in range(GR - 4, GR) for cc in range(max(0, x // T - 1), min(r["w"], x // T + 2)))
+        if all(abs(x - b) > 110 for b in busy) and clear: figure(d, x, GR * T)
+        x += 520
+    for y, row in enumerate(rows):   # one on the middle of each ledge
+        c = 0
+        while c < len(row):
+            if row[c] == "-":
+                e = c
+                while e < len(row) and row[e] == "-": e += 1
+                if all(rows[yy][(c + e) // 2] == "0" for yy in range(max(0, y - 3), y)): figure(d, (c + e) * T // 2, y * T)
+                c = e
+            else: c += 1
     return im
+
+
+def figure(d, x, feet, h=112, col=(215, 30, 30)):   # a plain person shape, feet at (x, feet)
+    top = feet - h
+    d.ellipse([x - 11, top, x + 11, top + 24], fill=col)                       # head
+    d.rounded_rectangle([x - 17, top + 26, x + 17, top + 72], 8, fill=col)     # body
+    d.rectangle([x - 14, top + 70, x - 3, feet], fill=col); d.rectangle([x + 3, top + 70, x + 14, feet], fill=col)   # legs
 
 
 rooms = D["rooms"]
