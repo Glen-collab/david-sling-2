@@ -120,6 +120,8 @@ const KIT = {
   hall_ledge_left: { w: 163, h: 72, top: 0 }, hall_ledge_mid: { w: 143, h: 67, top: 2 }, hall_ledge_right: { w: 163, h: 72, top: 0 },
   hall_rail: { w: 168, h: 79 }, hall_door: { w: 110, h: 194 }, hall_stair: { w: 175, h: 121 },
   hall_pedestal: { w: 120, h: 117 }, hall_column: { w: 63, h: 215 },
+  // (Glen 11-05) the olive press (the save point) and a campfire, side on
+  olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
 };
 const KIT_IMG = {};
 function kitImg(n) {
@@ -212,7 +214,7 @@ function buildRegion() {
   // -- The Fields: Philistine raids come later; for now the wild things, a ledge climb to a stone, and the watchtower rock
   let c = R("fields");
   ground(c, c + 83);
-  campfire(c + 4, GR - 1);   // (an olive press: the save point; a campfire until Glen paints one)
+  campfire(c + 4, GR - 1);   // an olive press: the save point (drawn as Glen's press: drawRegionFire)
   label(c + 6, 6, "Gibeah of Saul: the region test. Select = the map.");
   oliveRow(c + 9, 16, 5);
   rBreak("jar", "fields", c + 14, 16); rBreak("jar", "fields", c + 15, 16); rBreak("basket", "fields", c + 47, 16);
@@ -284,7 +286,7 @@ function buildRegion() {
     rLedge("halls", X(30), 280, 0); rRelic("g_stone_halls", "stone", c + 34, onTop(280));
     rBreak("hall_lamp", "halls", c + 34, 16);
     rPedestal("halls", c + 40);
-    campfire(c + 46, GR - 1);
+    campfire(c + 46, GR - 1); fires[fires.length - 1].look = "fire";   // a fire in the hall (the king's brazier, Jeremiah 36:22): saves too
     rLedge("halls", X(49), 430, 0); oliveRow(c + 51, onTop(430) - 0.4, 3);
     rBreak("hall_lamp", "halls", c + 56, 16); }
 
@@ -534,6 +536,18 @@ function takeRelic(f) {
     if (n % 4 === 0) { david.maxHearts += RTUNE.HP_PER_HEART; david.hearts = david.maxHearts; toast("A pomegranate! Four of them: your hearts go up for good."); }
     else { david.hearts = Math.min(david.maxHearts, david.hearts + RTUNE.HP_PER_HEART); toast(`A pomegranate! (${n % 4} of 4 to raise your hearts)`); }
   }
+}
+function drawRegionFire(f, camX) {   // main.js drawFires: true if it drew it (Glen's olive press, or his campfire)
+  if (!REGION_ON) return false;
+  const n = f.look === "fire" ? "campfire2" : "olive_press", k = KIT[n], im = kitImg(n); if (!im) return true;
+  const fl = n === "campfire2" ? 1 + Math.sin(performance.now() / 110) * 0.025 : 1, h = k.h * fl;   // the flames flicker
+  ctx.drawImage(im, Math.round(f.x - camX - k.w / 2), Math.round(f.y + 6 - h), k.w, h);
+  if (f.lit && n === "olive_press") {   // saved: a soft gold glow on the stone
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; const x = f.x - camX, y = f.y - 60;
+    const g = ctx.createRadialGradient(x, y, 4, x, y, 80); g.addColorStop(0, "rgba(255,220,120,0.22)"); g.addColorStop(1, "rgba(255,200,80,0)");
+    ctx.fillStyle = g; ctx.fillRect(x - 80, y - 80, 160, 160); ctx.restore(); return true;
+  }
+  return n === "olive_press";
 }
 function regionFireLit(f) {   // an olive press (a campfire, for now): save here
   if (!REGION_ON) return;

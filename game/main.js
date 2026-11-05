@@ -3378,7 +3378,8 @@ function updateFires(dt) {
 }
 function drawFires(camX) {
   for (const f of fires) {
-    drawItem("campfire", f.x - camX, f.y + 4, 0.55);
+    if (typeof drawRegionFire === "function" && drawRegionFire(f, camX)) continue;   // region.js: Glen's olive press
+    if (!(REGION_ON && f.look === "fire")) drawItem("campfire", f.x - camX, f.y + 4, 0.55);
     if (f.lit) {   // warm flicker
       ctx.save(); ctx.globalCompositeOperation = "lighter";
       const r = 60 + Math.sin(performance.now() / 90) * 6;
