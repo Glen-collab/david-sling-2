@@ -126,6 +126,9 @@ const TUNE = {
     david_crawl: 0.92,
     saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1,   // Saul's men: a head taller than David
     saul_walk: 1.15, saul_sit: 1.15, saul_stand: 1.15, saul_look_back: 1.15, saul_weep: 1.15, saul_throw: 1.15, saul_sleep: 1.15,   // Saul: taller than any of them (1 Samuel 9:2)
+    villager_woman_stand: 0.66, villager_woman_run: 0.66,           // (Glen 11-05, the town's singing women: his villager sheets are
+    villager_girl_stand: 0.59, villager_girl_run: 0.59,             //  drawn 1.44x David; a woman a touch shorter than him, a girl,
+    villager_braidgirl_stand: 0.5, villager_braidgirl_run: 0.5,     //  a child)
     saul_robe_cut: 1.08,   // Glen's two-shot (Saul and David): Saul kneels as tall as in saul_sit
     david_slip: 0.8,      // Glen's slip strip draws him chunkier: matched to his head size on the other sprites
     lion_prowl_carry_lamb: 1.3, lion_sit_carry_lamb: 1.3, lion_set_lamb_down: 1.24,
@@ -389,6 +392,8 @@ function controllerKind() {
 function keyText(s) {
   if (!s || s.indexOf("{") < 0) return s;
   const roll = { keyboard: "press Down + Z, or V", nes: "hold Down, then press A", snes: "press X" }[controllerKind()];
+  const sword = controllerKind() === "keyboard" ? "V" : "X";
+  s = s.replace(/\{sword\}/g, sword);
   return s.replace(/\{ROLL\}/g, roll[0].toUpperCase() + roll.slice(1)).replace(/\{roll\}/g, roll);
 }
 
@@ -2275,6 +2280,7 @@ function updateDavid(dt) {
   d.t += dt;
   for (const b in aimAgo) aimAgo[b] = held(b) ? 0 : aimAgo[b] + dt;
   if (typeof regionClimbHold === "function" && regionClimbHold(d, dt)) return;   // region.js: on a rope or a rock face
+  if (typeof regionHoldDavid === "function" && regionHoldDavid(d, dt)) return;   // region.js: a story scene has the controls
   if (typeof w9HoldDavid === "function" && w9HoldDavid(d, dt)) return;   // engedi.js: a scene has the controls
   if (typeof leapHoldDavid === "function" && leapHoldDavid(d, dt)) return;   // leap.js: the end card
   if (typeof p2HoldDavid === "function" && p2HoldDavid(d, dt)) return;
@@ -2391,7 +2397,7 @@ function updateDavid(dt) {
     if (d.throwT >= dur) { d.throwT = -1; d.runThrow = false; d.quickUsed = false; d.quickQueued = false; }
   }
 
-  if (typeof updateSword === "function") updateSword(d, dt, busy);   // engedi.js: X swings the sword
+  if (typeof updateSword === "function" && (typeof regionSword !== "function" || regionSword())) updateSword(d, dt, busy);   // (in Gibeah, once Jonathan gives it: region.js)   // engedi.js: X swings the sword
 
   // --- ladders: hold Up in front of one to climb it (Down from the top to climb down), A to jump off
   if (!busy && !d.harp && !d.carrying && d.throwT < 0) {
@@ -2533,6 +2539,7 @@ function sitHarpScale(i) { const a = TUNE.SIT_HARP_SIZES; return a[Math.min(i, a
 function drawDavid(camX) {
   const d = david, x = d.x - camX, y = d.y;
   if (drawCaveDavid(d, x, y)) return;
+  if (typeof regionDrawDavid === "function" && regionDrawDavid(d, x, y)) return;   // region.js: he's in a two-shot
   if (typeof drawRegionClimb === "function" && drawRegionClimb(d, x, y)) return;   // region.js: climbing
   if (typeof drawSwordDavid === "function" && drawSwordDavid(d, x, y)) return;   // engedi.js: mid-swing, the shield, the scenes
   if (ARMORED() && drawArmorDavid(d, x, y)) return;   // world7.js

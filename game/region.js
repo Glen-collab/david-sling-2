@@ -375,7 +375,7 @@ function buildRegion() {
     campfire(c + 46, GR - 1);   // an olive press (the save point)
     rRoof("town", X(52), 230, 1); rBreak("lamp", "town", c + 55, onTop(230));
     rRelic("g_truth_song", "truth", c + 59, onTop(230),
-      "The women came out of all the cities of Israel, singing and dancing, to meet King Saul. They sang: \"Saul has slain his thousands, and David his ten thousands.\" (1 Samuel 18:6-7)");
+      "David went out wherever Saul sent him, and behaved himself wisely; and Saul set him over the men of war. It was good in the sight of all the people, and also in the sight of Saul's servants. (1 Samuel 18:5)");   // (the song itself is the town's story scene: updateStory)
     rDeco("town", "tfg_jar", c + 50, true, 1.35);
     rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
     rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
@@ -502,7 +502,8 @@ function buildRegion() {
     rSpider("cisterns", c + 29, 170); rRat("cisterns", c + 37, 3);
     rPiece("cisterns", "c_jars", X(38), FOOT);
     rRelic("g_truth_covenant", "truth", c + 35, onTop(cy + 4),
-    "Jonathan made a covenant with David, because he loved him as his own soul. Jonathan took off the robe that was on him and gave it to David, with his armor, even his sword, his bow, and his sash. (1 Samuel 18:3-4)"); }
+    "Then the princes of the Philistines went out; and as often as they went out, David behaved himself more wisely than all the servants of Saul, so that his name was highly esteemed. (1 Samuel 18:30)"); }   // (the covenant itself is Jonathan's scene in the halls; the id stays for old saves)
+  storyBuild(R);
 }
 
 // ---- running it ----
@@ -517,7 +518,7 @@ function regionInit() {
   for (const r of REGION.rooms) for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]);   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
-  const extra = Math.floor(poms / 4) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: the meter grows by a heart's worth, for good
+  const extra = (Math.floor(poms / 4) + (regionHas("taken", "g_jonathan") ? 1 : 0)) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
   david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
 }
 function regionGo(x, facing, after = null) {   // fade out, move, fade in (after: what happens once he's moved, e.g. onto a rope)
@@ -537,7 +538,7 @@ function updateRegion(dt) {
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
-  updateBreaks(dt); updateBeasts(dt, r); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r);
+  updateBreaks(dt); updateBeasts(dt, r); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r); updateRegionScript(dt); updateStory(dt, r);
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
@@ -914,6 +915,7 @@ function drawRegion(camX) {
   drawBreaks(camX);
   drawBeasts(camX);
   drawHarpRoom(camX);
+  drawStory(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
     if (!o.kit && !(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
@@ -1133,6 +1135,137 @@ function drawHarpRoom(camX) {
     ctx.save(); ctx.fillStyle = "rgba(20,14,10,0.6)"; ctx.fillRect(bx - 6, by - 26, 332, 46);
     ctx.fillStyle = "#e8dcc4"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.fillText("The king's spirit", W / 2, by - 8);
     ctx.fillStyle = "#3a2a3a"; ctx.fillRect(bx, by, 320, 12); ctx.fillStyle = "#7fc4e8"; ctx.fillRect(bx, by, 320 * hr.calm, 12); ctx.restore();
+  }
+}
+// ---- the story (Glen 11-05): the women's song in the town (1 Samuel 18:7-9), Jonathan's covenant in the halls
+//      (18:1, 3-4), Michal in the halls once the harp room is done (18:28-29). Each plays once (saved in "taken").
+//      A scene is a list of steps run one after another ({ fn, say: [who, words], wait: s }); David waits while it plays.
+//      Scripture: WEB, checked on ebible.org 2026-11-05, "the LORD" for "Yahweh". ----
+const STORY = {
+  JON_AT: 24,          // Jonathan's column in the halls (he gives his robe and sword when David reaches him)
+  GIFTS_MS: 260,       // jonathan_gifts' frame time here (his sheet says 418: slower than a scene wants)
+  GIVE_MS: 330,        // the two-shot (jonathan_gives_david), Jonathan handing David the robe
+  GIVE_DAVID: 160,     // sheet px from Jonathan's feet to David's in the two-shot (x SCALE on screen; flipped: David on the left)
+  SAUL_AT: 24,         // the king's column in the town, and where David stops (cols before him)
+  SONG_STOP: 6,
+  WOMEN: [["villager_woman", 10], ["villager_girl", 13], ["villager_braidgirl", 15]],   // who, and the column she runs to
+  WOMAN_SPEED: 330,    // px a second as they run in (from off the left edge of the screen)
+  BOB: 7,              // px the women bob as they sing (dancing)
+  MICHAL_AT: 50,       // Michal's column in the halls, after the harp room
+  WALK_OFF: 140,       // px a second, Saul walking off
+};
+region.script = []; region.wait = 0; region.pose = null; region.story = null;
+function rPlay(steps) { region.script.push(...steps); }
+function updateRegionScript(dt) {
+  if (dialog.t > 0 && dialog.hold) return;
+  if (region.wait > 0) { region.wait -= dt; return; }
+  const s = region.script.shift(); if (!s) return;
+  if (s.fn) s.fn();
+  if (s.say) sayLine(s.say[0], s.say[1]);
+  if (s.wait) region.wait = s.wait;
+}
+function regionHoldDavid(d, dt) {   // main.js updateDavid: while a scene plays he stands where he is
+  if (!REGION_ON || (!region.script.length && region.wait <= 0)) return false;
+  d.vx = 0; d.swordT = -1; d.shield = false; d.charging = false; d.throwT = -1; d.harp = false;
+  d.vy = Math.min(TUNE.MAX_FALL, d.vy + TUNE.GRAVITY * dt); collideBody(d, BODY_W, d.h, dt);
+  if (d.state !== "idle" && !region.pose) setState("idle");
+  return true;
+}
+function regionDrawDavid(d, x, y) {   // main.js drawDavid: hidden while he's in a two-shot
+  return REGION_ON && !!region.pose && !!region.pose.hide;
+}
+const regionSword = () => !REGION_ON || ALL_SKILLS || regionHas("taken", "g_jonathan");   // Jonathan's sword (18:4): X in Gibeah only once he's given it
+function storyBuild(R) {   // buildRegion: where everyone stands
+  const done = id => regionHas("taken", id);
+  const t = R("town"), h = R("halls");
+  region.story = {
+    saul: { x: (t + STORY.SAUL_AT) * T, mode: done("g_song") ? "gone" : "stand", t: 0 },
+    women: STORY.WOMEN.map(([n, c]) => ({ n, x: done("g_song") ? (t + c) * T : -1, to: (t + c) * T, mode: done("g_song") ? "stand" : "off", t: Math.random() * 3 })),
+    songAt: (t + STORY.SAUL_AT - STORY.SONG_STOP) * T,
+    jon: { x: (h + STORY.JON_AT) * T, mode: done("g_jonathan") ? "after" : "idle", t: 0 },
+    michal: { x: (h + STORY.MICHAL_AT) * T, mode: done("g_michal") ? "idle" : "away", t: 0 },
+  };
+}
+function storyAward() {   // Jonathan's robe (one heart more, for good) and his sword
+  const d = david; d.maxHearts += RTUNE.HP_PER_HEART; d.hearts = d.maxHearts;
+  if (typeof chime === "function") { chime(4); setTimeout(() => chime(7), 150); }
+  toast("Jonathan's robe: one more heart, for good. His sword: press {sword} to swing it.");
+}
+function updateStory(dt, r) {
+  const S = region.story, d = david; if (!S) return;
+  for (const w of S.women) {
+    w.t += dt;
+    if (w.mode === "run") { w.x = Math.min(w.to, w.x + STORY.WOMAN_SPEED * dt); if (w.x >= w.to) { w.mode = "stand"; w.t = 0; } }
+  }
+  S.saul.t += dt; S.jon.t += dt; S.michal.t += dt;
+  if (S.saul.mode === "walk") { S.saul.x += STORY.WALK_OFF * dt; if (S.saul.x > (roomById("town").c0 + roomById("town").w + 2) * T) S.saul.mode = "gone"; }
+  if (region.script.length || region.wait > 0 || region.trans || d.deadT > 0 || region.climb) return;
+  // the women's song: David comes up the street toward the king
+  if (r.id === "town" && S.saul.mode === "stand" && d.x > S.songAt && d.x < S.saul.x && d.onGround) {
+    regionAdd("taken", "g_song");
+    rPlay([
+      { fn() { d.facing = 1; const left = camX - 60; S.women.forEach((w, i) => { w.mode = "run"; w.x = left - i * 150; }); }, wait: 2.6 },
+      { fn() { S.women.forEach(w => { w.mode = "sing"; w.t = 0; }); },
+        say: ["1 Samuel 18:7", "The women sang to one another as they played, and said, “Saul has slain his thousands, and David his ten thousands.”"] },
+      { fn() { S.saul.mode = "look"; S.saul.t = 0; }, wait: 1.2 },
+      { say: ["1 Samuel 18:8-9", "Saul was very angry, and this saying displeased him. He said, “They have credited David with ten thousands, and they have only credited me with thousands. What can he have more but the kingdom?” Saul watched David from that day and forward."] },
+      { fn() { S.saul.mode = "walk"; S.women.forEach(w => { w.mode = "stand"; }); }, wait: 0.4 },
+    ]);
+    return;
+  }
+  // Jonathan's covenant: David reaches him in the halls
+  const J = S.jon;
+  if (r.id === "halls" && J.mode === "idle" && d.x > J.x - STORY.GIVE_DAVID * SCALE - 40 && d.onGround) {
+    regionAdd("taken", "g_jonathan");
+    rPlay([
+      { fn() { d.facing = 1; d.x = J.x - STORY.GIVE_DAVID * SCALE; J.mode = "talk"; },
+        say: ["1 Samuel 18:1", "The soul of Jonathan was knit with the soul of David, and Jonathan loved him as his own soul."] },
+      { fn() { J.mode = "gifts"; J.t = 0; }, wait: SPR.jonathan_gifts.frames * STORY.GIFTS_MS / 1000 },
+      { fn() { J.mode = "give"; J.t = 0; region.pose = { hide: true }; }, wait: SPR.jonathan_gives_david.frames * STORY.GIVE_MS / 1000 },
+      { say: ["1 Samuel 18:3-4", "Then Jonathan and David made a covenant, because he loved him as his own soul. Jonathan stripped himself of the robe that was on him and gave it to David with his clothing, even including his sword, his bow, and his sash."] },
+      { fn() { region.pose = null; J.mode = "after"; storyAward(); } },
+    ]);
+    return;
+  }
+  // Michal: waiting in the halls when David comes out of the harp room
+  const M = S.michal;
+  if (r.id === "halls" && M.mode === "away" && regionHas("taken", "g_harp_done")) { M.mode = "wait"; }
+  if (r.id === "halls" && M.mode === "wait" && Math.abs(d.x - M.x) < 4 * T && d.onGround) {
+    regionAdd("taken", "g_michal");
+    rPlay([
+      { fn() { d.facing = d.x > M.x ? -1 : 1; M.mode = "talk"; M.t = 0; },
+        say: ["1 Samuel 18:28", "Saul saw and knew that the LORD was with David; and Michal, Saul's daughter, loved him."] },
+      { fn() { M.mode = "idle"; }, say: ["1 Samuel 18:29", "Saul was even more afraid of David; and Saul was David's enemy continually."] },
+    ]);
+  }
+}
+const loopFrame = (n, t, ms) => Math.floor(t * 1000 / ms) % n;
+const onceFrame = (n, t, ms) => Math.min(n - 1, Math.floor(t * 1000 / ms));
+function drawStory(camX) {
+  const S = region.story; if (!S) return;
+  const gy = GR * T, on = x => x - camX > -300 && x - camX < W + 300;
+  const s = S.saul;
+  if (s.mode !== "gone" && on(s.x)) {   // Glen's purple Saul, a head taller (SAUL_BIG), facing David (left)
+    if (s.mode === "walk") drawSprite("saul_walk", frameOf("saul_walk", s.t), s.x - camX, gy, 1, SAUL_BIG);   // (off to the right, the way his walk sheet faces)
+    else if (s.mode === "look") { const n = SPR.saul_look_back.frames; drawSprite("saul_look_back", onceFrame(n, s.t, 160), s.x - camX, gy, -1, SAUL_BIG); }
+    else drawSprite("saul_look_back", 0, s.x - camX, gy, -1, SAUL_BIG);
+  }
+  for (const w of S.women) {
+    if (w.mode === "off" || !on(w.x)) continue;
+    if (w.mode === "run") drawSprite(w.n + "_run", frameOf(w.n + "_run", w.t), w.x - camX, gy, 1);
+    else drawSprite(w.n + "_stand", 0, w.x - camX, gy - (w.mode === "sing" ? Math.abs(Math.sin(w.t * 5)) * STORY.BOB : 0), 1);
+  }
+  const J = S.jon;
+  if (on(J.x)) {   // (his sheets face right; David comes from the left, so they're flipped)
+    if (J.mode === "gifts") drawSprite("jonathan_gifts", onceFrame(SPR.jonathan_gifts.frames, J.t, STORY.GIFTS_MS), J.x - camX, gy, -1);
+    else if (J.mode === "give") drawSprite("jonathan_gives_david", onceFrame(SPR.jonathan_gives_david.frames, J.t, STORY.GIVE_MS), J.x - camX, gy, -1);
+    else if (J.mode === "talk") drawSprite("jonathan_talk", frameOf("jonathan_talk", J.t), J.x - camX, gy, -1);
+    else drawSprite("jonathan_idle", frameOf("jonathan_idle", J.t), J.x - camX, gy, -1);
+  }
+  const M = S.michal;
+  if (M.mode !== "away" && on(M.x)) {   // (her sheets face right: toward the harp room, where David comes from)
+    const n = M.mode === "talk" ? "michal_talk" : "michal_idle";
+    drawSprite(n, frameOf(n, M.t), M.x - camX, gy, 1);
   }
 }
 function drawRegionFront(camX) {   // main.js, after David: the railings he walks behind
