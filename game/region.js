@@ -49,7 +49,7 @@ const RTUNE = {
   HP_PER_HEART: 10,
   // the Harp Room (1 Samuel 18:10-11): play to calm the king; he throws the spear twice; David gets up and jumps
   HARP: { CALM_TIME: 14, THROW_AT: [0.3, 0.65], SPEAR_Y: 52, SPEAR_SPEED: 820, RELEASE: 9, BACK: 0.12 },
-  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5 },   // how much each thing takes off with a hit
+  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5, crow: 5, raven: 6, eagle: 10 },   // how much each thing takes off with a hit
   HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
   // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
   // leave the room and come in again. Glen's break sets (tools/cut_breakables.py): <art>, <art>_breaking, <art>_broken,
@@ -285,6 +285,14 @@ function rHole(room, c, w, opts = {}) {
 // ---- creatures of the deep (Glen 11-05: his spider, bat and rat; they turn to dust when hit) ----
 const beast = (kind, room, c, o = {}) => region.beasts.push(Object.assign({ kind, room, x: c * T + T / 2, hx: c * T + T / 2, y: GR * T, hy: GR * T,
   state: "idle", t: Math.random() * 3, facing: -1, cool: 0 }, o));
+// (Glen 11-05) the tower's birds, Part One's art: crows (raven_fly2, smaller), ravens (raven_fly), eagles (eagle_fly). They
+// perch on a ledge pecking until David comes near, fly at him, swoop past and back, then go home to their ledge
+const bird = (kind, room, x, y) => region.beasts.push({ kind, room, x, hx: x, y, hy: y, state: "perch", t: Math.random() * 3, facing: -1, cool: 0 });
+const BIRD = {
+  crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
+  raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
+  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8 },   // (eagles dive)
+};
 const rSpider = (room, c, hangY = 200) => beast("spider", room, c, { y: hangY, hy: hangY, state: "hang" });   // hangs on its thread; drops when he's under
 const rCrawler = (room, c, range = 4) => beast("spiderw", room, c, { range: range * T, state: "walk" });     // a spider walking the floor
 const rRat = (room, c, range = 4) => beast("rat2", room, c, { range: range * T, state: "walk" });
@@ -438,27 +446,41 @@ function buildRegion() {
     ground(tc, tc + tw.w - 1);
     rock(tc, TOP_ROW, tw.w, -tw.up - TOP_ROW);   // the roof
     rKitDoor("d_towerdown", "tower", tc + 4, "door", "d_tower", "tw_door_open");
-    // his windows up the walls, behind the ledges (light coming in; one dark slit now and then), the big bright one at the lookout
-    const WINS = ["tw_win_slit", "tw_win", "tw_win_arch", "tw_win_slit_dark", "tw_win", "tw_hatch", "tw_win_arch", "tw_win_slit"];
-    for (let k = 0, y = GR * T - 300; y > -tw.up * T + 600; y -= 300, k++) {
-      const n = WINS[k % WINS.length], xs = [0.12, 0.6, 0.33, 0.85, 0.2, 0.5, 0.72][k % 7];
-      region.props.push({ room: "tower", n, x: tc * T + xs * tw.w * T, y: y - KIT[n].h });
-    }
+    // (Glen 11-05: nothing in front of a door or a window) every piece's box, so the next one can keep clear of it
+    const boxes = [], boxOf = p => ({ x0: p.x - 12, x1: p.x + KIT[p.n].w + 12, y0: p.y - 12, y1: p.y + KIT[p.n].h + 12 });
+    const hits = q => boxes.some(b => q.x0 < b.x1 && q.x1 > b.x0 && q.y0 < b.y1 && q.y1 > b.y0);
+    boxes.push(boxOf(region.props[region.props.length - 1]));   // the door
+    const put = p => { const q = boxOf(p); if (hits(q)) return false; boxes.push(q); region.props.push(p); return true; };
     // his ledges, zig-zagging across both screens and back, 3 rows a step; olives, jars, nests and lamps along the way
     const X0 = tc * T, X1 = (tc + tw.w) * T, STEP = 3, ACROSS = 250, pieces = ["tw_ledge_l", "tw_ledge_m", "tw_ledge_l", "tw_ledge_crack", "tw_ledge_l", "tw_beam"];
-    let x = X0 + 40, dir = 1, i = 0;
+    const perches = [];
+    let x = X0 + 330, dir = 1, i = 0;   // (the first one starts past the door)
     for (let r = GR - STEP; r > -tw.up + 11; r -= STEP, i++) {
       const n = pieces[i % pieces.length], k = KIT[n];
       if (dir > 0 && x + k.w > X1 - 20) { dir = -1; x = X1 - 20 - k.w; }
       if (dir < 0 && x < X0 + 20) { dir = 1; x = X0 + 20; }
       const [a0, a1] = rTowerLedge("tower", x, r * T, n, dir < 0);
+      boxes.push(boxOf(region.props[region.props.length - 1]));
       const mid = Math.round((a0 + a1) / 2 / T);
       if (i % 3 === 1) oliveRow(mid - 1, r - 1.4, 3);
       if (i % 5 === 3) rBreak("jar", "tower", mid, r - 1);
-      if (i % 7 === 5) region.props.push({ room: "tower", n: "tw_nest", x: a1 - 120, y: r * T - KIT.tw_nest.h + 8 });
-      if (i % 6 === 2) region.props.push({ room: "tower", n: "tw_lamp", x: dir > 0 ? X1 - 200 : X0 + 40, y: r * T - 300 });
+      if (i % 7 === 5) put({ room: "tower", n: "tw_nest", x: a1 - 120, y: r * T - KIT.tw_nest.h + 8 });
+      if (i % 4 === 2) perches.push({ x: (a0 + a1) / 2, y: r * T });
       x += dir * ACROSS;
     }
+    // his windows and lamps up the walls, only where no ledge, nest or door is in front of them; the big bright one at the lookout
+    const WINS = ["tw_win_slit", "tw_win", "tw_win_arch", "tw_win_slit_dark", "tw_win", "tw_hatch", "tw_win_arch", "tw_win_slit"];
+    const XS = [0.12, 0.6, 0.33, 0.85, 0.2, 0.5, 0.72, 0.04, 0.92, 0.42];
+    for (let k = 0, y = GR * T - 300; y > -tw.up * T + 600; y -= 300, k++) {
+      const n = WINS[k % WINS.length];
+      for (let j = 0; j < XS.length; j++) if (put({ room: "tower", n, x: X0 + XS[(k + j) % XS.length] * (X1 - X0 - KIT[n].w), y: y - KIT[n].h, back: true })) break;
+      if (k % 3 === 1) for (let j = 0; j < XS.length; j++) if (put({ room: "tower", n: "tw_lamp", x: X0 + XS[(k + j + 4) % XS.length] * (X1 - X0 - KIT.tw_lamp.w), y: y - 120, back: true })) break;
+    }
+    // (the windows and lamps go behind everything else in the tower)
+    const back = region.props.filter(p => p.back), rest = region.props.filter(p => !p.back);
+    region.props.length = 0; region.props.push(...back, ...rest);
+    // the birds (Glen 11-05: Part One's ravens and eagles): crows low down, ravens in the middle, eagles near the top
+    for (const p of perches) bird(p.y > -1100 ? "crow" : p.y > -2300 ? "raven" : "eagle", "tower", p.x, p.y);
     const topR = -tw.up + 8;   // the lookout: a plank floor right across, the battlements at each end
     region.props.push({ room: "tower", n: "tw_win_glow", x: tc * T + tw.w * T / 2 - KIT.tw_win_glow.w / 2, y: topR * T - KIT.tw_win_glow.h - 60 });
     for (let px = X0; px < X1; px += KIT.tw_walk.w - 4) region.props.push({ room: "tower", n: "tw_walk", x: px, y: topR * T - 6 });
@@ -601,7 +623,7 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : "walk", t: Math.random() * 3, dead: false, cool: 0 });
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : "walk", t: Math.random() * 3, dead: false, cool: 0 });
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
@@ -844,7 +866,9 @@ function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the swor
   for (const b of region.beasts) {
     if (b.dead) continue;
     const q = beastBox(b);
-    if (s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8) { b.dead = true; b.state = "dust"; b.t = 0; if (typeof stoneHit === "function") stoneHit(s, 0.6); return true; }
+    if (s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8) { b.dead = true; b.state = "dust"; b.t = 0;
+      if (BIRD[b.kind]) for (let i = 0; i < 10; i++) bits.push({ x: b.x, y: b.y - 25, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 1.1, color: b.kind === "eagle" ? (i % 2 ? "#6b4a2b" : "#d9cbb0") : (i % 2 ? "#1d1b22" : "#3a3644") });   // (feathers)
+      if (typeof stoneHit === "function") stoneHit(s, 0.6); return true; }
   }
   for (const b of region.breaks) {
     if (b.broken) continue;
@@ -1097,7 +1121,7 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   ctx.restore();
 }
 // ---- the creatures: spiders on threads and on the floor, bats, rats ----
-const BEAST = { spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
+const BEAST = { crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
 function beastBox(b) { const k = BEAST[b.kind]; return { x0: b.x - k.w, x1: b.x + k.w, y0: b.y - k.h, y1: b.y }; }
 function updateBeasts(dt, r) {
   const d = david;
@@ -1118,6 +1142,25 @@ function updateBeasts(dt, r) {
         if (b.x < b.hx - b.range) { b.x = b.hx - b.range; b.facing = 1; } else if (b.x > b.hx + b.range) { b.x = b.hx + b.range; b.facing = -1; }
         if (b.kind === "rat2" && b.t > 2.5 + (b.hx % 3)) { b.state = "sniff"; b.t = 0; }
       }
+    } else if (BIRD[b.kind]) {
+      const B = BIRD[b.kind], top = -(r.up || 0) * T + 60;
+      if (b.state === "perch") { if (!b.cool && Math.abs(dx) < B.near && Math.abs(d.y - b.y) < 280) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
+      else if (b.state === "fly") {
+        b.x += b.facing * B.speed * dt;
+        const dive = b.kind === "eagle" && Math.sin(b.t * 1.6) > 0.6;   // (an eagle folds and drops at him now and then)
+        const want = (dive ? d.y - 30 : d.y - 90) + Math.sin(b.t * 4) * 22;
+        b.y += (want - b.y) * Math.min(1, dt * (dive ? 3.5 : 1.6));
+        b.y = Math.max(top, Math.min(GR * T - 30, b.y));
+        if ((b.facing > 0 && b.x > d.x + 300) || (b.facing < 0 && b.x < d.x - 300)) b.facing *= -1;
+        b.x = Math.max(r.c0 * T + 40, Math.min((r.c0 + r.w) * T - 40, b.x));
+        if (b.t > B.chase) { b.state = "home"; b.t = 0; }
+      } else if (b.state === "home") {   // back to its ledge
+        const hx = b.hx - b.x, hy = b.hy - b.y, dd = Math.hypot(hx, hy);
+        if (dd < 8) { b.x = b.hx; b.y = b.hy; b.state = "perch"; b.cool = 2.5; }
+        else { b.x += hx / dd * B.speed * dt; b.y += hy / dd * B.speed * dt; b.facing = Math.sign(hx) || b.facing; }
+      }
+      if (b.state !== "perch") { const q = beastBox(b); if (touchesDavid(q)) hurtDavid(b.x); }
+      continue;
     } else if (b.kind === "bat2") {   // asleep upside down until he comes near; then swoops at him, out past him, and back
       if (b.state === "hang") { if (Math.abs(dx) < 260 && d.y > b.y) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
       else {
@@ -1146,6 +1189,11 @@ function drawBeasts(camX) {
       drawSprite(n, frameOf(n, b.t), x, b.y, 1);
     } else if (b.kind === "spiderw") drawSprite("spider_walk", frameOf("spider_walk", b.t), x, b.y, b.facing);
     else if (b.kind === "rat2") { const n = b.state === "sniff" ? "rat2_sniff" : "rat2_run"; drawSprite(n, frameOf(n, b.t), x, b.y, b.facing); }
+    else if (BIRD[b.kind]) {
+      const B = BIRD[b.kind], fl = B.fly;
+      if (b.state === "perch") drawSprite(B.perch, frameOf(B.perch, b.t), x, b.y, b.facing, B.size);
+      else drawSprite(fl, frameOf(fl, b.t), x, b.y + 20, fl.startsWith("raven") ? -b.facing : b.facing, B.size);   // (the raven sheets face left)
+    }
     else if (b.kind === "bat2") {
       if (b.state === "hang") drawSprite("bat2_hang", frameOf("bat2_hang", b.t), x, b.y + 50, 1);
       else drawSprite("bat2_fly", frameOf("bat2_fly", b.t), x, b.y + 25, b.facing);
