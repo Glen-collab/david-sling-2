@@ -77,7 +77,8 @@ const REGION = {
   rooms: [
     { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town",
       far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24 },   // (Glen 11-05: Super Mario World layers outside)   // "@road": off the left edge, out of Gibeah
-    { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
+    { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls",
+      far: "gibeah/fields_far", mid: "gibeah/town_mid.png", midY: 12 },   // (Glen 11-05: his town behind, the Fields sky)
     // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, built from his kit
     // (the walkways, the gate, the stair down, the plinth); floor: the strip's own paving, over the ground
     { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town",
@@ -127,13 +128,22 @@ const KIT = {
   f_wall_left: { w: 187, h: 164, stone: 141 }, f_wall_mid: { w: 177, h: 151, stone: 141 }, f_wall_right: { w: 176, h: 162, stone: 141 },
   f_rock: { w: 179, h: 117 }, f_olive: { w: 536, h: 520 }, f_tower: { w: 281, h: 376 }, f_gate: { w: 178, h: 159 },
   f_lowwall: { w: 202, h: 83 }, f_fig: { w: 252, h: 256 }, fg_grass: { w: 313, h: 310 }, fg_branch: { w: 218, h: 457 }, fg_thorn: { w: 317, h: 191 },
+  // (Glen 11-05) the Town kit, assets/rooms/gibeah/kit_town: flat roofs in three (top: the walking top, px down from the
+  // piece's top), a striped awning, a stone post with a beam, a house front, the stair (steps: each 36 px column's top),
+  // a market stall, jars; and the foreground (tfg_*)
+  t_roof_left: { w: 192, h: 164, top: 10 }, t_roof_mid: { w: 169, h: 83, top: 2 }, t_roof_right: { w: 189, h: 125, top: 5 },
+  t_awning: { w: 186, h: 204 }, t_beam: { w: 155, h: 199 }, t_house: { w: 265, h: 204 }, t_stair: { w: 202, h: 165, steps: [116, 70, 46, 0, 0, 0] },
+  t_stall: { w: 188, h: 218 }, t_jars: { w: 167, h: 137 }, tfg_palm: { w: 214, h: 454 }, tfg_cloth: { w: 311, h: 365 }, tfg_jar: { w: 267, h: 202 },
+  // (Glen 11-05) the Cave kit, assets/rooms/gibeah/kit_cave (waiting on its wall strip)
+  c_shelf_left: { w: 169, h: 220 }, c_shelf_mid: { w: 168, h: 220 }, c_shelf_right: { w: 169, h: 220 }, c_beam: { w: 235, h: 120 },
+  c_crack: { w: 152, h: 262 }, c_arch: { w: 194, h: 204 }, c_steps: { w: 180, h: 147 }, c_crates: { w: 173, h: 194 }, c_jars: { w: 212, h: 130 }, c_basin: { w: 144, h: 98 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
 };
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^c_/.test(n) ? "kit_cave/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -199,8 +209,29 @@ function rOliveTree(room, c) {   // the olive tree, its left edge at column c; i
   const c0 = Math.ceil((x + 384) / T), c1 = Math.floor((x + 530) / T); platAt(c0, y + 328, c1 - c0);
   return y + 328;
 }
-function rDeco(room, n, c, front = false, par = 1) {   // a piece standing on the ground, centred on column c (front: over David)
-  const k = KIT[n]; region.props.push({ room, n, x: c * T + T / 2 - k.w / 2, y: n === "fg_branch" ? -30 : FOOT - k.h + (front ? 40 : 0), front, par });
+function rDeco(room, n, c, front = false, par = 1, y = null) {   // a piece standing on the ground, centred on column c (front: over David; y: its top, if not on the ground)
+  const k = KIT[n]; region.props.push({ room, n, x: c * T + T / 2 - k.w / 2, y: y ?? (n === "fg_branch" ? -30 : FOOT - k.h + (front ? 40 : 0)), front, par });
+}
+// ---- the Town kit (Glen 11-05) ----
+function rRoof(room, x, topY, nMid) {   // a flat roof's edge from x (px), its top at topY; returns where it ends (px)
+  const parts = ["t_roof_left", ...Array(nMid).fill("t_roof_mid"), "t_roof_right"];
+  let px = x;
+  for (const n of parts) { region.props.push({ room, n, x: px, y: topY - KIT[n].top }); px += KIT[n].w - 8; }
+  const x1 = px + 8, c0 = Math.ceil((x + 10) / T), c1 = Math.floor((x1 - 6) / T);
+  platAt(c0, topY, c1 - c0);
+  return x1;
+}
+function rAwning(room, c) {   // a striped awning on its poles: its taut top to stand on (5 wide)
+  const k = KIT.t_awning, y = FOOT - k.h; region.props.push({ room, n: "t_awning", x: c * T + 2.5 * T - k.w / 2, y });
+  platAt(c, y + 5, 5);
+}
+function rPost(room, c) {   // a stone post with a beam out to the right: the beam a ledge
+  const k = KIT.t_beam, x = c * T, y = FOOT - k.h; region.props.push({ room, n: "t_beam", x, y });
+  const c0 = Math.ceil((x + 6) / T), c1 = Math.floor((x + k.w - 4) / T); platAt(c0, y + 37, c1 - c0);
+}
+function rTownStair(room, c) {   // the stone stair, rising to the right: a ledge on each column at its step
+  const k = KIT.t_stair, y = FOOT - k.h; region.props.push({ room, n: "t_stair", x: c * T, y });
+  k.steps.forEach((st, i) => platAt(c + i, y + st + 1, 1));
 }
 function rPlinth(room, c) {   // the kit's stone plinth: solid, its top a ledge where the stones' tops are
   block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4); for (let k = 0; k < 4; k++) artSolid.add((c + k) + "," + (GR - 3));
@@ -282,22 +313,28 @@ function buildRegion() {
   // -- The Town: the market, rooftops, and the old well (down into the cisterns: needs the rope)
   c = R("town");
   ground(c, c + 73);
-  // (Glen 11-04: his wide painting, assets/rooms/gibeah/town.jpg; it painted its own houses, so the way up is over
-  // them: the stone wall, the flat roofs, the two-story house; the ledges are set to the painted roofs)
-  rBreak("pots", "town", c + 7, 16);
-  wall(c + 13, 14, 16, 3); platAt(c + 13, 480, 16);                // the long dry-stone wall (its top a ledge, at the stones' tops)
-  platAt(c + 1, 378, 13);                                           // the first house's roof
-  platAt(c + 29, 400, 11);                                          // the second house
-  platAt(c + 40, 337, 12);                                          // the tall house
-  platAt(c + 51, 410, 11); platAt(c + 50, 240, 12);                 // the two-story house: its lower roof and its top
-  platAt(c + 70, 365, 4);                                           // the house past the market
-  oliveRow(c + 31, 10, 5); rBreak("jar", "town", c + 44, onTop(337)); rBreak("lamp", "town", c + 55, onTop(240));
-  rRelic("g_truth_song", "truth", c + 59, onTop(240),
-    "The women came out of all the cities of Israel, singing and dancing, to meet King Saul. They sang: \"Saul has slain his thousands, and David his ten thousands.\" (1 Samuel 18:6-7)");
-  campfire(c + 46, GR - 1);
-  rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
-  rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
-  rBreak("basket", "town", c + 64, 16); rBreak("jar", "town", c + 50, 16); oliveRow(c + 62, 16, 6);
+  // (Glen 11-05: built from his Town kit on his town and the Fields sky, Super Mario World style: up the stair and over
+  // the roofs, the awning, the high roof with the Truth; washing and a palm pass close in front)
+  { const X = k => (c + k) * T;
+    rDeco("town", "t_house", c + 3); rDeco("town", "t_house", c + 29); rDeco("town", "t_house", c + 70);
+    rBreak("pots", "town", c + 7, 16);
+    rDeco("town", "t_stall", c + 9); oliveRow(c + 8, 16, 3);
+    rTownStair("town", c + 12);
+    rRoof("town", X(18), 420, 2); oliveRow(c + 21, onTop(420) - 0.4, 5);
+    rDeco("town", "tfg_cloth", c + 25, true, 1.3, -120);
+    rAwning("town", c + 38);
+    rRoof("town", X(43), 330, 0); rBreak("jar", "town", c + 47, onTop(330));
+    campfire(c + 46, GR - 1);   // an olive press (the save point)
+    rRoof("town", X(52), 230, 1); rBreak("lamp", "town", c + 55, onTop(230));
+    rRelic("g_truth_song", "truth", c + 59, onTop(230),
+      "The women came out of all the cities of Israel, singing and dancing, to meet King Saul. They sang: \"Saul has slain his thousands, and David his ten thousands.\" (1 Samuel 18:6-7)");
+    rDeco("town", "tfg_jar", c + 50, true, 1.35);
+    rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
+    rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
+    rBreak("jar", "town", c + 51, 16); rBreak("basket", "town", c + 64, 16); oliveRow(c + 61, 16, 6);
+    rPost("town", c + 66);
+    rDeco("town", "t_jars", c + 68);
+    rDeco("town", "tfg_palm", c + 64, true, 1.3, -40); }
 
   // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars. (Glen 11-04: a long room,
   // built from his kit on his repeating wall: walkways at different heights, plinths, the gate and the stair down)
