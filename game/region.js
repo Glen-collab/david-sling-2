@@ -76,7 +76,7 @@ const REGION = {
   key: "gibeah", name: "Gibeah",
   rooms: [
     { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town" },   // "@road": off the left edge, out of Gibeah
-    { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls" },
+    { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
     { id: "walls",   name: "The Walls",        w: 64, bg: "w4_2", mx: 6, my: 2, mw: 2, left: "town" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
@@ -146,10 +146,17 @@ function buildRegion() {
   // -- The Town: the market, rooftops, and the old well (down into the cisterns: needs the rope)
   c = R("town");
   ground(c, c + 73);
-  deco("cloth_stall", c + 8, 16, 0.5); rBreak("pots", "town", c + 13, 16); deco("town_fig_rack", c + 18, 16, 0.4);
-  wall(c + 22, 14, 6, 3); plat(c + 24, 11, 4); plat(c + 29, 8, 5); plat(c + 36, 5, 5);   // up over the rooftops
-  oliveRow(c + 29, 7, 5); rBreak("jar", "town", c + 33, 7); rBreak("lamp", "town", c + 38, 4);
-  rRelic("g_truth_song", "truth", c + 39, 4,
+  // (Glen 11-04: his wide painting, assets/rooms/gibeah/town.jpg; it painted its own houses, so the way up is over
+  // them: the stone wall, the flat roofs, the two-story house; the ledges are set to the painted roofs)
+  rBreak("pots", "town", c + 7, 16);
+  wall(c + 13, 13, 16, 4);                                          // the long dry-stone wall
+  plat(c + 1, 11, 13);                                              // the first house's roof
+  plat(c + 29, 11, 11);                                             // the second house
+  plat(c + 40, 10, 12);                                             // the tall house
+  plat(c + 51, 11, 11); plat(c + 50, 7, 12);                        // the two-story house: its lower roof and its top
+  plat(c + 70, 10, 4);                                              // the house past the market
+  oliveRow(c + 31, 10, 5); rBreak("jar", "town", c + 44, 9); rBreak("lamp", "town", c + 55, 6);
+  rRelic("g_truth_song", "truth", c + 59, 6,
     "The women came out of all the cities of Israel, singing and dancing, to meet King Saul. They sang: \"Saul has slain his thousands, and David his ten thousands.\" (1 Samuel 18:6-7)");
   campfire(c + 46, GR - 1);
   rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
