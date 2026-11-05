@@ -528,6 +528,11 @@ const slabRock = (c, r, w, h) => { block(c, r, w, h, 6); caveFeatures.push({ kin
 const pitFloor = (c, w) => { for (let k = c; k < c + w; k++) for (let r = GR; r < ROWS; r++) solid[r][k] = 0; };   // a drop in a cave's floor
 const bat = (c, r = 3) => caveBats.push({ x: c * T + T / 2, y: r * T + 16, hx: c * T + T / 2, hy: r * T + 16, state: "hang", t: Math.random() * 2, vx: 0, vy: 0, alpha: 1, facing: 1 });
 const plat = (c, r, w) => { for (let x = c; x < c + w; x++) oneway[r][x] = true; };
+// (Glen 11-04: on the painted rooms he stood at the bottom of the ledges) a ledge whose top is at any height, y px, not
+// only on a row: he stands with his feet right on the painted top
+const onewayTop = new Map();
+const owTop = (c, r) => onewayTop.get(r * COLS + c) ?? r * T;
+const platAt = (c, y, w) => { const r = Math.floor(y / T); for (let x = c; x < c + w; x++) { oneway[r][x] = true; onewayTop.set(r * COLS + x, y); } };
 // crumbling ledges: shake when you land on them, then drop away (and come back a few seconds later)
 const crumbles = [];
 const crumble = (c, r, w) => { plat(c, r, w); crumbles.push({ c, r, w, state: "solid", t: 0 }); };
@@ -2218,12 +2223,14 @@ function collideBody(b, w, h, dt) {
   b.onGround = false;
   const c0 = Math.floor((b.x - w / 2 + 2) / T), c1 = Math.floor((b.x + w / 2 - 2) / T);
   if (b.vy >= 0) {
-    const r = Math.floor(b.y / T);
-    for (let c = c0; c <= c1; c++) {
-      const platTop = r * T;
-      if (isSolid(c, r) || (isOneway(c, r) && prevY <= platTop + 1 && !b.dropThrough)) {
-        b.y = platTop; b.vy = 0; b.onGround = true; break;
+    const r = Math.floor(b.y / T), rp = Math.max(0, Math.floor(prevY / T));
+    land: for (let c = c0; c <= c1; c++) {
+      for (let rr = rp; rr <= r; rr++) {   // a ledge's top can be partway down its row (platAt): check each row he passed
+        if (!isOneway(c, rr) || b.dropThrough) continue;
+        const top = owTop(c, rr);
+        if (prevY <= top + 1 && b.y >= top) { b.y = top; b.vy = 0; b.onGround = true; break land; }
       }
+      if (isSolid(c, r)) { b.y = r * T; b.vy = 0; b.onGround = true; break; }
     }
   } else {
     const r = Math.floor((b.y - h) / T);

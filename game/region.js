@@ -115,6 +115,7 @@ function rDoor(id, room, c, kind, to, need = null) { region.doors.push({ id, roo
 function rRelic(id, kind, c, r, text = null) { region.relics.push({ id, kind, c, r, x: c * T + T / 2, y: (r + 1) * T, text, t: Math.random() * 6 }); }
 function rSeal(id, room, c, need, say, x0, x1) { region.seals.push({ id, room, need, say, x: c * T + T / 2, x0: x0 * T, x1: x1 * T }); }
 const sealOpen = s => hasSkill(s.need);
+const onTop = y => y / T - 1;   // the row to give rBreak / rRelic for something sitting on a ledge whose top is y px (platAt)
 function rBreak(kind, room, c, r) { region.breaks.push({ kind, room, x: c * T + T / 2, y: (r + 1) * T, broken: false, fade: 0 }); }
 
 function buildRegion() {
@@ -149,14 +150,14 @@ function buildRegion() {
   // (Glen 11-04: his wide painting, assets/rooms/gibeah/town.jpg; it painted its own houses, so the way up is over
   // them: the stone wall, the flat roofs, the two-story house; the ledges are set to the painted roofs)
   rBreak("pots", "town", c + 7, 16);
-  wall(c + 13, 13, 16, 4);                                          // the long dry-stone wall
-  plat(c + 1, 11, 13);                                              // the first house's roof
-  plat(c + 29, 11, 11);                                             // the second house
-  plat(c + 40, 10, 12);                                             // the tall house
-  plat(c + 51, 11, 11); plat(c + 50, 7, 12);                        // the two-story house: its lower roof and its top
-  plat(c + 70, 10, 4);                                              // the house past the market
-  oliveRow(c + 31, 10, 5); rBreak("jar", "town", c + 44, 9); rBreak("lamp", "town", c + 55, 6);
-  rRelic("g_truth_song", "truth", c + 59, 6,
+  wall(c + 13, 14, 16, 3); platAt(c + 13, 480, 16);                // the long dry-stone wall (its top a ledge, at the stones' tops)
+  platAt(c + 1, 378, 13);                                           // the first house's roof
+  platAt(c + 29, 400, 11);                                          // the second house
+  platAt(c + 40, 337, 12);                                          // the tall house
+  platAt(c + 51, 410, 11); platAt(c + 50, 240, 12);                 // the two-story house: its lower roof and its top
+  platAt(c + 70, 365, 4);                                           // the house past the market
+  oliveRow(c + 31, 10, 5); rBreak("jar", "town", c + 44, onTop(337)); rBreak("lamp", "town", c + 55, onTop(240));
+  rRelic("g_truth_song", "truth", c + 59, onTop(240),
     "The women came out of all the cities of Israel, singing and dancing, to meet King Saul. They sang: \"Saul has slain his thousands, and David his ten thousands.\" (1 Samuel 18:6-7)");
   campfire(c + 46, GR - 1);
   rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
@@ -168,8 +169,8 @@ function buildRegion() {
   ground(c, c + 63);
   // (Glen 11-04: his wide painting, assets/rooms/gibeah/walls.jpg; the ledges are set to it: the stone plinth, the low
   // scaffold walkway, the top of the gate's arch, and the high walkway over the gate)
-  wall(c + 10, 14, 4, 3); plat(c + 13, 11, 12); plat(c + 30, 11, 6); plat(c + 34, 7, 13);
-  rRelic("g_stone_walls", "stone", c + 44, 6);
+  wall(c + 10, 14, 4, 3); platAt(c + 13, 380, 12); platAt(c + 30, 386, 6); platAt(c + 34, 230, 13);
+  rRelic("g_stone_walls", "stone", c + 44, onTop(230));
   rDoor("d_gate", "walls", c + 32, "door", "d_hallsgate");
   rDoor("d_down", "walls", c + 50, "stairs", "d_cellarup");
   oliveRow(c + 40, 16, 6);
@@ -195,9 +196,9 @@ function buildRegion() {
   rDoor("d_cellarup", "cellars", c + 4, "stairs", "d_down");
   // (Glen 11-04: his wide painting, assets/rooms/gibeah/cellars.jpg, painted to David's size; the ledges are set to
   // the painted ones: the bench, and the two wall shelves; the passage behind the cracked wall is the tunnel on the right)
-  oliveRow(c + 6, 16, 5); plat(c + 15, 14, 11); plat(c + 26, 10, 12); plat(c + 26, 6, 17);
-  rBreak("jar", "cellars", c + 12, 16); rBreak("jar", "cellars", c + 28, 16); rBreak("pots", "cellars", c + 39, 16); rBreak("lamp", "cellars", c + 20, 13);
-  rRelic("g_stone_cellar", "stone", c + 35, 5);
+  oliveRow(c + 6, 16, 5); platAt(c + 15, 512, 11); platAt(c + 26, 366, 12); platAt(c + 26, 200, 17);
+  rBreak("jar", "cellars", c + 12, 16); rBreak("jar", "cellars", c + 28, 16); rBreak("pots", "cellars", c + 39, 16); rBreak("lamp", "cellars", c + 20, onTop(512));
+  rRelic("g_stone_cellar", "stone", c + 35, onTop(200));
   critter("scorpion", c + 34);
   if (!hasSkill("heavySword")) wall(c + 57, 5, 2, 12);              // the cracked wall, across the tunnel's mouth
   rSeal("g_seal_crack", "cellars", c + 57, "heavySword", "Cracked stone, with a draft coming through. Something heavy could break it.", c + 53, c + 58);
@@ -211,12 +212,12 @@ function buildRegion() {
   rDoor("d_wellrope", "cisterns", c + 4, "rope", "d_well");
   // (Glen 11-04: his two paintings joined, assets/rooms/gibeah/cisterns.jpg; the ledges are set to the painted ones:
   // the stone table over the stream, the long shelf, the shelf above it, the top shelf by the niche, and the low slab)
-  pitFloor(c + 14, 3); plat(c + 13, 14, 7);
-  plat(c + 21, 12, 10); plat(c + 27, 9, 9); plat(c + 32, 7, 10);
+  pitFloor(c + 14, 3); platAt(c + 13, 507, 7);
+  platAt(c + 21, 434, 10); platAt(c + 27, 334, 9); platAt(c + 32, 233, 10);
   rock(c + 32, 15, 10, 2);
-  rBreak("jar", "cisterns", c + 9, 16); rBreak("lamp", "cisterns", c + 23, 11);
-  rRelic("g_pom_cistern", "pomegranate", c + 30, 8);
-  rRelic("g_truth_covenant", "truth", c + 35, 6,
+  rBreak("jar", "cisterns", c + 9, 16); rBreak("lamp", "cisterns", c + 23, onTop(434));
+  rRelic("g_pom_cistern", "pomegranate", c + 30, onTop(334));
+  rRelic("g_truth_covenant", "truth", c + 35, onTop(233),
     "Jonathan made a covenant with David, because he loved him as his own soul. Jonathan took off the robe that was on him and gave it to David, with his armor, even his sword, his bow, and his sash. (1 Samuel 18:3-4)");
 }
 
