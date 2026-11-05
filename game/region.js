@@ -86,7 +86,7 @@ const REGION = {
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp",
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
-    { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
+    { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
     { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns" },
   ],
 };
@@ -134,9 +134,12 @@ const KIT = {
   t_roof_left: { w: 192, h: 164, top: 10 }, t_roof_mid: { w: 169, h: 83, top: 2 }, t_roof_right: { w: 189, h: 125, top: 5 },
   t_awning: { w: 186, h: 204 }, t_beam: { w: 155, h: 199 }, t_house: { w: 265, h: 204 }, t_stair: { w: 202, h: 165, steps: [116, 70, 46, 0, 0, 0] },
   t_stall: { w: 188, h: 218 }, t_jars: { w: 167, h: 137 }, tfg_palm: { w: 214, h: 454 }, tfg_cloth: { w: 311, h: 365 }, tfg_jar: { w: 267, h: 202 },
-  // (Glen 11-05) the Cave kit, assets/rooms/gibeah/kit_cave (waiting on its wall strip)
-  c_shelf_left: { w: 169, h: 220 }, c_shelf_mid: { w: 168, h: 220 }, c_shelf_right: { w: 169, h: 220 }, c_beam: { w: 235, h: 120 },
-  c_crack: { w: 152, h: 262 }, c_arch: { w: 194, h: 204 }, c_steps: { w: 180, h: 147 }, c_crates: { w: 173, h: 194 }, c_jars: { w: 212, h: 130 }, c_basin: { w: 144, h: 98 },
+  // (Glen 11-05) the Cave kit, assets/rooms/gibeah/kit_cave (his second sheet): stone shelves in three (each a pillar
+  // with its slab on top: they join slab to slab), a bench, crates and sacks, steps (rising right), jars on a bench, a
+  // basin; and his cracked wall (sealed, and broken open), the broken door behind it, the ruined arch with its door
+  c_shelf_left: { w: 207, h: 202 }, c_shelf_mid: { w: 208, h: 202 }, c_shelf_right: { w: 201, h: 204 }, c_beam: { w: 207, h: 98 },
+  c_crates: { w: 168, h: 199 }, c_steps: { w: 188, h: 159, steps: [109, 72, 28, 0, 0] }, c_jars: { w: 191, h: 127 }, c_basin: { w: 129, h: 107 },
+  c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
 };
@@ -232,6 +235,20 @@ function rPost(room, c) {   // a stone post with a beam out to the right: the be
 function rTownStair(room, c) {   // the stone stair, rising to the right: a ledge on each column at its step
   const k = KIT.t_stair, y = FOOT - k.h; region.props.push({ room, n: "t_stair", x: c * T, y });
   k.steps.forEach((st, i) => platAt(c + i, y + st + 1, 1));
+}
+// ---- the Cave kit (Glen 11-05) ----
+function rPiece(room, n, x, bottom, plats = []) {   // any kit piece, its bottom at bottom (px); plats: [x0, x1, top] in the piece's px, ledges
+  const k = KIT[n], y = bottom - k.h; region.props.push({ room, n, x, y });
+  for (const [a, b, t] of plats) { const c0 = Math.round((x + a) / T), c1 = Math.max(c0 + 1, Math.round((x + b) / T)); platAt(c0, y + t, c1 - c0); }
+  return y;
+}
+function rShelves(room, x, nMid, bottom = FOOT) {   // stone shelves from x (px), standing on bottom; returns [end x, top y]
+  const parts = ["c_shelf_left", ...Array(nMid).fill("c_shelf_mid"), "c_shelf_right"];
+  let px = x;
+  for (const n of parts) { region.props.push({ room, n, x: px, y: bottom - KIT[n].h }); px += KIT[n].w - 6; }
+  const top = bottom - 202 + 2, c0 = Math.ceil((x + 6) / T), c1 = Math.floor((px + 2) / T);
+  platAt(c0, top, c1 - c0);
+  return [px + 6, top];
 }
 function rPlinth(room, c) {   // the kit's stone plinth: solid, its top a ledge where the stones' tops are
   block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4); for (let k = 0; k < 4; k++) artSolid.add((c + k) + "," + (GR - 3));
@@ -385,18 +402,30 @@ function buildRegion() {
   // -- The Cellars (down the stair): storerooms; a cracked wall (Goliath's sword) hides an oil jar
   c = R("cellars");
   ground(c, c + 63);
-  rDoor("d_cellarup", "cellars", c + 4, "stairs", "d_down");
-  // (Glen 11-04: his wide painting, assets/rooms/gibeah/cellars.jpg, painted to David's size; the ledges are set to
-  // the painted ones: the bench, and the two wall shelves; the passage behind the cracked wall is the tunnel on the right)
-  oliveRow(c + 6, 16, 5); platAt(c + 15, 512, 11); platAt(c + 26, 366, 12); platAt(c + 26, 200, 17);
-  rBreak("jar", "cellars", c + 12, 16); rBreak("jar", "cellars", c + 28, 16); rBreak("pots", "cellars", c + 39, 16); rBreak("lamp", "cellars", c + 20, onTop(512));
-  rRelic("g_stone_cellar", "stone", c + 35, onTop(200));
-  critter("scorpion", c + 34);
-  if (!hasSkill("heavySword")) wall(c + 57, 5, 2, 12);              // the cracked wall, across the tunnel's mouth
-  rSeal("g_seal_crack", "cellars", c + 57, "heavySword", "Cracked stone, with a draft coming through. Something heavy could break it.", c + 53, c + 58);
-  region.crack = { c: c + 57, r: 5, w: 2, h: 12 };
-  rRelic("g_oil_cellar", "oil", c + 60, 16);
-  oliveRow(c + 61, 16, 2);
+  // (Glen 11-05: built from his Cave kit on his cave wall: the ruined arch up to the walls, shelves with a bench and
+  // crates stacked on them up to the stone, and his cracked wall, broken open once David has Goliath's sword)
+  { const X = k => (c + k) * T;
+    rKitDoor("d_cellarup", "cellars", c + 4, "stairs", "d_down", "c_ruindoor");
+    region.props[region.props.length - 1].x -= 24;   // (the doorway is right of the piece's middle)
+    oliveRow(c + 8, 16, 4); rBreak("jar", "cellars", c + 13, 16);
+    rPiece("cellars", "c_beam", X(14), FOOT, [[8, 200, 2]]);                                   // a bench: a step up
+    const [x1, top] = rShelves("cellars", X(19), 2);                                            // shelves along the wall
+    rBreak("lamp", "cellars", c + 20, onTop(top)); oliveRow(c + 21, onTop(top) - 0.4, 3);
+    const by = rPiece("cellars", "c_beam", X(25), top, [[8, 200, 2]]);                         // a bench up on the shelves
+    const cy = rPiece("cellars", "c_crates", X(30), top, [[84, 150, 4]]);                      // crates and sacks on them
+    rRelic("g_stone_cellar", "stone", c + 33, onTop(cy + 4));
+    rPiece("cellars", "c_jars", X(36), FOOT);
+    critter("scorpion", c + 38); rBreak("pots", "cellars", c + 41, 16);
+    rPiece("cellars", "c_steps", X(42), FOOT, KIT.c_steps.steps.map((t, i) => [i * 36 + 4, i * 36 + 34, t + 1]));
+    const [x2, top2] = rShelves("cellars", X(47), 0); rBreak("jar", "cellars", c + 49, onTop(top2));
+    rPiece("cellars", "c_basin", X(52), FOOT);
+    // the cracked wall: floor to ceiling across the passage (his art), until Goliath's sword breaks it
+    if (!hasSkill("heavySword")) { block(c + 55, 0, 6, 17, 1); for (let i = 0; i < 6; i++) artSolid.add((c + 55 + i) + ",0"); }   // (solid, drawn only as his wall)
+    rSeal("g_seal_crack", "cellars", c + 55, "heavySword", "Cracked stone, with a draft coming through. Something heavy could break it.", c + 51, c + 56);
+    region.crack = { c: c + 55, r: 0, w: 6, h: 17 };
+    rPiece("cellars", "c_brokendoor", X(60) - 60, FOOT);                                        // the old storeroom behind it
+    rRelic("g_oil_cellar", "oil", c + 61, 16);
+    oliveRow(c + 62, 16, 2); }
 
   // -- The Cisterns (down the well, with the rope): a pomegranate and a Truth
   c = R("cisterns");
@@ -800,7 +829,12 @@ function drawRegion(camX) {
     if (Math.abs(d.x - o.x) < 140 && Math.abs(d.y - GR * T) < 60 && !region.trans) upHint(x, GR * T - 200);
   }
   // the cracked wall in the cellars, until it's broken
-  if (region.crack && !hasSkill("heavySword")) {
+  if (region.crack) {   // (Glen 11-05: his cracked wall; split open once it's broken)
+    const k = region.crack, n = hasSkill("heavySword") ? "c_crackopen" : "c_crackwall", im = kitImg(n), kk = KIT[n];
+    const x = (k.c + k.w / 2) * T - kk.w / 2 - camX;
+    if (im && x > -kk.w && x < W) ctx.drawImage(im, Math.round(x), FOOT - kk.h + 2, kk.w, kk.h);
+  }
+  if (region.crack && !hasSkill("heavySword") && !kitImg("c_crackwall")) {   // (until his art loads)
     const k = region.crack, x = k.c * T - camX;
     if (x > -100 && x < W + 100) {
       ctx.save();
