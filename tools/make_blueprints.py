@@ -8,6 +8,7 @@ rooms.json comes from the game itself (a headless run that dumps each room's til
 dump_rooms.js in the commit that added this). Per room it writes:
   <room>_1of3.png ...   the panels to hand to the image AI, left to right
   <room>_overview.png   the whole room with the panels outlined (for us, not the AI)
+  <room>_wide.png       the whole room in one picture, at its real size (for one wide painting)
 and gibeah_grid.png, the map screen's grid of rooms (each square = one screen).
 
 Colors (no legend in the pictures, so the AI doesn't paint one):
@@ -58,6 +59,7 @@ def room_picture(r):
 rooms = D["rooms"]
 for r in rooms:
     im = room_picture(r); W = im.width
+    im.save(os.path.join(out, f"{r['id']}_wide.png"))   # (Glen 11-04) the whole room in one picture, for one wide painting
     n = max(1, math.ceil((W - OVER) / (SW - OVER)))
     starts = [round(i * (W - SW) / (n - 1)) if n > 1 else 0 for i in range(n)]
     if W < SW:   # a room narrower than the screen: centered on a full screen of solid rock
