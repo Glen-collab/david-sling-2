@@ -159,7 +159,7 @@ const KIT = {
   tw_slab: { w: 221, h: 80 }, tw_step2: { w: 200, h: 115 }, tw_blocks: { w: 287, h: 67 }, tw_corbel: { w: 188, h: 253 },
   tw_buttress: { w: 306, h: 631 }, tw_buttress_ruin: { w: 292, h: 559 }, tw_pier: { w: 241, h: 498 }, tw_pier_stub: { w: 310, h: 233 },
   tw_key: { w: 80, h: 231 }, tw_lever_up: { w: 118, h: 345 }, tw_lever_down: { w: 151, h: 221 }, tw_gate_shut: { w: 219, h: 377 }, tw_gate_open: { w: 187, h: 311 },   // (his key, lever and gate: the key at the top of the tower; the lever and gate for what it opens, to come)
-  tw_door_shut: { w: 159, h: 215 }, tw_door_open: { w: 162, h: 221 }, tw_hatch: { w: 155, h: 161 }, tw_door_arch: { w: 211, h: 244 }, tw_door_plank: { w: 134, h: 226 }, tw_win_slit: { w: 94, h: 199 }, tw_win: { w: 132, h: 181 }, tw_win_arch: { w: 138, h: 197 }, tw_win_slit_dark: { w: 100, h: 202 }, tw_win_glow: { w: 154, h: 201 },   // (his tower doors and windows)
+  tw_door_shut: { w: 159, h: 215 }, tw_door_open: { w: 162, h: 221 }, tw_hatch: { w: 155, h: 161 }, tw_door_arch: { w: 211, h: 244 }, tw_door_plank: { w: 134, h: 226 }, tw_win_slit: { w: 94, h: 198, pad: [3, 3, 10, 45] }, tw_win: { w: 134, h: 170, pad: [3, 2, 12, 64] }, tw_win_arch: { w: 138, h: 200, pad: [3, 3, 22, 48] }, tw_win_slit_dark: { w: 95, h: 190, pad: [3, 3, 3, 0] }, tw_win_glow: { w: 170, h: 194, pad: [0, 2, 0, 0] },   // (his tower doors and windows)
   hr_spearwall: { w: 173, h: 167 }, hr_wall0: { w: 216, h: 632 }, hr_wall1: { w: 216, h: 632 }, hr_wall2: { w: 216, h: 632 }, hr_wall3: { w: 216, h: 632 }, hr_wall4: { w: 216, h: 632 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },   // (hr_wall0-4: Glen 11-05, the plaster between the first two carved pillars, from his harp_strip_source and _strike1, 2, 4, 5)
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
@@ -320,8 +320,9 @@ function drawProps(camX) {
   for (const p of region.props) {
     if (p.front) continue;   // (drawRegionFront: over David)
     const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), s = p.s || 1; if (!im || x > W || x + k.w * s < 0) continue;
-    if (p.y > camY + H + 50 || p.y + k.h * s < camY - 50) continue;   // (a tall room: off above or below)
-    if (p.flip) { ctx.save(); ctx.translate(x + k.w * s, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, Math.round(p.y), k.w * s, k.h * s); ctx.restore(); }   // (mirrored)
+    if (p.y > camY + H + 50 || p.y + k.h * s < camY - 120) continue;   // (a tall room: off above or below)
+    if (k.pad) { const [l, t, r, b] = k.pad; ctx.drawImage(im, x - l * s, Math.round(p.y - t * s), (k.w + l + r) * s, (k.h + t + b) * s); }   // (pad: the picture runs past the piece's box, its light spilling out: w, h are the frame)
+    else if (p.flip) { ctx.save(); ctx.translate(x + k.w * s, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, Math.round(p.y), k.w * s, k.h * s); ctx.restore(); }   // (mirrored)
     else ctx.drawImage(im, x, Math.round(p.y), k.w * s, k.h * s);
     if (p.legs) {   // the legs on down to the ground: the band of rows that's only legs, again and again
       const [a, b] = KIT.LEG, bh = b - a;
@@ -641,7 +642,7 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
-  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) Object.values(TOWER.END).forEach(e => roomImg(e.img)); if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) roomImg("gibeah/sky_clouds"); }
+  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) roomImg("gibeah/sky_clouds"); }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
@@ -1026,6 +1027,11 @@ const TOWER = { TILE_W: 640, TILE_H: 1138, OV: 90, OPEN: 40, END_STEP: 851, END_
 // corner stones meet the inside, px in the picture: that's at the tower's edge, inset columns in); END_STEP: stacked
 // this far apart (each fades in over the one above); END_UP: they rise this far over the open top   // (Glen 11-05) his tower wall pictures, as laid up the tower (px); OV: each fades in over its left and top neighbors this far (no seams)
 const towerTopY = r => (-r.up + 8) * T - TOWER.OPEN;   // (the lookout: open above this)
+// (Glen 11-05) his battlements along the top of the tower (david-sling-2-art/rooms/gibeah/tower_wall_a_source_top-of-wall-2.png,
+// tower_wall_b_source_top-wall.png -> tower_top_a/b.png, at the tower's scale, fading out at the bottom into the stone):
+// solid: px from the picture's top to where the wall is whole (under the gaps between the merlons); DROP: that line, px over the lookout floor
+const TOWER_TOP = { pieces: [{ img: "gibeah/tower_top_b.png", solid: 50 }, { img: "gibeah/tower_top_a.png", solid: 135 }], DROP: 70 };
+const towerWallTopY = r => (-r.up + 8) * T - TOWER_TOP.DROP;   // (where his tower stone stops: the battlements' whole wall from here up)
 function cloudSky(r, camX, fallback) {   // (Glen 11-05) his sky of clouds, repeating, drifting slowly behind (the color till it's loaded)
   const im = roomImg("gibeah/sky_clouds");
   if (!im) { ctx.fillStyle = fallback; ctx.fillRect(0, camY, W, H); return; }
@@ -1042,7 +1048,8 @@ function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked at ra
   towerSky(r, camX);
   if (ims.some(im => !im)) return;
   const L = (r.c0 + r.inset) * T - 60 - camX, R = (r.c0 + r.w - r.inset) * T + 40 - camX;   // (under the ends' corner stones)
-  ctx.save(); ctx.beginPath(); ctx.rect(L, towerTopY(r), R - L, H - towerTopY(r) + 2000); ctx.clip();
+  const wt = towerWallTopY(r) + 30;   // (the tiles stop under the battlements' whole wall)
+  ctx.save(); ctx.beginPath(); ctx.rect(L, wt, R - L, H - wt + 2000); ctx.clip();
   const { TILE_W: tw, TILE_H: th, OV: ov } = TOWER, x0 = r.c0 * T, top = -r.up * T;
   for (let ix = Math.floor((camX - x0) / tw); ix * tw + x0 < camX + W; ix++)
     for (let iy = Math.floor((camY - top) / th); iy * th + top < camY + H; iy++) {
@@ -1050,6 +1057,14 @@ function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked at ra
       const x = Math.round(x0 + ix * tw - camX - ov), y = Math.round(top + iy * th - ov), w = tw + ov, h = th + ov;
       ctx.drawImage(im, x, y, w, h);   // (the mirrored ones are their own pictures: the soft edges stay on the left and top)
     }
+  ctx.restore();
+  // his battlements across the top, the pieces side by side (the corner stones cover their ends)
+  const base = towerWallTopY(r); if (base + 400 < camY) return;
+  ctx.save(); ctx.beginPath(); ctx.rect(L, camY, R - L, H); ctx.clip();
+  for (let x = L, i = 0; x < R; i++) {
+    const p = TOWER_TOP.pieces[i % TOWER_TOP.pieces.length], im = roomImg(p.img); if (!im) break;
+    ctx.drawImage(im, Math.round(x), Math.round(base - p.solid)); x += im.naturalWidth - 2;
+  }
   ctx.restore();
 }
 function drawTowerEnds(camX) {   // (Glen 11-05) the tower's two ends: his corner stones against the sky, the fields far off
