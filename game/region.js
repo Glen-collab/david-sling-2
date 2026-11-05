@@ -79,7 +79,7 @@ const REGION = {
     { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
     // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, his painting in the middle
     { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town", art: "gibeah/walls", artAt: 70,
-      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor", block: "gibeah/stone_block" },
+      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor", block: "gibeah/stone_block" },   // (floor: the strip's own paving, over the ground)
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
@@ -576,7 +576,7 @@ function drawRegion(camX) {
       const fw = fl.naturalWidth, a = Math.max(rx, 0), b = Math.min(rx + rw, W);
       for (let x = rx + Math.floor((a - rx) / fw) * fw; x < b; x += fw) {
         const sx = Math.max(0, a - x), ex = Math.min(fw, b - x);
-        if (ex > sx) ctx.drawImage(fl, sx, 0, ex - sx, fl.naturalHeight, Math.round(x + sx), GR * T, ex - sx, H - GR * T);
+        if (ex > sx) ctx.drawImage(fl, sx, 0, ex - sx, fl.naturalHeight, Math.round(x + sx), H - fl.naturalHeight, ex - sx, fl.naturalHeight);   // (from a little above the ground line: covers the ground tiles' tufts)
       }
     }
     const bl = roomImg(r.block);
