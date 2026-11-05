@@ -77,9 +77,10 @@ const REGION = {
   rooms: [
     { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town" },   // "@road": off the left edge, out of Gibeah
     { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
-    // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, his painting in the middle
-    { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town", art: "gibeah/walls", artAt: 70,
-      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor", block: "gibeah/stone_block" },   // (floor: the strip's own paving, over the ground)
+    // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, built from his kit
+    // (the walkways, the gate, the stair down, the plinth); floor: the strip's own paving, over the ground
+    { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town",
+      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
@@ -105,10 +106,53 @@ function roomImg(name) {
 const roomArt = r => roomImg(r.art);
 // blocks in a long room: stone the player stands on, drawn with block (a picture cut from the room's painting)
 function rBlock(room, c, r, w, h) { block(c, r, w, h, 1); region.blocks.push({ room, x: c * T, y: r * T, w: w * T, h: h * T }); }
+// ---- a room kit (Glen 11-04: his pieces on green screen, tools/cut_kit.py): placed anywhere in a room ----
+// walk_*: a scaffold walkway's left end, middle, right end (deck: the planks' top, px from the piece's top; posts: the
+// posts' middles; the pieces join post on post, and the legs are drawn on down to the ground)
+const KIT = {
+  walk_left: { w: 236, h: 164, deck: 56, posts: [33, 122, 212] }, walk_mid: { w: 233, h: 164, deck: 56, posts: [28, 117, 207] },
+  walk_right: { w: 234, h: 164, deck: 56, posts: [23, 111, 198] }, LEG: [150, 160],
+  gate: { w: 207, h: 236 }, stair_down: { w: 239, h: 279 }, plinth: { w: 147, h: 124 },
+};
+const KIT_IMG = {};
+function kitImg(n) {
+  let im = KIT_IMG[n];
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/kit/" + n + ".png"; }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
+  const parts = ["walk_left", ...Array(nMid).fill("walk_mid"), "walk_right"];
+  let px = x, prev = null;
+  for (const n of parts) {
+    if (prev) px += KIT[prev].posts[KIT[prev].posts.length - 1] - KIT[n].posts[0];
+    region.props.push({ room, n, x: px, y: deckY - KIT[n].deck }); prev = n;   // (Glen 11-04: fixed to the wall, the braces show it: no legs to the ground)
+  }
+  const x1 = px + KIT[prev].w, c0 = Math.ceil((x + 8) / T), c1 = Math.floor((x1 - 8) / T);
+  platAt(c0, deckY, c1 - c0);
+  return x1;
+}
+function rKitDoor(id, room, c, kind, to, n) {   // a doorway or stair from the kit, standing on the ground at column c
+  rDoor(id, room, c, kind, to); const o = region.doors[region.doors.length - 1]; o.kit = n;
+  region.props.push({ room, n, x: o.x - KIT[n].w / 2, y: GR * T + 4 - KIT[n].h });
+}
+function rPlinth(room, c) {   // the kit's stone plinth: solid, its top a ledge where the stones' tops are
+  block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4);
+  region.props.push({ room, n: "plinth", x: c * T + 2 * T - KIT.plinth.w / 2, y: GR * T + 2 - KIT.plinth.h });
+}
+function drawProps(camX) {
+  for (const p of region.props) {
+    const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX); if (!im || x > W || x + k.w < 0) continue;
+    ctx.drawImage(im, x, Math.round(p.y), k.w, k.h);
+    if (p.legs) {   // the legs on down to the ground: the band of rows that's only legs, again and again
+      const [a, b] = KIT.LEG, bh = b - a;
+      for (let y = p.y + b; y < GR * T + 6; y += bh) ctx.drawImage(im, 0, a, k.w, bh, x, Math.round(y), k.w, bh);
+    }
+  }
+}
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], walls: [], blocks: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], seals: [], walls: [], blocks: [], props: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
@@ -172,29 +216,27 @@ function buildRegion() {
   rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
   rBreak("basket", "town", c + 64, 16); rBreak("jar", "town", c + 50, 16); oliveRow(c + 62, 16, 6);
 
-  // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars. (Glen 11-04: a long room)
-  // Glen's wall strip runs the whole way; his painting (the gate, the scaffolds, the stair down) is columns 70-133.
-  c = R("walls");
+  // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars. (Glen 11-04: a long room,
+  // built from his kit on his repeating wall: walkways at different heights, plinths, the gate and the stair down)
+  c = R("walls"); const X = k => (c + k) * T;
   ground(c, c + 199);
-  // the yard before the gate: stone blocks and walkways along the wall
   oliveRow(c + 5, 16, 4);
-  rBlock("walls", c + 12, 14, 3, 3); plat(c + 16, 11, 5); plat(c + 23, 8, 4); oliveRow(c + 23, 7, 4);
-  plat(c + 30, 11, 6); rBreak("jar", "walls", c + 33, 10);
-  rBlock("walls", c + 38, 13, 2, 4); critter("scorpion", c + 44);
-  plat(c + 48, 12, 5); plat(c + 55, 9, 5); rBreak("jar", "walls", c + 57, 8); plat(c + 62, 11, 4);
-  // Glen's painting: the stone plinth, the low scaffold walkway, the top of the gate's arch, the high walkway over the gate
-  c = R("walls") + 70;
-  wall(c + 10, 14, 4, 3); platAt(c + 13, 380, 12); platAt(c + 30, 386, 6); platAt(c + 34, 230, 13);
-  rRelic("g_stone_walls", "stone", c + 44, onTop(230));
-  rDoor("d_gate", "walls", c + 32, "door", "d_hallsgate");
-  rDoor("d_down", "walls", c + 50, "stairs", "d_cellarup");
-  oliveRow(c + 40, 16, 6);
-  // past the stair down: higher and higher along the wall, to the far corner
-  c = R("walls") + 134;
-  rBlock("walls", c + 4, 15, 2, 2); plat(c + 8, 12, 5); plat(c + 16, 9, 6); oliveRow(c + 16, 8, 6);
-  rBreak("basket", "walls", c + 26, 16); snake("viper", c + 31);
-  plat(c + 36, 12, 4); plat(c + 42, 9, 4); plat(c + 48, 6, 5); oliveRow(c + 48, 5, 5); rBreak("lamp", "walls", c + 50, 5);
-  rBlock("walls", c + 58, 13, 3, 4); critter("hedgehog", c + 63);
+  rPlinth("walls", c + 10);
+  rWalk("walls", X(15), 400, 1);
+  rWalk("walls", X(34), 270, 0); oliveRow(c + 35, onTop(270) - 0.4, 5); rBreak("jar", "walls", c + 42, onTop(270));
+  critter("scorpion", c + 48);
+  rKitDoor("d_gate", "walls", c + 55, "door", "d_hallsgate", "gate");
+  rPlinth("walls", c + 62);
+  rWalk("walls", X(67), 420, 2); oliveRow(c + 72, onTop(420) - 0.4, 6);
+  rWalk("walls", X(90), 290, 0); rBreak("jar", "walls", c + 96, onTop(290));
+  rWalk("walls", X(104), 160, 0);
+  rRelic("g_stone_walls", "stone", c + 110, onTop(160));
+  snake("viper", c + 100);
+  rKitDoor("d_down", "walls", c + 125, "stairs", "d_cellarup", "stair_down");
+  rWalk("walls", X(132), 430, 3); oliveRow(c + 138, onTop(430) - 0.4, 8);
+  rBreak("basket", "walls", c + 145, 16);
+  rWalk("walls", X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
+  rPlinth("walls", c + 178); critter("hedgehog", c + 186); oliveRow(c + 189, 16, 5);
 
   // -- The Palace Halls (up through the gate)
   c = R("halls");
@@ -252,6 +294,7 @@ function regionCam() {
 function regionInit() {
   region.inited = true;
   for (const r of REGION.rooms) for (const k of ["strip", "floor", "art", "block"]) roomImg(r[k]);   // load them all now (no old backdrop flashing first)
+  for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
   const extra = Math.floor(poms / 4) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: the meter grows by a heart's worth, for good
   david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
@@ -599,10 +642,11 @@ function drawRegion(camX) {
     }
     ctx.restore();
   }
+  drawProps(camX);
   drawBreaks(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
-    if (!(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
+    if (!o.kit && !(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
     if (Math.abs(d.x - o.x) < 140 && Math.abs(d.y - GR * T) < 60 && !region.trans) upHint(x, GR * T - 200);
   }
   // the cracked wall in the cellars, until it's broken

@@ -532,7 +532,8 @@ const plat = (c, r, w) => { for (let x = c; x < c + w; x++) oneway[r][x] = true;
 // only on a row: he stands with his feet right on the painted top
 const onewayTop = new Map();
 const owTop = (c, r) => onewayTop.get(r * COLS + c) ?? r * T;
-const platAt = (c, y, w) => { const r = Math.floor(y / T); for (let x = c; x < c + w; x++) { oneway[r][x] = true; onewayTop.set(r * COLS + x, y); } };
+const platAt = (c, y, w) => { const r = Math.floor(y / T); for (let x = c; x < c + w; x++) { oneway[r][x] = true; onewayTop.set(r * COLS + x, y); artPlat.add(x + "," + r); } };   // (the painting or the kit piece is what's seen: no plank drawn)
+const artPlat = new Set();
 // crumbling ledges: shake when you land on them, then drop away (and come back a few seconds later)
 const crumbles = [];
 const crumble = (c, r, w) => { plat(c, r, w); crumbles.push({ c, r, w, state: "solid", t: 0 }); };
@@ -2995,7 +2996,7 @@ function drawTiles(camX) {
   for (let r = 0; r < ROWS; r++) {
     let start = -1;
     for (let c = c0 - 6; c <= c1 + 1; c++) {
-      const on = c <= c1 && isOneway(c, r) && !specialPlat.has(c + "," + r);   // crumbling ledges and bridges are drawn in world1.js
+      const on = c <= c1 && isOneway(c, r) && !specialPlat.has(c + "," + r) && !artPlat.has(c + "," + r);   // crumbling ledges and bridges are drawn in world1.js
       if (on && start < 0) start = c;
       if (!on && start >= 0) { drawLedgeRun(start * T, c * T, r * T - 4); start = -1; }
     }
