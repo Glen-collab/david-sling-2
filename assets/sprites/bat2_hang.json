@@ -1,0 +1,11 @@
+{
+  "frames": 2,
+  "frame_w": 116,
+  "frame_h": 216,
+  "ms_per_frame": 300,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 58,
+  "anchor_y": 215,
+  "source": "bat_sheet.png"
+}

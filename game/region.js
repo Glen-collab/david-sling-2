@@ -46,7 +46,7 @@ const RTUNE = {
   // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
   // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
   HP_PER_HEART: 10,
-  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10 },   // how much each thing takes off with a hit
+  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5 },   // how much each thing takes off with a hit
   HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
   // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
   // leave the room and come in again. Glen's break sets (tools/cut_breakables.py): <art>, <art>_breaking, <art>_broken,
@@ -87,7 +87,8 @@ const REGION = {
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
-    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns" },
+    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns", right: "deep" },
+    { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
@@ -139,6 +140,10 @@ const KIT = {
   // basin; and his cracked wall (sealed, and broken open), the broken door behind it, the ruined arch with its door
   c_shelf_left: { w: 207, h: 202 }, c_shelf_mid: { w: 208, h: 202 }, c_shelf_right: { w: 201, h: 204 }, c_beam: { w: 207, h: 98 },
   c_crates: { w: 168, h: 199 }, c_steps: { w: 188, h: 159, steps: [109, 72, 28, 0, 0] }, c_jars: { w: 191, h: 127 }, c_basin: { w: 129, h: 107 },
+  // (Glen 11-05) the pit kit: the floor's edge either side of a hole, planks across one, a floor that crumbles, the
+  // ring and rope in the ceiling
+  p_left: { w: 242, h: 177 }, p_right: { w: 243, h: 177 }, p_crumble: { w: 205, h: 102 }, p_broken: { w: 203, h: 132 },
+  p_planks: { w: 211, h: 98 }, p_ring: { w: 86, h: 175 },
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
@@ -146,7 +151,7 @@ const KIT = {
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^c_/.test(n) ? "kit_cave/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -250,6 +255,27 @@ function rShelves(room, x, nMid, bottom = FOOT) {   // stone shelves from x (px)
   platAt(c0, top, c1 - c0);
   return [px + 6, top];
 }
+// ---- holes in the floor (Glen 11-05: "pits in the ground to go down levels") ----
+// a hole w wide from column c: its edges from his pit kit; to: { room, x, facing } drops him into the room below
+// (no to: a plain pit, a fall costs a heart); planks: boards across it; crumble: a floor over it that gives way
+function rHole(room, c, w, opts = {}) {
+  pitFloor(c, w);
+  const h = { room, c, w, x0: c * T, x1: (c + w) * T, to: opts.to || null };
+  region.holes.push(h);
+  const s = 0.75, L = KIT.p_left, Rr = KIT.p_right;
+  region.props.push({ room, n: "p_left", x: c * T + 22 - L.w * s, y: GR * T - 3, s });
+  region.props.push({ room, n: "p_right", x: (c + w) * T - 22, y: GR * T - 3, s });
+  if (opts.planks) { const k = KIT.p_planks; region.props.push({ room, n: "p_planks", x: (c + w / 2) * T - k.w / 2, y: GR * T - 8 }); platAt(c, GR * T, w); }
+  if (opts.crumble) { platAt(c, GR * T, w); region.crumbles.push({ room, c, w, state: "whole", t: 0 }); }
+  return h;
+}
+// ---- creatures of the deep (Glen 11-05: his spider, bat and rat; they turn to dust when hit) ----
+const beast = (kind, room, c, o = {}) => region.beasts.push(Object.assign({ kind, room, x: c * T + T / 2, hx: c * T + T / 2, y: GR * T, hy: GR * T,
+  state: "idle", t: Math.random() * 3, facing: -1, cool: 0 }, o));
+const rSpider = (room, c, hangY = 200) => beast("spider", room, c, { y: hangY, hy: hangY, state: "hang" });   // hangs on its thread; drops when he's under
+const rCrawler = (room, c, range = 4) => beast("spiderw", room, c, { range: range * T, state: "walk" });     // a spider walking the floor
+const rRat = (room, c, range = 4) => beast("rat2", room, c, { range: range * T, state: "walk" });
+const rBat = (room, c, y = 110) => beast("bat2", room, c, { y, hy: y, state: "hang" });
 function rPlinth(room, c) {   // the kit's stone plinth: solid, its top a ledge where the stones' tops are
   block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4); for (let k = 0; k < 4; k++) artSolid.add((c + k) + "," + (GR - 3));
   region.props.push({ room, n: "plinth", x: c * T + 2 * T - KIT.plinth.w / 2, y: GR * T + 2 - KIT.plinth.h });
@@ -268,7 +294,7 @@ function drawProps(camX) {
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], walls: [], blocks: [], props: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
@@ -415,7 +441,10 @@ function buildRegion() {
     const cy = rPiece("cellars", "c_crates", X(30), top, [[84, 150, 4]]);                      // crates and sacks on them
     rRelic("g_stone_cellar", "stone", c + 33, onTop(cy + 4));
     rPiece("cellars", "c_jars", X(36), FOOT);
-    critter("scorpion", c + 38); rBreak("pots", "cellars", c + 41, 16);
+    // (Glen 11-05) a hole in the floor: down into the deep cellar
+    rHole("cellars", c + 38, 3, { to: { room: "deep", c: 62, facing: -1 } });
+    rDoor("d_hole", "cellars", c + 39, "hole", "d_deeprope");
+    critter("scorpion", c + 33); rBreak("pots", "cellars", c + 41, 16);
     rPiece("cellars", "c_steps", X(42), FOOT, KIT.c_steps.steps.map((t, i) => [i * 36 + 4, i * 36 + 34, t + 1]));
     const [x2, top2] = rShelves("cellars", X(47), 0); rBreak("jar", "cellars", c + 49, onTop(top2));
     rPiece("cellars", "c_basin", X(52), FOOT);
@@ -426,6 +455,25 @@ function buildRegion() {
     rPiece("cellars", "c_brokendoor", X(60) - 60, FOOT);                                        // the old storeroom behind it
     rRelic("g_oil_cellar", "oil", c + 61, 16);
     oliveRow(c + 62, 16, 2); }
+
+  // -- The Deep Cellar (down the hole in the cellars' floor; Glen 11-05): webs and roots, spiders on their threads, a
+  // bat, rats; planks over one pit, a floor that gives way over another; the rope back up; the way on to the cisterns
+  c = R("deep");
+  ground(c, c + 69);
+  { const X = k => (c + k) * T;
+    rDoor("d_deeprope", "deep", c + 65, "rope", "d_hole");
+    oliveRow(c + 56, 16, 4); rRat("deep", c + 54, 4);
+    rSpider("deep", c + 49, 210);
+    rHole("deep", c + 42, 4, { planks: true });
+    rBat("deep", c + 37, 100); rBreak("jar", "deep", c + 35, 16);
+    rHole("deep", c + 28, 4, { crumble: true });
+    rSpider("deep", c + 24, 180); rRat("deep", c + 20, 3);
+    rHole("deep", c + 15, 3);
+    oliveRow(c + 13, 16, 2);
+    const [, top] = rShelves("deep", X(3), 0);
+    const cy = rPiece("deep", "c_crates", X(5), top, [[84, 150, 4]]);
+    rRelic("g_stone_deep", "stone", c + 8, onTop(cy + 4));
+    rCrawler("deep", c + 9, 2); }
 
   // -- The Cisterns (down the well, with the rope): a pomegranate and a Truth
   c = R("cisterns");
@@ -470,14 +518,17 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : "walk", t: Math.random() * 3, dead: false, cool: 0 });
+    for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
-  updateBreaks(dt);
+  updateBreaks(dt); updateBeasts(dt, r); updateFloorCrumbles(dt, r);
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
   if (tr) {
     tr.t += dt;
+    if (tr.hole && !tr.moved) { d.vy = 0; d.y = Math.min(d.y, GR * T + 90); }   // (down the hole: held there while it fades)
     if (tr.leave) {   // out of Gibeah: for now, back to the game's map (the travel map of the land comes later)
       region.fade = Math.min(1, tr.t / (RTUNE.FADE * 2));
       if (tr.t > RTUNE.FADE * 2 + 0.2 && !tr.gone) { tr.gone = true; location.href = "index.html"; }
@@ -493,6 +544,11 @@ function updateRegion(dt) {
     return;
   }
   if (d.deadT > 0) return;
+  for (const h of region.holes) if (h.to && h.room === r.id && d.x > h.x0 && d.x < h.x1 && d.y > GR * T + 40) {   // down the hole, into the room below
+    const n = roomById(h.to.room);
+    region.trans = { t: 0, x: (n.c0 + h.to.c) * T, facing: h.to.facing || 1, moved: false, hole: true, after: () => { d.y = -30; d.vy = 0; d.onGround = false; setState("jump"); snapCamera(); } };
+    return;
+  }
   // off the edge of the room, into the next
   const left = r.c0 * T, right = (r.c0 + r.w) * T;
   if (r.left === "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { region.trans = { t: 0, leave: true }; return; }   // the road out (Glen 11-03)
@@ -502,7 +558,7 @@ function updateRegion(dt) {
   if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
   if (pressed("up") && d.onGround) {
-    const door = region.doors.find(o => Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
+    const door = region.doors.find(o => o.kind !== "hole" && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
     if (door) {
       const seal = door.need && region.seals.find(s => s.need === door.need && Math.abs(s.x - door.x) < 3 * T);
       if (door.need && !hasSkill(door.need)) { if (seal) sealSay(seal); }
@@ -533,7 +589,7 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
       d.vx = d.vy = 0; d.facing = wellRim(o).x >= d.x ? 1 : -1;
       return true;
     }
-    if (o.kind === "rope") { region.climb = { kind: "rope", x: o.x, dist: 0 }; d.x = o.x; d.vx = d.vy = 0; return true; }
+    if (o.kind === "rope") { region.climb = { kind: "rope", x: o.x, dist: 0, o }; d.x = o.x; d.vx = d.vy = 0; return true; }
   }
   for (const w of region.walls) {
     if (w.room !== r.id) continue;
@@ -582,8 +638,9 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     d.x = c.x; d.y += v * RTUNE.CLIMB_SPEED * dt; c.dist += Math.abs(v) * RTUNE.CLIMB_SPEED * dt;
     if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }   // down on the floor
     if (d.y <= RTUNE.ROPE_TOP + RTUNE.ROPE_HANG - 10 && !c.gone) {   // up into the well shaft: out into the town
-      c.gone = true; const w = region.doors.find(o => o.id === "d_well");
-      regionGo(w.x, 1, () => { wellOut(w); snapCamera(); });
+      c.gone = true; const w = region.doors.find(o => o.id === ((c.o && c.o.to) || "d_well"));
+      if (w.kind === "well") regionGo(w.x, 1, () => { wellOut(w); snapCamera(); });
+      else regionGo(w.x + 3 * T, 1, () => { region.climb = null; d.onGround = true; setState("idle"); snapCamera(); });   // (up out of the hole: onto the floor beside it)
     }
     if (pressed("a") && !c.gone) { region.climb = null; setState("jump"); }   // let go
     return true;
@@ -675,6 +732,7 @@ const regionHit = fromX => {   // what a hit takes off: by whatever's nearest wh
   const near = (k, kind) => { const dd = Math.abs((k.x || 0) - fromX); if (dd < bd) { bd = dd; best = kind; } };
   if (typeof critters !== "undefined") for (const k of critters) near(k, k.kind);
   if (typeof snakes !== "undefined") for (const s of snakes) near(s, s.kind);
+  for (const b of region.beasts) if (!b.dead) near(b, b.kind);
   return RTUNE.HIT[best] ?? RTUNE.HIT.default;
 };
 const breakScale = (k, img) => k.h / (img.naturalHeight * k.fit);   // picture px to game px
@@ -684,6 +742,11 @@ function breakBox(b) {   // the whole thing (about two thirds of its picture's w
 }
 function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
   if (!REGION_ON) return false;
+  for (const b of region.beasts) {
+    if (b.dead) continue;
+    const q = beastBox(b);
+    if (s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8) { b.dead = true; b.state = "dust"; b.t = 0; if (typeof stoneHit === "function") stoneHit(s, 0.6); return true; }
+  }
   for (const b of region.breaks) {
     if (b.broken) continue;
     const q = breakBox(b);
@@ -821,12 +884,19 @@ function drawRegion(camX) {
     }
     ctx.restore();
   }
+  for (const h of region.holes) {   // the dark down a hole
+    const x = h.x0 - camX; if (x > W || x + (h.x1 - h.x0) < 0) continue;
+    const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
+    ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);
+  }
   drawProps(camX);
+  drawFloorCrumbles(camX);
   drawBreaks(camX);
+  drawBeasts(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
     if (!o.kit && !(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
-    if (Math.abs(d.x - o.x) < 140 && Math.abs(d.y - GR * T) < 60 && !region.trans) upHint(x, GR * T - 200);
+    if (o.kind !== "hole" && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - GR * T) < 60 && !region.trans) upHint(x, GR * T - 200);
   }
   // the cracked wall in the cellars, until it's broken
   if (region.crack) {   // (Glen 11-05: his cracked wall; split open once it's broken)
@@ -892,6 +962,11 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     ctx.fillStyle = "#7a6a55"; ctx.fillRect(x - 46, y - 52, 92, 52);
     ctx.strokeStyle = "#4e4234"; ctx.lineWidth = 2;
     for (let r = 0; r < 3; r++) for (let k = 0; k < 4; k++) ctx.strokeRect(x - 46 + k * 23 + (r % 2) * 11, y - 52 + r * 17, 23, 17);
+  } else if (o.kind === "hole") {   // (the hole's own edges are drawn: rHole)
+  } else if (o.kind === "rope" && o.to !== "d_well") {   // (Glen 11-05) his iron ring in the rock, the rope hanging from it
+    const k = KIT.p_ring, im = kitImg("p_ring");
+    if (im) ctx.drawImage(im, Math.round(x - k.w / 2), 0, k.w, k.h);
+    drawRope(x, k.h - 40, y - 24);
   } else if (o.kind === "rope") {   // a rope hanging down out of the well's mouth, and a little daylight
     const lg = ctx.createRadialGradient(x, 2 * T, 4, x, 2 * T, 160);
     lg.addColorStop(0, "rgba(255,236,190,0.7)"); lg.addColorStop(1, "rgba(255,220,150,0)");
@@ -899,6 +974,85 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     drawRope(x, 2 * T, y - 24);
   }
   ctx.restore();
+}
+// ---- the creatures: spiders on threads and on the floor, bats, rats ----
+const BEAST = { spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
+function beastBox(b) { const k = BEAST[b.kind]; return { x0: b.x - k.w, x1: b.x + k.w, y0: b.y - k.h, y1: b.y }; }
+function updateBeasts(dt, r) {
+  const d = david;
+  for (const b of region.beasts) {
+    if (b.room !== r.id) continue;
+    b.t += dt; b.cool = Math.max(0, b.cool - dt);
+    if (b.dead) continue;
+    const dx = d.x - b.x;
+    if (b.kind === "spider") {   // waits up on its thread; drops on him when he's under it, waits, climbs back
+      if (b.state === "hang") { b.y = b.hy + Math.sin(b.t * 2) * 4; if (!b.cool && Math.abs(dx) < 90 && d.y > b.y) { b.state = "drop"; b.t = 0; } }
+      else if (b.state === "drop") { b.y = Math.min(GR * T - 30, b.y + 560 * dt); if (b.y >= GR * T - 30) { b.state = "wait"; b.t = 0; } }
+      else if (b.state === "wait") { if (b.t > 0.9) { b.state = "climb"; b.t = 0; } }
+      else if (b.state === "climb") { b.y -= 110 * dt; if (b.y <= b.hy) { b.y = b.hy; b.state = "hang"; b.cool = 1.6; } }
+    } else if (b.kind === "spiderw" || b.kind === "rat2") {   // back and forth along the floor; the rat stops to sniff
+      if (b.state === "sniff") { if (b.t > 1.1) { b.state = "walk"; b.t = 0; } }
+      else {
+        b.x += b.facing * (b.kind === "rat2" ? 150 : 90) * dt;
+        if (b.x < b.hx - b.range) { b.x = b.hx - b.range; b.facing = 1; } else if (b.x > b.hx + b.range) { b.x = b.hx + b.range; b.facing = -1; }
+        if (b.kind === "rat2" && b.t > 2.5 + (b.hx % 3)) { b.state = "sniff"; b.t = 0; }
+      }
+    } else if (b.kind === "bat2") {   // asleep upside down until he comes near; then swoops at him, out past him, and back
+      if (b.state === "hang") { if (Math.abs(dx) < 260 && d.y > b.y) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
+      else {
+        b.x += b.facing * 210 * dt;
+        const want = d.y - 70 + Math.sin(b.t * 5) * 30;
+        b.y += (want - b.y) * Math.min(1, dt * 1.8);
+        b.y = Math.max(60, Math.min(GR * T - 40, b.y));
+        if ((b.facing > 0 && b.x > d.x + 320) || (b.facing < 0 && b.x < d.x - 320)) b.facing *= -1;
+        b.x = Math.max(r.c0 * T + 40, Math.min((r.c0 + r.w) * T - 40, b.x));
+      }
+    }
+    if (b.state !== "hang" || b.kind === "spider") { const q = beastBox(b); if (touchesDavid(q)) hurtDavid(b.x); }
+  }
+}
+function drawBeasts(camX) {
+  for (const b of region.beasts) {
+    const x = b.x - camX; if (x < -200 || x > W + 200 || roomAt(b.x) !== region.room) continue;
+    if (b.dead) {   // a puff of dust, once
+      const n = b.kind === "spider" || b.kind === "spiderw" ? "spider_dust" : b.kind + "_dust", sh = SPR[n];
+      if (sh && b.t * 1000 < sh.frames * sh.ms) drawSprite(n, frameOf(n, b.t), x, b.y + (b.kind === "spider" ? 0 : 0), b.facing);
+      continue;
+    }
+    if (b.kind === "spider") {
+      ctx.save(); ctx.strokeStyle = "rgba(230,225,215,0.7)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(Math.round(x) + 0.5, 0); ctx.lineTo(Math.round(x) + 0.5, b.y - 70); ctx.stroke(); ctx.restore();
+      const n = b.state === "drop" || b.state === "wait" ? "spider_drop" : "spider_hang";
+      drawSprite(n, frameOf(n, b.t), x, b.y, 1);
+    } else if (b.kind === "spiderw") drawSprite("spider_walk", frameOf("spider_walk", b.t), x, b.y, b.facing);
+    else if (b.kind === "rat2") { const n = b.state === "sniff" ? "rat2_sniff" : "rat2_run"; drawSprite(n, frameOf(n, b.t), x, b.y, b.facing); }
+    else if (b.kind === "bat2") {
+      if (b.state === "hang") drawSprite("bat2_hang", frameOf("bat2_hang", b.t), x, b.y + 50, 1);
+      else drawSprite("bat2_fly", frameOf("bat2_fly", b.t), x, b.y + 25, b.facing);
+    }
+  }
+}
+// ---- a floor that crumbles: he steps on, it shakes, it gives way (and comes back when he comes in again) ----
+function updateFloorCrumbles(dt, r) {
+  const d = david;
+  for (const k of region.crumbles) {
+    if (k.room !== r.id) continue;
+    const on = d.onGround && Math.abs(d.y - GR * T) < 2 && d.x > k.c * T - 10 && d.x < (k.c + k.w) * T + 10;
+    if (k.state === "whole" && on) { k.state = "shake"; k.t = 0; }
+    else if (k.state === "shake") { k.t += dt; if (k.t > 0.55) {
+      k.state = "gone"; k.t = 0;
+      for (let x = k.c; x < k.c + k.w; x++) { oneway[GR][x] = false; onewayTop.delete(GR * COLS + x); }
+      for (let i = 0; i < 10; i++) bits.push({ x: (k.c + Math.random() * k.w) * T, y: GR * T, vx: (Math.random() - 0.5) * 200, vy: -Math.random() * 200, life: 0.9, color: i % 2 ? "#7b6a55" : "#a08a6c" });
+    } } else if (k.state === "gone") k.t += dt;
+  }
+}
+function drawFloorCrumbles(camX) {
+  for (const k of region.crumbles) {
+    const x = (k.c + k.w / 2) * T - camX; if (x < -200 || x > W + 200) continue;
+    if (k.state === "gone") { if (k.t < 0.6) { const kk = KIT.p_broken, im = kitImg("p_broken"); if (im) { ctx.save(); ctx.globalAlpha = 1 - k.t / 0.6; ctx.drawImage(im, Math.round(x - kk.w / 2), GR * T - 12 + k.t * 300, kk.w, kk.h); ctx.restore(); } } continue; }
+    const kk = KIT.p_crumble, im = kitImg("p_crumble"); if (!im) continue;
+    const j = k.state === "shake" ? (Math.random() - 0.5) * 5 : 0;
+    ctx.drawImage(im, Math.round(x - kk.w / 2 + j), GR * T - 8, kk.w, kk.h);
+  }
 }
 function drawRegionFront(camX) {   // main.js, after David: the railings he walks behind
   if (!REGION_ON) return;

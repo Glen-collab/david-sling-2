@@ -684,6 +684,42 @@ window.SPRITE_DATA = {
   "ay": 303,
   "align": "feet"
  },
+ "bat2_dust": {
+  "src": "../assets/sprites/bat2_dust.png",
+  "frames": 4,
+  "w": 228,
+  "h": 202,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 114,
+  "ay": 201,
+  "align": "feet"
+ },
+ "bat2_fly": {
+  "src": "../assets/sprites/bat2_fly.png",
+  "frames": 6,
+  "w": 305,
+  "h": 238,
+  "ms": 70,
+  "loop": true,
+  "pingpong": false,
+  "ax": 152,
+  "ay": 237,
+  "align": "feet"
+ },
+ "bat2_hang": {
+  "src": "../assets/sprites/bat2_hang.png",
+  "frames": 2,
+  "w": 116,
+  "h": 216,
+  "ms": 300,
+  "loop": true,
+  "pingpong": false,
+  "ax": 58,
+  "ay": 215,
+  "align": "feet"
+ },
  "bat_fly": {
   "src": "../assets/sprites/bat_fly.png",
   "frames": 8,
@@ -4932,6 +4968,42 @@ window.SPRITE_DATA = {
   "ay": 302,
   "align": "feet"
  },
+ "rat2_dust": {
+  "src": "../assets/sprites/rat2_dust.png",
+  "frames": 5,
+  "w": 189,
+  "h": 169,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 94,
+  "ay": 168,
+  "align": "feet"
+ },
+ "rat2_run": {
+  "src": "../assets/sprites/rat2_run.png",
+  "frames": 6,
+  "w": 198,
+  "h": 121,
+  "ms": 60,
+  "loop": true,
+  "pingpong": false,
+  "ax": 99,
+  "ay": 120,
+  "align": "feet"
+ },
+ "rat2_sniff": {
+  "src": "../assets/sprites/rat2_sniff.png",
+  "frames": 4,
+  "w": 148,
+  "h": 194,
+  "ms": 200,
+  "loop": true,
+  "pingpong": false,
+  "ax": 74,
+  "ay": 193,
+  "align": "feet"
+ },
  "rat_run": {
   "src": "../assets/sprites/rat_run.png",
   "frames": 6,
@@ -5782,6 +5854,54 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 48,
   "ay": 284,
+  "align": "feet"
+ },
+ "spider_drop": {
+  "src": "../assets/sprites/spider_drop.png",
+  "frames": 4,
+  "w": 231,
+  "h": 199,
+  "ms": 70,
+  "loop": true,
+  "pingpong": false,
+  "ax": 115,
+  "ay": 198,
+  "align": "feet"
+ },
+ "spider_dust": {
+  "src": "../assets/sprites/spider_dust.png",
+  "frames": 6,
+  "w": 234,
+  "h": 172,
+  "ms": 90,
+  "loop": false,
+  "pingpong": false,
+  "ax": 117,
+  "ay": 171,
+  "align": "feet"
+ },
+ "spider_hang": {
+  "src": "../assets/sprites/spider_hang.png",
+  "frames": 5,
+  "w": 101,
+  "h": 174,
+  "ms": 160,
+  "loop": true,
+  "pingpong": false,
+  "ax": 50,
+  "ay": 173,
+  "align": "feet"
+ },
+ "spider_walk": {
+  "src": "../assets/sprites/spider_walk.png",
+  "frames": 6,
+  "w": 232,
+  "h": 122,
+  "ms": 80,
+  "loop": true,
+  "pingpong": false,
+  "ax": 116,
+  "ay": 121,
   "align": "feet"
  },
  "steward": {

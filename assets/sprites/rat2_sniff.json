@@ -1,0 +1,11 @@
+{
+  "frames": 4,
+  "frame_w": 148,
+  "frame_h": 194,
+  "ms_per_frame": 200,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 74,
+  "anchor_y": 193,
+  "source": "rat_sheet.png"
+}
