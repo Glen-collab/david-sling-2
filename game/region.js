@@ -81,12 +81,22 @@ const REGION = {
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2 },
-    { id: "cisterns", name: "The Cisterns",    w: 50, cave: true, mx: 4, my: 3, mw: 2 },
+    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns" },
   ],
 };
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
+// a painted room (Glen 11-04: painted with GPT / Meta / Grok over a blueprint, tools/make_blueprints.py): art: its
+// picture in assets/rooms/, the room's own size, drawn over the room in place of the backdrop, the rock and the ledges
+// (which are still there to stand on, set to where the painting puts them)
+const ROOM_ART = {};
+function roomArt(r) {
+  if (!r.art) return null;
+  let im = ROOM_ART[r.art];
+  if (!im) { im = ROOM_ART[r.art] = new Image(); im.src = "../assets/rooms/" + r.art + ".jpg"; }
+  return im.complete && im.naturalWidth ? im : null;
+}
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
@@ -186,15 +196,16 @@ function buildRegion() {
 
   // -- The Cisterns (down the well, with the rope): a pomegranate and a Truth
   c = R("cisterns");
-  ground(c, c + 49);
+  ground(c, c + 41);
   rDoor("d_wellrope", "cisterns", c + 4, "rope", "d_well");
-  // (Glen 11-04: his painting, rooms/gibeah/cisterns_1of2_try1.png: the heights matched, the ledges came out wider,
-  // so they're widened to the painted ones)
+  // (Glen 11-04: his two paintings joined, assets/rooms/gibeah/cisterns.jpg; the ledges are set to the painted ones:
+  // the stone table over the stream, the long shelf, the shelf above it, the top shelf by the niche, and the low slab)
   pitFloor(c + 14, 3); plat(c + 13, 14, 7);
-  plat(c + 21, 12, 10); plat(c + 27, 9, 7);
+  plat(c + 21, 12, 10); plat(c + 27, 9, 9); plat(c + 32, 7, 10);
+  rock(c + 32, 15, 10, 2);
   rBreak("jar", "cisterns", c + 9, 16); rBreak("lamp", "cisterns", c + 23, 11);
   rRelic("g_pom_cistern", "pomegranate", c + 30, 8);
-  rRelic("g_truth_covenant", "truth", c + 44, 16,
+  rRelic("g_truth_covenant", "truth", c + 35, 6,
     "Jonathan made a covenant with David, because he loved him as his own soul. Jonathan took off the robe that was on him and gave it to David, with his armor, even his sword, his bow, and his sash. (1 Samuel 18:3-4)");
 }
 
@@ -502,6 +513,7 @@ function drawRegionHealth() {   // main.js drawHearts: the health meter instead 
 function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (!REGION_ON) return false;
   const r = region.room || roomAt(david.x);
+  if (roomArt(r)) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); return true; }   // a painted room: drawRegion paints it
   if (r.cave) {   // Part One's cave layers, lit (the lamp comes in World 4)
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#2a1f15"); g.addColorStop(1, "#120c08");
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -517,6 +529,11 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
 function drawRegion(camX) {
   if (!REGION_ON) return;
   const d = david, now = performance.now() / 1000;
+  for (const r of REGION.rooms) {   // a painted room, over the tiles and ledges drawn for it
+    const im = roomArt(r); if (!im) continue;
+    const x = r.c0 * T - camX, w = r.w * T; if (x > W || x + w < 0) continue;
+    ctx.drawImage(im, 0, 0, Math.min(w, im.naturalWidth), H, Math.round(x), 0, Math.min(w, im.naturalWidth), H);
+  }
   drawBreaks(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
