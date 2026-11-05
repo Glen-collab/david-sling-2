@@ -88,6 +88,38 @@ Judah): pick a place you've opened and walk there. Olive presses are the save po
 | 5 | Swim and dive | En-Gedi's springs | caves behind waterfalls |
 | 7 | Silent step | the sleeping camp | walking past sleepers |
 
+## Growth, gear and the character card (Glen 2026-11-05, Castlevania style)
+**Creatures come back.** Every room's creatures (and crumbles and breakables) reset when David walks back in
+(region.js, on entering a room). Bosses and story scenes happen once. Leave a room and come back to farm it.
+
+**Two kinds of growth:**
+- **Strength (from fighting).** Kills fill a bar; each level adds a little sling and sword damage and health.
+  **Capped per world**, so farming makes you comfortable but can't carry you past the story.
+- **The character card (from how you play, never from kills).** Grows from Truths found, story moments and choices:
+
+| Trait | From the Bible | Grows from |
+|---|---|---|
+| Trust | Psalm 57:1, "in you my soul takes refuge" | story moments, Truths |
+| Wisdom | 1 Samuel 18:5, 14, 30, "David behaved himself wisely... and the LORD was with him" | Truths, solving the challenges |
+| Self-control | 1 Samuel 24:6; 26:11 | sparing Saul, holding Abishai back |
+| A steadfast heart | Psalm 57:7, "My heart is steadfast" | finishing a world, not giving up |
+
+Traits give small help, not power: a longer dodge window in boss fights, an extra Truth hint on the map, and so on.
+**At the end of each world** the Journal opens with David's reflection (Glen's Psalm 57 song, one page per world)
+beside the card, showing what grew.
+
+**Gear (an equip screen, all from Scripture):**
+- **Sling:** the main ranged weapon. David starts with it (it's who he is after Goliath, and Part One ends with it).
+  *Glen's alternative, to decide after play-testing:* start empty-handed, throw rocks at trees and scorpions, and find
+  or earn the sling in the first rooms.
+- **Jonathan's gifts (18:4):** "his robe... his clothing, even including his sword, his bow, and his sash." Robe
+  (+1 heart, built) and sword (built); the **bow** as a second ranged weapon; the **clothing** and **sash** as armor.
+  (No "armor of God": that's Ephesians, a thousand years later. It can be a Journal thought, not an item.)
+- **Goliath's sword** (World 3): heavy hits, breaks cracked walls.
+- **Shield** (World 4): block and push.
+- **Saul's spear** (World 7): the reward for sparing him at the sleeping camp. The weapon he kept throwing at
+  David becomes David's, earned by mercy.
+
 ## Player 2
 One second player at a time. Who it is depends on where you are:
 - **Worlds 1-2: Jonathan** (bow and sword). He returns briefly at Horesh in World 7 (23:16-18), their last meeting.
@@ -170,6 +202,10 @@ Training Ground (test stage 9-3): a timed run with a code, a tile path and a sli
 **Left out (they would stop the game):** Sudoku grids, board games, packing puzzles, trading sums, counting quizzes,
 knucklebones. Also no "choose to attack Saul" option: in the cave and the camp the attack button can only cut the
 robe or take the spear (24:6, 26:11), as already planned.
+**But the temptation is real (Glen 2026-11-05):** the button is there; the men whisper that the LORD has delivered
+Saul into David's hand (24:4); at the camp Abishai (Player 2) begs to strike and Player 1 has to hold him back
+(26:8). If you press strike at Saul, David stops himself: "the LORD forbid that I should... stretch out my hand
+against him" (24:6). Holding back grows Self-control on the card, and sparing him at the camp earns the spear.
 
 
 1. **The Palace (Gibeah), 1 Samuel 18.** Jonathan's covenant and gifts; the women's song; Saul's jealousy. Fighting stages leading Saul's army against Philistine raids; cellars and cisterns under the palace. Get the sword and robe. First Step of Faith (bow down). *Boss:* the harp room: a rhythm game calming Saul, then dodge the spear twice (18:11). Psalm 57:4.
