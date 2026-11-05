@@ -188,8 +188,10 @@ function buildRegion() {
   c = R("cisterns");
   ground(c, c + 49);
   rDoor("d_wellrope", "cisterns", c + 4, "rope", "d_well");
-  pitFloor(c + 14, 3); plat(c + 14, 14, 3);
-  plat(c + 22, 12, 4); plat(c + 28, 9, 4);
+  // (Glen 11-04: his painting, rooms/gibeah/cisterns_1of2_try1.png: the heights matched, the ledges came out wider,
+  // so they're widened to the painted ones)
+  pitFloor(c + 14, 3); plat(c + 13, 14, 7);
+  plat(c + 21, 12, 10); plat(c + 27, 9, 7);
   rBreak("jar", "cisterns", c + 9, 16); rBreak("lamp", "cisterns", c + 23, 11);
   rRelic("g_pom_cistern", "pomegranate", c + 30, 8);
   rRelic("g_truth_covenant", "truth", c + 44, 16,
