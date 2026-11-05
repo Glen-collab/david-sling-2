@@ -125,9 +125,8 @@ function buildRegion() {
   rRelic("g_stone_fields", "stone", c + 31, 6);
   snake("viper", c + 38); critter("scorpion", c + 44);
   // the watchtower rock: too sheer to climb without the wall climb (Up at either face, then Up / Down; it tops out onto
-  // the top). Glen 11-03: it blocked the way on, so there's a gap along the ground he walks under (3 rows: crawling
-  // meant holding Down, which picks up the lamb when he's by it).
-  rock(c + 52, 4, 7, 10);
+  // the top). (Glen 11-04: all the way down to the ground, no gap under it: the wall climb is the way over.)
+  rock(c + 52, 4, 7, 13);
   region.walls.push({ room: "fields", x0: (c + 52) * T, x1: (c + 59) * T, top: 4 * T, need: "wallClimb", seal: "g_seal_tower" });
   rSeal("g_seal_tower", "fields", c + 50, "wallClimb", "The watchtower rock is too sheer to climb. Not yet.", c + 46, c + 52);
   rRelic("g_pom_tower", "pomegranate", c + 55, 3);
