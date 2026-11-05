@@ -46,6 +46,8 @@ const RTUNE = {
   // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
   // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
   HP_PER_HEART: 10,
+  // the Harp Room (1 Samuel 18:10-11): play to calm the king; he throws the spear twice; David gets up and jumps
+  HARP: { CALM_TIME: 14, THROW_AT: [0.3, 0.65], SPEAR_Y: 52, SPEAR_SPEED: 820, RELEASE: 9, BACK: 0.12 },
   HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5 },   // how much each thing takes off with a hit
   HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
   // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
@@ -85,7 +87,7 @@ const REGION = {
       strip: "gibeah/wall_strip", floor: "gibeah/yard_floor" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp",
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
-    { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
+    { id: "harp",    name: "The Harp Room",    w: 40, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls", strip: "gibeah/harp_strip", floor: "gibeah/harp_floor" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
     { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns", right: "deep" },
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
@@ -144,6 +146,9 @@ const KIT = {
   // ring and rope in the ceiling
   p_left: { w: 242, h: 177 }, p_right: { w: 243, h: 177 }, p_crumble: { w: 205, h: 102 }, p_broken: { w: 203, h: 132 },
   p_planks: { w: 211, h: 98 }, p_ring: { w: 86, h: 175 },
+  // (Glen 11-05) the throne room kit, assets/rooms/gibeah/kit_harp
+  hr_throne: { w: 238, h: 196 }, hr_banner: { w: 61, h: 309 }, hr_brazier: { w: 115, h: 124 }, hr_column: { w: 104, h: 373 },
+  hr_spearwall: { w: 173, h: 167 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
@@ -151,7 +156,7 @@ const KIT = {
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -419,11 +424,15 @@ function buildRegion() {
     rLedge("halls", X(49), 430, 0); oliveRow(c + 51, onTop(430) - 0.4, 3);
     rBreak("hall_lamp", "halls", c + 56, 16); }
 
-  // -- The Harp Room: the boss comes later (1 Samuel 18:10-11)
+  // -- The Harp Room: the boss (1 Samuel 18:10-11). (Glen 11-05: his throne room kit and wall.) David sits on the stool
+  // and plays; the king, tormented, takes up his spear and throws it, twice; David gets up and jumps; the music calms him
   c = R("harp");
-  ground(c, c + 33);
-  deco("throne", c + 24, 16, 0.6);
-  label(c + 4, 6, "The harp room: Saul and the spear come later (1 Samuel 18:10-11).");
+  ground(c, c + 39);
+  { rDeco("harp", "hr_column", c + 2); rDeco("harp", "hr_banner", c + 7, false, 1, 150); rDeco("harp", "hr_brazier", c + 10);
+    rDeco("harp", "hr_rug", c + 15, false, 1, GR * T - 14);   // (David sits on the rug to play)
+    rDeco("harp", "hr_banner", c + 22, false, 1, 150); rDeco("harp", "hr_brazier", c + 25); rDeco("harp", "hr_rack", c + 28);
+    rDeco("harp", "hr_throne", c + 35); rDeco("harp", "hr_column", c + 38);
+    region.harp = { c, stoolX: (c + 15) * T + T / 2, saulX: (c + 31) * T + T / 2, wallX: (c + 1) * T + 10, phase: "wait", calm: 0, escapes: 0, t: 0, spear: null, stuck: [], told: false }; }
 
   // -- The Cellars (down the stair): storerooms; a cracked wall (Goliath's sword) hides an oil jar
   c = R("cellars");
@@ -522,7 +531,7 @@ function updateRegion(dt) {
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
-  updateBreaks(dt); updateBeasts(dt, r); updateFloorCrumbles(dt, r);
+  updateBreaks(dt); updateBeasts(dt, r); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r);
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
@@ -742,6 +751,11 @@ function breakBox(b) {   // the whole thing (about two thirds of its picture's w
 }
 function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
   if (!REGION_ON) return false;
+  const hr = region.harp;
+  if (hr && Math.abs(s.x - hr.saulX) < 40 && s.y > GR * T - 160 && s.y < GR * T) {   // (David never strikes the king)
+    if (!hr.noStrike) { hr.noStrike = true; toast("David will not strike the LORD's anointed."); }
+    return true;
+  }
   for (const b of region.beasts) {
     if (b.dead) continue;
     const q = beastBox(b);
@@ -893,6 +907,7 @@ function drawRegion(camX) {
   drawFloorCrumbles(camX);
   drawBreaks(camX);
   drawBeasts(camX);
+  drawHarpRoom(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
     if (!o.kit && !(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
@@ -1052,6 +1067,66 @@ function drawFloorCrumbles(camX) {
     const kk = KIT.p_crumble, im = kitImg("p_crumble"); if (!im) continue;
     const j = k.state === "shake" ? (Math.random() - 0.5) * 5 : 0;
     ctx.drawImage(im, Math.round(x - kk.w / 2 + j), GR * T - 8, kk.w, kk.h);
+  }
+}
+// ---- the Harp Room (1 Samuel 18:10-11) ----
+function updateHarpRoom(dt, r) {
+  const hr = region.harp, d = david, H_ = RTUNE.HARP; if (!hr) return;
+  if (regionHas("taken", "g_harp_done")) { hr.phase = "calm"; return; }
+  if (r.id !== "harp") { if (hr.phase !== "wait") Object.assign(hr, { phase: "wait", calm: 0, escapes: 0, spear: null, t: 0 }); return; }   // (left: it starts over)
+  hr.t += dt;
+  const atStool = Math.abs(d.x - hr.stoolX) < 50 && d.onGround;
+  if (!d.harp && atStool && pressed("up") && hr.phase !== "calm") { d.harp = true; d.facing = 1; d.vx = 0; setState("kneel"); if (hr.phase === "wait") { hr.phase = "play"; toast("Play for the king. When he lifts the spear: get up and jump!"); } }
+  if (d.harp && (pressed("left") || pressed("right") || pressed("a") || pressed("down"))) { d.harp = false; setState("standup"); }
+  if (d.harp && (d.state === "harp" || d.state === "kneel") && hr.phase === "play") hr.calm = Math.min(1, hr.calm + dt / H_.CALM_TIME);
+  if (hr.phase === "play" && !hr.spear && hr.escapes < 2 && hr.calm >= H_.THROW_AT[hr.escapes]) { hr.phase = "throw"; hr.t = 0; }
+  if (hr.phase === "throw") {
+    const f = Math.floor(hr.t * 1000 / SPR.saul_throw.ms);
+    if (f >= H_.RELEASE && !hr.thrown) { hr.thrown = true; hr.spear = { x: hr.saulX - 70, y: GR * T - H_.SPEAR_Y, hit: false }; }
+    if (f >= SPR.saul_throw.frames) { hr.phase = "play"; hr.thrown = false; }
+  }
+  const sp = hr.spear;
+  if (sp) {
+    sp.x -= H_.SPEAR_SPEED * dt;
+    if (!sp.hit && sp.x < d.x + BODY_W / 2 && sp.x > d.x - BODY_W / 2 - 160 && sp.y > d.y - d.h && sp.y < d.y) {
+      sp.hit = true; d.harp = false; hurtDavid(sp.x);
+    }
+    if (sp.x <= hr.wallX) {   // into the wall
+      hr.stuck.push(sp.y); hr.spear = null;
+      if (sp.hit) { hr.calm = Math.max(0, hr.calm - H_.BACK); toast("Get up and jump when the king lifts the spear!"); }
+      else { hr.escapes++; toast(hr.escapes === 1 ? "David escaped! The king is still troubled. Keep playing." : "David escaped again!"); }
+    }
+  }
+  if (hr.escapes >= 2 && hr.calm >= 1 && hr.phase === "play") {
+    hr.phase = "calm"; hr.t = 0; regionAdd("taken", "g_harp_done"); if (d.harp) { d.harp = false; setState("standup"); }
+    if (typeof chime === "function") { chime(4); setTimeout(() => chime(7), 160); }
+    sayLine("1 Samuel 18:11-12", "Saul threw the spear, for he said, \"I will pin David to the wall!\" David escaped from his presence twice. Saul was afraid of David, because the LORD was with him.");
+  }
+}
+const SAUL_BIG = 1.3;   // (a head taller than anyone, 1 Samuel 9:2)
+function drawHarpRoom(camX) {
+  const hr = region.harp; if (!hr || roomAt(david.x).id !== "harp") return;
+  const x = hr.saulX - camX;
+  for (const y of hr.stuck) { const k = KIT.hr_spearwall, im = kitImg("hr_spearwall"); if (im) ctx.drawImage(im, Math.round(hr.wallX - 30 - camX), Math.round(y - k.h / 2), k.w * 0.8, k.h * 0.8); }
+  if (hr.phase === "calm") drawSprite("saul_sit", Math.min(SPR.saul_sit.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_sit.ms)), x, GR * T, -1, SAUL_BIG);   // (Glen's purple Saul throughout: he sinks down, quiet)
+  else if (hr.phase === "throw") drawSprite("saul_throw", Math.min(SPR.saul_throw.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_throw.ms)), x, GR * T, -1, SAUL_BIG);
+  else { const n = SPR.saul_look_back.frames, k = Math.floor(hr.t * 1000 / 140) % (2 * n - 2); drawSprite("saul_look_back", k < n ? k : 2 * n - 2 - k, x, GR * T, -1, SAUL_BIG); }   // troubled, the spear in his hand
+  if (hr.phase === "throw" && !hr.thrown) {   // the warning: the spear is up
+    ctx.save(); ctx.globalAlpha = 0.6 + Math.sin(hr.t * 18) * 0.4; ctx.fillStyle = "#ffdf6b"; ctx.font = "bold 46px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("!", x, GR * T - 200); ctx.restore();
+  }
+  const sp = hr.spear;
+  if (sp) {   // the spear in flight, point first
+    const sx = sp.x - camX;
+    ctx.save(); ctx.strokeStyle = "#6b4626"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(sx + 8, sp.y); ctx.lineTo(sx + 170, sp.y); ctx.stroke();
+    ctx.fillStyle = "#b9c0c8"; ctx.beginPath(); ctx.moveTo(sx - 18, sp.y); ctx.lineTo(sx + 10, sp.y - 7); ctx.lineTo(sx + 10, sp.y + 7); ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  if (Math.abs(david.x - hr.stoolX) < 140 && !david.harp && hr.phase !== "calm" && david.onGround) upHint(hr.stoolX - camX, GR * T - 170);
+  if (hr.phase === "play" || hr.phase === "throw") {   // the king's heart: from troubled to calm
+    const bx = W / 2 - 160, by = 190;
+    ctx.save(); ctx.fillStyle = "rgba(20,14,10,0.6)"; ctx.fillRect(bx - 6, by - 26, 332, 46);
+    ctx.fillStyle = "#e8dcc4"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.fillText("The king's spirit", W / 2, by - 8);
+    ctx.fillStyle = "#3a2a3a"; ctx.fillRect(bx, by, 320, 12); ctx.fillStyle = "#7fc4e8"; ctx.fillRect(bx, by, 320 * hr.calm, 12); ctx.restore();
   }
 }
 function drawRegionFront(camX) {   // main.js, after David: the railings he walks behind
