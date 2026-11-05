@@ -28,7 +28,7 @@ function camLimits() {
   const a = cave.room.c0 * T - 2 * T, b = (cave.room.c0 + cave.room.w) * T + 2 * T - W;
   return a > b ? [(a + b) / 2, (a + b) / 2] : [a, b];
 }
-function snapCamera() { const [lo, hi] = camLimits(); camX = Math.max(lo, Math.min(hi, david.x - W * 0.4)); }
+function snapCamera() { const [lo, hi] = camLimits(); camX = Math.max(lo, Math.min(hi, david.x - W * 0.4)); camY = typeof regionCamY === "function" ? regionCamY() : 0; }
 function moveParty(x, y) {   // David, his lamb and the rescued lamb arrive together
   const d = david; d.x = x; d.y = y; d.vx = d.vy = 0; d.safe = { x, y };
   lamb.x = x - d.facing * 50; lamb.y = y; lamb.vx = lamb.vy = 0; trail.length = 0;

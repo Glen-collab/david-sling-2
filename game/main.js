@@ -459,6 +459,11 @@ const MAIN_COLS = STAGE_INFO.cols;          // the stage itself...
 const COLS = MAIN_COLS + 200;               // ...and, past its end, space for its caves (separate rooms you go into)
 const solid = [...Array(ROWS)].map(() => Array(COLS).fill(0));     // 0 empty, 1 earth, 2 stone, 3 wall, 4 boulder, 5 fake rock (walk through it)
 const oneway = [...Array(ROWS)].map(() => Array(COLS).fill(false));
+// (Glen 11-05) a tall room (Gibeah's watchtower) reaches up above the screen's top: rows -1, -2, ... up to TOP_ROW
+// (region.js REGION_UP). Every other room still starts at row 0, so nothing else changes; the camera only goes up in a
+// tall room (camY, regionCamY).
+const TOP_ROW = typeof REGION_ON !== "undefined" && REGION_ON ? -REGION_UP : 0;
+for (let r = TOP_ROW; r < 0; r++) { solid[r] = Array(COLS).fill(0); oneway[r] = Array(COLS).fill(false); }
 const gourds = [], labels = [], decor = [], pickups = [], snakes = [], fires = [];
 let lionSpawn = null, arenaX = Infinity, fold = null;
 const ground = (c0, c1) => { for (let c = c0; c <= c1; c++) for (let r = GR; r < ROWS; r++) solid[r][c] = 1; };
@@ -2136,8 +2141,8 @@ if (POISON.STAGES.includes(LEVEL_NAME)) {
 const AT = Number(new URLSearchParams(location.search).get("at")) || (REGION_ON ? regionStartCol() : 3);   // (a region: the olive press you last saved at)
 const spawn = { x: AT * T, y: GR * T }, lambSpawn = { x: (AT + 2) * T, y: GR * T };
 let checkpoint = { ...spawn };
-const isSolid = (c, r) => r >= 0 && r < ROWS && c >= 0 && c < COLS && solid[r][c] > 0 && solid[r][c] !== 5;
-const isOneway = (c, r) => r >= 0 && r < ROWS && c >= 0 && c < COLS && oneway[r][c];
+const isSolid = (c, r) => r >= TOP_ROW && r < ROWS && c >= 0 && c < COLS && solid[r][c] > 0 && solid[r][c] !== 5;
+const isOneway = (c, r) => r >= TOP_ROW && r < ROWS && c >= 0 && c < COLS && oneway[r][c];
 const LEVEL_W = COLS * T;
 
 // ============================================================================
@@ -2230,7 +2235,7 @@ function collideBody(b, w, h, dt) {
   b.onGround = false;
   const c0 = Math.floor((b.x - w / 2 + 2) / T), c1 = Math.floor((b.x + w / 2 - 2) / T);
   if (b.vy >= 0) {
-    const r = Math.floor(b.y / T), rp = Math.max(0, Math.floor(prevY / T));
+    const r = Math.floor(b.y / T), rp = Math.max(TOP_ROW, Math.floor(prevY / T));   // (TOP_ROW: a tall room's rows above the screen)
     land: for (let c = c0; c <= c1; c++) {
       for (let rr = rp; rr <= r; rr++) {   // a ledge's top can be partway down its row (platAt): check each row he passed
         if (!isOneway(c, rr) || b.dropThrough) continue;
@@ -2874,7 +2879,7 @@ function getSedimentPhase() {
   }
   return sedimentPhase;
 }
-const matAt = (c, r) => (r >= 0 && r < ROWS && c >= 0 && c < COLS) ? solid[r][c] : 0;
+const matAt = (c, r) => (r >= TOP_ROW && r < ROWS && c >= 0 && c < COLS) ? solid[r][c] : 0;
 
 // the empty margin at the top of each set's wall pictures (left, mid, right), as a share of the picture's height (measured)
 const WALL_TOP = { w2s: [0.21, 0.15, 0.13], w2f: [0.15, 0.15, 0.14], w4p: [0.01, 0.05, 0.02] };
@@ -4831,7 +4836,7 @@ function loadStalled(real) {
   }
   return loadWatch.still > 8;
 }
-let camX = 0, last = performance.now();
+let camX = 0, camY = 0, last = performance.now();   // (camY: 0 except up in a tall room, region.js)
 function frame(now) {
   const real = Math.max(0, Math.min(1 / 30, (now - last) / 1000)); last = Math.max(last, now);   // never let time run backwards
   const dt = real * gameSpeed(real);   // the last stone on a boss slows the world down
@@ -4963,8 +4968,11 @@ function frame(now) {
   const [camLo, camHi] = camLimits();   // the stage, or the cave David is in (world1.js)
   const targetCam = Math.max(camLo, Math.min(camHi, david.x - W * 0.4 + david.facing * 80));
   camX += (targetCam - camX) * Math.min(1, real * 6);
+  const targetCamY = typeof regionCamY === "function" ? regionCamY() : 0;
+  camY = targetCamY === 0 && Math.abs(camY) < 1 ? 0 : camY + (targetCamY - camY) * Math.min(1, real * 6);
   const shake = finalBlow.shake * finalBlow.shake * 14 + (typeof w2Shake !== "undefined" ? w2Shake.v * w2Shake.v * 12 : 0);   // + the bear's slam (world2.js)
   ctx.save(); if (shake > 0.3) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+  if (camY) ctx.translate(0, -Math.round(camY));   // up in a tall room: the world moves down
 
   if (cave.room) drawCaveBackdrop(camX); else if (!drawRegionBackdrop(camX)) drawBackground(camX);   // (a region: this room's own backdrop, region.js)
   drawLionRidge(camX);

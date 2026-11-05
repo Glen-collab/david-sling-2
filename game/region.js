@@ -13,6 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 const REGION_ON = location.hash === "#9-5";
+const REGION_UP = 110;   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
 const RTUNE = {
   GAP: 6,            // columns of solid rock between rooms
   FADE: 0.22,        // seconds to fade out (and back in) when going through
@@ -41,7 +42,7 @@ const RTUNE = {
   ROPE_TOP: 2 * 36, ROPE_HANG: 170,         // the cisterns' rope: where it hangs from, and his feet that far below it at the top          // px from a room's edge that takes you through
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
   DOOR_REACH: 46,    // px from a door's middle where Up works
-  RELIC_H: { pomegranate: 44, oil: 52, stone: 34, truth: 46 },   // how tall each find is drawn
+  RELIC_H: { pomegranate: 44, oil: 52, stone: 34, truth: 46, key: 62 },   // how tall each find is drawn
   MAP_CELL: 78,      // the map screen: px per map cell
   // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
   // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
@@ -65,7 +66,7 @@ const RTUNE = {
   DROPS: [["heart_small", 50], ["olives", 30], ["heart_big", 8], ["none", 12]],   // what falls out, and how often (out of 100)
   METER_PX: 4,       // the health meter: px per point, so it grows as the cap goes up
 };
-const RELIC_ART = { pomegranate: "pomegranate", oil: "camp_jar_small", stone: "stone_remembrance", truth: "davids_journal" };
+const RELIC_ART = { pomegranate: "pomegranate", oil: "camp_jar_small", stone: "stone_remembrance", truth: "davids_journal" };   // (key: Glen's kit_tower/tw_key, drawn below)
 const RELIC_NAME = { pomegranate: "Pomegranates", oil: "Oil jars", stone: "Stones of remembrance", truth: "Truths" };
 // the skills that open seals, and how a sealed spot talks about the one it needs
 const SEAL_SKILL = {
@@ -90,6 +91,9 @@ const REGION = {
     { id: "harp",    name: "The Harp Room",    w: 40, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls", strip: "gibeah/harp_strip", floor: "gibeah/harp_floor" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
     { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 2, my: 4, mw: 2, right: "deep", strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: from his cave kit, like the cellars)
+    // (Glen 11-05: Castlevania-tall) the watchtower, off the Walls: about 2 screens wide and 6 tall (up: rows above the
+    // screen's top); mh: how tall it is on the map; tower: his two wall pictures (and mirrored), laid up the tower at random
+    { id: "tower",   name: "The Watchtower",   w: 71, up: 100, mx: 10, my: 0, mw: 1, mh: 2, tower: ["gibeah/tower_wall_a.png", "gibeah/tower_wall_b.png", "gibeah/tower_wall_a_m.png", "gibeah/tower_wall_b_m.png"], floor: "gibeah/yard_floor" },
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
@@ -148,6 +152,10 @@ const KIT = {
   p_planks: { w: 211, h: 98 }, p_ring: { w: 86, h: 175 },
   // (Glen 11-05) the throne room kit, assets/rooms/gibeah/kit_harp
   hr_throne: { w: 238, h: 196 }, hr_banner: { w: 61, h: 309 }, hr_brazier: { w: 115, h: 124 }, hr_column: { w: 104, h: 373 },
+  // the watchtower (Glen 11-05: his cream-stone tower kit; deck: the arm's top, post: where the post ends, px)
+  tw_ledge_s: { w: 143, h: 153, deck: 50, post: 30 }, tw_ledge_m: { w: 184, h: 153, deck: 49, post: 31 }, tw_ledge_l: { w: 319, h: 154, deck: 49, post: 31 }, tw_walk: { w: 236, h: 69 }, tw_stair: { w: 220, h: 158 }, tw_ledge_crack: { w: 229, h: 154, deck: 51, post: 32 }, tw_beam: { w: 253, h: 154, deck: 62, post: 32 }, tw_ramp: { w: 152, h: 124 }, tw_nest: { w: 158, h: 88 }, tw_jar: { w: 144, h: 170 }, tw_lamp: { w: 154, h: 180 }, tw_parapet: { w: 252, h: 106 },
+  tw_key: { w: 80, h: 231 }, tw_lever_up: { w: 118, h: 345 }, tw_lever_down: { w: 151, h: 221 }, tw_gate_shut: { w: 219, h: 377 }, tw_gate_open: { w: 187, h: 311 },   // (his key, lever and gate: the key at the top of the tower; the lever and gate for what it opens, to come)
+  tw_door_shut: { w: 159, h: 215 }, tw_door_open: { w: 162, h: 221 }, tw_hatch: { w: 155, h: 161 }, tw_door_arch: { w: 211, h: 244 }, tw_door_plank: { w: 134, h: 226 }, tw_win_slit: { w: 94, h: 199 }, tw_win: { w: 132, h: 181 }, tw_win_arch: { w: 138, h: 197 }, tw_win_slit_dark: { w: 100, h: 202 }, tw_win_glow: { w: 154, h: 201 },   // (his tower doors and windows)
   hr_spearwall: { w: 173, h: 167 }, hr_wall0: { w: 216, h: 632 }, hr_wall1: { w: 216, h: 632 }, hr_wall2: { w: 216, h: 632 }, hr_wall3: { w: 216, h: 632 }, hr_wall4: { w: 216, h: 632 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },   // (hr_wall0-4: Glen 11-05, the plaster between the first two carved pillars, from his harp_strip_source and _strike1, 2, 4, 5)
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
@@ -156,7 +164,7 @@ const KIT = {
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -289,7 +297,9 @@ function drawProps(camX) {
   for (const p of region.props) {
     if (p.front) continue;   // (drawRegionFront: over David)
     const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), s = p.s || 1; if (!im || x > W || x + k.w * s < 0) continue;
-    ctx.drawImage(im, x, Math.round(p.y), k.w * s, k.h * s);
+    if (p.y > camY + H + 50 || p.y + k.h * s < camY - 50) continue;   // (a tall room: off above or below)
+    if (p.flip) { ctx.save(); ctx.translate(x + k.w * s, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, Math.round(p.y), k.w * s, k.h * s); ctx.restore(); }   // (mirrored)
+    else ctx.drawImage(im, x, Math.round(p.y), k.w * s, k.h * s);
     if (p.legs) {   // the legs on down to the ground: the band of rows that's only legs, again and again
       const [a, b] = KIT.LEG, bh = b - a;
       for (let y = p.y + b; y < GR * T + 6; y += bh) ctx.drawImage(im, 0, a, k.w, bh, x, Math.round(y), k.w, bh);
@@ -299,8 +309,13 @@ function drawProps(camX) {
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
+function regionCamY() {   // main.js: how far up the camera is (0 but in a tall room: keep David about 60% down the screen)
+  if (!REGION_ON) return 0;
+  const r = region.room || roomAt(david.x); if (!r || !r.up) return 0;
+  return Math.max(-r.up * T, Math.min(0, david.y - H * 0.6));
+}
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
 function regionAdd(list, id) { if (!regionHas(list, id)) { region.save[list].push(id); regionWrite(); } }
@@ -310,6 +325,13 @@ function regionStartCol() { return region.save.at != null ? region.save.at : roo
 // ---- building (called by main.js's layout, so its helpers exist by then) ----
 // a door: kind "door" (a doorway), "stairs" (a stair going down / up), "well" (down a well), "rope" (a rope up out of
 // the well); to: the door id it leads to; need: the skill that unseals it
+function rTowerLedge(room, x, deckY, n, flip = false) {   // one of his post-and-arm ledges: deck at deckY; flip: the post on the right
+  const k = KIT[n], a0 = flip ? x : x + k.post, a1 = flip ? x + k.w - k.post : x + k.w;
+  const c0 = Math.ceil(a0 / T), c1 = Math.floor(a1 / T); platAt(c0, deckY, Math.max(1, c1 - c0));
+  region.props.push({ room, n, x, y: deckY - k.deck, flip });
+  return [a0, a1];
+}
+function rLedge(room, c, y, w) { platAt(c, y, w); region.ledges.push({ room, c, w, y }); }   // a plain stone ledge (Part One's art) to stand on
 function rDoor(id, room, c, kind, to, need = null) { region.doors.push({ id, room, c, x: c * T + T / 2, kind, to, need }); }
 function rRelic(id, kind, c, r, text = null, need = null) { region.relics.push({ id, kind, c, r, x: c * T + T / 2, y: (r + 1) * T, text, need, t: Math.random() * 6 }); }   // (need: hidden until that's in "taken")
 const relicHidden = f => f.need && !regionHas("taken", f.need);
@@ -324,7 +346,7 @@ function buildRegion() {
   { const f = new URLSearchParams(location.search).get("forget");   // (testing: "?forget=a,b" takes those out of the save, to see them again)
     if (f) { const ids = f.split(","); for (const k in region.save) if (Array.isArray(region.save[k])) region.save[k] = region.save[k].filter(id => !ids.includes(id)); regionWrite(); } }
   // rock between rooms (and before the first)
-  for (const r of REGION.rooms) rock(r.c0 - RTUNE.GAP, 0, RTUNE.GAP, ROWS);
+  for (const r of REGION.rooms) rock(r.c0 - RTUNE.GAP, TOP_ROW, RTUNE.GAP, ROWS - TOP_ROW);
   const last = REGION.rooms[REGION.rooms.length - 1]; rock(last.c0 + last.w, 0, RTUNE.GAP, ROWS);
   const R = id => roomById(id).c0;
 
@@ -406,8 +428,46 @@ function buildRegion() {
   rKitDoor("d_down", "walls", c + 125, "stairs", "d_cellarup", "stair_down");
   rWalk("walls", X(132), 430, 3); oliveRow(c + 138, onTop(430) - 0.4, 8);
   rBreak("basket", "walls", c + 145, 16);
+  rDoor("d_tower", "walls", c + 153, "door", "d_towerdown");   // (Glen 11-05) up into the watchtower (the plain arch: his tower door matches the tower, not this wall)
   rWalk("walls", X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
   rPlinth("walls", c + 178); critter("hedgehog", c + 186); oliveRow(c + 189, 16, 5);
+
+  // -- The Watchtower (Glen 11-05): Castlevania-tall, a climb of ledges zig-zagging up six screens to the lookout.
+  // (A first build to try the up-and-down camera: his tower art, the birds, the key or lever to come.)
+  { const tc = R("tower"), tw = roomById("tower");
+    ground(tc, tc + tw.w - 1);
+    rock(tc, TOP_ROW, tw.w, -tw.up - TOP_ROW);   // the roof
+    rKitDoor("d_towerdown", "tower", tc + 4, "door", "d_tower", "tw_door_open");
+    // his windows up the walls, behind the ledges (light coming in; one dark slit now and then), the big bright one at the lookout
+    const WINS = ["tw_win_slit", "tw_win", "tw_win_arch", "tw_win_slit_dark", "tw_win", "tw_hatch", "tw_win_arch", "tw_win_slit"];
+    for (let k = 0, y = GR * T - 300; y > -tw.up * T + 600; y -= 300, k++) {
+      const n = WINS[k % WINS.length], xs = [0.12, 0.6, 0.33, 0.85, 0.2, 0.5, 0.72][k % 7];
+      region.props.push({ room: "tower", n, x: tc * T + xs * tw.w * T, y: y - KIT[n].h });
+    }
+    // his ledges, zig-zagging across both screens and back, 3 rows a step; olives, jars, nests and lamps along the way
+    const X0 = tc * T, X1 = (tc + tw.w) * T, STEP = 3, ACROSS = 250, pieces = ["tw_ledge_l", "tw_ledge_m", "tw_ledge_l", "tw_ledge_crack", "tw_ledge_l", "tw_beam"];
+    let x = X0 + 40, dir = 1, i = 0;
+    for (let r = GR - STEP; r > -tw.up + 11; r -= STEP, i++) {
+      const n = pieces[i % pieces.length], k = KIT[n];
+      if (dir > 0 && x + k.w > X1 - 20) { dir = -1; x = X1 - 20 - k.w; }
+      if (dir < 0 && x < X0 + 20) { dir = 1; x = X0 + 20; }
+      const [a0, a1] = rTowerLedge("tower", x, r * T, n, dir < 0);
+      const mid = Math.round((a0 + a1) / 2 / T);
+      if (i % 3 === 1) oliveRow(mid - 1, r - 1.4, 3);
+      if (i % 5 === 3) rBreak("jar", "tower", mid, r - 1);
+      if (i % 7 === 5) region.props.push({ room: "tower", n: "tw_nest", x: a1 - 120, y: r * T - KIT.tw_nest.h + 8 });
+      if (i % 6 === 2) region.props.push({ room: "tower", n: "tw_lamp", x: dir > 0 ? X1 - 200 : X0 + 40, y: r * T - 300 });
+      x += dir * ACROSS;
+    }
+    const topR = -tw.up + 8;   // the lookout: a plank floor right across, the battlements at each end
+    region.props.push({ room: "tower", n: "tw_win_glow", x: tc * T + tw.w * T / 2 - KIT.tw_win_glow.w / 2, y: topR * T - KIT.tw_win_glow.h - 60 });
+    for (let px = X0; px < X1; px += KIT.tw_walk.w - 4) region.props.push({ room: "tower", n: "tw_walk", x: px, y: topR * T - 6 });
+    platAt(tc + 1, topR * T, tw.w - 2);
+    region.props.push({ room: "tower", n: "tw_parapet", x: X0 + 10, y: topR * T - KIT.tw_parapet.h + 4 });
+    region.props.push({ room: "tower", n: "tw_parapet", x: X1 - 10 - KIT.tw_parapet.w, y: topR * T - KIT.tw_parapet.h + 4, flip: true });
+    oliveRow(tc + 20, topR - 1.4, 10); rRelic("g_stone_tower", "stone", tc + 50, topR - 1);
+    rRelic("g_tower_key", "key", tc + 62, topR - 1);   // (Glen 11-05) the reward for the climb: what it opens comes later
+  }
 
   // -- The Palace Halls (up through the gate)
   c = R("halls");
@@ -521,7 +581,8 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
-  for (const r of REGION.rooms) for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]);   // load them all now (no old backdrop flashing first)
+  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); }
+  for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
   const extra = (Math.floor(poms / 4) + (regionHas("taken", "g_jonathan") ? 1 : 0)) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
@@ -724,6 +785,7 @@ function takeRelic(f) {
   if (typeof chime === "function") { chime(4); setTimeout(() => chime(7), 140); }
   if (f.kind === "truth") { sayLine("A Truth", f.text); return; }
   if (f.kind === "stone") { david.specialStones++; toast("A stone of remembrance! Keep it, or A + B for a Power Sling."); return; }
+  if (f.kind === "key") { toast("A bronze key from the top of the watchtower! It must open something..."); return; }
   if (f.kind === "oil") { david.lampOil += 20; toast("An oil jar! Your lamp will burn longer."); return; }
   if (f.kind === "pomegranate") {
     const n = region.save.taken.filter(id => id.startsWith("g_pom")).length;
@@ -869,6 +931,7 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
     if (mid) tile(mid, 0.45, r.midY || 0, mid.naturalHeight);
     return true;
   }
+  if (r.tower) { drawTowerWall(r, camX); return true; }
   const strip = roomImg(r.strip);
   if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
     const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
@@ -888,6 +951,22 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   }
   drawBackground(camX - r.c0 * T);
   return true;
+}
+const TOWER = { TILE_W: 640, TILE_H: 1138, OV: 90 };   // (Glen 11-05) his tower wall pictures, as laid up the tower (px); OV: each fades in over its left and top neighbors this far (no seams)
+function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked and mirrored at random (the same every time)
+  const ims = r.tower.map(roomImg); if (ims.some(im => !im)) { ctx.fillStyle = "#9a8366"; ctx.fillRect(0, camY, W, H); return; }
+  const { TILE_W: tw, TILE_H: th, OV: ov } = TOWER, x0 = r.c0 * T, top = -r.up * T;
+  for (let ix = Math.floor((camX - x0) / tw); ix * tw + x0 < camX + W; ix++)
+    for (let iy = Math.floor((camY - top) / th); iy * th + top < camY + H; iy++) {
+      const rnd = Math.abs(Math.sin(ix * 12.9898 + iy * 78.233) * 43758.5453) % 1, im = ims[Math.floor(rnd * ims.length)];
+      const x = Math.round(x0 + ix * tw - camX - ov), y = Math.round(top + iy * th - ov), w = tw + ov, h = th + ov;
+      ctx.drawImage(im, x, y, w, h);   // (the mirrored ones are their own pictures: the soft edges stay on the left and top)
+    }
+}
+function drawLedges(camX) {
+  ctx.save(); ctx.translate(-Math.round(camX), 0);
+  for (const l of region.ledges) { const x0 = l.c * T, x1 = (l.c + l.w) * T; if (x1 < camX - 50 || x0 > camX + W + 50 || l.y < camY - 100 || l.y > camY + H + 100) continue; drawLedgeRun(x0, x1, l.y - 4); }
+  ctx.restore();
 }
 function drawRegion(camX) {
   if (!REGION_ON) return;
@@ -927,7 +1006,7 @@ function drawRegion(camX) {
     const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
     ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);
   }
-  drawProps(camX);
+  drawProps(camX); drawLedges(camX);
   drawFloorCrumbles(camX);
   drawBreaks(camX);
   drawBeasts(camX);
@@ -960,11 +1039,13 @@ function drawRegion(camX) {
   for (const f of region.relics) {
     if (regionHas("taken", f.id) || relicHidden(f)) continue;
     const x = f.x - camX; if (x < -80 || x > W + 80) continue;
-    const img = ITEM[RELIC_ART[f.kind]], h = RTUNE.RELIC_H[f.kind];
+    const img = f.kind === "key" ? kitImg("tw_key") : ITEM[RELIC_ART[f.kind]], h = RTUNE.RELIC_H[f.kind];
     const glow = ctx.createRadialGradient(x, f.y - h / 2, 2, x, f.y - h / 2, h * 1.2);
     glow.addColorStop(0, "rgba(255,240,170,0.55)"); glow.addColorStop(1, "rgba(255,230,150,0)");
     ctx.fillStyle = glow; ctx.fillRect(x - h * 1.3, f.y - h / 2 - h * 1.3, h * 2.6, h * 2.6);
-    if (img && img.naturalHeight) drawItem(RELIC_ART[f.kind], x, f.y - 4 + Math.sin(now * 2.4 + f.t) * 4, h / img.naturalHeight);
+    const by = f.y - 4 + Math.sin(now * 2.4 + f.t) * 4;
+    if (f.kind === "key") { if (img) { const w = img.naturalWidth * h / img.naturalHeight; ctx.drawImage(img, Math.round(x - w / 2), Math.round(by - h), w, h); } }
+    else if (img && img.naturalHeight) drawItem(RELIC_ART[f.kind], x, by, h / img.naturalHeight);
   }
 }
 // a hanging rope from Glen's picture (assets/items/rope_tile.png: three twists, cut to repeat seamlessly), top to bottom
@@ -1385,7 +1466,7 @@ function regionMapFrame(dt) {   // true while the map has the screen
   return true;
 }
 function drawRegionMap() {
-  const C = RTUNE.MAP_CELL, cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + 1));
+  const C = RTUNE.MAP_CELL, cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + (r.mh || 1)));
   const ox = (W - cols * C) / 2, oy = 150;
   ctx.fillStyle = "#e9dcc0"; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = "rgba(120,90,50,0.12)"; for (let k = 0; k < 40; k++) ctx.fillRect((k * 337) % W, (k * 211) % H, 120, 2);
@@ -1397,10 +1478,10 @@ function drawRegionMap() {
   for (const r of REGION.rooms) {
     const been = regionHas("explored", r.id);
     if (!been) continue;
-    const x = ox + r.mx * C, y = oy + r.my * C;
-    ctx.fillStyle = r.cave ? "#8a7a64" : "#c9a86e"; ctx.fillRect(x + 3, y + 3, r.mw * C - 6, C - 6);
-    ctx.strokeStyle = "#4a3a2a"; ctx.lineWidth = 3; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, C - 6);
-    ctx.fillStyle = "#2e2418"; ctx.font = "15px Georgia, serif"; ctx.fillText(r.name.replace(/^The /, ""), x + r.mw * C / 2, y + C - 12);
+    const x = ox + r.mx * C, y = oy + r.my * C, mh = (r.mh || 1) * C;   // (mh: a tall room)
+    ctx.fillStyle = r.cave ? "#8a7a64" : "#c9a86e"; ctx.fillRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
+    ctx.strokeStyle = "#4a3a2a"; ctx.lineWidth = 3; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
+    ctx.fillStyle = "#2e2418"; ctx.font = "15px Georgia, serif"; ctx.fillText(r.name.replace(/^The /, ""), x + r.mw * C / 2, y + mh - 12);
     // the edges you can walk through: a gap in the wall
     ctx.fillStyle = r.cave ? "#8a7a64" : "#c9a86e";
     if (r.right) ctx.fillRect(x + r.mw * C - 6, y + C / 2 - 10, 12, 20);
@@ -1413,7 +1494,8 @@ function drawRegionMap() {
       ctx.strokeStyle = "#7a1f14"; ctx.lineWidth = 3; const sx = fx(s.x);
       ctx.beginPath(); ctx.moveTo(sx - 7, y + 16); ctx.lineTo(sx + 7, y + 30); ctx.moveTo(sx + 7, y + 16); ctx.lineTo(sx - 7, y + 30); ctx.stroke();
     }
-    if (r === cur && blink) { ctx.fillStyle = "#1f5fa8"; ctx.beginPath(); ctx.arc(fx(david.x), y + C / 2 + 4, 8, 0, Math.PI * 2); ctx.fill(); }
+    const dy = r.up ? y + 10 + (1 - (GR * T - david.y) / ((r.up + GR) * T)) * (mh - 30) : y + C / 2 + 4;   // (a tall room: how high he is)
+    if (r === cur && blink) { ctx.fillStyle = "#1f5fa8"; ctx.beginPath(); ctx.arc(fx(david.x), dy, 8, 0, Math.PI * 2); ctx.fill(); }
   }
   // the key, and the tally
   const ky = oy + rows * C + 40;
