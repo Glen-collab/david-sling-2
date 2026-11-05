@@ -77,7 +77,7 @@ const REGION = {
   rooms: [
     { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town" },   // "@road": off the left edge, out of Gibeah
     { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
-    { id: "walls",   name: "The Walls",        w: 64, bg: "w4_2", mx: 6, my: 2, mw: 2, left: "town" },
+    { id: "walls",   name: "The Walls",        w: 64, bg: "w4_2", mx: 6, my: 2, mw: 2, left: "town", art: "gibeah/walls" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
@@ -166,8 +166,10 @@ function buildRegion() {
   // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars
   c = R("walls");
   ground(c, c + 63);
-  wall(c + 10, 13, 3, 4); plat(c + 14, 10, 4); plat(c + 20, 7, 3);
-  rRelic("g_stone_walls", "stone", c + 21, 6);
+  // (Glen 11-04: his wide painting, assets/rooms/gibeah/walls.jpg; the ledges are set to it: the stone plinth, the low
+  // scaffold walkway, the top of the gate's arch, and the high walkway over the gate)
+  wall(c + 10, 14, 4, 3); plat(c + 13, 11, 12); plat(c + 30, 11, 6); plat(c + 34, 7, 13);
+  rRelic("g_stone_walls", "stone", c + 44, 6);
   rDoor("d_gate", "walls", c + 32, "door", "d_hallsgate");
   rDoor("d_down", "walls", c + 50, "stairs", "d_cellarup");
   oliveRow(c + 40, 16, 6);
