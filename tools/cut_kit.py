@@ -16,6 +16,7 @@ from scipy import ndimage
 
 ap = argparse.ArgumentParser(); ap.add_argument("sheet"); ap.add_argument("out"); ap.add_argument("names")
 ap.add_argument("--scale", type=float, default=0.512)
+ap.add_argument("--keep", action="store_true", help="keep only the biggest pieces, as many as there are names (drops loose sparks and blades)")
 args = ap.parse_args()
 names = args.names.split(",")
 im = Image.open(args.sheet).convert("RGB"); a = np.asarray(im).astype(float)
@@ -29,6 +30,7 @@ lab, n = ndimage.label(mask)
 objs = [s for s in ndimage.find_objects(lab)]
 sizes = ndimage.sum(mask, lab, range(1, n + 1))
 pieces = [(objs[i], i + 1) for i in range(n) if sizes[i] > 1500]
+if args.keep: pieces = sorted(pieces, key=lambda p: -sizes[p[1] - 1])[:len(names)]
 mid = a.shape[0] / 2
 pieces.sort(key=lambda p: (0 if (p[0][0].start + p[0][0].stop) / 2 < mid else 1, p[0][1].start))
 assert len(pieces) == len(names), f"found {len(pieces)} pieces, named {len(names)}"

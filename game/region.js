@@ -75,7 +75,8 @@ const SEAL_SKILL = {
 const REGION = {
   key: "gibeah", name: "Gibeah",
   rooms: [
-    { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town" },   // "@road": off the left edge, out of Gibeah
+    { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town",
+      far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24 },   // (Glen 11-05: Super Mario World layers outside)   // "@road": off the left edge, out of Gibeah
     { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
     // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, built from his kit
     // (the walkways, the gate, the stair down, the plinth); floor: the strip's own paving, over the ground
@@ -101,7 +102,7 @@ const ROOM_ART = {};
 function roomImg(name) {
   if (!name) return null;
   let im = ROOM_ART[name];
-  if (!im) { im = ROOM_ART[name] = new Image(); im.src = "../assets/rooms/" + name + ".jpg"; }
+  if (!im) { im = ROOM_ART[name] = new Image(); im.src = "../assets/rooms/" + name + (/\.\w+$/.test(name) ? "" : ".jpg"); }
   return im.complete && im.naturalWidth ? im : null;
 }
 const roomArt = r => roomImg(r.art);
@@ -120,13 +121,19 @@ const KIT = {
   hall_ledge_left: { w: 163, h: 72, top: 0 }, hall_ledge_mid: { w: 143, h: 67, top: 2 }, hall_ledge_right: { w: 163, h: 72, top: 0 },
   hall_rail: { w: 168, h: 79 }, hall_door: { w: 110, h: 194 }, hall_stair: { w: 175, h: 121 },
   hall_pedestal: { w: 120, h: 117 }, hall_column: { w: 63, h: 215 },
+  // (Glen 11-05) the Fields kit, assets/rooms/gibeah/kit_fields (sized for the game when cut): the terrace wall in three
+  // (stone: the top of the stone, px up from the piece's bottom), a boulder, the olive tree with its branch to stand on,
+  // the round watchtower, a field gate, a low wall, a fig tree; and the foreground plants (fg_*: drawn over David, sliding faster)
+  f_wall_left: { w: 187, h: 164, stone: 141 }, f_wall_mid: { w: 177, h: 151, stone: 141 }, f_wall_right: { w: 176, h: 162, stone: 141 },
+  f_rock: { w: 179, h: 117 }, f_olive: { w: 536, h: 520 }, f_tower: { w: 281, h: 376 }, f_gate: { w: 178, h: 159 },
+  f_lowwall: { w: 202, h: 83 }, f_fig: { w: 252, h: 256 }, fg_grass: { w: 313, h: 310 }, fg_branch: { w: 218, h: 457 }, fg_thorn: { w: 317, h: 191 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
 };
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -168,6 +175,33 @@ function rStair(room, c) {   // the brick stair, up to the left: a ledge on each
   for (let k = 0; k < 4; k++) { const mid = k * T + T / 2, st = [0, 0, 17, 35, 51, 67, 84, 101][Math.floor(mid / 24)]; platAt(c + k, y + st + 1, 1); }
 }
 function rColumn(room, c) { const k = KIT.hall_column; region.props.push({ room, n: "hall_column", x: c * T + T / 2 - k.w, y: GR * T + 4 - 2 * k.h, s: 2 }); }   // a cedar column, twice size   // a cedar column, twice size, behind everything
+// ---- the Fields kit (Glen 11-05) ----
+let FOOT = 0;   // (set in buildRegion: GR * T + 4) where a piece's bottom stands (a little into the ground)
+function rTerrace(room, c, nMid) {   // a terrace wall from column c, solid, its stone top a ledge; returns the column after it
+  const parts = ["f_wall_left", ...Array(nMid).fill("f_wall_mid"), "f_wall_right"];
+  let px = c * T;
+  for (const n of parts) { region.props.push({ room, n, x: px, y: FOOT - KIT[n].h }); px += KIT[n].w - 6; }
+  const c1 = Math.floor((px + 6 - 10) / T), top = FOOT - 141 + 5, r = Math.floor(top / T) + 1;
+  block(c + 1, r, c1 - c - 2, GR - r, 1); platAt(c, top, c1 - c);   // (the solid part inside the art's edges: no earth showing past them)
+  for (let k = c; k < c1; k++) artSolid.add(k + "," + r);
+  return c1;
+}
+function rLowWall(room, c) {   // a low wall to hop onto (5 wide)
+  const k = KIT.f_lowwall; region.props.push({ room, n: "f_lowwall", x: c * T + 2.5 * T - k.w / 2, y: FOOT - k.h });
+  block(c, GR - 1, 5, 1, 1); platAt(c, FOOT - 72 + 4, 5); for (let i = 0; i < 5; i++) artSolid.add((c + i) + "," + (GR - 1));
+}
+function rBoulder(room, c) {   // a boulder on the ground: its flat top to stand on (5 wide, the top the middle 3)
+  const k = KIT.f_rock; region.props.push({ room, n: "f_rock", x: c * T + 2.5 * T - k.w / 2, y: FOOT - k.h });
+  block(c + 1, GR - 3, 3, 3, 1); platAt(c + 1, FOOT - k.h + 8, 3); for (let i = 1; i < 4; i++) artSolid.add((c + i) + "," + (GR - 3));
+}
+function rOliveTree(room, c) {   // the olive tree, its left edge at column c; its long branch (to the right) a ledge
+  const k = KIT.f_olive, x = c * T, y = FOOT - k.h; region.props.push({ room, n: "f_olive", x, y });
+  const c0 = Math.ceil((x + 384) / T), c1 = Math.floor((x + 530) / T); platAt(c0, y + 328, c1 - c0);
+  return y + 328;
+}
+function rDeco(room, n, c, front = false, par = 1) {   // a piece standing on the ground, centred on column c (front: over David)
+  const k = KIT[n]; region.props.push({ room, n, x: c * T + T / 2 - k.w / 2, y: n === "fg_branch" ? -30 : FOOT - k.h + (front ? 40 : 0), front, par });
+}
 function rPlinth(room, c) {   // the kit's stone plinth: solid, its top a ledge where the stones' tops are
   block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4); for (let k = 0; k < 4; k++) artSolid.add((c + k) + "," + (GR - 3));
   region.props.push({ room, n: "plinth", x: c * T + 2 * T - KIT.plinth.w / 2, y: GR * T + 2 - KIT.plinth.h });
@@ -205,6 +239,7 @@ const onTop = y => y / T - 1;   // the row to give rBreak / rRelic for something
 function rBreak(kind, room, c, r) { region.breaks.push({ kind, room, x: c * T + T / 2, y: (r + 1) * T, broken: false, fade: 0 }); }
 
 function buildRegion() {
+  FOOT = GR * T + 4;
   try { Object.assign(region.save, JSON.parse(localStorage.getItem(regionSaveKey()) || "{}")); } catch (e) {}
   // rock between rooms (and before the first)
   for (const r of REGION.rooms) rock(r.c0 - RTUNE.GAP, 0, RTUNE.GAP, ROWS);
@@ -214,21 +249,35 @@ function buildRegion() {
   // -- The Fields: Philistine raids come later; for now the wild things, a ledge climb to a stone, and the watchtower rock
   let c = R("fields");
   ground(c, c + 83);
+  // (Glen 11-05: built from his Fields kit, orthographic, on his sky and hills; a few plants pass close in front)
   campfire(c + 4, GR - 1);   // an olive press: the save point (drawn as Glen's press: drawRegionFire)
   label(c + 6, 6, "Gibeah of Saul: the region test. Select = the map.");
   oliveRow(c + 9, 16, 5);
-  rBreak("jar", "fields", c + 14, 16); rBreak("jar", "fields", c + 15, 16); rBreak("basket", "fields", c + 47, 16);
-  plat(c + 18, 13, 4); plat(c + 24, 10, 4); plat(c + 30, 7, 3); oliveRow(c + 24, 9, 4);
-  rRelic("g_stone_fields", "stone", c + 31, 6);
-  snake("viper", c + 38); critter("scorpion", c + 44);
-  // the watchtower rock: too sheer to climb without the wall climb (Up at either face, then Up / Down; it tops out onto
-  // the top). (Glen 11-04: all the way down to the ground, no gap under it: the wall climb is the way over.)
-  rock(c + 52, 4, 7, 13);
-  region.walls.push({ room: "fields", x0: (c + 52) * T, x1: (c + 59) * T, top: 4 * T, need: "wallClimb", seal: "g_seal_tower" });
-  rSeal("g_seal_tower", "fields", c + 50, "wallClimb", "The watchtower rock is too sheer to climb. Not yet.", c + 46, c + 52);
-  rRelic("g_pom_tower", "pomegranate", c + 55, 3);
-  oliveArc(c + 62, 16, 6); deco("olive_tree", c + 70, 16, 1.05, "back", "golden_olive");
+  rBreak("jar", "fields", c + 14, 16); rBreak("jar", "fields", c + 15, 16);
+  rDeco("fields", "fg_grass", c + 12, true, 1.35);
+  rLowWall("fields", c + 18);
+  { const c1 = rTerrace("fields", c + 24, 1); oliveRow(c + 25, onTop(FOOT - 136) - 0.4, c1 - c - 26); }
+  { const by = rOliveTree("fields", c + 33); rRelic("g_stone_fields", "stone", c + 46, onTop(by)); oliveRow(c + 44, onTop(by) - 0.4, 1); }
+  rDeco("fields", "fg_branch", c + 30, true, 1.3);
+  snake("viper", c + 40); critter("scorpion", c + 48);
+  rBreak("basket", "fields", c + 47, 16);
+  rDeco("fields", "fg_thorn", c + 44, true, 1.35);
+  // the watchtower: too sheer to climb without the wall climb (Up at either face, then Up / Down; it tops out onto the
+  // top). (Glen 11-04: all the way down to the ground: the wall climb is the way over.) (11-05: his round tower)
+  { const k = KIT.f_tower, top = FOOT - k.h + 6;
+    rock(c + 52, 7, 6, 10); for (let i = 0; i < 6; i++) artSolid.add((c + 52 + i) + ",7");   // (the rock inside the tower's walls)
+    region.props.push({ room: "fields", n: "f_tower", x: (c + 55) * T - k.w / 2, y: FOOT - k.h });
+    platAt(c + 52, top, 6);
+    region.walls.push({ room: "fields", x0: (c + 52) * T, x1: (c + 58) * T, top: 7 * T, need: "wallClimb", seal: "g_seal_tower" });
+    rSeal("g_seal_tower", "fields", c + 50, "wallClimb", "The watchtower is too sheer to climb. Not yet.", c + 46, c + 52);
+    rRelic("g_pom_tower", "pomegranate", c + 55, onTop(top)); }
+  rDeco("fields", "f_fig", c + 63);
+  oliveArc(c + 62, 16, 6); rBoulder("fields", c + 66);
+  deco("olive_tree", c + 72, 16, 1.05, "back", "golden_olive");
+  rDeco("fields", "fg_grass", c + 68, true, 1.35);
   snake("whip", c + 76);
+  rDeco("fields", "f_gate", c + 80);
+  rDeco("fields", "fg_branch", c + 78, true, 1.3);
 
   // -- The Town: the market, rooftops, and the old well (down into the cisterns: needs the rope)
   c = R("town");
@@ -336,7 +385,7 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
-  for (const r of REGION.rooms) for (const k of ["strip", "floor", "art", "block"]) roomImg(r[k]);   // load them all now (no old backdrop flashing first)
+  for (const r of REGION.rooms) for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]);   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
   const extra = Math.floor(poms / 4) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: the meter grows by a heart's worth, for good
@@ -645,6 +694,15 @@ function drawRegionHealth() {   // main.js drawHearts: the health meter instead 
 function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (!REGION_ON) return false;
   const r = region.room || roomAt(david.x);
+  const far = roomImg(r.far);
+  if (far) {   // (Glen 11-05) outside: Super Mario World layers, the sky far off barely moving, the hills at half speed
+    const rel = camX - r.c0 * T, mid = roomImg(r.mid);
+    const tile = (im, p, y, h) => { const w = im.naturalWidth * h / im.naturalHeight, o = -((rel * p) % w + w) % w;
+      for (let x = o; x < W; x += w) ctx.drawImage(im, Math.round(x), y, Math.ceil(w) + 1, h); };
+    tile(far, 0.12, 0, H);
+    if (mid) tile(mid, 0.45, r.midY || 0, mid.naturalHeight);
+    return true;
+  }
   const strip = roomImg(r.strip);
   if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
     const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
@@ -775,7 +833,9 @@ function drawRegionFront(camX) {   // main.js, after David: the railings he walk
   if (!REGION_ON) return;
   for (const p of region.props) {
     if (!p.front) continue;
-    const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), w = p.w || k.w; if (!im || x > W || x + w < 0) continue;
+    const k = KIT[p.n], im = kitImg(p.n), w = p.w || k.w, par = p.par || 1;
+    const x = Math.round(W / 2 + (p.x + w / 2 - camX - W / 2) * par - w / 2);   // (par > 1: close to the camera, sliding by faster)
+    if (!im || x > W || x + w < 0) continue;
     ctx.drawImage(im, x, Math.round(p.y), w, k.h);
   }
 }
