@@ -77,7 +77,9 @@ const REGION = {
   rooms: [
     { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town" },   // "@road": off the left edge, out of Gibeah
     { id: "town",    name: "The Town",         w: 74, bg: "w4_3", mx: 3, my: 2, mw: 3, left: "fields", right: "walls", art: "gibeah/town" },
-    { id: "walls",   name: "The Walls",        w: 64, bg: "w4_2", mx: 6, my: 2, mw: 2, left: "town", art: "gibeah/walls" },
+    // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, his painting in the middle
+    { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town", art: "gibeah/walls", artAt: 70,
+      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor", block: "gibeah/stone_block" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
@@ -90,17 +92,23 @@ const roomById = id => REGION.rooms.find(r => r.id === id);
 // a painted room (Glen 11-04: painted with GPT / Meta / Grok over a blueprint, tools/make_blueprints.py): art: its
 // picture in assets/rooms/, the room's own size, drawn over the room in place of the backdrop, the rock and the ledges
 // (which are still there to stand on, set to where the painting puts them)
+// A long room (Glen 11-04: "the continuous tiling room, and then add onto the art we have"): strip, a picture that
+// repeats along the whole room as its backdrop (tools/make_strip.py); floor, one that repeats along the ground; art, the
+// painting, at artAt columns in; the game's own blocks and ledges are drawn over the strip, the painting over them.
 const ROOM_ART = {};
-function roomArt(r) {
-  if (!r.art) return null;
-  let im = ROOM_ART[r.art];
-  if (!im) { im = ROOM_ART[r.art] = new Image(); im.src = "../assets/rooms/" + r.art + ".jpg"; }
+function roomImg(name) {
+  if (!name) return null;
+  let im = ROOM_ART[name];
+  if (!im) { im = ROOM_ART[name] = new Image(); im.src = "../assets/rooms/" + name + ".jpg"; }
   return im.complete && im.naturalWidth ? im : null;
 }
+const roomArt = r => roomImg(r.art);
+// blocks in a long room: stone the player stands on, drawn with block (a picture cut from the room's painting)
+function rBlock(room, c, r, w, h) { block(c, r, w, h, 1); region.blocks.push({ room, x: c * T, y: r * T, w: w * T, h: h * T }); }
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], walls: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], seals: [], walls: [], blocks: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
@@ -164,16 +172,29 @@ function buildRegion() {
   rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
   rBreak("basket", "town", c + 64, 16); rBreak("jar", "town", c + 50, 16); oliveRow(c + 62, 16, 6);
 
-  // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars
+  // -- The Walls: the fortress yard, the gate into the palace, the stair down to the cellars. (Glen 11-04: a long room)
+  // Glen's wall strip runs the whole way; his painting (the gate, the scaffolds, the stair down) is columns 70-133.
   c = R("walls");
-  ground(c, c + 63);
-  // (Glen 11-04: his wide painting, assets/rooms/gibeah/walls.jpg; the ledges are set to it: the stone plinth, the low
-  // scaffold walkway, the top of the gate's arch, and the high walkway over the gate)
+  ground(c, c + 199);
+  // the yard before the gate: stone blocks and walkways along the wall
+  oliveRow(c + 5, 16, 4);
+  rBlock("walls", c + 12, 14, 3, 3); plat(c + 16, 11, 5); plat(c + 23, 8, 4); oliveRow(c + 23, 7, 4);
+  plat(c + 30, 11, 6); rBreak("jar", "walls", c + 33, 10);
+  rBlock("walls", c + 38, 13, 2, 4); critter("scorpion", c + 44);
+  plat(c + 48, 12, 5); plat(c + 55, 9, 5); rBreak("jar", "walls", c + 57, 8); plat(c + 62, 11, 4);
+  // Glen's painting: the stone plinth, the low scaffold walkway, the top of the gate's arch, the high walkway over the gate
+  c = R("walls") + 70;
   wall(c + 10, 14, 4, 3); platAt(c + 13, 380, 12); platAt(c + 30, 386, 6); platAt(c + 34, 230, 13);
   rRelic("g_stone_walls", "stone", c + 44, onTop(230));
   rDoor("d_gate", "walls", c + 32, "door", "d_hallsgate");
   rDoor("d_down", "walls", c + 50, "stairs", "d_cellarup");
   oliveRow(c + 40, 16, 6);
+  // past the stair down: higher and higher along the wall, to the far corner
+  c = R("walls") + 134;
+  rBlock("walls", c + 4, 15, 2, 2); plat(c + 8, 12, 5); plat(c + 16, 9, 6); oliveRow(c + 16, 8, 6);
+  rBreak("basket", "walls", c + 26, 16); snake("viper", c + 31);
+  plat(c + 36, 12, 4); plat(c + 42, 9, 4); plat(c + 48, 6, 5); oliveRow(c + 48, 5, 5); rBreak("lamp", "walls", c + 50, 5);
+  rBlock("walls", c + 58, 13, 3, 4); critter("hedgehog", c + 63);
 
   // -- The Palace Halls (up through the gate)
   c = R("halls");
@@ -230,6 +251,7 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
+  for (const r of REGION.rooms) for (const k of ["strip", "floor", "art", "block"]) roomImg(r[k]);   // load them all now (no old backdrop flashing first)
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
   const extra = Math.floor(poms / 4) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // every 4 pomegranates: the meter grows by a heart's worth, for good
   david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
@@ -525,6 +547,12 @@ function drawRegionHealth() {   // main.js drawHearts: the health meter instead 
 function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (!REGION_ON) return false;
   const r = region.room || roomAt(david.x);
+  const strip = roomImg(r.strip);
+  if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
+    const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
+    for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) ctx.drawImage(strip, Math.round(x), 0, Math.ceil(sw) + 1, H);
+    return true;
+  }
   if (roomArt(r)) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); return true; }   // a painted room: drawRegion paints it
   if (r.cave) {   // Part One's cave layers, lit (the lamp comes in World 4)
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#2a1f15"); g.addColorStop(1, "#120c08");
@@ -542,9 +570,34 @@ function drawRegion(camX) {
   if (!REGION_ON) return;
   const d = david, now = performance.now() / 1000;
   for (const r of REGION.rooms) {   // a painted room, over the tiles and ledges drawn for it
+    const rx = r.c0 * T - camX, rw = r.w * T; if (rx > W || rx + rw < 0) continue;
+    const fl = roomImg(r.floor);
+    if (fl) {   // a long room's ground, repeating
+      const fw = fl.naturalWidth, a = Math.max(rx, 0), b = Math.min(rx + rw, W);
+      for (let x = rx + Math.floor((a - rx) / fw) * fw; x < b; x += fw) {
+        const sx = Math.max(0, a - x), ex = Math.min(fw, b - x);
+        if (ex > sx) ctx.drawImage(fl, sx, 0, ex - sx, fl.naturalHeight, Math.round(x + sx), GR * T, ex - sx, H - GR * T);
+      }
+    }
+    const bl = roomImg(r.block);
+    if (bl) for (const b of region.blocks) if (b.room === r.id) {
+      const x = b.x - camX; if (x > W || x + b.w < 0) continue;
+      ctx.drawImage(bl, Math.round(x), b.y, b.w, b.h);
+    }
     const im = roomArt(r); if (!im) continue;
-    const x = r.c0 * T - camX, w = r.w * T; if (x > W || x + w < 0) continue;
-    ctx.drawImage(im, 0, 0, Math.min(w, im.naturalWidth), H, Math.round(x), 0, Math.min(w, im.naturalWidth), H);
+    const x = rx + (r.artAt || 0) * T, w = Math.min(im.naturalWidth, rw - (r.artAt || 0) * T);
+    if (x > W || x + w < 0) continue;
+    if (!r.strip) { ctx.drawImage(im, 0, 0, w, H, Math.round(x), 0, w, H); continue; }
+    // in a long room the painting's ends fade into the strip (Glen 11-04), in thin slices
+    const F = 160, S = 8;
+    ctx.drawImage(im, F, 0, w - 2 * F, H, Math.round(x + F), 0, w - 2 * F, H);
+    ctx.save();
+    for (let k = 0; k < F; k += S) {
+      ctx.globalAlpha = (k + S / 2) / F;
+      ctx.drawImage(im, k, 0, S, H, Math.round(x + k), 0, S, H);
+      ctx.drawImage(im, w - k - S, 0, S, H, Math.round(x + w - k - S), 0, S, H);
+    }
+    ctx.restore();
   }
   drawBreaks(camX);
   for (const o of region.doors) {
