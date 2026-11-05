@@ -321,6 +321,8 @@ function rBreak(kind, room, c, r) { region.breaks.push({ kind, room, x: c * T + 
 function buildRegion() {
   FOOT = GR * T + 4;
   try { Object.assign(region.save, JSON.parse(localStorage.getItem(regionSaveKey()) || "{}")); } catch (e) {}
+  { const f = new URLSearchParams(location.search).get("forget");   // (testing: "?forget=a,b" takes those out of the save, to see them again)
+    if (f) { const ids = f.split(","); for (const k in region.save) if (Array.isArray(region.save[k])) region.save[k] = region.save[k].filter(id => !ids.includes(id)); regionWrite(); } }
   // rock between rooms (and before the first)
   for (const r of REGION.rooms) rock(r.c0 - RTUNE.GAP, 0, RTUNE.GAP, ROWS);
   const last = REGION.rooms[REGION.rooms.length - 1]; rock(last.c0 + last.w, 0, RTUNE.GAP, ROWS);
