@@ -85,15 +85,16 @@ const REGION = {
     // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, built from his kit
     // (the walkways, the gate, the stair down, the plinth); floor: the strip's own paving, over the ground
     { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town",
-      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor", up: 60, tallWall: true },   // (Glen 11-05: tall, the top of the wall in sight after a couple of screens)
+      floor: "gibeah/wall2_floor", up: 60, tallWall: { base: "gibeah/wall2_base.png", tile: "gibeah/wall2_tile.jpg", top: "gibeah/wall2_top.png" } },   // (Glen 11-05: tall, the top of the wall in sight after a couple of screens; his rougher 1000 BC wall: the strip's base and paving, his tile going up, the strip's broken battlements on top)
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp",
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 40, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls", strip: "gibeah/harp_strip", floor: "gibeah/harp_floor" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
     { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 2, my: 4, mw: 2, right: "deep", strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: from his cave kit, like the cellars)
     // (Glen 11-05: Castlevania-tall) the watchtower, off the Walls: about 2 screens wide and 6 tall (up: rows above the
-    // screen's top); mh: how tall it is on the map; tower: his two wall pictures (and mirrored), laid up the tower at random
-    { id: "tower",   name: "The Watchtower",   w: 71, up: 100, mx: 10, my: 0, mw: 1, mh: 2, tower: ["gibeah/tower_wall_a.png", "gibeah/tower_wall_b.png", "gibeah/tower_wall_a_m.png", "gibeah/tower_wall_b_m.png"], floor: "gibeah/yard_floor" },
+    // screen's top); mh: how tall it is on the map; tower: his two wall pictures (and mirrored), laid up the tower at random;
+    // inset: columns at each end that are outside the tower (open sky, the fields) and its side wall (Glen 11-05: its ends)
+    { id: "tower",   name: "The Watchtower",   w: 79, up: 100, inset: 8, mx: 10, my: 0, mw: 1, mh: 2, tower: ["gibeah/tower_wall_a.png", "gibeah/tower_wall_b.png", "gibeah/tower_wall_a_m.png", "gibeah/tower_wall_b_m.png"], floor: "gibeah/yard_floor" },
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
@@ -421,22 +422,23 @@ function buildRegion() {
   // built from his kit on his repeating wall: walkways at different heights, plinths, the gate and the stair down)
   c = R("walls"); const X = k => (c + k) * T;
   ground(c, c + 199);
+  for (let k = c; k <= c + 199; k++) for (let rr = GR; rr < ROWS; rr++) artSolid.add(k + "," + rr);   // (his wall picture's own paving is the ground: no tiles drawn over it)
   oliveRow(c + 5, 16, 4);
   rPlinth("walls", c + 10);
   rWalk("walls", X(15), 400, 1);
   rWalk("walls", X(34), 270, 0); oliveRow(c + 35, onTop(270) - 0.4, 5); rBreak("jar", "walls", c + 42, onTop(270));
   critter("scorpion", c + 48);
-  rKitDoor("d_gate", "walls", c + 55, "door", "d_hallsgate", "gate");
+  rKitDoor("d_gate", "walls", c + 55, "door", "d_hallsgate", "tw_door_arch");   // (Glen 11-05: his stone doors match his rougher wall)
   rPlinth("walls", c + 62);
   rWalk("walls", X(67), 420, 2); oliveRow(c + 72, onTop(420) - 0.4, 6);
   rWalk("walls", X(90), 290, 0); rBreak("jar", "walls", c + 96, onTop(290));
   rWalk("walls", X(104), 160, 0);
   rRelic("g_stone_walls", "stone", c + 110, onTop(160));
   snake("viper", c + 100);
-  rKitDoor("d_down", "walls", c + 125, "stairs", "d_cellarup", "stair_down");
+  rKitDoor("d_down", "walls", c + 125, "stairs", "d_cellarup", "tw_door_open");
   rWalk("walls", X(132), 430, 3); oliveRow(c + 138, onTop(430) - 0.4, 8);
   rBreak("basket", "walls", c + 145, 16);
-  rDoor("d_tower", "walls", c + 153, "door", "d_towerdown");   // (Glen 11-05) up into the watchtower (the plain arch: his tower door matches the tower, not this wall)
+  rKitDoor("d_tower", "walls", c + 153, "door", "d_towerdown", "tw_door_open");   // (Glen 11-05) up into the watchtower
   rWalk("walls", X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
   rPlinth("walls", c + 178); critter("hedgehog", c + 186); oliveRow(c + 188, 16, 4);
   // (Glen 11-05) the way out: a gate at the far end of the Walls, locked; the bronze key from the top of the watchtower
@@ -462,14 +464,16 @@ function buildRegion() {
   { const tc = R("tower"), tw = roomById("tower");
     ground(tc, tc + tw.w - 1);
     rock(tc, TOP_ROW, tw.w, -tw.up - TOP_ROW);   // the roof
-    rKitDoor("d_towerdown", "tower", tc + 4, "door", "d_tower", "tw_door_open");
+    rock(tc, TOP_ROW, tw.inset, ROWS - TOP_ROW); rock(tc + tw.w - tw.inset, TOP_ROW, tw.inset, ROWS - TOP_ROW);   // its side walls (and the air outside them: drawn by drawTowerEnds)
+    const ic = tc + tw.inset;   // the first column inside
+    rKitDoor("d_towerdown", "tower", ic + 4, "door", "d_tower", "tw_door_open");
     // (Glen 11-05: nothing in front of a door or a window) every piece's box, so the next one can keep clear of it
     const boxes = [], boxOf = p => ({ x0: p.x - 12, x1: p.x + KIT[p.n].w + 12, y0: p.y - 12, y1: p.y + KIT[p.n].h + 12 });
     const hits = q => boxes.some(b => q.x0 < b.x1 && q.x1 > b.x0 && q.y0 < b.y1 && q.y1 > b.y0);
     boxes.push(boxOf(region.props[region.props.length - 1]));   // the door
     const put = p => { const q = boxOf(p); if (hits(q)) return false; boxes.push(q); region.props.push(p); return true; };
     // his ledges, zig-zagging across both screens and back, 3 rows a step; olives, jars, nests and lamps along the way
-    const X0 = tc * T, X1 = (tc + tw.w) * T, STEP = 3, ACROSS = 250, pieces = ["tw_ledge_l", "tw_ledge_m", "tw_ledge_l", "tw_ledge_crack", "tw_ledge_l", "tw_beam"];
+    const X0 = (tc + tw.inset) * T, X1 = (tc + tw.w - tw.inset) * T, STEP = 3, ACROSS = 250, pieces = ["tw_ledge_l", "tw_ledge_m", "tw_ledge_l", "tw_ledge_crack", "tw_ledge_l", "tw_beam"];
     const perches = [];
     let x = X0 + 330, dir = 1, i = 0;   // (the first one starts past the door)
     for (let r = GR - STEP; r > -tw.up + 11; r -= STEP, i++) {
@@ -499,13 +503,13 @@ function buildRegion() {
     // the birds (Glen 11-05: Part One's ravens and eagles): crows low down, ravens in the middle, eagles near the top
     for (const p of perches) bird(p.y > -1100 ? "crow" : p.y > -2300 ? "raven" : "eagle", "tower", p.x, p.y);
     const topR = -tw.up + 8;   // the lookout: a plank floor right across, the battlements at each end
-    region.props.push({ room: "tower", n: "tw_win_glow", x: tc * T + tw.w * T / 2 - KIT.tw_win_glow.w / 2, y: topR * T - KIT.tw_win_glow.h - 60 });
+
     for (let px = X0; px < X1; px += KIT.tw_walk.w - 4) region.props.push({ room: "tower", n: "tw_walk", x: px, y: topR * T - 6 });
-    platAt(tc + 1, topR * T, tw.w - 2);
+    platAt(tc + tw.inset, topR * T, tw.w - 2 * tw.inset);
     region.props.push({ room: "tower", n: "tw_parapet", x: X0 + 10, y: topR * T - KIT.tw_parapet.h + 4 });
     region.props.push({ room: "tower", n: "tw_parapet", x: X1 - 10 - KIT.tw_parapet.w, y: topR * T - KIT.tw_parapet.h + 4, flip: true });
-    oliveRow(tc + 20, topR - 1.4, 10); rRelic("g_stone_tower", "stone", tc + 50, topR - 1);
-    rRelic("g_tower_key", "key", tc + 62, topR - 1);   // (Glen 11-05) the reward for the climb: what it opens comes later
+    oliveRow(ic + 12, topR - 1.4, 10); rRelic("g_stone_tower", "stone", ic + 40, topR - 1);
+    rRelic("g_tower_key", "key", ic + 52, topR - 1);   // (Glen 11-05) the reward for the climb: what it opens comes later
   }
 
   // -- The Palace Halls (up through the gate)
@@ -620,7 +624,7 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
-  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); }
+  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) Object.values(TOWER.END).forEach(e => roomImg(e.img)); if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
@@ -999,9 +1003,24 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   drawBackground(camX - r.c0 * T);
   return true;
 }
-const TOWER = { TILE_W: 640, TILE_H: 1138, OV: 90 };   // (Glen 11-05) his tower wall pictures, as laid up the tower (px); OV: each fades in over its left and top neighbors this far (no seams)
-function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked and mirrored at random (the same every time)
-  const ims = r.tower.map(roomImg); if (ims.some(im => !im)) { ctx.fillStyle = "#9a8366"; ctx.fillRect(0, camY, W, H); return; }
+const TOWER = { TILE_W: 640, TILE_H: 1138, OV: 90, OPEN: 40, END_STEP: 851, END_UP: 60,
+  END: { left: { img: "gibeah/tower_end_left.png", inner: 111 }, right: { img: "gibeah/tower_end_right.png", inner: 53 } } };
+// OPEN: how far above the lookout floor the tower's open to the sky; END: Glen's corner-stone ends (inner: where the
+// corner stones meet the inside, px in the picture: that's at the tower's edge, inset columns in); END_STEP: stacked
+// this far apart (each fades in over the one above); END_UP: they rise this far over the open top   // (Glen 11-05) his tower wall pictures, as laid up the tower (px); OV: each fades in over its left and top neighbors this far (no seams)
+const towerTopY = r => (-r.up + 8) * T - TOWER.OPEN;   // (the lookout: open above this)
+function towerSky(r, camX) {   // outside: the sky, and the fields far off at the bottom
+  const g = ctx.createLinearGradient(0, camY, 0, camY + H); g.addColorStop(0, "#7fb8e6"); g.addColorStop(1, "#bfe0f4");
+  ctx.fillStyle = g; ctx.fillRect(0, camY, W, H);
+  const far = roomImg("gibeah/fields_far");
+  if (far && camY + H > 0) { const fw = far.naturalWidth * H / far.naturalHeight, o = -(((camX - r.c0 * T) * 0.12) % fw + fw) % fw; for (let x = o; x < W; x += fw) ctx.drawImage(far, Math.round(x), 0, Math.ceil(fw) + 1, H); }
+}
+function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked at random (the same every time), inside the tower; sky above the lookout
+  const ims = r.tower.map(roomImg);
+  towerSky(r, camX);
+  if (ims.some(im => !im)) return;
+  const L = (r.c0 + r.inset) * T - 60 - camX, R = (r.c0 + r.w - r.inset) * T + 40 - camX;   // (under the ends' corner stones)
+  ctx.save(); ctx.beginPath(); ctx.rect(L, towerTopY(r), R - L, H - towerTopY(r) + 2000); ctx.clip();
   const { TILE_W: tw, TILE_H: th, OV: ov } = TOWER, x0 = r.c0 * T, top = -r.up * T;
   for (let ix = Math.floor((camX - x0) / tw); ix * tw + x0 < camX + W; ix++)
     for (let iy = Math.floor((camY - top) / th); iy * th + top < camY + H; iy++) {
@@ -1009,20 +1028,39 @@ function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked and m
       const x = Math.round(x0 + ix * tw - camX - ov), y = Math.round(top + iy * th - ov), w = tw + ov, h = th + ov;
       ctx.drawImage(im, x, y, w, h);   // (the mirrored ones are their own pictures: the soft edges stay on the left and top)
     }
+  ctx.restore();
 }
-// (Glen 11-05) the Walls, tall: his wall picture's stone (a band of four courses, mortar line to mortar line) stacked up
-// to the top of the wall, its battlements and sky up there, open sky above. Px in the picture and in the world:
-const TALL_WALL = { TOP: 200, BAND0: 200, BAND1: 400, SKY: 360, DECK: 158, SKY_RGB: "#8fcaf1" };   // TOP: the picture's sky and battlements; BAND0-1: the stone band; SKY: open sky over the battlements; DECK: the walk on top, below the battlements' top
+function drawTowerEnds(camX) {   // (Glen 11-05) the tower's two ends: his corner stones against the sky, the fields far off
+  const r = region.room; if (!r || !r.tower) return;
+  const bl = (r.c0 + r.inset) * T - camX, br = (r.c0 + r.w - r.inset) * T - camX, top = towerTopY(r) - TOWER.END_UP;
+  ctx.save(); ctx.beginPath(); ctx.rect(-10, camY, bl - 100 + 10, H); ctx.rect(br + 90, camY, W - br, H); ctx.clip(); towerSky(r, camX); ctx.restore();   // (the open air: over the rock that keeps him in)
+  for (const [side, x] of [["left", bl], ["right", br]]) {
+    const e = TOWER.END[side], im = roomImg(e.img); if (!im) continue;
+    const x0 = Math.round(x - e.inner); if (x0 > W || x0 + im.naturalWidth < 0) continue;
+    for (let y = top + Math.max(0, Math.floor((camY - top) / TOWER.END_STEP) - 1) * TOWER.END_STEP; y < camY + H; y += TOWER.END_STEP) ctx.drawImage(im, x0, Math.round(y));
+  }
+}
+// (Glen 11-05) the Walls, tall, from his rougher wall (david-sling-2-art/rooms/gibeah/wall2_*_source.png, scaled so the
+// wall meets the paving at the ground line, its ends blended so it repeats): its base and paving at the bottom (fading
+// up into the tile), his tile stacked up the middle, its broken battlements at the top (the white sky taken out, fading
+// down into the tile), open sky above. Px in the world:
+const TALL_WALL = { BASE_Y: 8, SKY: 360, DECK: 96, SKY_RGB: "#a9d4ef" };   // BASE_Y: the base picture's top; SKY: open sky over the battlements; DECK: the walk on top, from the battlements picture's top
 const wallTopY = r => -r.up * T + TALL_WALL.SKY;
 function drawTallWall(r, camX) {
-  const strip = roomImg(r.strip); if (!strip) return;
-  const sc = H / strip.naturalHeight, sw = strip.naturalWidth * sc, x0 = r.c0 * T - camX, top = wallTopY(r), { TOP, BAND0, BAND1 } = TALL_WALL;
-  ctx.fillStyle = TALL_WALL.SKY_RGB; ctx.fillRect(0, camY, W, Math.max(0, top - camY + 2));
-  for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) {
-    const X = Math.round(x), w = Math.ceil(sw) + 1, part = (sy, sh, y) => { if (y + sh * sc > camY && y < camY + H) ctx.drawImage(strip, 0, sy, strip.naturalWidth, sh, X, Math.round(y), w, Math.ceil(sh * sc) + 1); };
-    for (let y = BAND0 * sc - (BAND1 - BAND0) * sc; y > top + TOP * sc - (BAND1 - BAND0) * sc; y -= (BAND1 - BAND0) * sc) part(BAND0, BAND1 - BAND0, y);   // the stone, up
-    part(0, TOP, top);                                   // the battlements and the sky behind them
-    part(BAND0, strip.naturalHeight - BAND0, BAND0 * sc);   // the bottom, as before
+  const base = roomImg(r.tallWall.base), tile = roomImg(r.tallWall.tile), topI = roomImg(r.tallWall.top);
+  ctx.fillStyle = TALL_WALL.SKY_RGB; ctx.fillRect(0, camY, W, H);
+  if (!base || !tile || !topI) return;
+  const x0 = r.c0 * T - camX, top = wallTopY(r);
+  // the tile, from under the battlements down to the base
+  const tw = tile.naturalWidth, th = tile.naturalHeight, y0 = top + 120, y1 = TALL_WALL.BASE_Y + 120;
+  ctx.save(); ctx.beginPath(); ctx.rect(0, y0, W, y1 - y0); ctx.clip();   // (only the wall: not the sky over it)
+  for (let x = x0 + Math.floor(-x0 / tw) * tw; x < W; x += tw)
+    for (let y = y1 - th * Math.ceil((y1 - Math.max(y0, camY)) / th); y < Math.min(y1, camY + H); y += th) ctx.drawImage(tile, Math.round(x), Math.round(y), tw + 1, th + 1);
+  ctx.restore();
+  const bw = base.naturalWidth;
+  for (let x = x0 + Math.floor(-x0 / bw) * bw; x < W; x += bw) {
+    if (top + topI.naturalHeight > camY && top < camY + H) ctx.drawImage(topI, Math.round(x), Math.round(top), bw + 1, topI.naturalHeight);
+    if (TALL_WALL.BASE_Y + base.naturalHeight > camY && TALL_WALL.BASE_Y < camY + H) ctx.drawImage(base, Math.round(x), TALL_WALL.BASE_Y, bw + 1, base.naturalHeight);
   }
 }
 function drawLedges(camX) {
@@ -1068,7 +1106,7 @@ function drawRegion(camX) {
     const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
     ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);
   }
-  drawProps(camX); drawLedges(camX);
+  drawTowerEnds(camX); drawProps(camX); drawLedges(camX);
   drawFloorCrumbles(camX);
   drawBreaks(camX);
   drawBeasts(camX);
@@ -1119,13 +1157,12 @@ function drawRope(x, y0, y1) {
   for (let y = y0; y < y1; y += h) ctx.drawImage(img, x - w / 2, y, w, h);
   ctx.restore();
 }
-const EXIT_GATE = { S: 0.5, LIFT: 150 };   // (Glen's gate) how big it's drawn, and how far it rises when unlocked
+// (Glen 11-05) the way out: his iron-banded stone door, shut; his open one once the key has opened it
 function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   const y = GR * T;
-  if (o.kind === "exit") {   // his wooden gate, shut; raised once the key has opened it
-    const open = regionHas("taken", "g_exit_open"), n = open ? "tw_gate_open" : "tw_gate_shut", k = KIT[n], im = kitImg(n), w = k.w * EXIT_GATE.S, h = k.h * EXIT_GATE.S;
-    if (open) { ctx.fillStyle = "#1a120c"; ctx.fillRect(Math.round(x - 52), y - 180, 104, 182); }   // (the dark way through)
-    if (im) ctx.drawImage(im, Math.round(x - w / 2), Math.round(y + 4 - h - (open ? EXIT_GATE.LIFT : 0)), w, h);
+  if (o.kind === "exit") {
+    const n = regionHas("taken", "g_exit_open") ? "tw_door_open" : "tw_door_shut", k = KIT[n], im = kitImg(n);
+    if (im) ctx.drawImage(im, Math.round(x - k.w / 2), y + 4 - k.h, k.w, k.h);
     return;
   }
   ctx.save();
@@ -1197,7 +1234,7 @@ function updateBeasts(dt, r) {
         b.y += (want - b.y) * Math.min(1, dt * (dive ? 3.5 : 1.6));
         b.y = Math.max(top, Math.min(GR * T - 30, b.y));
         if ((b.facing > 0 && b.x > d.x + 300) || (b.facing < 0 && b.x < d.x - 300)) b.facing *= -1;
-        b.x = Math.max(r.c0 * T + 40, Math.min((r.c0 + r.w) * T - 40, b.x));
+        const ins = (r.inset || 0) * T; b.x = Math.max(r.c0 * T + ins + 40, Math.min((r.c0 + r.w) * T - ins - 40, b.x));
         if (b.t > B.chase) { b.state = "home"; b.t = 0; }
       } else if (b.state === "home") {   // back to its ledge
         const hx = b.hx - b.x, hy = b.hy - b.y, dd = Math.hypot(hx, hy);
