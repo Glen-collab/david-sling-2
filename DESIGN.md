@@ -209,6 +209,12 @@ against him" (24:6). Holding back grows Self-control on the card, and sparing hi
 
 
 1. **The Palace (Gibeah), 1 Samuel 18.** Jonathan's covenant and gifts; the women's song; Saul's jealousy. Fighting stages leading Saul's army against Philistine raids; cellars and cisterns under the palace. Get the sword and robe. First Step of Faith (bow down). *Boss:* the harp room: a rhythm game calming Saul, then dodge the spear twice (18:11). Psalm 57:4.
+   *Gibeah, longer (Glen 11-05, after his first play-through took ~5 min; Castlevania areas take 10-15):* the Town stays
+   the safe haven (no enemies). Rooms get **taller**: the Walls on several levels, and a **watchtower** off the Walls,
+   about 2 screens wide and 6 tall, many climbs, crows, ravens and eagles, things to collect, and at the top a **key or
+   lever** that opens something later (in Gibeah or a future region). **Philistine raids** on the Walls and in the Fields
+   (18:27, 18:30): no one dies; hit them and they turn, run and fade out, as in Part One. More creatures in the cellars and
+   cisterns. Needs first: a camera that scrolls up and down (the engine is one screen tall now: ROWS 20).
 2. **The Window, 1 Samuel 19-20.** Michal lets David down by rope; the figure in the bed. Night rooftop stealth (Saul's men: no sword). Hidden area: Naioth in Ramah, where Samuel waits and Saul's men end up prophesying (19:20-24). Get rope climb and crouch-walk. *Boss moment:* the arrow field (Player 2 Jonathan shoots, Player 1 reads), then the goodbye (20:41-42). Psalm 57:1.
 3. **Nob and Gath, 1 Samuel 21.** Holy bread (five full heals) and Goliath's sword (breaks cracked walls). Gath: act silly when watched, sneak when not; scribbling on the gates. Hidden: Goliath's family house, everything giant-sized. *Boss:* King Achish's court. Psalm 57:2-3.
 4. **The Cave of Adullam, 1 Samuel 22-23.** The biggest cave maze, the center of the game. The 400 gather; parents taken to Moab (side trip); Abiathar brings the ephod. Recruit the mighty men (in place of Part One's lost sheep). Get the lamp, shield and Ask the LORD. Hidden: water from Bethlehem's well (2 Samuel 23:13-17). *Boss:* defend Keilah's threshing floors from Philistines, then escape before the town hands David over (23:12). Psalm 57:1.
