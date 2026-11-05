@@ -534,6 +534,7 @@ const onewayTop = new Map();
 const owTop = (c, r) => onewayTop.get(r * COLS + c) ?? r * T;
 const platAt = (c, y, w) => { const r = Math.floor(y / T); for (let x = c; x < c + w; x++) { oneway[r][x] = true; onewayTop.set(r * COLS + x, y); artPlat.add(x + "," + r); } };   // (the painting or the kit piece is what's seen: no plank drawn)
 const artPlat = new Set();
+const artSolid = new Set();   // (a kit piece stands here: no grass drawn on its top)
 // crumbling ledges: shake when you land on them, then drop away (and come back a few seconds later)
 const crumbles = [];
 const crumble = (c, r, w) => { plat(c, r, w); crumbles.push({ c, r, w, state: "solid", t: 0 }); };
@@ -2968,7 +2969,7 @@ function drawTiles(camX) {
       for (let c = c0; c <= c1 + 1; c++) {
         // grass also runs under walls and under limestone sitting on the ground, so their feet stand IN the meadow
         const above = matAt(c, r - 1), covered = above && !(above === 3 || (m === 1 && above === 2));
-        const top = c <= c1 && matAt(c, r) === m && !covered;
+        const top = c <= c1 && matAt(c, r) === m && !covered && !artSolid.has(c + "," + r);
         if (top && start < 0) start = c;
         if (!top && start >= 0) {
           if (m === 1) {
@@ -4990,6 +4991,7 @@ function frame(now) {
   if (typeof drawWorld9 === "function") drawWorld9(camX);   // engedi.js: Saul's men, the hiding rocks, Saul in the cave
   if (typeof drawLeap === "function") drawLeap(camX);       // leap.js: the hidden bridge
   if (inCutscene() || !(david.inv > 0 && Math.floor(now / 70) % 2)) drawDavid(camX);
+  if (typeof drawRegionFront === "function") drawRegionFront(camX);   // region.js: the railings he walks behind
   if (oilingSheep()) drawSheepOne(david.helpSheep, camX, true);   // the sheep he's oiling stands in front of him, kneeling
   drawFoldFront(camX);
   if (typeof drawStreamFront === "function") drawStreamFront(camX);   // world6.js

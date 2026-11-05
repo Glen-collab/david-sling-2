@@ -1,0 +1,34 @@
+{
+ "hall_ledge_left": {
+  "w": 163,
+  "h": 72
+ },
+ "hall_ledge_mid": {
+  "w": 143,
+  "h": 67
+ },
+ "hall_ledge_right": {
+  "w": 163,
+  "h": 72
+ },
+ "hall_rail": {
+  "w": 168,
+  "h": 79
+ },
+ "hall_door": {
+  "w": 110,
+  "h": 194
+ },
+ "hall_stair": {
+  "w": 175,
+  "h": 121
+ },
+ "hall_pedestal": {
+  "w": 120,
+  "h": 117
+ },
+ "hall_column": {
+  "w": 63,
+  "h": 215
+ }
+}

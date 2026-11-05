@@ -81,7 +81,8 @@ const REGION = {
     // (the walkways, the gate, the stair down, the plinth); floor: the strip's own paving, over the ground
     { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town",
       strip: "gibeah/wall_strip", floor: "gibeah/yard_floor" },
-    { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
+    { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp",
+      strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
     { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns" },
@@ -113,11 +114,17 @@ const KIT = {
   walk_left: { w: 236, h: 164, deck: 56, posts: [33, 122, 212] }, walk_mid: { w: 233, h: 164, deck: 56, posts: [28, 117, 207] },
   walk_right: { w: 234, h: 164, deck: 56, posts: [23, 111, 198] }, LEG: [150, 160],
   gate: { w: 207, h: 236 }, stair_down: { w: 239, h: 279 }, plinth: { w: 147, h: 124 },
+  // (Glen 11-05) the Palace Halls kit, assets/rooms/gibeah/kit_halls: a stone balcony ledge in three (its top: top px
+  // from the piece's top), its cedar railing on its own (drawn in front of David), the arched door, the stair, a
+  // pedestal, a cedar column
+  hall_ledge_left: { w: 163, h: 72, top: 0 }, hall_ledge_mid: { w: 143, h: 67, top: 2 }, hall_ledge_right: { w: 163, h: 72, top: 0 },
+  hall_rail: { w: 168, h: 79 }, hall_door: { w: 110, h: 194 }, hall_stair: { w: 175, h: 121 },
+  hall_pedestal: { w: 120, h: 117 }, hall_column: { w: 63, h: 215 },
 };
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/kit/" + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("hall_") ? "kit_halls/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -135,14 +142,39 @@ function rKitDoor(id, room, c, kind, to, n) {   // a doorway or stair from the k
   rDoor(id, room, c, kind, to); const o = region.doors[region.doors.length - 1]; o.kit = n;
   region.props.push({ room, n, x: o.x - KIT[n].w / 2, y: GR * T + 4 - KIT[n].h });
 }
+function rLedge(room, x, topY, nMid, rail = true) {   // a balcony ledge from x (px), its top at topY; returns where it ends
+  const parts = ["hall_ledge_left", ...Array(nMid).fill("hall_ledge_mid"), "hall_ledge_right"];
+  let px = x; const segs = [];
+  for (const n of parts) { region.props.push({ room, n, x: px, y: topY - KIT[n].top }); segs.push(px); px += KIT[n].w - 8; }   // (the mid's end caps over the joins)
+  const x1 = px + 8;
+  if (rail) {   // David walks behind it: railings end to end along the whole ledge, each stretched a little to fit
+    const len = x1 - x - 16, n = Math.max(1, Math.round(len / KIT.hall_rail.w)), w = len / n;
+    for (let i = 0; i < n; i++) region.props.push({ room, n: "hall_rail", x: x + 8 + i * w, y: topY - KIT.hall_rail.h + 5, w: w + 2, front: true });
+  }
+  const c0 = Math.ceil((x + 6) / T), c1 = Math.floor((x1 - 6) / T);
+  platAt(c0, topY, c1 - c0);
+  return x1;
+}
+function rPedestal(room, c) {   // solid, 3 wide
+  const top = GR * T + 2 - KIT.hall_pedestal.h;
+  block(c, GR - 3, 3, 3, 1); platAt(c, top + 2, 3); for (let k = 0; k < 3; k++) artSolid.add((c + k) + "," + (GR - 3));
+  region.props.push({ room, n: "hall_pedestal", x: c * T + 1.5 * T - KIT.hall_pedestal.w / 2, y: top });
+}
+function rStair(room, c) {   // the brick stair, up to the left: a ledge on each tile, at the step under its middle
+  const x = c * T, y = GR * T + 4 - KIT.hall_stair.h;
+  region.props.push({ room, n: "hall_stair", x, y });
+  for (let k = 0; k < 4; k++) { const mid = k * T + T / 2, st = [0, 0, 17, 35, 51, 67, 84, 101][Math.floor(mid / 24)]; platAt(c + k, y + st + 1, 1); }
+}
+function rColumn(room, c) { const k = KIT.hall_column; region.props.push({ room, n: "hall_column", x: c * T + T / 2 - k.w, y: GR * T + 4 - 2 * k.h, s: 2 }); }   // a cedar column, twice size   // a cedar column, twice size, behind everything
 function rPlinth(room, c) {   // the kit's stone plinth: solid, its top a ledge where the stones' tops are
-  block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4);
+  block(c, GR - 3, 4, 3, 1); platAt(c, GR * T - KIT.plinth.h + 6, 4); for (let k = 0; k < 4; k++) artSolid.add((c + k) + "," + (GR - 3));
   region.props.push({ room, n: "plinth", x: c * T + 2 * T - KIT.plinth.w / 2, y: GR * T + 2 - KIT.plinth.h });
 }
 function drawProps(camX) {
   for (const p of region.props) {
-    const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX); if (!im || x > W || x + k.w < 0) continue;
-    ctx.drawImage(im, x, Math.round(p.y), k.w, k.h);
+    if (p.front) continue;   // (drawRegionFront: over David)
+    const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), s = p.s || 1; if (!im || x > W || x + k.w * s < 0) continue;
+    ctx.drawImage(im, x, Math.round(p.y), k.w * s, k.h * s);
     if (p.legs) {   // the legs on down to the ground: the band of rows that's only legs, again and again
       const [a, b] = KIT.LEG, bh = b - a;
       for (let y = p.y + b; y < GR * T + 6; y += bh) ctx.drawImage(im, 0, a, k.w, bh, x, Math.round(y), k.w, bh);
@@ -241,11 +273,20 @@ function buildRegion() {
   // -- The Palace Halls (up through the gate)
   c = R("halls");
   ground(c, c + 61);
-  rDoor("d_hallsgate", "halls", c + 4, "door", "d_gate");
-  rBreak("hall_lamp", "halls", c + 14, 16); rBreak("hall_lamp", "halls", c + 34, 16); rBreak("hall_lamp", "halls", c + 54, 16);
-  plat(c + 22, 12, 5); plat(c + 30, 9, 4); oliveRow(c + 22, 11, 5);
-  rRelic("g_stone_halls", "stone", c + 32, 8);
-  campfire(c + 44, GR - 1);
+  // (Glen 11-05: built from his Palace Halls kit: cedar columns behind, the stair, the balconies with their railings in
+  // front of David, a pedestal, the arched door back out to the walls)
+  { const X = k => (c + k) * T;
+    for (const k of [2, 12, 22, 32, 42, 52, 60]) rColumn("halls", c + k);
+    rKitDoor("d_hallsgate", "halls", c + 5, "door", "d_gate", "hall_door");
+    rBreak("hall_lamp", "halls", c + 14, 16);
+    rStair("halls", c + 10);
+    rLedge("halls", X(16), 400, 1); oliveRow(c + 19, onTop(400) - 0.4, 5);
+    rLedge("halls", X(30), 280, 0); rRelic("g_stone_halls", "stone", c + 34, onTop(280));
+    rBreak("hall_lamp", "halls", c + 34, 16);
+    rPedestal("halls", c + 40);
+    campfire(c + 46, GR - 1);
+    rLedge("halls", X(49), 430, 0); oliveRow(c + 51, onTop(430) - 0.4, 3);
+    rBreak("hall_lamp", "halls", c + 56, 16); }
 
   // -- The Harp Room: the boss comes later (1 Samuel 18:10-11)
   c = R("harp");
@@ -715,6 +756,14 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     drawRope(x, 2 * T, y - 24);
   }
   ctx.restore();
+}
+function drawRegionFront(camX) {   // main.js, after David: the railings he walks behind
+  if (!REGION_ON) return;
+  for (const p of region.props) {
+    if (!p.front) continue;
+    const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), w = p.w || k.w; if (!im || x > W || x + w < 0) continue;
+    ctx.drawImage(im, x, Math.round(p.y), w, k.h);
+  }
 }
 function drawRegionOver() {
   if (!REGION_ON) return;
