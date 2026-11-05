@@ -85,7 +85,7 @@ const REGION = {
     // (Glen 11-04: rooms like Mario levels, not 5 seconds long) the Walls: his wall strip repeating, built from his kit
     // (the walkways, the gate, the stair down, the plinth); floor: the strip's own paving, over the ground
     { id: "walls",   name: "The Walls",        w: 200, bg: "w4_2", mx: 6, my: 2, mw: 6, left: "town",
-      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor" },
+      strip: "gibeah/wall_strip", floor: "gibeah/yard_floor", up: 60, tallWall: true },   // (Glen 11-05: tall, the top of the wall in sight after a couple of screens)
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp",
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 40, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls", strip: "gibeah/harp_strip", floor: "gibeah/harp_floor" },
@@ -441,6 +441,20 @@ function buildRegion() {
   rPlinth("walls", c + 178); critter("hedgehog", c + 186); oliveRow(c + 188, 16, 4);
   // (Glen 11-05) the way out: a gate at the far end of the Walls, locked; the bronze key from the top of the watchtower
   // opens it, and David slips out of Gibeah (19:12: "he went, fled, and escaped"). Next region's road starts here, later.
+  // (Glen 11-05) the Walls' upper levels: three climbs of his walkways (fixed to the wall, zig-zag) up from the
+  // walkways below to the top of the wall, a row across the middle between them, and the walk along the top
+  { const wr = roomById("walls"), deck = wallTopY(wr) + TALL_WALL.DECK, STEP = 108, ZIG = 260;
+    rock(c, TOP_ROW, wr.w, -wr.up - TOP_ROW);   // (above the sky: the ceiling)
+    const climb = (x0, from) => { let i = 0; for (let y = from - STEP; y > deck + 40; y -= STEP, i++) { const x = x0 + (i % 2) * ZIG; rWalk("walls", x, y, 0); if (i % 4 === 2) oliveRow(Math.round((x + 60) / T), y / T - 1.4, 3); } };
+    climb(X(104) + 20, 160); climb(X(34) + 20, 270); climb(X(161) + 20, 300);
+    const MID = -700;   // the middle row: across from one climb to the next
+    for (let x = X(44); x < X(100); x += ZIG) rWalk("walls", x, MID, 0);
+    for (let x = X(116); x < X(158); x += ZIG) rWalk("walls", x, MID - 54, 0);
+    oliveRow(c + 60, MID / T - 1.4, 6); rBreak("jar", "walls", c + 80, MID / T - 1);
+    platAt(c + 1, deck, wr.w - 2);   // the top of the wall, end to end
+    oliveRow(c + 20, deck / T - 1.4, 10); oliveRow(c + 140, deck / T - 1.4, 10);
+    rRelic("g_pom_walltop", "pomegranate", c + 92, deck / T - 1);
+    bird("crow", "walls", X(70), deck); bird("crow", "walls", X(150), deck); bird("raven", "walls", X(60), MID); }
   rDoor("d_exit", "walls", c + 196, "exit", null); Object.assign(region.doors[region.doors.length - 1], { key: "g_tower_key" });
 
   // -- The Watchtower (Glen 11-05): Castlevania-tall, a climb of ledges zig-zagging up six screens to the lookout.
@@ -964,6 +978,7 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
     return true;
   }
   if (r.tower) { drawTowerWall(r, camX); return true; }
+  if (r.tallWall) { drawTallWall(r, camX); return true; }
   const strip = roomImg(r.strip);
   if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
     const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
@@ -994,6 +1009,21 @@ function drawTowerWall(r, camX) {   // his two walls, tile by tile, picked and m
       const x = Math.round(x0 + ix * tw - camX - ov), y = Math.round(top + iy * th - ov), w = tw + ov, h = th + ov;
       ctx.drawImage(im, x, y, w, h);   // (the mirrored ones are their own pictures: the soft edges stay on the left and top)
     }
+}
+// (Glen 11-05) the Walls, tall: his wall picture's stone (a band of four courses, mortar line to mortar line) stacked up
+// to the top of the wall, its battlements and sky up there, open sky above. Px in the picture and in the world:
+const TALL_WALL = { TOP: 200, BAND0: 200, BAND1: 400, SKY: 360, DECK: 158, SKY_RGB: "#8fcaf1" };   // TOP: the picture's sky and battlements; BAND0-1: the stone band; SKY: open sky over the battlements; DECK: the walk on top, below the battlements' top
+const wallTopY = r => -r.up * T + TALL_WALL.SKY;
+function drawTallWall(r, camX) {
+  const strip = roomImg(r.strip); if (!strip) return;
+  const sc = H / strip.naturalHeight, sw = strip.naturalWidth * sc, x0 = r.c0 * T - camX, top = wallTopY(r), { TOP, BAND0, BAND1 } = TALL_WALL;
+  ctx.fillStyle = TALL_WALL.SKY_RGB; ctx.fillRect(0, camY, W, Math.max(0, top - camY + 2));
+  for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) {
+    const X = Math.round(x), w = Math.ceil(sw) + 1, part = (sy, sh, y) => { if (y + sh * sc > camY && y < camY + H) ctx.drawImage(strip, 0, sy, strip.naturalWidth, sh, X, Math.round(y), w, Math.ceil(sh * sc) + 1); };
+    for (let y = BAND0 * sc - (BAND1 - BAND0) * sc; y > top + TOP * sc - (BAND1 - BAND0) * sc; y -= (BAND1 - BAND0) * sc) part(BAND0, BAND1 - BAND0, y);   // the stone, up
+    part(0, TOP, top);                                   // the battlements and the sky behind them
+    part(BAND0, strip.naturalHeight - BAND0, BAND0 * sc);   // the bottom, as before
+  }
 }
 function drawLedges(camX) {
   ctx.save(); ctx.translate(-Math.round(camX), 0);
