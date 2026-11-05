@@ -2328,7 +2328,8 @@ function updateDavid(dt) {
   }
 
   // --- roll: Down + A on the ground (running, or from a crouch: he rolls the way he's facing)
-  if (hasSkill("roll") && !ARMORED() && !d.carrying && !d.harp && d.onGround && !busy && ((held("down") && pressed("a")) || (pressed("x") && typeof updateSword !== "function"))) {
+  const onLedge = isOneway(Math.floor(d.x / T), Math.floor(d.y / T));   // (Glen 11-05: Down + A on a ledge drops through it, not a roll)
+  if (hasSkill("roll") && !ARMORED() && !d.carrying && !d.harp && d.onGround && !busy && ((held("down") && pressed("a") && !onLedge) || (pressed("x") && typeof updateSword !== "function"))) {
     if (dir) d.facing = dir;
     setState("roll"); d.rollT = 0; d.vx = d.facing * TUNE.ROLL_SPEED; d.jumpBuf = 0;
   }
@@ -2484,7 +2485,7 @@ function updateDavid(dt) {
   d.dropThrough = false;
   if (d.onGround && held("down") && pressed("a")) {
     const r = Math.floor(d.y / T), c = Math.floor(d.x / T);
-    if (isOneway(c, r) && Math.abs(d.vx) <= 60) { d.dropThrough = true; d.y += 2; }
+    if (isOneway(c, r)) { d.dropThrough = true; d.y += 2; }
   }
   if (d.onGround && pressed("down") && typeof onLadder === "function" && onLadder(d) && d.state !== "climb" && d.carrying) { d.dropThrough = true; d.y += 2; }   // carrying the lamb: Down steps down a rung (world3.js)
 
@@ -3102,7 +3103,7 @@ function drawHelp() {
     "Arrows: move (hold to run)   Z / Space = A: jump, again in the air = flip   Down: crouch (walk crouched to sneak)",
     "V or F = X: sword   G = Y (hold): shield   X = B: sling (hold to charge)   Hold Down + A: roll",
     "Saul's men: never strike them. Crouch behind a rock while one looks your way.   Up by someone: hear them again",
-    "R: back to the campfire   M: set up a controller   H: hide this",
+    (REGION_ON ? "R: back to the olive press   Down + A on a ledge: drop down   M:" : "R: back to the campfire   M:") + " set up a controller   H: hide this",
     "Controller: " + (readPad() ? (padMap ? "set up ✓  (M or hold Select+Start to redo)" : "connected, not set up yet: press M") : "none (press a button on it so the browser sees it)"),
   ] : [
     "Arrows: move (hold to run)   Z / Space = A: jump" + (CAN_DOUBLE_JUMP ? ", again in the air = flip" : ""),
@@ -3203,7 +3204,7 @@ function hurtDavid(fromX, why = "", still = false) {   // why: what hurt him (th
     d.harp = false; d.charging = false; d.throwT = -1;
     if (d.state !== "carry") setState("jump");
   }
-  if (d.hearts <= 0) { d.deadT = 1.2; d.lives--; const tail = d.lives > 0 ? `Back to the campfire... (${d.lives} ${d.lives === 1 ? "life" : "lives"} left)` : "Out of lives. Back to the start of the stage.";
+  if (d.hearts <= 0) { d.deadT = 1.2; d.lives--; const tail = d.lives > 0 ? `Back to the ${REGION_ON ? "olive press" : "campfire"}... (${d.lives} ${d.lives === 1 ? "life" : "lives"} left)` : "Out of lives. Back to the start of the stage.";
                        toast(why ? `${why} ${tail}` : d.lives > 0 ? `Ouch! ${tail}` : tail); }
 }
 // a pit costs a heart and puts him back on the last solid ground he stood on (it's never back to the start)
@@ -3372,7 +3373,7 @@ function updateFires(dt) {
     const passed = david.x > f.x + 70 && david.x < f.x + 8 * T && david.deadT <= 0 && !cave.room;   // jumped over it or ran past: it still counts
     if ((near || passed) && !f.lit) {
       f.lit = true; checkpoint = { x: f.x - 30, y: f.y };
-      if (f.who && f.say) sayLine(f.who, f.say); else toast("Campfire: checkpoint. Play the harp here (Select) to rest.");
+      if (f.who && f.say) sayLine(f.who, f.say); else toast(REGION_ON ? "Olive press: your place is saved." : "Campfire: checkpoint. Play the harp here (Select) to rest.");
       if (typeof fireLit === "function") fireLit(f);
       regionFireLit(f);   // region.js: an olive press saves your place   // world3.js: 3-2's scenes back in town
       learnSkill(f.teach);

@@ -148,7 +148,7 @@ const KIT = {
   p_planks: { w: 211, h: 98 }, p_ring: { w: 86, h: 175 },
   // (Glen 11-05) the throne room kit, assets/rooms/gibeah/kit_harp
   hr_throne: { w: 238, h: 196 }, hr_banner: { w: 61, h: 309 }, hr_brazier: { w: 115, h: 124 }, hr_column: { w: 104, h: 373 },
-  hr_spearwall: { w: 173, h: 167 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },
+  hr_spearwall: { w: 173, h: 167 }, hr_crack0: { w: 100, h: 150 }, hr_crack1: { w: 100, h: 150 }, hr_crack2: { w: 100, h: 150 }, hr_crack3: { w: 100, h: 150 }, hr_crack4: { w: 100, h: 150 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },   // (hr_crack0-4: Glen 11-05, his breaking wall, five steps, cropped to fit under the drape)
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
@@ -311,7 +311,8 @@ function regionStartCol() { return region.save.at != null ? region.save.at : roo
 // a door: kind "door" (a doorway), "stairs" (a stair going down / up), "well" (down a well), "rope" (a rope up out of
 // the well); to: the door id it leads to; need: the skill that unseals it
 function rDoor(id, room, c, kind, to, need = null) { region.doors.push({ id, room, c, x: c * T + T / 2, kind, to, need }); }
-function rRelic(id, kind, c, r, text = null) { region.relics.push({ id, kind, c, r, x: c * T + T / 2, y: (r + 1) * T, text, t: Math.random() * 6 }); }
+function rRelic(id, kind, c, r, text = null, need = null) { region.relics.push({ id, kind, c, r, x: c * T + T / 2, y: (r + 1) * T, text, need, t: Math.random() * 6 }); }   // (need: hidden until that's in "taken")
+const relicHidden = f => f.need && !regionHas("taken", f.need);
 function rSeal(id, room, c, need, say, x0, x1) { region.seals.push({ id, room, need, say, x: c * T + T / 2, x0: x0 * T, x1: x1 * T }); }
 const sealOpen = s => hasSkill(s.need);
 const onTop = y => y / T - 1;   // the row to give rBreak / rRelic for something sitting on a ledge whose top is y px (platAt)
@@ -376,7 +377,7 @@ function buildRegion() {
     rRoof("town", X(52), 230, 1); rBreak("lamp", "town", c + 55, onTop(230));
     rRelic("g_truth_song", "truth", c + 59, onTop(230),
       "David went out wherever Saul sent him, and behaved himself wisely; and Saul set him over the men of war. It was good in the sight of all the people, and also in the sight of Saul's servants. (1 Samuel 18:5)");   // (the song itself is the town's story scene: updateStory)
-    rDeco("town", "tfg_jar", c + 50, true, 1.35);
+    rDeco("town", "tfg_jar", c + 50, true, 1.35, FOOT - KIT.tfg_jar.h + 190);   // (Glen 11-05: low, only the rim over the path; its cut-off bottom well under the screen)
     rDoor("d_well", "town", c + 56, "well", "d_wellrope", "rope");
     rSeal("g_seal_well", "town", c + 56, "rope", "An old well, deep and dark. You'd need a rope to get down there.", c + 53, c + 59);
     rBreak("jar", "town", c + 51, 16); rBreak("basket", "town", c + 64, 16); oliveRow(c + 61, 16, 6);
@@ -432,7 +433,10 @@ function buildRegion() {
     rDeco("harp", "hr_rug", c + 15, false, 1, GR * T - 14);   // (David sits on the rug to play)
     rDeco("harp", "hr_banner", c + 22, false, 1, 150); rDeco("harp", "hr_brazier", c + 25); rDeco("harp", "hr_rack", c + 28);
     rDeco("harp", "hr_throne", c + 35); rDeco("harp", "hr_column", c + 38);
-    region.harp = { c, stoolX: (c + 15) * T + T / 2, saulX: (c + 31) * T + T / 2, wallX: (c + 1) * T + 10, phase: "wait", calm: 0, escapes: 0, t: 0, spear: null, stuck: [], told: false }; }
+    rRelic("g_truth_spears", "truth", c + 5, 16,
+      "My soul is among lions. I lie among those who are set on fire, even the sons of men, whose teeth are spears and arrows, and their tongue a sharp sword. (Psalm 57:4)", "g_harp_wall");
+    Object.assign(region.relics[region.relics.length - 1], { x: (c + HARP_WALL.AT) * T + HARP_WALL.W / 2, y: FOOT - HARP_WALL.TRUTH_Y });   // (in the hole)
+    region.harp = { c, crackX: (c + HARP_WALL.AT) * T, empty: regionHas("taken", "g_harp_done"), wallHits: 0, stoolX: (c + 15) * T + T / 2, saulX: (c + 31) * T + T / 2, wallX: (c + 1) * T + 10, phase: "wait", calm: 0, escapes: 0, t: 0, spear: null, stuck: [], told: false }; }
 
   // -- The Cellars (down the stair): storerooms; a cracked wall (Goliath's sword) hides an oil jar
   c = R("cellars");
@@ -588,7 +592,7 @@ function updateRegion(dt) {
   region.sealNear = s || null;
   // finds: pick them up
   for (const f of region.relics) {
-    if (regionHas("taken", f.id)) continue;
+    if (regionHas("taken", f.id) || relicHidden(f)) continue;
     f.t += dt;
     if (Math.abs(f.x - d.x) < W * 0.6 && roomAt(f.x) === r) regionAdd("seen", f.id);
     if (Math.abs(f.x - d.x) < 34 && d.y > f.y - 70 && d.y - d.h < f.y + 10) takeRelic(f);
@@ -759,7 +763,15 @@ function breakBox(b) {   // the whole thing (about two thirds of its picture's w
 function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
   if (!REGION_ON) return false;
   const hr = region.harp;
-  if (hr && Math.abs(s.x - hr.saulX) < 40 && s.y > GR * T - 160 && s.y < GR * T) {   // (David never strikes the king)
+  if (hr && hr.empty && !regionHas("taken", "g_harp_wall") && s.x < hr.crackX + HARP_WALL.W + 20 && s.x > hr.crackX - 20 && s.y > GR * T - HARP_WALL.H && s.y < GR * T) {
+    if (hr.hitCool > 0) return true;   // (one swing, one hit)
+    hr.hitCool = 0.25; hr.wallHits++;   // (Glen 11-05) where the spears struck, the plaster's cracked: strike it and it gives way
+    for (let i = 0; i < 6; i++) bits.push({ x: hr.crackX + HARP_WALL.W / 2, y: s.y, vx: Math.random() * 300, vy: -Math.random() * 300, life: 0.6, color: i % 2 ? "#d8c4a0" : "#9c8566" });
+    if (typeof stoneHit === "function") stoneHit(s, 0.6);
+    if (hr.wallHits >= HARP_WALL.HITS) { regionAdd("taken", "g_harp_wall"); if (typeof chime === "function") chime(4); toast("The cracked wall gave way. Something's hidden inside!"); }
+    return true;
+  }
+  if (hr && !hr.empty && Math.abs(s.x - hr.saulX) < 40 && s.y > GR * T - 160 && s.y < GR * T) {   // (David never strikes the king)
     if (!hr.noStrike) { hr.noStrike = true; toast("David will not strike the LORD's anointed."); }
     return true;
   }
@@ -941,7 +953,7 @@ function drawRegion(camX) {
     }
   }
   for (const f of region.relics) {
-    if (regionHas("taken", f.id)) continue;
+    if (regionHas("taken", f.id) || relicHidden(f)) continue;
     const x = f.x - camX; if (x < -80 || x > W + 80) continue;
     const img = ITEM[RELIC_ART[f.kind]], h = RTUNE.RELIC_H[f.kind];
     const glow = ctx.createRadialGradient(x, f.y - h / 2, 2, x, f.y - h / 2, h * 1.2);
@@ -1080,7 +1092,11 @@ function drawFloorCrumbles(camX) {
 // ---- the Harp Room (1 Samuel 18:10-11) ----
 function updateHarpRoom(dt, r) {
   const hr = region.harp, d = david, H_ = RTUNE.HARP; if (!hr) return;
-  if (regionHas("taken", "g_harp_done")) { hr.phase = "calm"; return; }
+  if (regionHas("taken", "g_harp_done")) {   // (Glen 11-05) won: once David has left, the room is empty; the spears stay in the wall
+    hr.phase = "calm"; if (r.id !== "harp") hr.empty = true; hr.hitCool = Math.max(0, (hr.hitCool || 0) - dt);
+    if (!hr.stuck.length) hr.stuck.push(GR * T - H_.SPEAR_Y, GR * T - H_.SPEAR_Y - 34);
+    return;
+  }
   if (r.id !== "harp") { if (hr.phase !== "wait") Object.assign(hr, { phase: "wait", calm: 0, escapes: 0, spear: null, t: 0 }); return; }   // (left: it starts over)
   hr.t += dt;
   const atStool = Math.abs(d.x - hr.stoolX) < 50 && d.onGround;
@@ -1111,12 +1127,18 @@ function updateHarpRoom(dt, r) {
     sayLine("1 Samuel 18:11-12", "Saul threw the spear, for he said, \"I will pin David to the wall!\" David escaped from his presence twice. Saul was afraid of David, because the LORD was with him.");
   }
 }
-const SAUL_BIG = 1.3;   // (a head taller than anyone, 1 Samuel 9:2)
+const SAUL_BIG = 1.3;
+const HARP_WALL = { AT: 4, W: 100, H: 150, HITS: 4, TRUTH_Y: 60 };   // AT: its column in the room (its left edge); W x H: Glen's panel on screen; HITS: to break it (one picture a hit); TRUTH_Y: the Truth, px above the floor   // the cracked plaster where the spears struck: how wide, how tall (px from the floor), hits to break   // (a head taller than anyone, 1 Samuel 9:2)
 function drawHarpRoom(camX) {
   const hr = region.harp; if (!hr || roomAt(david.x).id !== "harp") return;
   const x = hr.saulX - camX;
+  if (hr.empty) {   // the hidden wall (Glen 11-05: no clue, like Castlevania's): plain until it's struck, his five pictures as it breaks
+    const n = "hr_crack" + (regionHas("taken", "g_harp_wall") ? 4 : Math.min(3, hr.wallHits)), im = kitImg(n);
+    if (im) ctx.drawImage(im, Math.round(hr.crackX - camX), FOOT - HARP_WALL.H, HARP_WALL.W, HARP_WALL.H);
+  }
   for (const y of hr.stuck) { const k = KIT.hr_spearwall, im = kitImg("hr_spearwall"); if (im) ctx.drawImage(im, Math.round(hr.wallX - 30 - camX), Math.round(y - k.h / 2), k.w * 0.8, k.h * 0.8); }
-  if (hr.phase === "calm") drawSprite("saul_sit", Math.min(SPR.saul_sit.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_sit.ms)), x, GR * T, -1, SAUL_BIG);   // (Glen's purple Saul throughout: he sinks down, quiet)
+  if (hr.empty) {}   // (gone)
+  else if (hr.phase === "calm") drawSprite("saul_sit", Math.min(SPR.saul_sit.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_sit.ms)), x, GR * T, -1, SAUL_BIG);   // (Glen's purple Saul throughout: he sinks down, quiet)
   else if (hr.phase === "throw") drawSprite("saul_throw", Math.min(SPR.saul_throw.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_throw.ms)), x, GR * T, -1, SAUL_BIG);
   else { const n = SPR.saul_look_back.frames, k = Math.floor(hr.t * 1000 / 140) % (2 * n - 2); drawSprite("saul_look_back", k < n ? k : 2 * n - 2 - k, x, GR * T, -1, SAUL_BIG); }   // troubled, the spear in his hand
   if (hr.phase === "throw" && !hr.thrown) {   // the warning: the spear is up
@@ -1152,6 +1174,7 @@ const STORY = {
   WOMAN_SPEED: 330,    // px a second as they run in (from off the left edge of the screen)
   BOB: 7,              // px the women bob as they sing (dancing)
   MICHAL_AT: 50,       // Michal's column in the halls, after the harp room
+  TALK_REACH: 110,     // px: close enough to Jonathan or Michal to press Up and hear them
   WALK_OFF: 140,       // px a second, Saul walking off
 };
 region.script = []; region.wait = 0; region.pose = null; region.story = null;
@@ -1236,8 +1259,52 @@ function updateStory(dt, r) {
       { fn() { d.facing = d.x > M.x ? -1 : 1; M.mode = "talk"; M.t = 0; },
         say: ["1 Samuel 18:28", "Saul saw and knew that the LORD was with David; and Michal, Saul's daughter, loved him."] },
       { fn() { M.mode = "idle"; }, say: ["1 Samuel 18:29", "Saul was even more afraid of David; and Saul was David's enemy continually."] },
+      { say: ["Michal", STORY_TALK.michal()] },
     ]);
+    return;
   }
+  // (Glen 11-05) after the harp room Jonathan speaks up once as David passes; any time after, Up by either one: hear them
+  if (r.id === "halls" && J.mode === "after" && regionHas("taken", "g_harp_done") && !regionHas("taken", "g_jon_warn") &&
+      Math.abs(d.x - J.x) < 4 * T && d.onGround) {
+    regionAdd("taken", "g_jon_warn"); d.facing = d.x > J.x ? -1 : 1;
+    rPlay([{ fn() { J.mode = "talk"; J.t = 0; }, say: ["Jonathan", STORY_TALK.jon()] }, { fn() { J.mode = "after"; } }]);
+    return;
+  }
+  if (r.id === "town" && pressed("up") && d.onGround && !(dialog.t > 0)) {   // (Glen 11-05) the townswomen talk too
+    const w = storyNear();
+    if (w) { d.facing = d.x > w.x ? -1 : 1; const L = STORY_TALK.women[w.n]; rPlay([{ say: [w.n === "villager_woman" ? "A woman of Gibeah" : "A girl of Gibeah", L[(w.said = ((w.said ?? -1) + 1)) % L.length]] }]); }
+  }
+  if (r.id === "halls" && pressed("up") && d.onGround && !(dialog.t > 0)) {
+    const who = storyNear();
+    if (who) { d.facing = d.x > who.x ? -1 : 1; who.mode = "talk"; who.t = 0; const m = who === J ? "after" : "idle";
+      rPlay([{ say: [who === J ? "Jonathan" : "Michal", (who === J ? STORY_TALK.jon : STORY_TALK.michal)()] }, { fn() { who.mode = m; } }]); }
+  }
+}
+// what Jonathan and Michal say after their scenes (Glen 11-05: not just standing there). Their own words, not quoted
+// Scripture: Jonathan's warning and help look ahead to 19:2 and 20:4; Michal's to 18:28 and 19:11.
+const STORY_TALK = {
+  jon: () => regionHas("taken", "g_harp_done")
+    ? "My father threw his spear at you? Stay out of his sight, David. Whatever you need, tell me and I'll do it. The LORD be with you."
+    : "The harp room is at the end of the hall. My father's spirit is troubled again. Play for him, but watch his hands.",
+  women: {   // each says the next one every time (Up by her); everyday Gibeah, and a hint or two
+    villager_woman: ["The giant fell, and the whole army went home singing! I'll be telling my grandchildren.",
+      "The king hasn't smiled since we sang that song. Some say it was the ten thousands that did it.",
+      "Need a rest? The olive press by the roofs: stop there, and you'll start there again."],
+    villager_girl: ["Is it true you used to fight lions and bears with your bare hands? With the LORD's help? Wow.",
+      "The old well has been dry and dark for years. Nobody's been down there since the rope rotted away."],
+    villager_braidgirl: ["Up on the high roofs you can see the whole town! Mother says not to jump on the awnings. I do anyway.",
+      "Can you teach me to use a sling? My brother says girls can't. The LORD made girls' arms too, you know."],
+  },
+  michal: () => "The LORD is with you, David. Everyone can see it, and that's what frightens my father. Be careful, and keep away from him.",
+};
+function storyNear() {   // Jonathan or Michal, if David's close enough to talk (after their scenes)
+  const S = region.story, d = david; if (!S) return null;
+  const room = roomAt(d.x).id;
+  if (room === "town") { let best = null; for (const w of S.women) if (w.mode === "stand" && Math.abs(d.x - w.x) < STORY.TALK_REACH && (!best || Math.abs(d.x - w.x) < Math.abs(d.x - best.x))) best = w; return best; }   // (the nearest one)
+  if (room !== "halls") return null;
+  if (S.jon.mode === "after" && Math.abs(d.x - S.jon.x) < STORY.TALK_REACH) return S.jon;
+  if (S.michal.mode === "idle" && Math.abs(d.x - S.michal.x) < STORY.TALK_REACH) return S.michal;
+  return null;
 }
 const loopFrame = (n, t, ms) => Math.floor(t * 1000 / ms) % n;
 const onceFrame = (n, t, ms) => Math.min(n - 1, Math.floor(t * 1000 / ms));
@@ -1265,7 +1332,7 @@ function drawStory(camX) {
   const M = S.michal;
   if (M.mode !== "away" && on(M.x)) {   // (her sheets face right: toward the harp room, where David comes from)
     const n = M.mode === "talk" ? "michal_talk" : "michal_idle";
-    drawSprite(n, frameOf(n, M.t), M.x - camX, gy, 1);
+    drawSprite(n, frameOf(n, M.t), M.x - camX, gy, david.x < M.x - 20 ? -1 : 1);   // (Glen 11-05: she turns to David)
   }
 }
 function drawRegionFront(camX) {   // main.js, after David: the railings he walks behind
@@ -1277,6 +1344,8 @@ function drawRegionFront(camX) {   // main.js, after David: the railings he walk
     if (!im || x > W || x + w < 0) continue;
     ctx.drawImage(im, x, Math.round(p.y), w, k.h);
   }
+  const near = region.story && !region.script.length && !(dialog.t > 0) && david.onGround && storyNear();
+  if (near) upHint(near.x - camX, GR * T - 175);   // Up: hear them (over the railings: Glen 11-05)
 }
 function drawRegionOver() {
   if (!REGION_ON) return;
