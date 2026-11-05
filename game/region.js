@@ -438,7 +438,10 @@ function buildRegion() {
   rBreak("basket", "walls", c + 145, 16);
   rDoor("d_tower", "walls", c + 153, "door", "d_towerdown");   // (Glen 11-05) up into the watchtower (the plain arch: his tower door matches the tower, not this wall)
   rWalk("walls", X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
-  rPlinth("walls", c + 178); critter("hedgehog", c + 186); oliveRow(c + 189, 16, 5);
+  rPlinth("walls", c + 178); critter("hedgehog", c + 186); oliveRow(c + 188, 16, 4);
+  // (Glen 11-05) the way out: a gate at the far end of the Walls, locked; the bronze key from the top of the watchtower
+  // opens it, and David slips out of Gibeah (19:12: "he went, fled, and escaped"). Next region's road starts here, later.
+  rDoor("d_exit", "walls", c + 196, "exit", null); Object.assign(region.doors[region.doors.length - 1], { key: "g_tower_key" });
 
   // -- The Watchtower (Glen 11-05): Castlevania-tall, a climb of ledges zig-zagging up six screens to the lookout.
   // (A first build to try the up-and-down camera: his tower art, the birds, the key or lever to come.)
@@ -664,6 +667,11 @@ function updateRegion(dt) {
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
   if (pressed("up") && d.onGround) {
     const door = region.doors.find(o => o.kind !== "hole" && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
+    if (door && door.kind === "exit") {   // the locked gate out
+      if (!regionHas("taken", door.key)) sayLine("David", "I need a key for this.");
+      else { regionAdd("taken", "g_exit_open"); toast("The key fits. David slips out through the gate..."); region.trans = { t: -1.2, leave: true }; }
+      return;
+    }
     if (door) {
       const seal = door.need && region.seals.find(s => s.need === door.need && Math.abs(s.x - door.x) < 3 * T);
       if (door.need && !hasSkill(door.need)) { if (seal) sealSay(seal); }
@@ -1081,8 +1089,15 @@ function drawRope(x, y0, y1) {
   for (let y = y0; y < y1; y += h) ctx.drawImage(img, x - w / 2, y, w, h);
   ctx.restore();
 }
+const EXIT_GATE = { S: 0.5, LIFT: 150 };   // (Glen's gate) how big it's drawn, and how far it rises when unlocked
 function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   const y = GR * T;
+  if (o.kind === "exit") {   // his wooden gate, shut; raised once the key has opened it
+    const open = regionHas("taken", "g_exit_open"), n = open ? "tw_gate_open" : "tw_gate_shut", k = KIT[n], im = kitImg(n), w = k.w * EXIT_GATE.S, h = k.h * EXIT_GATE.S;
+    if (open) { ctx.fillStyle = "#1a120c"; ctx.fillRect(Math.round(x - 52), y - 180, 104, 182); }   // (the dark way through)
+    if (im) ctx.drawImage(im, Math.round(x - w / 2), Math.round(y + 4 - h - (open ? EXIT_GATE.LIFT : 0)), w, h);
+    return;
+  }
   ctx.save();
   if (o.kind === "door") {   // a stone doorway, dark inside
     ctx.fillStyle = "#5e5040"; ctx.beginPath(); ctx.roundRect(x - 46, y - 170, 92, 170, [46, 46, 0, 0]); ctx.fill();
