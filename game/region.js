@@ -89,7 +89,7 @@ const REGION = {
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 40, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls", strip: "gibeah/harp_strip", floor: "gibeah/harp_floor" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
-    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, right: "deep", strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: from his cave kit, like the cellars)
+    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 2, my: 4, mw: 2, right: "deep", strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: from his cave kit, like the cellars)
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };

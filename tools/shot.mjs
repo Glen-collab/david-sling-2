@@ -20,7 +20,8 @@ const chrome = spawn("C:/Program Files/Google/Chrome/Application/chrome.exe",
   ["--headless=new", "--disable-gpu", "--mute-audio", "--hide-scrollbars", `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`,
    "--window-size=1280,720", "--autoplay-policy=no-user-gesture-required", "about:blank"], { stdio: "ignore" });
 const kill = () => { try { chrome.kill(); } catch (e) {} };
-setTimeout(() => { console.log("TIMEOUT"); kill(); process.exit(2); }, 120000);
+let lastErr = [];   // the page's errors so far: a case script that dies on load (say, a name the game already uses) never reaches TEST_DONE
+setTimeout(() => { console.log("TIMEOUT" + (lastErr.length ? "\n" + lastErr.join("\n") : "")); kill(); process.exit(2); }, Number(process.env.SHOT_TIMEOUT || 120000));
 
 let tab;
 for (let i = 0; i < 60 && !tab; i++) {
@@ -41,7 +42,7 @@ for (;;) {
   await new Promise(r => setTimeout(r, 300));
   const st = await evalJS("JSON.stringify({snap: window.SNAP_WANT||0, done: !!window.TEST_DONE, err: window.TEST_ERRORS||[]})");
   if (!st) continue;
-  const s = JSON.parse(st);
+  const s = JSON.parse(st); lastErr = s.err;
   while (shots < s.snap && shots < outs.length) {
     // the case paused at snap(); take the picture, then let it go on
     const img = await send("Page.captureScreenshot", { format: "png" });
