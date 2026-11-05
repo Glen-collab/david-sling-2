@@ -89,7 +89,7 @@ const REGION = {
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },
     { id: "harp",    name: "The Harp Room",    w: 40, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls", strip: "gibeah/harp_strip", floor: "gibeah/harp_floor" },
     { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: his cave wall and kit)
-    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns", right: "deep" },
+    { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, right: "deep", strip: "gibeah/cave_strip", floor: "gibeah/cave_floor" },   // (Glen 11-05: from his cave kit, like the cellars)
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
@@ -488,15 +488,21 @@ function buildRegion() {
   c = R("cisterns");
   ground(c, c + 41);
   rDoor("d_wellrope", "cisterns", c + 4, "rope", "d_well");
-  // (Glen 11-04: his two paintings joined, assets/rooms/gibeah/cisterns.jpg; the ledges are set to the painted ones:
-  // the stone table over the stream, the long shelf, the shelf above it, the top shelf by the niche, and the low slab)
-  pitFloor(c + 14, 3); platAt(c + 13, 507, 7);
-  platAt(c + 21, 434, 10); platAt(c + 27, 334, 9); platAt(c + 32, 233, 10);
-  rock(c + 32, 15, 10, 2);
-  rBreak("jar", "cisterns", c + 9, 16); rBreak("lamp", "cisterns", c + 23, onTop(434));
-  rRelic("g_pom_cistern", "pomegranate", c + 30, onTop(334));
-  rRelic("g_truth_covenant", "truth", c + 35, onTop(233),
-    "Jonathan made a covenant with David, because he loved him as his own soul. Jonathan took off the robe that was on him and gave it to David, with his armor, even his sword, his bow, and his sash. (1 Samuel 18:3-4)");
+  // (Glen 11-05: built from his cave kit on his cave wall: the basin by the well's rope, a pit to jump, a bench up onto
+  // the long shelves, a bench and crates stacked on them up to the Truth; a spider over the shelves, a rat below)
+  { const X = k => (c + k) * T;
+    rBreak("jar", "cisterns", c + 7, 16); rPiece("cisterns", "c_basin", X(8), FOOT);
+    rHole("cisterns", c + 11, 3);
+    rPiece("cisterns", "c_beam", X(15), FOOT, [[8, 200, 2]]);
+    const [, top] = rShelves("cisterns", X(20), 1);
+    rBreak("lamp", "cisterns", c + 21, onTop(top));
+    const by = rPiece("cisterns", "c_beam", X(25), top, [[8, 200, 2]]);
+    rRelic("g_pom_cistern", "pomegranate", c + 27, onTop(by + 2));
+    const cy = rPiece("cisterns", "c_crates", X(32), top, [[84, 150, 4]]);
+    rSpider("cisterns", c + 29, 170); rRat("cisterns", c + 37, 3);
+    rPiece("cisterns", "c_jars", X(38), FOOT);
+    rRelic("g_truth_covenant", "truth", c + 35, onTop(cy + 4),
+    "Jonathan made a covenant with David, because he loved him as his own soul. Jonathan took off the robe that was on him and gave it to David, with his armor, even his sword, his bow, and his sash. (1 Samuel 18:3-4)"); }
 }
 
 // ---- running it ----
