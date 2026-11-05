@@ -148,7 +148,7 @@ const KIT = {
   p_planks: { w: 211, h: 98 }, p_ring: { w: 86, h: 175 },
   // (Glen 11-05) the throne room kit, assets/rooms/gibeah/kit_harp
   hr_throne: { w: 238, h: 196 }, hr_banner: { w: 61, h: 309 }, hr_brazier: { w: 115, h: 124 }, hr_column: { w: 104, h: 373 },
-  hr_spearwall: { w: 173, h: 167 }, hr_crack0: { w: 100, h: 150 }, hr_crack1: { w: 100, h: 150 }, hr_crack2: { w: 100, h: 150 }, hr_crack3: { w: 100, h: 150 }, hr_crack4: { w: 100, h: 150 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },   // (hr_crack0-4: Glen 11-05, his breaking wall, five steps, cropped to fit under the drape)
+  hr_spearwall: { w: 173, h: 167 }, hr_wall0: { w: 216, h: 632 }, hr_wall1: { w: 216, h: 632 }, hr_wall2: { w: 216, h: 632 }, hr_wall3: { w: 216, h: 632 }, hr_wall4: { w: 216, h: 632 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },   // (hr_wall0-4: Glen 11-05, the plaster between the first two carved pillars, from his harp_strip_source and _strike1, 2, 4, 5)
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
@@ -435,8 +435,8 @@ function buildRegion() {
     rDeco("harp", "hr_throne", c + 35); rDeco("harp", "hr_column", c + 38);
     rRelic("g_truth_spears", "truth", c + 5, 16,
       "My soul is among lions. I lie among those who are set on fire, even the sons of men, whose teeth are spears and arrows, and their tongue a sharp sword. (Psalm 57:4)", "g_harp_wall");
-    Object.assign(region.relics[region.relics.length - 1], { x: (c + HARP_WALL.AT) * T + HARP_WALL.W / 2, y: FOOT - HARP_WALL.TRUTH_Y });   // (in the hole)
-    region.harp = { c, crackX: (c + HARP_WALL.AT) * T, empty: regionHas("taken", "g_harp_done"), wallHits: 0, stoolX: (c + 15) * T + T / 2, saulX: (c + 31) * T + T / 2, wallX: (c + 1) * T + 10, phase: "wait", calm: 0, escapes: 0, t: 0, spear: null, stuck: [], told: false }; }
+    Object.assign(region.relics[region.relics.length - 1], { x: c * T + HARP_WALL.BOOK_X, y: HARP_WALL.BOOK_Y });   // (in the hole)
+    region.harp = { c, crackX: c * T + HARP_WALL.X, dust: [], empty: regionHas("taken", "g_harp_done"), wallHits: 0, stoolX: (c + 15) * T + T / 2, saulX: (c + 31) * T + T / 2, wallX: (c + 1) * T + 10, phase: "wait", calm: 0, escapes: 0, t: 0, spear: null, stuck: [], told: false }; }
 
   // -- The Cellars (down the stair): storerooms; a cracked wall (Goliath's sword) hides an oil jar
   c = R("cellars");
@@ -593,7 +593,7 @@ function updateRegion(dt) {
   // finds: pick them up
   for (const f of region.relics) {
     if (regionHas("taken", f.id) || relicHidden(f)) continue;
-    f.t += dt;
+    f.t += dt; if (f.readyT > 0) { f.readyT -= dt; continue; }   // (just revealed: see it first)
     if (Math.abs(f.x - d.x) < W * 0.6 && roomAt(f.x) === r) regionAdd("seen", f.id);
     if (Math.abs(f.x - d.x) < 34 && d.y > f.y - 70 && d.y - d.h < f.y + 10) takeRelic(f);
   }
@@ -763,12 +763,14 @@ function breakBox(b) {   // the whole thing (about two thirds of its picture's w
 function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
   if (!REGION_ON) return false;
   const hr = region.harp;
-  if (hr && hr.empty && !regionHas("taken", "g_harp_wall") && s.x < hr.crackX + HARP_WALL.W + 20 && s.x > hr.crackX - 20 && s.y > GR * T - HARP_WALL.H && s.y < GR * T) {
+  if (hr && hr.empty && !regionHas("taken", "g_harp_wall") && s.x < hr.crackX + HARP_WALL.W - 10 && s.x > hr.crackX + 10 && s.y > HARP_WALL.HIT_Y && s.y < GR * T) {
     if (hr.hitCool > 0) return true;   // (one swing, one hit)
     hr.hitCool = 0.25; hr.wallHits++;   // (Glen 11-05) where the spears struck, the plaster's cracked: strike it and it gives way
-    for (let i = 0; i < 6; i++) bits.push({ x: hr.crackX + HARP_WALL.W / 2, y: s.y, vx: Math.random() * 300, vy: -Math.random() * 300, life: 0.6, color: i % 2 ? "#d8c4a0" : "#9c8566" });
+    const cx = hr.crackX - HARP_WALL.X + HARP_WALL.BOOK_X, cy = HARP_WALL.HOLE_Y;
+    for (let i = 0; i < HARP_WALL.DUST; i++) hr.dust.push({ x: cx + (Math.random() - 0.5) * 40, y: cy + (Math.random() - 0.5) * 30, vx: (Math.random() - 0.5) * 70 + 25, vy: -Math.random() * 40, r: 16 + Math.random() * 16, t: 0, life: 1.0 + Math.random() * 0.7 });
+    for (let i = 0; i < 6; i++) bits.push({ x: cx, y: cy, vx: Math.random() * 260 - 60, vy: -Math.random() * 260, life: 0.6, color: i % 2 ? "#d8c4a0" : "#9c8566" });   // chips of plaster
     if (typeof stoneHit === "function") stoneHit(s, 0.6);
-    if (hr.wallHits >= HARP_WALL.HITS) { regionAdd("taken", "g_harp_wall"); if (typeof chime === "function") chime(4); toast("The cracked wall gave way. Something's hidden inside!"); }
+    if (hr.wallHits >= HARP_WALL.HITS) { regionAdd("taken", "g_harp_wall"); region.relics.find(f => f.id === "g_truth_spears").readyT = HARP_WALL.SEE; if (typeof chime === "function") chime(4); toast("The cracked wall gave way. Something's hidden inside!"); }
     return true;
   }
   if (hr && !hr.empty && Math.abs(s.x - hr.saulX) < 40 && s.y > GR * T - 160 && s.y < GR * T) {   // (David never strikes the king)
@@ -869,6 +871,7 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
     const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
     for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) ctx.drawImage(strip, Math.round(x), 0, Math.ceil(sw) + 1, H);
+    if (r.id === "harp") drawHarpWall(camX);   // (part of the wall: under everything else)
     return true;
   }
   if (roomArt(r)) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); return true; }   // a painted room: drawRegion paints it
@@ -1094,6 +1097,8 @@ function updateHarpRoom(dt, r) {
   const hr = region.harp, d = david, H_ = RTUNE.HARP; if (!hr) return;
   if (regionHas("taken", "g_harp_done")) {   // (Glen 11-05) won: once David has left, the room is empty; the spears stay in the wall
     hr.phase = "calm"; if (r.id !== "harp") hr.empty = true; hr.hitCool = Math.max(0, (hr.hitCool || 0) - dt);
+    for (const p of hr.dust) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy -= 10 * dt; p.r += 14 * dt; }
+    hr.dust = hr.dust.filter(p => p.t < p.life);
     if (!hr.stuck.length) hr.stuck.push(GR * T - H_.SPEAR_Y, GR * T - H_.SPEAR_Y - 34);
     return;
   }
@@ -1128,13 +1133,26 @@ function updateHarpRoom(dt, r) {
   }
 }
 const SAUL_BIG = 1.3;
-const HARP_WALL = { AT: 4, W: 100, H: 150, HITS: 4, TRUTH_Y: 60 };   // AT: its column in the room (its left edge); W x H: Glen's panel on screen; HITS: to break it (one picture a hit); TRUTH_Y: the Truth, px above the floor   // the cracked plaster where the spears struck: how wide, how tall (px from the floor), hits to break   // (a head taller than anyone, 1 Samuel 9:2)
+const HARP_WALL = { X: 132, Y: -26, W: 216, H: 632, HITS: 4, HIT_Y: 440, BOOK_X: 225, BOOK_Y: 557, HOLE_Y: 530, DUST: 7, SEE: 0.9 };
+// (Glen 11-05) the hidden wall: the plaster under the first drape, between the carved pillars. X, Y, W, H: where his
+// pictures of it go over the strip's first repeat (px from the room's left and the top; his 2048-wide source x 0.625,
+// 26 px up); HITS: one picture each (strike 1, 2, 4, 5 in his files); HIT_Y: strikes count below this (px from the
+// top); BOOK_X/Y: the Truth in the hole (its bottom); HOLE_Y: the hole's middle (the dust); DUST: puffs a hit; SEE: s
+// before the Truth can be picked up
+function drawHarpWall(camX) {   // the hidden wall (no clue, like Castlevania's): just the strip until it's struck; then his patches
+  const hr = region.harp; if (!hr) return;   // (his plain wall even before: the same plaster as his strike pictures)
+  const n = !hr.empty ? 0 : regionHas("taken", "g_harp_wall") ? HARP_WALL.HITS : Math.min(HARP_WALL.HITS - 1, hr.wallHits), im = kitImg("hr_wall" + n);
+  if (im) ctx.drawImage(im, Math.round(hr.crackX - camX), HARP_WALL.Y, HARP_WALL.W, HARP_WALL.H);
+}
 function drawHarpRoom(camX) {
   const hr = region.harp; if (!hr || roomAt(david.x).id !== "harp") return;
   const x = hr.saulX - camX;
-  if (hr.empty) {   // the hidden wall (Glen 11-05: no clue, like Castlevania's): plain until it's struck, his five pictures as it breaks
-    const n = "hr_crack" + (regionHas("taken", "g_harp_wall") ? 4 : Math.min(3, hr.wallHits)), im = kitImg(n);
-    if (im) ctx.drawImage(im, Math.round(hr.crackX - camX), FOOT - HARP_WALL.H, HARP_WALL.W, HARP_WALL.H);
+  if (hr.empty) {   // the dust off the hidden wall (the wall itself: drawHarpWall)
+    for (const p of hr.dust) {
+      const a = 0.75 * (1 - p.t / p.life), x = p.x - camX;
+      const g = ctx.createRadialGradient(x, p.y, 1, x, p.y, p.r); g.addColorStop(0, `rgba(222,204,172,${a})`); g.addColorStop(1, "rgba(222,204,172,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+    }
   }
   for (const y of hr.stuck) { const k = KIT.hr_spearwall, im = kitImg("hr_spearwall"); if (im) ctx.drawImage(im, Math.round(hr.wallX - 30 - camX), Math.round(y - k.h / 2), k.w * 0.8, k.h * 0.8); }
   if (hr.empty) {}   // (gone)
