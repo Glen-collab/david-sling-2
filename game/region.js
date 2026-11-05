@@ -80,7 +80,7 @@ const REGION = {
     { id: "walls",   name: "The Walls",        w: 64, bg: "w4_2", mx: 6, my: 2, mw: 2, left: "town" },
     { id: "halls",   name: "The Palace Halls", w: 62, bg: "w4_4", mx: 6, my: 1, mw: 2, right: "harp" },
     { id: "harp",    name: "The Harp Room",    w: 34, bg: "w4_4", mx: 8, my: 1, mw: 1, left: "halls" },
-    { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2 },   // (art: "gibeah/cellars" off: Glen 11-04, the room came out giant-sized; repaint with the scale figures)
+    { id: "cellars", name: "The Cellars",      w: 64, cave: true, mx: 6, my: 3, mw: 2, art: "gibeah/cellars" },   // (Glen 11-04: the second try, painted to the red figures' scale)
     { id: "cisterns", name: "The Cisterns",    w: 42, cave: true, mx: 4, my: 3, mw: 2, art: "gibeah/cisterns" },
   ],
 };
@@ -184,17 +184,17 @@ function buildRegion() {
   c = R("cellars");
   ground(c, c + 63);
   rDoor("d_cellarup", "cellars", c + 4, "stairs", "d_down");
-  // (Glen 11-04: his one wide painting, assets/rooms/gibeah/cellars.jpg; the ledges are set to the painted ones: the
-  // low bench, and the two big storeroom shelves; the passage behind the cracked wall is the dark tunnel on the right)
-  oliveRow(c + 6, 16, 5); plat(c + 13, 14, 14); plat(c + 26, 10, 19); plat(c + 26, 6, 18);
+  // (Glen 11-04: his wide painting, assets/rooms/gibeah/cellars.jpg, painted to David's size; the ledges are set to
+  // the painted ones: the bench, and the two wall shelves; the passage behind the cracked wall is the tunnel on the right)
+  oliveRow(c + 6, 16, 5); plat(c + 15, 14, 11); plat(c + 26, 10, 12); plat(c + 26, 6, 17);
   rBreak("jar", "cellars", c + 12, 16); rBreak("jar", "cellars", c + 28, 16); rBreak("pots", "cellars", c + 39, 16); rBreak("lamp", "cellars", c + 20, 13);
   rRelic("g_stone_cellar", "stone", c + 35, 5);
   critter("scorpion", c + 34);
-  if (!hasSkill("heavySword")) wall(c + 54, 5, 2, 12);              // the cracked wall, across the tunnel's mouth
-  rSeal("g_seal_crack", "cellars", c + 54, "heavySword", "Cracked stone, with a draft coming through. Something heavy could break it.", c + 50, c + 55);
-  region.crack = { c: c + 54, r: 5, w: 2, h: 12 };
-  rRelic("g_oil_cellar", "oil", c + 57, 16);
-  oliveRow(c + 59, 16, 3);
+  if (!hasSkill("heavySword")) wall(c + 57, 5, 2, 12);              // the cracked wall, across the tunnel's mouth
+  rSeal("g_seal_crack", "cellars", c + 57, "heavySword", "Cracked stone, with a draft coming through. Something heavy could break it.", c + 53, c + 58);
+  region.crack = { c: c + 57, r: 5, w: 2, h: 12 };
+  rRelic("g_oil_cellar", "oil", c + 60, 16);
+  oliveRow(c + 61, 16, 2);
 
   // -- The Cisterns (down the well, with the rope): a pomegranate and a Truth
   c = R("cisterns");
