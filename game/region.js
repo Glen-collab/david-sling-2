@@ -77,6 +77,7 @@ const SEAL_SKILL = {
 // mx, my, mw: where the room sits on the map screen (cells), and how many cells wide it is
 const REGION = {
   key: "gibeah", name: "Gibeah",
+  strCap: 4,   // (Glen 11-05) strength from fighting can't go past this level in this world
   rooms: [
     { id: "fields",  name: "The Fields",       w: 84, bg: "w4_1", mx: 0, my: 2, mw: 3, left: "@road", right: "town",
       far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24 },   // (Glen 11-05: Super Mario World layers outside)   // "@road": off the left edge, out of Gibeah
@@ -657,6 +658,7 @@ function regionInit() {
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
   const extra = (Math.floor(poms / 4) + (regionHas("taken", "g_jonathan") ? 1 : 0)) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
   david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
+  { const up = (strLevel() - 1) * STR.HP; david.maxHearts += up; david.hearts += up; }   // (strength: health for each level)
 }
 function regionGo(x, facing, after = null) {   // fade out, move, fade in (after: what happens once he's moved, e.g. onto a rope)
   region.trans = { t: 0, x, facing, moved: false, after };
@@ -671,11 +673,11 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined });
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined, strTaken: false });
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
-  updateBreaks(dt); updateBeasts(dt, r); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r); updateRegionScript(dt); updateStory(dt, r);
+  updateBreaks(dt); updateBeasts(dt, r); strWatch(); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r); updateRegionScript(dt); updateStory(dt, r); journalWatch();
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
@@ -714,7 +716,7 @@ function updateRegion(dt) {
     const door = region.doors.find(o => o.kind !== "hole" && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
     if (door && door.kind === "exit") {   // the locked gate out
       if (!regionHas("taken", door.key)) sayLine("David", "I need a key for this.");
-      else { regionAdd("taken", "g_exit_open"); toast("The key fits. David slips out through the gate..."); region.trans = { t: -1.2, leave: true }; }
+      else { regionAdd("taken", "g_exit_open"); toast("The key fits. David slips out through the gate..."); jsceneOpen(true); }   // (Glen 11-05: the Journal and the card first, then the road)
       return;
     }
     if (door) {
@@ -994,6 +996,18 @@ function drawRegionHealth() {   // main.js drawHearts: the health meter instead 
   ctx.restore();
   const iw = hudIcon("heart_full", x0 - 42, y - 8, 32);
   ctx.textAlign = "right"; hudText(`${Math.ceil(Math.max(0, d.hearts))} / ${d.maxHearts}`, x1, y + bh + 24, 18); ctx.textAlign = "left";
+  // strength (from fighting): a thin gold bar, its level beside it
+  const lv = strLevel(), full = lv >= REGION.strCap, a = STR.NEED[lv - 1], b = STR.NEED[lv], sf = full ? 1 : (strXP() - a) / (b - a);
+  const sw = 150, sh = 8, sx1 = x1, sx0 = sx1 - sw, sy = y + bh + 36;
+  region.strFlash = Math.max(0, (region.strFlash || 0) - 1 / 60 * 1.5);
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fillRect(sx0 - 3, sy - 3, sw + 6, sh + 6);
+  ctx.fillStyle = "#3a2c10"; ctx.fillRect(sx0, sy, sw, sh);
+  const sg = ctx.createLinearGradient(0, sy, 0, sy + sh); sg.addColorStop(0, "#ffe08a"); sg.addColorStop(1, "#c8901e");
+  ctx.fillStyle = sg; ctx.fillRect(sx0, sy, sw * sf, sh);
+  if (region.strFlash > 0) { ctx.fillStyle = `rgba(255,255,220,${region.strFlash * 0.7})`; ctx.fillRect(sx0, sy, sw * sf, sh); }
+  ctx.restore();
+  ctx.textAlign = "right"; hudText(`Strength ${lv}${full ? " (max here)" : ""}`, sx0 - 10, sy + 9, 16); ctx.textAlign = "left";
 }
 
 // ---- drawing ----
@@ -1259,11 +1273,11 @@ function philHit(b, s) {
   if (!(Math.abs(s.x - b.x) < 30 && s.y > b.y - 125 && s.y < b.y + 4)) return false;
   if (b.cool > 0) return true;   // (one sword stroke, one hit)
   b.cool = s.sword ? 0.3 : 0.05; b.flash = 0.25;
-  b.hp -= s.charged || s.power ? PHIL.HP : 1;
+  b.hp -= s.charged || s.power ? PHIL.HP : strDamage();
   if (typeof stoneHit === "function" && !s.sword) stoneHit(s);
   if (b.state === "wait") { b.state = "run"; b.t = 0; }   // (struck from afar: he comes for you)
   if (b.hp <= 0) {
-    b.state = SPR.phil_drop ? "drop" : "flee"; b.t = 0; b.dropX = b.x; b.fleeDir = Math.sign(b.x - david.x) || 1;
+    b.state = SPR.phil_drop ? "drop" : "flee"; b.t = 0; b.dropX = b.x; b.fleeDir = Math.sign(b.x - david.x) || 1; b.strTaken = true; strGain("phil");
     sfx("lion_hit", b.x, 0.4, 1.6); setTimeout(() => sfx("phil_nusu_1", b.x, 0.7), 500);   // "Nusu!" (Run!)
     if (!region.philFled) { region.philFled = true; toast("He throws down his shield and runs. (1 Samuel 18:30)"); }
   }
@@ -1690,15 +1704,321 @@ function drawRegionOver() {
 
 // ---- the map screen (Select): the rooms you've been in, where you are, the seals you've seen, the finds you've
 //      seen but not picked up, and the olive presses ----
-function regionMapFrame(dt) {   // true while the map has the screen
+function regionMapFrame(dt) {   // true while the map (or the card, or the Journal) has the screen
   if (!REGION_ON) return false;
+  if (region.jscene) { jsceneFrame(dt); return true; }
   if (!region.mapOpen) {
-    if (pressed("select") && !region.trans && david.deadT <= 0) { region.mapOpen = true; region.mapT = 0; }
+    if (pressed("select") && !region.trans && david.deadT <= 0) bookOpen(0);
     else return false;
-  } else if (region.mapT > 0.15 && (pressed("select") || pressed("b") || pressed("a") || pressed("start"))) { region.mapOpen = false; return true; }
+  } else if (region.mapT > 0.15) {
+    const back = pressed("select") || pressed("b") || pressed("start") || (region.page === 0 && pressed("a"));
+    if (!region.bookLeave && (pressed("left") || pressed("right"))) { region.page = 1 - region.page; region.mapT = 0.15; if (typeof sfxPageTurn === "function") sfxPageTurn(); }
+    else if (region.page === 1 && pressed("a")) songToggle();
+    else if (back) { bookClose(); return true; }
+  }
   region.mapT += dt;
-  drawRegionMap();
+  if (region.page === 1) drawCardSpread(); else drawRegionMap();
   return true;
+}
+
+// ---- strength (Glen 11-05, DESIGN.md "Growth"): fighting fills a bar; each level hits a little harder and adds a
+//      little health. Capped per world (REGION.strCap): farming makes you comfortable, but can't carry you past the story ----
+const STR = {
+  NEED: [0, 8, 20, 36, 56, 80, 110, 145, 185],   // strength to reach each level (level 1 at 0)
+  HP: 5,          // health each level adds
+  DMG: 0.25,      // each level: a stone (or a sword stroke) takes this much more off a Philistine (one is 1)
+  // what driving each one off is worth (not the harmless ones: the whip snake, the hedgehog)
+  XP: { scorpion: 1, viper: 2, rat: 1, rat2: 1, spider: 1, spiderw: 1, bat2: 1, crow: 1, raven: 1, eagle: 3, jackal: 2, phil: 4 },
+};
+const strXP = () => region.save.str || 0;
+const strLevel = (xp = strXP()) => { let l = 1; while (l < STR.NEED.length && xp >= STR.NEED[l]) l++; return Math.min(l, REGION.strCap); };
+const strDamage = () => 1 + (strLevel() - 1) * STR.DMG;
+function strGain(kind) {
+  const n = STR.XP[kind], cap = STR.NEED[REGION.strCap - 1]; if (!n || strXP() >= cap) return;
+  const was = strLevel(); region.save.str = Math.min(cap, strXP() + n); regionWrite(); region.strFlash = 1;
+  const now = strLevel(); if (now <= was) return;
+  david.maxHearts += STR.HP * (now - was); david.hearts = david.maxHearts;
+  if (typeof chime === "function") { chime(5); setTimeout(() => chime(8), 140); }
+  toast(now >= REGION.strCap ? `Strength ${now}! That's as strong as David gets in ${REGION.name}. More comes in later worlds.`
+                             : `Strength ${now}! Your stones and sword hit a little harder, and your health is up.`);
+}
+function strWatch() {   // updateRegion: whatever was driven off this frame (critters and snakes are main.js's and world*.js's)
+  if (typeof critters !== "undefined") for (const k of critters) if (k.gone && !k.strTaken) { k.strTaken = true; strGain(k.kind); }
+  if (typeof snakes !== "undefined") for (const q of snakes) if (q.gone && !q.strTaken) { q.strTaken = true; strGain(q.kind); }
+  for (const b of region.beasts) if (b.dead && !b.strTaken) { b.strTaken = true; strGain(b.kind); }
+}
+
+// ---- David's card and the Journal (Glen 11-05, DESIGN.md "Growth"): a spread in the book, Right from the map. The card
+//      grows from Truths, story moments and choices, never from fighting. from: [save id, what it was] in this world ----
+const CARD = [
+  { name: "Trust", verse: "for my soul takes refuge in you.", ref: "Psalm 57:1",
+    from: [["g_jonathan", "Jonathan's covenant"], ["g_truth_spears", "A Truth behind the cracked wall"]] },
+  { name: "Wisdom", verse: "David behaved himself wisely in all his ways; and the LORD was with him.", ref: "1 Samuel 18:14",
+    from: [["g_truth_song", "A Truth up on the rooftops"], ["g_truth_covenant", "A Truth down in the cisterns"], ["g_harp_wall", "Striking where the spears had cracked the wall"]] },
+  { name: "Self-control", verse: "The LORD forbid that I should do this thing to my lord, the LORD's anointed.", ref: "1 Samuel 24:6",
+    from: [["g_harp_done", "In the harp room, he never threw the spear back"]] },
+  { name: "A steadfast heart", verse: "My heart is steadfast, God. My heart is steadfast.", ref: "Psalm 57:7",
+    from: [["g_tower_key", "The long climb to the top of the watchtower"], ["g_exit_open", "Gibeah, all the way through"]] },
+];
+// the Journal page: Glen's song (SONG_PSALM57.md, Verse 1 for Gibeah, his words exactly). David writes two lines after
+// each of the story's moments (STORY_STEPS); all of it once he's through the gate
+const JOURNAL_VERSE = ["Be merciful to me, O God", "Be merciful to me", "My soul takes refuge in You", "My shelter, Lord, are Your wings",
+  "Until the storm has passed away", "Until the danger disappears", "Beneath the shadow of Your wings", "I will find refuge here"];
+const STORY_STEPS = ["g_song", "g_jonathan", "g_harp_done", "g_michal"];
+let CARD_SONG = null;
+const CARD_FACE = Object.assign(new Image(), { src: "../assets/items/david_portrait.png?v=" + (window.BUILD || 0) });   // (Glen 11-05: his portrait, cut from green)   // Glen's whole song, played from the Journal page (A)
+function bookOpen(page, leave = false) {
+  region.mapOpen = true; region.mapT = 0; region.page = page; region.bookLeave = leave;
+  if (leave && !(CARD_SONG && !CARD_SONG.paused)) songToggle(true);
+}
+function bookClose() {
+  region.mapOpen = false;
+  if (CARD_SONG && !CARD_SONG.paused) CARD_SONG.pause();   // (the stage's music picks up again by itself: updateMusic)
+  if (region.bookLeave) { region.bookLeave = false; region.trans = { t: 0, leave: true }; }
+}
+function songToggle(on = !(CARD_SONG && !CARD_SONG.paused)) {
+  if (!CARD_SONG) { CARD_SONG = new Audio(`../assets/audio/my_heart_is_steadfast_full.mp3?v=${window.BUILD || 0}`); CARD_SONG._music = true; }
+  if (!on) { CARD_SONG.pause(); return; }
+  hushStage();
+  if (CARD_SONG.ended) CARD_SONG.currentTime = 0;
+  CARD_SONG.volume = 0.9; CARD_SONG.play().catch(() => {});
+}
+// ---- the Journal scene (Glen 11-06): over David's shoulder, the book open in his hands (assets/journal/david_journal_ots.png,
+//      cut from his green-screen picture). After each story moment he writes: on the left page what he learned and what
+//      he's found, on the right two more lines of Glen's song. At the gate, all of it, with the song playing ----
+const JSCENE = {
+  K: 1632,                      // the picture's width as drawn (it's saved at this size), and where it sits on screen
+  AT: [-357, -255],
+  // the pages' writing areas on the picture (px): top-left, top-right (along a line of writing), bottom-right, bottom-left
+  LEFT:  [[797, 351], [1030, 436], [893, 852], [627, 746]],
+  RIGHT: [[1107, 446], [1352, 446], [1236, 829], [937, 848]],
+  PAGE: { left: [300, 520], right: [345, 610] },   // each page laid out flat at this size, then bent onto the picture
+  CHAR: 0.035, GAP: 0.35, FADE: 0.45, RES: 2,
+  INK: "rgba(40,24,12,0.92)", INK_REF: "rgba(92,62,36,0.85)",
+  // (draft words, for Glen to change) what David writes after each story moment (STORY_STEPS, in order), and at the gate
+  ENTRIES: [
+    ["The women sang about me, and the king grew angry. The glory belongs to the LORD, not to me.", "1 Samuel 18:7–9"],
+    ["Jonathan gave me his robe, his sword, his bow and his sash. He loves me as his own soul.", "1 Samuel 18:1–4"],
+    ["I played for the king, and he threw his spear at me twice. I did not throw it back. The LORD kept me safe.", "1 Samuel 18:10–11"],
+    ["Michal loves me. Saul is afraid of me, because he sees that the LORD is with me.", "1 Samuel 18:28–29"],
+  ],
+  END: ["Tonight I leave Gibeah. Wherever I go, the LORD my God is with me.", "Joshua 1:9"],
+};
+const JS_IMG = Object.assign(new Image(), { src: "../assets/journal/david_journal_ots.png?v=" + (window.BUILD || 0) });
+const storyDone = () => STORY_STEPS.filter(id => regionHas("taken", id)).length;
+function journalWatch() {   // updateRegion: a story moment just finished? he sits down and writes
+  const d = david;
+  if (region.jscene || region.mapOpen || region.script.length || region.wait > 0 || region.trans || region.climb || (dialog && dialog.t > 0) || !d.onGround || d.deadT > 0) return;
+  if (storyDone() > (region.save.jAt || 0)) jsceneOpen(false);
+}
+function jsceneOpen(final) {
+  const prev = region.save.jAt || 0, n = storyDone();
+  region.save.jAt = Math.max(prev, n); regionWrite();
+  const snap = document.createElement("canvas"); snap.width = W; snap.height = H; snap.getContext("2d").drawImage(ctx.canvas, 0, 0);   // the game behind, blurred
+  region.jscene = { t: 0, prev: final ? Math.min(prev, n) : prev, n, final, wasFinal: final && regionHas("taken", "g_jfinal"), snap, out: 0 };
+  if (final) regionAdd("taken", "g_jfinal");
+  hushStage();
+  if (final) songToggle(true);
+  else if (typeof journalMusic !== "undefined") { journalMusic.currentTime = 0; journalMusic.volume = typeof JTUNE !== "undefined" ? JTUNE.MUSIC_VOLUME : 0.5; journalMusic.play().catch(() => {}); }
+  jsceneLayout(region.jscene);
+}
+function hushStage() {   // the stage's music stops (updateMusic brings it back afterward)
+  if (typeof hushLoops === "function") hushLoops();
+  for (const a of [typeof dayMusic !== "undefined" && dayMusic, typeof nightMusic !== "undefined" && nightMusic, typeof caveMusic !== "undefined" && caveMusic,
+                   typeof stageTheme !== "undefined" && stageTheme, typeof bossMusic !== "undefined" && bossMusic]) if (a && !a.paused) a.pause();
+}
+const jsFont = (px, ref) => typeof caveatReady !== "undefined" && caveatReady ? `${px}px Caveat, Georgia, serif` : `italic ${Math.round(px * 0.72)}px Georgia, serif`;
+function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, color, center, isNew }, and when each new one is written
+  const m = document.createElement("canvas").getContext("2d");
+  const fit = (side, build) => { for (let k = 1; k > 0.55; k -= 0.06) { const r = build(k); if (r.bottom <= JSCENE.PAGE[side][1] - 8) return r.items; } return build(0.55).items; };
+  const wrap = (t, px, w) => { m.font = jsFont(px); const out = []; let line = ""; for (const word of t.split(" ")) { const nn = line ? line + " " + word : word; if (line && m.measureText(nn).width > w) { out.push(line); line = word; } else line = nn; } if (line) out.push(line); return out; };
+  // the left page: Gibeah, an entry per story moment (and the gate), then what he's found
+  const [LW] = JSCENE.PAGE.left;
+  J.left = fit("left", k => {
+    const items = []; let y = 40 * k;
+    items.push({ text: REGION.name, x: LW / 2, y, px: 34 * k, center: true, isNew: J.prev === 0 && J.n > 0 });
+    y += 16 * k;
+    const ents = JSCENE.ENTRIES.slice(0, J.n).map((e, i) => [e, i >= J.prev]);
+    if (J.final) ents.push([JSCENE.END, !J.wasFinal]);
+    for (const [[text, ref], isNew] of ents) {
+      for (const l of wrap(text, 23 * k, LW - 24)) { y += 25 * k; items.push({ text: l, x: 12, y, px: 23 * k, isNew }); }
+      y += 19 * k; items.push({ text: "— " + ref, x: 30, y, px: 17 * k, color: JSCENE.INK_REF, isNew });
+      y += 8 * k;
+    }
+    // what he's found (written fresh each time: it's a tally)
+    const found = k2 => region.relics.filter(f => f.kind === k2 && regionHas("taken", f.id)).length, all = k2 => region.relics.filter(f => f.kind === k2).length;
+    const truths = region.relics.filter(f => f.kind === "truth" && regionHas("taken", f.id)).map(f => (f.text.match(/\(([^()]+)\)\s*$/) || [])[1]).filter(Boolean);
+    const tally = [`Found in ${REGION.name}:`, `Truths ${found("truth")} of ${all("truth")}${truths.length ? " (" + truths.join("; ") + ")" : ""}.`,
+      `Pomegranates ${found("pomegranate")} of ${all("pomegranate")}. Stones of remembrance ${found("stone")} of ${all("stone")}. Oil jars ${found("oil")} of ${all("oil")}.`];
+    y += 14 * k;
+    for (const [i, t] of tally.entries()) for (const l of wrap(t, 18 * k, LW - 24)) { y += 20 * k; items.push({ text: l, x: 12, y, px: 18 * k, color: i ? JSCENE.INK_REF : JSCENE.INK, isNew: true }); }
+    return { items, bottom: y };
+  });
+  // the right page: Glen's song, two lines a story moment, all of it at the gate
+  const [RW_] = JSCENE.PAGE.right, lines = (J.final ? JOURNAL_VERSE.length : Math.min(JOURNAL_VERSE.length, J.n * 2)), was = J.final && J.wasFinal ? lines : Math.min(JOURNAL_VERSE.length, J.prev * 2);
+  J.right = fit("right", k => {
+    const items = []; let y = 36 * k;
+    items.push({ text: "Psalm 57", x: RW_ / 2, y, px: 31 * k, center: true, isNew: was === 0 && lines > 0 });
+    y += 14 * k;
+    for (let i = 0; i < lines; i++) {
+      const ind = i % 2 ? 16 : 0;
+      wrap(JOURNAL_VERSE[i], 27 * k, RW_ - 24 - ind).forEach((l, j) => { y += 29 * k; items.push({ text: l, x: 8 + ind + (j ? 18 : 0), y, px: 27 * k, isNew: i >= was }); });
+      if (i === 3) y += 14 * k;
+    }
+    return { items, bottom: y };
+  });
+  // the writing: the new words, one after another (left page first)
+  let t = 0.8;
+  for (const it of [...J.left, ...J.right]) { if (!it.isNew) { it.at = -1; continue; } it.at = t; it.dur = it.text.length * JSCENE.CHAR; t += it.dur + JSCENE.GAP * 0.3; }
+  J.done = t;
+  J.flat = { left: document.createElement("canvas"), right: document.createElement("canvas") };
+  for (const side of ["left", "right"]) { const [w, h] = JSCENE.PAGE[side]; J.flat[side].width = w * JSCENE.RES; J.flat[side].height = h * JSCENE.RES; }
+}
+function jsceneFrame(dt) {
+  const J = region.jscene; J.t += dt;
+  const skip = pressed("a") || pressed("b") || pressed("select") || pressed("start");
+  if (!J.out && skip && J.t > 0.5) { if (J.t < J.done) J.t = J.done; else J.out = 0.001; }
+  if (!J.out) for (const it of [...J.left, ...J.right]) if (it.at >= 0 && !it.pen && J.t >= it.at) { it.pen = true; if (typeof penScratch === "function") penScratch(Math.min(1.2, it.dur), 0.8); }
+  if (J.out) {
+    J.out += dt;
+    if (J.out >= JSCENE.FADE) {
+      region.jscene = null;
+      if (typeof journalMusic !== "undefined" && !journalMusic.paused) journalMusic.pause();
+      if (J.final) bookOpen(1, true);   // then the card, the song still playing; B: on to the road
+      return;
+    }
+  }
+  drawJscene(J);
+}
+function drawJscene(J) {
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.filter = "blur(10px) brightness(0.55)"; ctx.drawImage(J.snap, -20, -20, W + 40, H + 40); ctx.filter = "none";   // the stage behind, out of focus
+  const [ax, ay] = JSCENE.AT, sc = JS_IMG.naturalWidth ? JSCENE.K / JS_IMG.naturalWidth : 1;
+  if (JS_IMG.complete && JS_IMG.naturalWidth) ctx.drawImage(JS_IMG, ax, ay, JS_IMG.naturalWidth * sc, JS_IMG.naturalHeight * sc);
+  for (const side of ["left", "right"]) {
+    const c = J.flat[side], g = c.getContext("2d"), R = JSCENE.RES;
+    g.setTransform(R, 0, 0, R, 0, 0); g.clearRect(0, 0, c.width, c.height); g.textBaseline = "alphabetic";
+    for (const it of J[side]) {
+      let text = it.text;
+      if (it.at >= 0) { if (J.t < it.at) continue; text = text.slice(0, Math.ceil((J.t - it.at) / JSCENE.CHAR)); }
+      g.font = jsFont(it.px); g.fillStyle = it.color || JSCENE.INK; g.textAlign = it.center ? "center" : "left";
+      g.fillText(text, it.x, it.y);
+    }
+    const q = JSCENE[side === "left" ? "LEFT" : "RIGHT"].map(([x, y]) => [x + ax, y + ay]);
+    ctx.globalCompositeOperation = "multiply"; drawQuad(c, q, 8); ctx.globalCompositeOperation = "source-over";   // (multiply: the ink takes the page's light and shade)
+  }
+  // the hint, and the fades
+  const fin = J.t >= J.done;
+  ctx.textAlign = "center"; ctx.font = "17px Georgia, serif"; ctx.fillStyle = "rgba(255,240,215,0.8)";
+  ctx.fillText(fin ? (J.final ? "A: on to David's card" : "A: back to the game") : "A: finish writing", W / 2, H - 16);
+  const a = Math.max(J.t < JSCENE.FADE ? 1 - J.t / JSCENE.FADE : 0, J.out ? J.out / JSCENE.FADE : 0);
+  if (a > 0) { ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.fillRect(0, 0, W, H); }
+  ctx.restore();
+}
+function drawQuad(img, q, N) {   // img stretched onto a four-cornered shape (TL, TR, BR, BL), a grid of small triangles
+  const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  const P = (u, v) => lerp(lerp(q[0], q[1], u), lerp(q[3], q[2], u), v);
+  const w = img.width, h = img.height;
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const u0 = i / N, u1 = (i + 1) / N, v0 = j / N, v1 = (j + 1) / N;
+    const a = P(u0, v0), b = P(u1, v0), c = P(u1, v1), d = P(u0, v1);
+    quadTri(img, [u0 * w, v0 * h, u1 * w, v0 * h, u0 * w, v1 * h], [a, b, d]);
+    quadTri(img, [u1 * w, v0 * h, u1 * w, v1 * h, u0 * w, v1 * h], [b, c, d]);
+  }
+}
+function quadTri(img, s, d) {   // one triangle of the picture onto one on screen
+  const [x0, y0, x1, y1, x2, y2] = s, [[u0, v0], [u1, v1], [u2, v2]] = d;
+  const den = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0); if (!den) return;
+  const a = ((u1 - u0) * (y2 - y0) - (u2 - u0) * (y1 - y0)) / den, b = ((v1 - v0) * (y2 - y0) - (v2 - v0) * (y1 - y0)) / den;
+  const c = ((x1 - x0) * (u2 - u0) - (x2 - x0) * (u1 - u0)) / den, dd = ((x1 - x0) * (v2 - v0) - (x2 - x0) * (v1 - v0)) / den;
+  const cx = (u0 + u1 + u2) / 3, cy = (v0 + v1 + v2) / 3, grow = p => [p[0] + Math.sign(p[0] - cx) * 0.7, p[1] + Math.sign(p[1] - cy) * 0.7];   // (a hair bigger: no seams)
+  ctx.save(); ctx.beginPath(); for (const [k, p] of d.map(grow).entries()) k ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); ctx.closePath(); ctx.clip();
+  ctx.transform(a, b, c, dd, u0 - a * x0 - c * y0, v0 - b * x0 - dd * y0); ctx.drawImage(img, 0, 0); ctx.restore();
+}
+function wrapLines(t, maxW) {   // words into lines no wider than maxW (ctx's font)
+  const out = []; let line = "";
+  for (const w of t.split(" ")) { const n = line ? line + " " + w : w; if (line && ctx.measureText(n).width > maxW) { out.push(line); line = w; } else line = n; }
+  if (line) out.push(line); return out;
+}
+function drawCardSpread() {
+  const INK = "#2e2418", FAINT = "rgba(46,36,24,0.42)", GOLD = "#b07a14";
+  const hand = typeof caveatReady !== "undefined" && caveatReady ? "Caveat, Georgia, serif" : "italic Georgia, serif";
+  const handFont = px => typeof caveatReady !== "undefined" && caveatReady ? `${px}px Caveat, Georgia, serif` : `italic ${Math.round(px * 0.72)}px Georgia, serif`;
+  ctx.save();
+  ctx.fillStyle = "#1c140d"; ctx.fillRect(0, 0, W, H);
+  const L = { x: 46, y: 30, w: 590, h: 630 }, R = { x: 644, y: 30, w: 590, h: 630 };
+  for (const p of [L, R]) {
+    ctx.fillStyle = "#e9dcc0"; ctx.fillRect(p.x, p.y, p.w, p.h);
+    ctx.fillStyle = "rgba(120,90,50,0.10)"; for (let k = 0; k < 24; k++) ctx.fillRect(p.x + (k * 337) % (p.w - 120), p.y + (k * 211) % p.h, 120, 2);
+  }
+  const sp = ctx.createLinearGradient(L.x + L.w - 30, 0, R.x + 30, 0);   // the binding's shadow
+  sp.addColorStop(0, "rgba(60,40,20,0)"); sp.addColorStop(0.5, "rgba(60,40,20,0.35)"); sp.addColorStop(1, "rgba(60,40,20,0)");
+  ctx.fillStyle = sp; ctx.fillRect(L.x + L.w - 30, L.y, R.x - L.x - L.w + 60, L.h);
+
+  // -- the left page: David's card
+  const lx = L.x + 40, lw = L.w - 80;
+  // (Glen 11-05) his portrait of David, in a frame at the top
+  const PS = 136, pxx = lx, pyy = L.y + 22;
+  ctx.fillStyle = "#cdb98f"; ctx.fillRect(pxx, pyy, PS, PS);
+  if (CARD_FACE.complete && CARD_FACE.naturalWidth) ctx.drawImage(CARD_FACE, 0, 0, CARD_FACE.naturalWidth, CARD_FACE.naturalHeight, pxx, pyy, PS, PS);
+  ctx.strokeStyle = "#5c4630"; ctx.lineWidth = 3; ctx.strokeRect(pxx, pyy, PS, PS);
+  const tx = lx + PS + 24;
+  ctx.textAlign = "left"; ctx.fillStyle = INK; ctx.font = "bold 34px Georgia, serif"; ctx.fillText("David", tx, L.y + 58);
+  ctx.font = "italic 17px Georgia, serif"; ctx.fillText(`What has grown in ${REGION.name}`, tx, L.y + 84);
+  // strength
+  let y = L.y + 128;
+  const lv = strLevel(), full = lv >= REGION.strCap, a = STR.NEED[lv - 1], b = STR.NEED[lv], sf = full ? 1 : (strXP() - a) / (b - a);
+  ctx.font = "bold 20px Georgia, serif"; ctx.fillText(`Strength ${lv}`, tx, y);
+  const bx = tx + 118, bw = lx + lw - bx; ctx.fillStyle = "#cdb98f"; ctx.fillRect(bx, y - 14, bw, 12); ctx.fillStyle = GOLD; ctx.fillRect(bx, y - 14, bw * sf, 12);
+  ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.strokeRect(bx, y - 14, bw, 12);
+  ctx.fillStyle = FAINT; ctx.font = "15px Georgia, serif";
+  for (const l of wrapLines(full ? `From fighting. That's as strong as he gets in ${REGION.name}.` : `From fighting. In ${REGION.name} it can reach ${REGION.strCap}.`, lx + lw - tx)) { y += 19; ctx.fillText(l, tx, y); }
+  y = L.y + 22 + PS + 14;
+  ctx.strokeStyle = "rgba(46,36,24,0.25)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(lx, y); ctx.lineTo(lx + lw, y); ctx.stroke();
+  // the four traits
+  y += 34;
+  for (const tr of CARD) {
+    const got = tr.from.filter(([id]) => regionHas("taken", id)), left = tr.from.length - got.length;
+    ctx.fillStyle = INK; ctx.font = "bold 22px Georgia, serif"; ctx.fillText(tr.name, lx, y);
+    for (let i = 0; i < tr.from.length; i++) {   // a mark for each, filled once it's grown
+      const px = lx + lw - (tr.from.length - 1 - i) * 22 - 8;
+      ctx.beginPath(); ctx.arc(px, y - 7, 7, 0, Math.PI * 2);
+      if (i < got.length) { ctx.fillStyle = GOLD; ctx.fill(); } ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    y += 21; ctx.font = "italic 15px Georgia, serif"; ctx.fillStyle = "#5c4630";
+    const vl = wrapLines(`“${tr.verse}” (${tr.ref})`, lw);
+    for (const l of vl) { ctx.fillText(l, lx, y); y += 18; }
+    ctx.font = "15px Georgia, serif";
+    for (const [, what] of got.length ? tr.from.filter(([id]) => regionHas("taken", id)) : []) { ctx.fillStyle = INK; ctx.fillText("✓ " + what, lx + 10, y); y += 18; }
+    if (left) { ctx.fillStyle = FAINT; ctx.fillText(got.length ? `…and ${left} more to find in ${REGION.name}` : `Not yet. ${left === 1 ? "Something" : left + " things"} in ${REGION.name} will grow it.`, lx + 10, y); y += 18; }
+    y += 18;
+  }
+
+  // -- the right page: the Journal, Glen's song
+  const rx = R.x + 50, done = regionHas("taken", "g_exit_open");
+  const n = done ? JOURNAL_VERSE.length : Math.min(JOURNAL_VERSE.length, STORY_STEPS.filter(id => regionHas("taken", id)).length * 2);
+  ctx.textAlign = "center"; ctx.fillStyle = INK; ctx.font = handFont(46); ctx.fillText("My Heart Is Steadfast", R.x + R.w / 2, R.y + 58);
+  ctx.font = "italic 17px Georgia, serif"; ctx.fillStyle = "#5c4630"; ctx.fillText(`${REGION.name}  ·  from Psalm 57`, R.x + R.w / 2, R.y + 86);
+  ctx.textAlign = "left";
+  let jy = R.y + 150;
+  if (!n) { ctx.fillStyle = FAINT; ctx.font = "italic 18px Georgia, serif"; for (const l of wrapLines("The page is still empty. David will write here as the story goes on.", R.w - 100)) { ctx.fillText(l, rx, jy); jy += 26; } }
+  ctx.fillStyle = "rgba(40,24,12,0.92)"; ctx.font = handFont(38);
+  for (let i = 0; i < n; i++) { ctx.fillText(JOURNAL_VERSE[i], rx + (i % 2 ? 30 : 0), jy); jy += i === 3 ? 66 : 44; }
+  if (n && n < JOURNAL_VERSE.length) { ctx.fillStyle = FAINT; ctx.font = "italic 16px Georgia, serif"; ctx.fillText("(more as the story goes on)", rx, jy + 6); }
+  // the song: A
+  const playing = CARD_SONG && !CARD_SONG.paused, sy = R.y + R.h - 64;
+  ctx.fillStyle = INK; ctx.font = "18px Georgia, serif";
+  ctx.fillText(playing ? "A: stop the song" : "A: play the song", rx, sy);
+  if (CARD_SONG && CARD_SONG.duration) {
+    const f = CARD_SONG.currentTime / CARD_SONG.duration, bw2 = R.w - 100;
+    ctx.fillStyle = "#cdb98f"; ctx.fillRect(rx, sy + 14, bw2, 6); ctx.fillStyle = GOLD; ctx.fillRect(rx, sy + 14, bw2 * f, 6);
+  }
+
+  // the footer
+  ctx.textAlign = "center"; ctx.fillStyle = "#e9dcc0"; ctx.font = "17px Georgia, serif";
+  ctx.fillText(region.bookLeave ? "A: the song      B: on to the road" : "Left / Right: the map      A: the song      Select or B: back to the game", W / 2, H - 22);
+  ctx.restore();
 }
 function drawRegionMap() {
   const C = RTUNE.MAP_CELL, cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + (r.mh || 1)));
@@ -1707,7 +2027,7 @@ function drawRegionMap() {
   ctx.fillStyle = "rgba(120,90,50,0.12)"; for (let k = 0; k < 40; k++) ctx.fillRect((k * 337) % W, (k * 211) % H, 120, 2);
   ctx.textAlign = "center"; ctx.fillStyle = "#4a3a2a"; ctx.font = "bold 40px Georgia, serif";
   ctx.fillText(REGION.name, W / 2, 70);
-  ctx.font = "18px Georgia, serif"; ctx.fillText("Select, A or B: back to the game", W / 2, H - 24);
+  ctx.font = "18px Georgia, serif"; ctx.fillText("Left / Right: David's card and Journal      Select, A or B: back to the game", W / 2, H - 24);
   const blink = Math.floor(performance.now() / 300) % 2;
   const cur = region.room || roomAt(david.x);
   for (const r of REGION.rooms) {

@@ -1,7 +1,8 @@
 // the story scenes from a clean save: the women's song (town), Jonathan's covenant (halls), Michal (halls, after the harp room).
 // Shots: 1 women running in, 2 the song, 3 Saul's line, 4 Saul walking off, 5 Jonathan's first line, 6 his gifts,
 // 7 the two-shot, 8 after (the toast), 9 Michal.
-startSetup = () => {}; setup.active = false;
+startSetup = () => {}; region.save.jAt = 9;   // (no Journal scene: tests/journal.js covers it)
+ setup.active = false;
 const log = m => TEST_ERRORS.push("INFO " + m);
 const A = () => { dialog.hold = false; dialog.t = 0; };   // press A on a line
 const C = id => roomById(id).c0;

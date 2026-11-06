@@ -1,4 +1,5 @@
-startSetup = () => {}; setup.active = false;
+startSetup = () => {}; region.save.jAt = 9;   // (no Journal scene: tests/journal.js covers it)
+ setup.active = false;
 for (const id of ["g_song", "g_jonathan", "g_michal"]) if (!regionHas("taken", id)) region.save.taken.push(id); storyBuild(id => roomById(id).c0);   // (the story scenes would hold David: tests/story.js covers them)
 const clr = () => { setup.active = false; dialog.t = 0; dialog.hold = false; };
 const log = m => TEST_ERRORS.push("INFO " + m);
