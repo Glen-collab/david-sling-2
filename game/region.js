@@ -652,6 +652,7 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
+  roomImg(MAP_SHEET.img);
   for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) roomImg("gibeah/sky_clouds"); }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
@@ -2020,27 +2021,32 @@ function drawCardSpread() {
   ctx.fillText(region.bookLeave ? "A: the song      B: on to the road" : "Left / Right: the map      A: the song      Select or B: back to the game", W / 2, H - 22);
   ctx.restore();
 }
+// (Glen 11-06) his old map sheet (torn parchment, a leather border, Gibeah's hill top-left, a compass bottom-right),
+// the rooms drawn on it in ink. MAP_SHEET: where it sits on screen (it's saved at this size)
+const MAP_SHEET = { img: "gibeah/map_sheet.png", x: 35, y: 12, INK: "#3b2a18", WASH: "rgba(150,105,55,0.20)", CAVE: "rgba(70,50,30,0.32)", PAPER: "#e2d0a8" };
 function drawRegionMap() {
   const C = RTUNE.MAP_CELL, cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + (r.mh || 1)));
-  const ox = (W - cols * C) / 2, oy = 150;
-  ctx.fillStyle = "#e9dcc0"; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "rgba(120,90,50,0.12)"; for (let k = 0; k < 40; k++) ctx.fillRect((k * 337) % W, (k * 211) % H, 120, 2);
-  ctx.textAlign = "center"; ctx.fillStyle = "#4a3a2a"; ctx.font = "bold 40px Georgia, serif";
-  ctx.fillText(REGION.name, W / 2, 70);
-  ctx.font = "18px Georgia, serif"; ctx.fillText("Left / Right: David's card and Journal      Select, A or B: back to the game", W / 2, H - 24);
+  const ox = (W - cols * C) / 2, oy = 135, M = MAP_SHEET, sheet = roomImg(M.img);
+  const hand = px => typeof caveatReady !== "undefined" && caveatReady ? `${px}px Caveat, Georgia, serif` : `italic ${Math.round(px * 0.75)}px Georgia, serif`;
+  ctx.fillStyle = "#1c140d"; ctx.fillRect(0, 0, W, H);
+  if (sheet) ctx.drawImage(sheet, M.x, M.y);
+  else { ctx.fillStyle = "#e9dcc0"; ctx.fillRect(M.x, M.y, 1210, 660); }
+  ctx.textAlign = "center"; ctx.fillStyle = M.INK; ctx.font = hand(54);
+  ctx.fillText(REGION.name, W / 2, 82);
+  ctx.font = "16px Georgia, serif"; ctx.fillStyle = "#e9dcc0"; ctx.fillText("Left / Right: David's card and Journal      Select, A or B: back to the game", W / 2, H - 8);
   const blink = Math.floor(performance.now() / 300) % 2;
   const cur = region.room || roomAt(david.x);
   for (const r of REGION.rooms) {
     const been = regionHas("explored", r.id);
     if (!been) continue;
     const x = ox + r.mx * C, y = oy + r.my * C, mh = (r.mh || 1) * C;   // (mh: a tall room)
-    ctx.fillStyle = r.cave ? "#8a7a64" : "#c9a86e"; ctx.fillRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
-    ctx.strokeStyle = "#4a3a2a"; ctx.lineWidth = 3; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
-    ctx.fillStyle = "#2e2418"; ctx.font = "15px Georgia, serif"; ctx.fillText(r.name.replace(/^The /, ""), x + r.mw * C / 2, y + mh - 12);
-    // the edges you can walk through: a gap in the wall
-    ctx.fillStyle = r.cave ? "#8a7a64" : "#c9a86e";
-    if (r.right) ctx.fillRect(x + r.mw * C - 6, y + C / 2 - 10, 12, 20);
-    if (r.left) ctx.fillRect(x - 6, y + C / 2 - 10, 12, 20);
+    ctx.fillStyle = r.cave ? M.CAVE : M.WASH; ctx.fillRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
+    ctx.strokeStyle = M.INK; ctx.lineWidth = 2.5; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
+    ctx.fillStyle = M.INK; ctx.font = hand(22); ctx.fillText(r.name.replace(/^The /, ""), x + r.mw * C / 2, y + mh - 11);
+    // the edges you can walk through: a gap in the ink line
+    ctx.fillStyle = M.PAPER;
+    if (r.right) ctx.fillRect(x + r.mw * C - 5, y + C / 2 - 10, 10, 20);
+    if (r.left) ctx.fillRect(x - 5, y + C / 2 - 10, 10, 20);
     const fx = cx => x + 3 + (cx / T - r.c0) / r.w * (r.mw * C - 6);   // a column in this room, on the map
     for (const o of region.doors) if (roomAt(o.x) === r && !(o.need && !hasSkill(o.need))) { ctx.fillStyle = "#2e2418"; ctx.fillRect(fx(o.x) - 4, y + 12, 8, 14); }
     for (const f of fires) if (roomAt(f.x) === r) { ctx.fillStyle = "#6b8e23"; ctx.beginPath(); ctx.arc(fx(f.x), y + 36, 7, 0, Math.PI * 2); ctx.fill(); }
@@ -2053,14 +2059,14 @@ function drawRegionMap() {
     if (r === cur && blink) { ctx.fillStyle = "#1f5fa8"; ctx.beginPath(); ctx.arc(fx(david.x), dy, 8, 0, Math.PI * 2); ctx.fill(); }
   }
   // the key, and the tally
-  const ky = oy + rows * C + 40;
-  ctx.textAlign = "left"; ctx.font = "17px Georgia, serif"; ctx.fillStyle = "#2e2418";
+  const ky = oy + rows * C + 32;
+  ctx.textAlign = "left"; ctx.font = "17px Georgia, serif"; ctx.fillStyle = M.INK;
   const keyItems = [["#1f5fa8", "You"], ["#6b8e23", "Olive press (save)"], ["#b03a2e", "Something you saw but didn't get"], ["#7a1f14", "X  Sealed: come back later"]];
-  let kx = W / 2 - 420;
-  for (const [col, t] of keyItems) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(kx, ky - 6, 7, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#2e2418"; ctx.fillText(t, kx + 14, ky); kx += ctx.measureText(t).width + 50; }
+  let kx = W / 2 - 470;
+  for (const [col, t] of keyItems) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(kx, ky - 6, 7, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = M.INK; ctx.fillText(t, kx + 14, ky); kx += ctx.measureText(t).width + 44; }
   const count = k => [region.relics.filter(f => f.kind === k && regionHas("taken", f.id)).length, region.relics.filter(f => f.kind === k).length];
   ctx.textAlign = "center"; ctx.font = "19px Georgia, serif";
   const tally = ["pomegranate", "oil", "stone", "truth"].map(k => { const [a, b] = count(k); return `${RELIC_NAME[k]} ${a} of ${b}`; }).join("     ");
-  ctx.fillText(tally, W / 2, ky + 40);
-  ctx.fillText(`Rooms explored: ${region.save.explored.length} of ${REGION.rooms.length}`, W / 2, ky + 72);
+  ctx.fillText(tally, W / 2, ky + 32);
+  ctx.fillText(`Rooms explored: ${region.save.explored.length} of ${REGION.rooms.length}`, W / 2, ky + 58);
 }
