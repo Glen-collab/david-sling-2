@@ -49,7 +49,7 @@ const RTUNE = {
   HP_PER_HEART: 10,
   // the Harp Room (1 Samuel 18:10-11): play to calm the king; he throws the spear twice; David gets up and jumps
   HARP: { CALM_TIME: 14, THROW_AT: [0.3, 0.65], SPEAR_Y: 52, SPEAR_SPEED: 820, RELEASE: 9, BACK: 0.12 },
-  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5, crow: 5, raven: 6, eagle: 10 },   // how much each thing takes off with a hit
+  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5, crow: 5, raven: 6, eagle: 10, phil: 10 },   // how much each thing takes off with a hit
   HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
   // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
   // leave the room and come in again. Glen's break sets (tools/cut_breakables.py): <art>, <art>_breaking, <art>_broken,
@@ -292,6 +292,12 @@ const beast = (kind, room, c, o = {}) => region.beasts.push(Object.assign({ kind
 // (Glen 11-05) the tower's birds, Part One's art: crows (raven_fly2, smaller), ravens (raven_fly), eagles (eagle_fly). They
 // perch on a ledge pecking until David comes near, fly at him, swoop past and back, then go home to their ledge
 const bird = (kind, room, x, y) => region.beasts.push({ kind, room, x, hx: x, y, hy: y, state: "perch", t: Math.random() * 3, facing: -1, cool: 0 });
+// (Glen 11-05) the Philistine raids (1 Samuel 18:27, 30): Part One's skirmisher (phil_run, phil_charge, phil_drop,
+// phil_flee). He paces his post behind his shield; when David comes near he charges, and after a hit backs off and comes
+// again. Three stones (or one charged, or three sword strokes) and he throws down his shield and runs, fading out.
+// Nobody dies. He keeps to his own floor or ledge (never off its end). y: the floor he stands on (px); range: his post, tiles
+const rPhil = (room, c, y = GR * T, range = 6) => beast("phil", room, c, { y, hy: y, range: range * T, state: "wait", hp: PHIL.HP, alpha: 1 });
+const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9, BACK_SPEED: 230, REST: 0.5, FLEE_SPEED: 320, FADE: 2.5, DROP_MS: 150 };
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
@@ -400,6 +406,7 @@ function buildRegion() {
     rSeal("g_seal_tower", "fields", c + 50, "wallClimb", "The watchtower is too sheer to climb. Not yet.", c + 46, c + 52);
     rRelic("g_pom_tower", "pomegranate", c + 55, onTop(top)); }
   rDeco("fields", "f_fig", c + 63);
+  rPhil("fields", c + 71, GR * T, 5); rPhil("fields", c + 79, GR * T, 4);   // (Glen 11-05) a Philistine raiding party in the fields (18:30)
   oliveArc(c + 62, 16, 6); rBoulder("fields", c + 66);
   deco("olive_tree", c + 72, 16, 1.05, "back", "golden_olive");
   rDeco("fields", "fg_grass", c + 68, true, 1.35);
@@ -458,6 +465,7 @@ function buildRegion() {
   rBreak("basket", "walls", c + 145, 16);
   rKitDoor("d_tower", "walls", c + 153, "door", "d_towerdown", "tw_door_open");   // (Glen 11-05) up into the watchtower
   rWalk("walls", X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
+  rPhil("walls", c + 22, GR * T, 4); rPhil("walls", c + 108, GR * T, 5);   // (Glen 11-05) and in the yard
   rStone("walls", c + 177, "tw_step2", true); critter("hedgehog", c + 186); oliveRow(c + 188, 16, 4);
   // (Glen 11-05) the way out: a gate at the far end of the Walls, locked; the bronze key from the top of the watchtower
   // opens it, and David slips out of Gibeah (19:12: "he went, fled, and escaped"). Next region's road starts here, later.
@@ -474,7 +482,8 @@ function buildRegion() {
     platAt(c + 1, deck, wr.w - 2);   // the top of the wall, end to end
     oliveRow(c + 20, deck / T - 1.4, 10); oliveRow(c + 140, deck / T - 1.4, 10);
     rRelic("g_pom_walltop", "pomegranate", c + 92, deck / T - 1);
-    bird("crow", "walls", X(70), deck); bird("crow", "walls", X(150), deck); bird("raven", "walls", X(60), MID); }
+    bird("crow", "walls", X(70), deck); bird("crow", "walls", X(150), deck); bird("raven", "walls", X(60), MID);
+    rPhil("walls", c + 45, deck, 10); rPhil("walls", c + 120, deck, 10); rPhil("walls", c + 175, deck, 8); }   // (Glen 11-05) Philistines up on the wall: a raid (18:30)
   rDoor("d_exit", "walls", c + 196, "exit", null); Object.assign(region.doors[region.doors.length - 1], { key: "g_tower_key" });
 
   // -- The Watchtower (Glen 11-05): Castlevania-tall, a climb of ledges zig-zagging up six screens to the lookout.
@@ -662,7 +671,7 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : "walk", t: Math.random() * 3, dead: false, cool: 0 });
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined });
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
@@ -909,6 +918,7 @@ function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the swor
   }
   for (const b of region.beasts) {
     if (b.dead) continue;
+    if (b.kind === "phil") { if (philHit(b, s)) return true; continue; }
     const q = beastBox(b);
     if (s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8) { b.dead = true; b.state = "dust"; b.t = 0;
       if (BIRD[b.kind]) for (let i = 0; i < 10; i++) bits.push({ x: b.x, y: b.y - 25, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 1.1, color: b.kind === "eagle" ? (i % 2 ? "#6b4a2b" : "#d9cbb0") : (i % 2 ? "#1d1b22" : "#3a3644") });   // (feathers)
@@ -1240,14 +1250,71 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   ctx.restore();
 }
 // ---- the creatures: spiders on threads and on the floor, bats, rats ----
-const BEAST = { crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
+const BEAST = { phil: { w: 28, h: 120 }, crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
 function beastBox(b) { const k = BEAST[b.kind]; return { x0: b.x - k.w, x1: b.x + k.w, y0: b.y - k.h, y1: b.y }; }
+// a Philistine (above): can he stand at x? (his own floor or ledge goes on there)
+const philFloor = (b, x) => { const c = Math.floor(x / T), rr = Math.floor(b.hy / T); return Math.abs(x - b.hx) < b.range + 8 * T && (isSolid(c, rr) || isOneway(c, rr)); };
+function philHit(b, s) {
+  if (!(b.state === "wait" || b.state === "run" || b.state === "back")) return false;
+  if (!(Math.abs(s.x - b.x) < 30 && s.y > b.y - 125 && s.y < b.y + 4)) return false;
+  if (b.cool > 0) return true;   // (one sword stroke, one hit)
+  b.cool = s.sword ? 0.3 : 0.05; b.flash = 0.25;
+  b.hp -= s.charged || s.power ? PHIL.HP : 1;
+  if (typeof stoneHit === "function" && !s.sword) stoneHit(s);
+  if (b.state === "wait") { b.state = "run"; b.t = 0; }   // (struck from afar: he comes for you)
+  if (b.hp <= 0) {
+    b.state = SPR.phil_drop ? "drop" : "flee"; b.t = 0; b.dropX = b.x; b.fleeDir = Math.sign(b.x - david.x) || 1;
+    sfx("lion_hit", b.x, 0.4, 1.6); setTimeout(() => sfx("phil_nusu_1", b.x, 0.7), 500);   // "Nusu!" (Run!)
+    if (!region.philFled) { region.philFled = true; toast("He throws down his shield and runs. (1 Samuel 18:30)"); }
+  }
+  return true;
+}
+function updatePhil(b, dt) {
+  const d = david, P = PHIL; b.flash = Math.max(0, (b.flash || 0) - dt);
+  const step = v => { const nx = b.x + v * dt; if (philFloor(b, nx + Math.sign(v) * 14)) b.x = nx; };
+  if (b.state === "wait") {   // pacing his post
+    b.pdir = b.pdir || -1; step(b.pdir * P.PACE_SPEED); b.facing = b.pdir;
+    if (Math.abs(b.x - b.hx) > P.PACE * T && Math.sign(b.x - b.hx) === b.pdir) b.pdir = -b.pdir;
+    if (Math.abs(d.x - b.x) < P.NEAR * T && Math.abs(d.y - b.y) < 140 && d.deadT <= 0) {
+      b.state = "run"; b.t = 0; sfxOne(["phil_hedad", "phil_hedad_2"], b.x, 0.75);   // "Hedad!", his battle cry
+      if (!region.philTold) { region.philTold = true; toast("Philistines! Three stones (or one charged) and he'll drop his shield and run."); }
+    }
+  } else if (b.state === "run") {
+    const dir = Math.sign(d.x - b.x) || -1; b.facing = dir;
+    if (d.deadT <= 0) step(dir * P.SPEED);
+    if (Math.abs(d.x - b.x) < 30 && d.y > b.y - 100 && d.y < b.y + 40 && d.deadT <= 0) { hurtDavid(b.x); b.state = "back"; b.t = 0; }
+    if (Math.abs(d.y - b.y) > 260 || Math.abs(d.x - b.x) > (P.NEAR + 6) * T) { b.state = "wait"; b.t = 0; }   // he's lost him: back to his post
+  } else if (b.state === "back") {   // shield up, backing off; a breath, and he comes again
+    if (Math.abs(d.x - b.x) > 20) b.facing = Math.sign(d.x - b.x) || -1;
+    if (b.t < P.BACK) step(-b.facing * P.BACK_SPEED * (1 - b.t / P.BACK * 0.5));
+    else if (b.t > P.BACK + P.REST) { b.state = "run"; b.t = 0; }
+  } else if (b.state === "drop") {
+    if (b.t * 1000 >= P.DROP_MS * SPR.phil_drop.frames) { b.state = "flee"; b.t = 0; }
+  } else if (b.state === "flee") {   // away from David, fading as he goes
+    b.x += b.fleeDir * P.FLEE_SPEED * dt; b.alpha = Math.max(0, 1 - b.t / P.FADE);
+    if (b.alpha <= 0) b.dead = true;
+  }
+}
+function drawPhil(b, x) {
+  const now = performance.now() / 1000, fl = b.flash > 0 ? "brightness(2)" : "", near = Math.abs(david.x - b.x) < 5 * T;
+  if ((b.state === "flee" || b.state === "drop") && b.dropX !== undefined) {   // his shield and spear, left lying where he dropped them
+    const gx = b.dropX - (b.x - x), gy = b.hy; ctx.save(); ctx.globalAlpha = b.state === "flee" ? b.alpha : 1;
+    ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(gx - 50, gy - 3); ctx.lineTo(gx + 40, gy - 4); ctx.stroke();
+    ctx.fillStyle = "#9a7440"; ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(gx - 22, gy - 5, 26, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+  if (b.state === "wait") drawSprite("phil_run", frameOf("phil_run", (now + b.hx) * 0.45), x, b.y, b.facing, 1, 1, fl);   // pacing: his run, slowed to a walk
+  else if (b.state === "back") drawSprite("phil_charge", frameOf("phil_charge", now * 0.6), x, b.y, b.facing, 1, 1, fl);
+  else if (b.state === "run") { const nm = near ? "phil_charge" : "phil_run"; drawSprite(nm, frameOf(nm, now + b.hx), x, b.y, b.facing, 1, 1, fl); }
+  else if (b.state === "drop") drawSprite("phil_drop", frameOf("phil_drop", b.t, PHIL.DROP_MS), x, b.y, -(b.facing || -1), 1, 1, fl);   // (the sheet starts facing left)
+  else drawSprite("phil_flee", frameOf("phil_flee", now + b.hx), x, b.y, b.fleeDir, 1, b.alpha);
+}
 function updateBeasts(dt, r) {
   const d = david;
   for (const b of region.beasts) {
     if (b.room !== r.id) continue;
     b.t += dt; b.cool = Math.max(0, b.cool - dt);
     if (b.dead) continue;
+    if (b.kind === "phil") { updatePhil(b, dt); continue; }
     const dx = d.x - b.x;
     if (b.kind === "spider") {   // waits up on its thread; drops on him when he's under it, waits, climbs back
       if (b.state === "hang") { b.y = b.hy + Math.sin(b.t * 2) * 4; if (!b.cool && Math.abs(dx) < 90 && d.y > b.y) { b.state = "drop"; b.t = 0; } }
@@ -1297,6 +1364,7 @@ function updateBeasts(dt, r) {
 function drawBeasts(camX) {
   for (const b of region.beasts) {
     const x = b.x - camX; if (x < -200 || x > W + 200 || roomAt(b.x) !== region.room) continue;
+    if (b.kind === "phil") { if (!b.dead) drawPhil(b, x); continue; }
     if (b.dead) {   // a puff of dust, once
       const n = b.kind === "spider" || b.kind === "spiderw" ? "spider_dust" : b.kind + "_dust", sh = SPR[n];
       if (sh && b.t * 1000 < sh.frames * sh.ms) drawSprite(n, frameOf(n, b.t), x, b.y + (b.kind === "spider" ? 0 : 0), b.facing);
