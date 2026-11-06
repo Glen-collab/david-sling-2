@@ -11,6 +11,7 @@
 // (Glen 11-06) Part Two's own title, so it's never mistaken for the first game: his painting goes in title2.jpg; until
 // then Gibeah's fields stand in. TITLE: the words on it (draft, for Glen)
 const MENU_TITLE_BG = "../assets/backgrounds/title2.jpg", MENU_TITLE_STANDIN = "../assets/rooms/gibeah/fields_far.jpg";
+// (the land map, landmap.js, is where Continue, a new game and a region's gate all go)
 const TITLE = { name: "David", part: "PART TWO", sub: "My Heart Is Steadfast" };
 const CONTROLLERS = ["keyboard", "nes", "snes"];
 const CONTROLLER_NAMES = { keyboard: "Keyboard", nes: "NES controller", snes: "SNES controller" };
@@ -42,7 +43,10 @@ function forgetRegions(n) {   // a game's region saves ("david2Region..._gibeah"
   try { const pre = slotKey("david2Region", n) + "_"; Object.keys(localStorage).filter(k => k.startsWith(pre)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
 }
 function slotProgress(n) { try { return JSON.parse(localStorage.getItem(slotKey("david2Progress", n)) || "{}"); } catch (e) { return {}; } }
-function hasSave(n = SLOT) { const p = slotProgress(n); return Object.keys(p).some(k => /^\d-\d$/.test(k)) || !!p.skills || !!p.olives; }
+function hasSave(n = SLOT) {
+  const p = slotProgress(n); if (Object.keys(p).some(k => /^\d-\d$/.test(k)) || !!p.skills || !!p.olives) return true;
+  try { const pre = slotKey("david2Region", n) + "_"; return Object.keys(localStorage).some(k => k.startsWith(pre)); } catch (e) { return false; }   // (Gibeah played)
+}
 const slotTaken = n => hasSave(n) || !!slotNames()[n];
 const slotName = n => slotNames()[n] || `Game ${n}`;
 function slotSummary(n) {   // for the Choose a game list: where they are, how far, the sheep, how hard
@@ -67,7 +71,10 @@ const Menu = {
     if (back) { this.open("title"); this.go("scenes"); return; }   // back from an opening played from Scenes
     let tback = false; try { tback = sessionStorage.getItem("david2TrialBack"); sessionStorage.removeItem("david2TrialBack"); } catch (e) {}
     if (tback) { this.open("title"); this.go("trial"); return; }   // back from a boss in the Shepherd's Trial
-    if (seen) WorldMap.open(loadProgress().view || "journey"); else this.open("title");
+    // (Glen 11-06) Part Two never goes to the first game's journey map: always its own title; Continue goes into Gibeah.
+    // Back from Gibeah's gate: the title says so
+    // (Glen 11-06) after the title (or out through a region's gate, or "Back to the map"): the land map, landmap.js
+    if (seen || LAND_ALL) LandMap.open(); else this.open("title");
   },
   open(screen, fromStage = false) {
     this.fromStage = fromStage; this.active = true; this.t = 0; this.msg = null;
@@ -139,6 +146,7 @@ const Menu = {
                                                  { label: `Start ${REGION.name} over`, act: () => this.go("fresh") }]   // (Glen 11-06) a clean run, nothing found
         : this.under === "stage" ? [{ label: "Start the stage again", act: () => startStage(LEVEL_NAME) }] : []),   // stuck somewhere? start over (sheep and olives from this try are lost)
       this.under === "stage" && TRIAL ? { label: "Leave the Trial", act: () => { try { sessionStorage.setItem("david2TrialBack", "1"); } catch (e) {} location.href = "index.html"; } }
+      : this.under === "stage" && REGION_ON ? { label: "Back to the map", act: () => { try { sessionStorage.setItem("david2TitleSeen", "1"); } catch (e) {} location.href = "index.html"; } }   // (Glen 11-06: Part Two's land map, never the first game's)
       : this.under === "stage" ? { label: "Back to the map", act: () => backToMap() }
                              : { label: "Title screen", act: () => { this.under = null; this.open("title"); } },
     ];
@@ -203,7 +211,7 @@ const Menu = {
   // ---- the three saved games ----
   pickFile(n) {   // play a saved game (one saved before games had names asks for one first)
     if (!slotNames()[n]) { this.startName(n, "play"); return; }
-    if (n === SLOT) { this.leaveTitle(() => WorldMap.open(loadProgress().view || "journey")); return; }
+    if (n === SLOT) { this.leaveTitle(() => LandMap.open()); return; }   // (Glen 11-06: Part Two's land map, never the first game's)
     this.switchTo(n);
   },
   switchTo(n) {   // every game's numbers are read when the page loads, so another game is a fresh page (straight to its map)
@@ -215,7 +223,7 @@ const Menu = {
     forgetRegions(n);
     setSlotName(n, this.name);
     try { localStorage.setItem(slotKey("david2Difficulty", n), diff); } catch (e) {}
-    this.switchTo(n);
+    this.switchTo(n);   // (to the land map: Gibeah lit)
   },
   eraseFile(n) {
     const who = slotName(n);
@@ -387,7 +395,8 @@ const Menu = {
       const p = readPad();
       ctx.fillText(p ? `A controller is plugged in${mapFor(p) ? " and set up ✓" : ": choose \"Set up a controller\""}` : "No controller seen yet (press a button on it so the browser sees it).", W / 2, y); y += 26;
     }
-    if (this.msg) { ctx.fillStyle = "#ffd166"; ctx.fillText(this.msg, W / 2, y); }
+    if (this.msg) { const mw = ctx.measureText(this.msg).width + 40; ctx.fillStyle = "rgba(25,14,6,0.78)"; ctx.beginPath(); ctx.roundRect(W / 2 - mw / 2, y - 22, mw, 32, 10); ctx.fill();   // (readable over the painting)
+      ctx.fillStyle = "#ffd166"; ctx.fillText(this.msg, W / 2, y); }
     if (!audioUnlocked && this.screen === "title") { ctx.fillStyle = "#ffe08a"; ctx.fillText("Click the game once to turn on sound", W / 2, H - 56); }
     this.drawHint();
     ctx.restore();

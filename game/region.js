@@ -715,7 +715,7 @@ function regionCam() {
 function regionInit() {
   region.inited = true;
   roomImg(MAP_SHEET.img); kitImg("olive_press");   // (the save point's picture: ready before the first one comes on screen)
-  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) roomImg("gibeah/sky_clouds"); }
+  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) { roomImg("gibeah/sky_clouds"); roomImg("gibeah/sky_strip.jpg"); } }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
@@ -749,7 +749,7 @@ function updateRegion(dt) {
     if (tr.hole && !tr.moved) { d.vy = 0; d.y = Math.min(d.y, GR * T + 90); }   // (down the hole: held there while it fades)
     if (tr.leave) {   // out of Gibeah: for now, back to the game's map (the travel map of the land comes later)
       region.fade = Math.min(1, tr.t / (RTUNE.FADE * 2));
-      if (tr.t > RTUNE.FADE * 2 + 0.2 && !tr.gone) { tr.gone = true; location.href = "index.html"; }
+      if (tr.t > RTUNE.FADE * 2 + 0.2 && !tr.gone) { tr.gone = true; try { sessionStorage.setItem("david2TitleSeen", "1"); } catch (e) {} location.href = "index.html"; }   // (Glen 11-06: the land map, the next stop revealed)
       return;
     }
     if (!tr.moved) {
@@ -778,7 +778,9 @@ function updateRegion(dt) {
   if (pressed("up") && d.onGround) {
     const door = region.doors.find(o => o.kind !== "hole" && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
     if (door && door.kind === "exit") {   // the locked gate out
-      if (!regionHas("taken", door.key)) sayLine("David", "I need a key for this.");
+      const left = STORY_STEPS.find(id => !regionHas("taken", id));   // (Glen 11-06) not before the story's done, key or no key
+      if (left) sayLine("David", GATE_NOT_YET[left]);
+      else if (!regionHas("taken", door.key)) sayLine("David", "I need a key for this.");
       else { regionAdd("taken", "g_exit_open"); toast("The key fits. David slips out through the gate..."); jsceneOpen(true); }   // (Glen 11-05: the Journal and the card first, then the road)
       return;
     }
@@ -1120,6 +1122,14 @@ const towerTopY = r => (-r.up + 8) * T - TOWER.OPEN;   // (the lookout: open abo
 const TOWER_TOP = { pieces: [{ img: "gibeah/tower_top_b.png", solid: 50 }, { img: "gibeah/tower_top_a.png", solid: 135 }], DROP: 70 };
 const towerWallTopY = r => (-r.up + 8) * T - TOWER_TOP.DROP;   // (where his tower stone stops: the battlements' whole wall from here up)
 function cloudSky(r, camX, fallback) {   // (Glen 11-05) his sky of clouds, repeating, drifting slowly behind (the color till it's loaded)
+  // (Glen 11-06) his softer, more lifelike sky: one strip, deep blue up top to pale at the horizon, filling the screen
+  // (it's far off: it doesn't climb with the camera), sliding slowly sideways
+  const st = roomImg("gibeah/sky_strip.jpg");
+  if (st) {
+    const sw = st.naturalWidth * H / st.naturalHeight, ox = -((((camX - r.c0 * T) * 0.12) % sw) + sw) % sw;
+    for (let x = ox; x < W; x += sw) ctx.drawImage(st, Math.round(x), camY, Math.ceil(sw) + 1, H);
+    return;
+  }
   const im = roomImg("gibeah/sky_clouds");
   if (!im) { ctx.fillStyle = fallback; ctx.fillRect(0, camY, W, H); return; }
   const tw = im.naturalWidth, th = im.naturalHeight, ox = -((((camX - r.c0 * T) * 0.12) % tw) + tw) % tw, oy = camY - (((camY * 0.25) % th) + th) % th;
@@ -1881,6 +1891,13 @@ const CARD = [
 const JOURNAL_VERSE = ["Be merciful to me, O God", "Be merciful to me", "My soul takes refuge in You", "My shelter, Lord, are Your wings",
   "Until the storm has passed away", "Until the danger disappears", "Beneath the shadow of Your wings", "I will find refuge here"];
 const STORY_STEPS = ["g_song", "g_jonathan", "g_harp_done", "g_michal"];
+// (Glen 11-06, draft words) the gate out, before the story's done: what's still waiting (the first one missed)
+const GATE_NOT_YET = {
+  g_song: "Not yet. The army is coming home, and the whole town is going out to meet it.",
+  g_jonathan: "Not yet. Jonathan is waiting for me in the palace halls.",
+  g_harp_done: "Not yet. The king's spirit is troubled again. He has sent for me to play the harp.",
+  g_michal: "Not yet. Michal asked to see me in the palace halls.",
+};
 let CARD_SONG = null;
 // (Glen 11-06) like his first game: David's song isn't played until the very end of the game. The Journal pages (the gate's
 // last one too) have only the journal harp while he writes. SONG_ON: true brings back "A: play the song" on the card
@@ -1915,6 +1932,7 @@ const JSCENE = {
   PAGE: { left: [300, 520], right: [345, 610] },   // each page laid out flat at this size, then bent onto the picture
   CHAR: 0.035, GAP: 0.35, FADE: 0.45, RES: 2,
   INK: "rgba(40,24,12,0.92)", INK_REF: "rgba(92,62,36,0.85)",
+  TITLE_INK: "rgba(120,62,8,0.95)", TITLE_WAIT: 1.2, GLOW: 0.32,   // (the gate: the song's title in deep gold, after a breath, and a warm light on the page)
   // (draft words, for Glen to change) what David writes after each story moment (STORY_STEPS, in order), and at the gate
   ENTRIES: [
     ["The women sang about me, and the king grew angry. The glory belongs to the LORD, not to me.", "1 Samuel 18:7–9"],
@@ -1997,10 +2015,13 @@ function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, c
   });
   // the right page: Glen's song, two lines a story moment, all of it at the gate
   const [RW_] = JSCENE.PAGE.right, lines = (J.final ? JOURNAL_VERSE.length : Math.min(JOURNAL_VERSE.length, J.n * 2)), was = J.final && J.wasFinal ? lines : Math.min(JOURNAL_VERSE.length, J.prev * 2);
+  // (Glen 11-06) only the words until the gate; there, once every line is down, a breath, and then the title, big, last
   J.right = fit("right", k => {
-    const items = []; let y = 36 * k;
-    items.push({ text: "Psalm 57", x: RW_ / 2, y, px: 31 * k, center: true, isNew: was === 0 && lines > 0 });
-    y += 14 * k;
+    const items = []; let y = J.final ? 70 * k : 4 * k;
+    if (J.final) {
+      items.push({ text: "My Heart Is Steadfast", x: RW_ / 2, y: 40 * k, px: 40 * k, center: true, color: JSCENE.TITLE_INK, isNew: !J.wasFinal, last: true, title: true });
+      items.push({ text: "Psalm 57", x: RW_ / 2, y: 64 * k, px: 21 * k, center: true, color: JSCENE.INK_REF, isNew: !J.wasFinal, last: true });
+    }
     for (let i = 0; i < lines; i++) {
       const ind = i % 2 ? 16 : 0;
       wrap(JOURNAL_VERSE[i], 27 * k, RW_ - 24 - ind).forEach((l, j) => { y += 29 * k; items.push({ text: l, x: 8 + ind + (j ? 18 : 0), y, px: 27 * k, isNew: i >= was }); });
@@ -2010,7 +2031,12 @@ function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, c
   });
   // the writing: the new words, one after another (left page first)
   let t = 0.8;
-  for (const it of [...J.left, ...J.right]) { if (!it.isNew) { it.at = -1; continue; } it.at = t; it.dur = it.text.length * JSCENE.CHAR; t += it.dur + JSCENE.GAP * 0.3; }
+  const all = [...J.left, ...J.right], order = [...all.filter(it => !it.last), ...all.filter(it => it.last)];
+  for (const it of order) {
+    if (!it.isNew) { it.at = -1; continue; }
+    if (it.title) { t += JSCENE.TITLE_WAIT; J.titleAt = t; }   // (the breath before it)
+    it.at = t; it.dur = it.text.length * JSCENE.CHAR * (it.title ? 2.2 : 1); t += it.dur + JSCENE.GAP * 0.3;
+  }
   J.done = t;
   J.flat = { left: document.createElement("canvas"), right: document.createElement("canvas") };
   for (const side of ["left", "right"]) { const [w, h] = JSCENE.PAGE[side]; J.flat[side].width = w * JSCENE.RES; J.flat[side].height = h * JSCENE.RES; }
@@ -2019,7 +2045,10 @@ function jsceneFrame(dt) {
   const J = region.jscene; J.t += dt;
   const skip = pressed("a") || pressed("b") || pressed("select") || pressed("start");
   if (!J.out && skip && J.t > 0.5) { if (J.t < J.done) J.t = J.done; else J.out = 0.001; }
-  if (!J.out) for (const it of [...J.left, ...J.right]) if (it.at >= 0 && !it.pen && J.t >= it.at) { it.pen = true; if (typeof penScratch === "function") penScratch(Math.min(1.2, it.dur), 0.8); }
+  if (!J.out) for (const it of [...J.left, ...J.right]) if (it.at >= 0 && !it.pen && J.t >= it.at) {
+    it.pen = true; if (typeof penScratch === "function") penScratch(Math.min(1.2, it.dur), 0.8);
+    if (it.title && typeof chime === "function") { chime(4); setTimeout(() => chime(7), 220); setTimeout(() => chime(11), 480); }   // (this is it)
+  }
   if (J.out) {
     J.out += dt;
     if (J.out >= JSCENE.FADE) {
@@ -2042,12 +2071,19 @@ function drawJscene(J) {
     g.setTransform(R, 0, 0, R, 0, 0); g.clearRect(0, 0, c.width, c.height); g.textBaseline = "alphabetic";
     for (const it of J[side]) {
       let text = it.text;
-      if (it.at >= 0) { if (J.t < it.at) continue; text = text.slice(0, Math.ceil((J.t - it.at) / JSCENE.CHAR)); }
+      if (it.at >= 0) { if (J.t < it.at) continue; text = text.slice(0, Math.ceil((J.t - it.at) / (JSCENE.CHAR * (it.title ? 2.2 : 1)))); }
       g.font = jsFont(it.px); g.fillStyle = it.color || JSCENE.INK; g.textAlign = it.center ? "center" : "left";
       g.fillText(text, it.x, it.y);
     }
     const q = JSCENE[side === "left" ? "LEFT" : "RIGHT"].map(([x, y]) => [x + ax, y + ay]);
     ctx.globalCompositeOperation = "multiply"; drawQuad(c, q, 8); ctx.globalCompositeOperation = "source-over";   // (multiply: the ink takes the page's light and shade)
+  }
+  if (J.titleAt && J.t >= J.titleAt) {   // the gate: a warm light comes up over the song as its title is written
+    const k = Math.min(1, (J.t - J.titleAt) / 1.2), pulse = 0.85 + 0.15 * Math.sin((J.t - J.titleAt) * 2.4);
+    const q = JSCENE.RIGHT, cx = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4 + ax, cy = (q[0][1] + q[1][1]) / 2 + ay + 40;
+    ctx.globalCompositeOperation = "lighter";
+    const gl = ctx.createRadialGradient(cx, cy, 10, cx, cy, 330); gl.addColorStop(0, `rgba(255,200,110,${JSCENE.GLOW * k * pulse})`); gl.addColorStop(1, "rgba(255,170,60,0)");
+    ctx.fillStyle = gl; ctx.fillRect(cx - 340, cy - 340, 680, 680); ctx.globalCompositeOperation = "source-over";
   }
   // the hint, and the fades
   const fin = J.t >= J.done;

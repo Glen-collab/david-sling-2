@@ -4857,7 +4857,7 @@ function frame(now) {
     }
     requestAnimationFrame(frame); return;
   }
-  if (Menu.active || Journal.active || WorldMap.active || Courtyard.active) {   // the menu, the Journal, a map or the home base covers the screen
+  if (Menu.active || Journal.active || WorldMap.active || Courtyard.active || (typeof LandMap !== "undefined" && LandMap.active)) {   // (+ Part Two's land map: landmap.js)   // the menu, the Journal, a map or the home base covers the screen
     if (setup.active) updateSetup(real); else checkCombo(real);
     if (typeof battleLoop !== "undefined" && !battleLoop.paused) { battleLoop.pause(); W6.battleVol = 0; }   // no sword fight under the Journal's harp (world6.js)
     for (const a of [dayMusic, nightMusic, caveMusic, stageTheme, ambience, bossMusic, stepsRun, finish.jingle]) if (a && !a.paused) a.pause();
@@ -4866,10 +4866,11 @@ function frame(now) {
     pollInput();
     if (setup.active) { input.now = {}; input.prev = {}; }   // the setup screen gets the buttons, not the map
     // Start on a map or in the courtyard: the pause menu (settings)
-    if (!Menu.active && pressed("start") && ((WorldMap.active && !WorldMap.leaving) || (Courtyard.active && !Courtyard.leaving && !Courtyard.mode))) { Menu.open("pause"); Menu.draw(); requestAnimationFrame(frame); return; }
-    updateTheme(real, Menu.active ? !Menu.snap : WorldMap.active && !WorldMap.leaving);   // the title screen has music; a pause is silent
+    if (!Menu.active && pressed("start") && ((typeof LandMap !== "undefined" && LandMap.active) || (WorldMap.active && !WorldMap.leaving) || (Courtyard.active && !Courtyard.leaving && !Courtyard.mode))) { Menu.open("pause"); Menu.draw(); requestAnimationFrame(frame); return; }
+    updateTheme(real, Menu.active ? !Menu.snap : (WorldMap.active && !WorldMap.leaving) || (typeof LandMap !== "undefined" && LandMap.active));   // the title screen has music; a pause is silent
     if (Menu.active) { Menu.update(real); Menu.draw(); }
     else if (Journal.active) { Journal.update(real); Journal.draw(); }
+    else if (typeof LandMap !== "undefined" && LandMap.active) { LandMap.update(real); LandMap.draw(); }
     else if (WorldMap.active) { WorldMap.update(real); WorldMap.draw(); }
     else { Courtyard.update(real); Courtyard.draw(); }
     drawToastAndSetup();
