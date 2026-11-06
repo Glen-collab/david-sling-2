@@ -298,7 +298,10 @@ const bird = (kind, room, x, y) => region.beasts.push({ kind, room, x, hx: x, y,
 // again. Three stones (or one charged, or three sword strokes) and he throws down his shield and runs, fading out.
 // Nobody dies. He keeps to his own floor or ledge (never off its end). y: the floor he stands on (px); range: his post, tiles
 const rPhil = (room, c, y = GR * T, range = 6) => beast("phil", room, c, { y, hy: y, range: range * T, state: "wait", hp: PHIL.HP, alpha: 1 });
-const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9, BACK_SPEED: 230, REST: 0.5, FLEE_SPEED: 320, FADE: 2.5, DROP_MS: 150 };
+const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9, BACK_SPEED: 230, REST: 0.5, FLEE_SPEED: 320, FADE: 2.5, DROP_MS: 150,
+  // (Glen 11-06) walls, rocks and the tower stop him: up to HOP tiles high he jumps up onto it (and drops off the far side);
+  // taller (the watchtower) he holds there, pacing behind it with his shield up, until there's a way to David again
+  HOP: 3, GRAV: 2200, HOLD_PACE: 1.2 };
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
@@ -323,6 +326,23 @@ function rButtress(room, n, c, flip = false) {   // (Glen 11-05) a buttress or p
   const k = KIT[n]; region.props.push({ room, n, x: c * T + T / 2 - k.w / 2, y: FOOT - k.h, flip });
   if (n === "tw_pier") platAt(c - 2, FOOT - k.h + 8, 5);
 }
+// (Glen 11-06) ladders between walkways (Part One's town_ladder): Up / Down to climb (main.js: ladders with a bottom, bot)
+function rLadder(room, x, topY, botY) {
+  const c = Math.round(x / T) - 1;
+  const l = { c, r: topY / T, bot: botY / T, rungs: [], top: { dir: 0, y: topY }, room, x: (c + 1) * T, topY, botY };
+  ladders.push(l); region.ladders.push({ room, x: l.x, top: topY, bot: botY });
+}
+function drawRegionLadders(camX) {
+  const img = typeof ITEM !== "undefined" && ITEM.town_ladder; if (!img || !img.naturalWidth) return;
+  const w = 2 * T - 4, sc = w / img.naturalWidth, segH = img.naturalHeight * sc * 0.86;   // (tiled: the picture repeats down a long one)
+  for (const l of region.ladders) {
+    const x = l.x - camX - w / 2; if (x > W || x + w < 0) continue;
+    const top = l.top - 26, bot = l.bot + 4;
+    ctx.save(); ctx.beginPath(); ctx.rect(x - 4, top, w + 8, bot - top); ctx.clip();
+    for (let y = top; y < bot; y += segH) ctx.drawImage(img, x, y, w, img.naturalHeight * sc);
+    ctx.restore();
+  }
+}
 function drawProps(camX) {
   for (const p of region.props) {
     if (p.front) continue;   // (drawRegionFront: over David)
@@ -340,12 +360,18 @@ function drawProps(camX) {
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], ladders: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionCamY() {   // main.js: how far up the camera is (0 but in a tall room: keep David about 60% down the screen)
   if (!REGION_ON) return 0;
   const r = region.room || roomAt(david.x); if (!r || !r.up) return 0;
-  return Math.max(-r.up * T, Math.min(0, david.y - H * 0.6));
+  // (Glen 11-06) steady, like a platformer: a jump doesn't move it; it settles on the height he lands at (or stands on a
+  // ladder at), and only follows him in the air if he gets near the top or bottom of the screen
+  const d = david, footed = d.onGround || d.state === "climb" || region.climb || d.deadT > 0;
+  if (footed || region.camFootY == null) region.camFootY = d.y;
+  let y = region.camFootY - H * 0.6;
+  y = Math.min(y, d.y - 170); y = Math.max(y, d.y - H + 90);   // (never lose him off the top or bottom)
+  return Math.max(-r.up * T, Math.min(0, y));
 }
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
@@ -446,45 +472,81 @@ function buildRegion() {
   c = R("walls"); const X = k => (c + k) * T;
   ground(c, c + 199);
   for (let k = c; k <= c + 199; k++) for (let rr = GR; rr < ROWS; rr++) artSolid.add(k + "," + rr);   // (his wall picture's own paving is the ground: no tiles drawn over it)
-  // (Glen 11-05) his buttresses and piers along the wall, first so the walkways are in front of them
-  rButtress("walls", "tw_buttress", c + 28); rButtress("walls", "tw_pier", c + 46); rButtress("walls", "tw_buttress_ruin", c + 84, true);
-  rButtress("walls", "tw_pier_stub", c + 114); rButtress("walls", "tw_buttress", c + 141, true); rButtress("walls", "tw_pier", c + 171); rButtress("walls", "tw_pier_stub", c + 188, true);
+  const walks = [], W_ = (x, y, n) => { const x1 = rWalk("walls", x, y, n); walks.push({ x0: x, x1, y, n }); return x1; };   // (every walkway's span: the ladders, birds, Philistines and pillars use them)
   oliveRow(c + 5, 16, 4);
   rStone("walls", c + 9);
-  rWalk("walls", X(15), 400, 1);
-  rWalk("walls", X(34), 270, 0); oliveRow(c + 35, onTop(270) - 0.4, 5); rBreak("jar", "walls", c + 42, onTop(270));
+  W_(X(15), 400, 1);
+  W_(X(34), 270, 0); oliveRow(c + 35, onTop(270) - 0.4, 5); rBreak("jar", "walls", c + 42, onTop(270));
   critter("scorpion", c + 48);
   rKitDoor("d_gate", "walls", c + 55, "door", "d_hallsgate", "tw_door_arch");   // (Glen 11-05: his stone doors match his rougher wall)
   rStone("walls", c + 61, "tw_slab");
-  rWalk("walls", X(67), 420, 2); oliveRow(c + 72, onTop(420) - 0.4, 6);
-  rWalk("walls", X(90), 290, 0); rBreak("jar", "walls", c + 96, onTop(290));
-  rWalk("walls", X(104), 160, 0);
+  W_(X(67), 420, 2); oliveRow(c + 72, onTop(420) - 0.4, 6);
+  W_(X(90), 290, 0); rBreak("jar", "walls", c + 96, onTop(290));
+  W_(X(104), 160, 0);
   rRelic("g_stone_walls", "stone", c + 110, onTop(160));
   snake("viper", c + 100);
   rKitDoor("d_down", "walls", c + 125, "stairs", "d_cellarup", "tw_door_open");
-  rWalk("walls", X(132), 430, 3); oliveRow(c + 138, onTop(430) - 0.4, 8);
+  W_(X(132), 430, 3); oliveRow(c + 138, onTop(430) - 0.4, 8);
   rBreak("basket", "walls", c + 145, 16);
   rKitDoor("d_tower", "walls", c + 153, "door", "d_towerdown", "tw_door_open");   // (Glen 11-05) up into the watchtower
-  rWalk("walls", X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
+  W_(X(161), 300, 0); rBreak("lamp", "walls", c + 166, onTop(300));
   rPhil("walls", c + 22, GR * T, 4); rPhil("walls", c + 108, GR * T, 5);   // (Glen 11-05) and in the yard
   rStone("walls", c + 177, "tw_step2", true); critter("hedgehog", c + 186); oliveRow(c + 188, 16, 4);
   // (Glen 11-05) the way out: a gate at the far end of the Walls, locked; the bronze key from the top of the watchtower
   // opens it, and David slips out of Gibeah (19:12: "he went, fled, and escaped"). Next region's road starts here, later.
-  // (Glen 11-05) the Walls' upper levels: three climbs of his walkways (fixed to the wall, zig-zag) up from the
-  // walkways below to the top of the wall, a row across the middle between them, and the walk along the top
-  { const wr = roomById("walls"), deck = wallTopY(wr) + TALL_WALL.DECK, STEP = 108, ZIG = 260;
+  // (Glen 11-06) the Walls' upper levels: eight rows of his walkways, staggered like brickwork (not stacked), ladders
+  // between a row and the next where they overlap, crows and ravens on them, Philistines walking the wider ones; a plank
+  // walk along the top of the wall, end to end. ROWS_UP: each row's deck (px) and its walkways [column, middle pieces]
+  { const wr = roomById("walls"), deck = wallTopY(wr) + TALL_WALL.DECK, lower = walks.slice();
     rock(c, TOP_ROW, wr.w, -wr.up - TOP_ROW);   // (above the sky: the ceiling)
-    const climb = (x0, from) => { let i = 0; for (let y = from - STEP; y > deck + 40; y -= STEP, i++) { const x = x0 + (i % 2) * ZIG; rWalk("walls", x, y, 0); if (i % 4 === 2) oliveRow(Math.round((x + 60) / T), y / T - 1.4, 3); } };
-    climb(X(104) + 20, 160); climb(X(34) + 20, 270); climb(X(161) + 20, 300);
-    const MID = -700;   // the middle row: across from one climb to the next
-    for (let x = X(44); x < X(100); x += ZIG) rWalk("walls", x, MID, 0);
-    for (let x = X(116); x < X(158); x += ZIG) rWalk("walls", x, MID - 54, 0);
-    oliveRow(c + 60, MID / T - 1.4, 6); rBreak("jar", "walls", c + 80, MID / T - 1);
-    platAt(c + 1, deck, wr.w - 2);   // the top of the wall, end to end
+    // brickwork: each row starts 14 or 4 / 18 columns over from the one below, a walkway every 32 columns, the widths
+    // varying (middle pieces 1, 2, 1, 0); each overlaps one below by 3-8 columns, where its ladder goes
+    const ROWS_UP = [-60, -270, -480, -690, -900, -1110, -1320, -1530].map((y, k) => {
+      const row = []; let col = 3 + [0, 14, 4, 18][k % 4];
+      for (let i = 0; ; i++, col += 32) { const n = [1, 2, 1, 0][(i + k) % 4]; if (col + 6 + 5 * n > 190) break; row.push([col, n]); }
+      return [y, row];
+    });
+    let below = lower, k = 0;
+    for (const [y, row] of ROWS_UP) {
+      const here = row.map(([col, n]) => { W_(X(col), y, n); return walks[walks.length - 1]; });
+      for (const u of here) {   // a ladder down to the row below, where they overlap most
+        let best = null, ov = 0;
+        for (const l of below) { const o = Math.min(u.x1, l.x1) - Math.max(u.x0, l.x0); if (o > ov) { ov = o; best = l; } }
+        if (best && ov >= 2.5 * T) rLadder("walls", (Math.max(u.x0, best.x0) + Math.min(u.x1, best.x1)) / 2, y, best.y);
+      }
+      here.forEach((u, i) => {
+        const mid = Math.round((u.x0 + u.x1) / 2 / T);
+        if ((i + k) % 3 === 0) oliveRow(mid - 2, y / T - 1.4, 4);
+        if ((i + k) % 4 === 2) rBreak("jar", "walls", mid + 2, onTop(y));
+        if ((i + k) % 2 === 1) bird(k < 4 ? "crow" : "raven", "walls", (u.x0 + u.x1) / 2 + 40, y);   // (Glen 11-06: more crows)
+        if (u.n >= 1 && (i + k) % 3 === 1) rPhil("walls", mid, y, Math.max(3, Math.round((u.x1 - u.x0) / T / 2) - 2));   // (Glen 11-06: Philistines on the ledges too)
+      });
+      below = here; k++;
+    }
+    for (const i of [0, 2, 4]) { const u = below[i]; rLadder("walls", u.x0 + (u.x1 - u.x0) * 0.3, deck, u.y); }   // up onto the top of the wall
+    // the top of the wall: a plank walk end to end, so he runs on boards, not on the broken battlements
+    for (let px = X(1); px < X(wr.w - 1); px += KIT.tw_walk.w - 4) region.props.push({ room: "walls", n: "tw_walk", x: px, y: deck - 6 });
+    platAt(c + 1, deck, wr.w - 2);
     oliveRow(c + 20, deck / T - 1.4, 10); oliveRow(c + 140, deck / T - 1.4, 10);
     rRelic("g_pom_walltop", "pomegranate", c + 92, deck / T - 1);
-    bird("crow", "walls", X(70), deck); bird("crow", "walls", X(150), deck); bird("raven", "walls", X(60), MID);
-    rPhil("walls", c + 45, deck, 10); rPhil("walls", c + 120, deck, 10); rPhil("walls", c + 175, deck, 8); }   // (Glen 11-05) Philistines up on the wall: a raid (18:30)
+    bird("crow", "walls", X(70), deck); bird("crow", "walls", X(150), deck); bird("raven", "walls", X(110), deck);
+    rPhil("walls", c + 45, deck, 10); rPhil("walls", c + 120, deck, 10); rPhil("walls", c + 175, deck, 8);   // (Glen 11-05) Philistines up on the wall: a raid (18:30)
+    // (Glen 11-06) his buttresses and piers: only where no walkway, ladder, door or stone stands in front of them; behind everything
+    const box = p => ({ x0: p.x - 30, x1: p.x + KIT[p.n].w + 30, y0: p.y - 30, y1: p.y + KIT[p.n].h });
+    const taken = region.props.filter(p => p.room === "walls").map(box).concat(region.ladders.filter(l => l.room === "walls").map(l => ({ x0: l.x - 70, x1: l.x + 70, y0: l.top, y1: l.bot })));
+    const PIL = ["tw_buttress", "tw_pier", "tw_buttress_ruin", "tw_pier_stub"];
+    const before = region.props.length; let last = -99, j = 0;
+    for (let col = 4; col < wr.w - 6; col++) {
+      if (col - last < 12) continue;
+      for (let t = 0; t < PIL.length; t++) {   // the tallest that fits here (a stub where a walkway's above)
+        const n = PIL[(j + t) % PIL.length], q = { room: "walls", n, x: X(col) + T / 2 - KIT[n].w / 2, y: FOOT - KIT[n].h, flip: j % 2 === 1 }, b = box(q);
+        if (taken.some(t => b.x0 < t.x1 && b.x1 > t.x0 && b.y0 < t.y1 && b.y1 > t.y0)) continue;
+        region.props.push(q); taken.push(b); last = col; j++; break;
+      }
+    }
+    const pillars = region.props.splice(before);
+    const first = region.props.findIndex(p => p.room === "walls"); region.props.splice(first, 0, ...pillars);   // (drawn first: behind the walkways)
+  }
   rDoor("d_exit", "walls", c + 196, "exit", null); Object.assign(region.doors[region.doors.length - 1], { key: "g_tower_key" });
 
   // -- The Watchtower (Glen 11-05): Castlevania-tall, a climb of ledges zig-zagging up six screens to the lookout.
@@ -554,7 +616,7 @@ function buildRegion() {
     rLedge("halls", X(30), 280, 0); rRelic("g_stone_halls", "stone", c + 34, onTop(280));
     rBreak("hall_lamp", "halls", c + 34, 16);
     rPedestal("halls", c + 40);
-    campfire(c + 46, GR - 1); fires[fires.length - 1].look = "fire";   // a fire in the hall (the king's brazier, Jeremiah 36:22): saves too
+    campfire(c + 46, GR - 1);   // an olive press (the save point). (Glen 11-06: it was a campfire here; every save is an olive press)
     rLedge("halls", X(49), 430, 0); oliveRow(c + 51, onTop(430) - 0.4, 3);
     rBreak("hall_lamp", "halls", c + 56, 16); }
 
@@ -652,7 +714,7 @@ function regionCam() {
 }
 function regionInit() {
   region.inited = true;
-  roomImg(MAP_SHEET.img);
+  roomImg(MAP_SHEET.img); kitImg("olive_press");   // (the save point's picture: ready before the first one comes on screen)
   for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) roomImg("gibeah/sky_clouds"); }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
@@ -674,7 +736,7 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined, strTaken: false });
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0 });
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
   }
@@ -1168,7 +1230,7 @@ function drawRegion(camX) {
     const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
     ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);
   }
-  drawTowerEnds(camX); drawProps(camX); drawLedges(camX);
+  drawTowerEnds(camX); drawProps(camX); drawRegionLadders(camX); drawLedges(camX);
   drawFloorCrumbles(camX);
   drawBreaks(camX);
   drawBeasts(camX);
@@ -1266,11 +1328,22 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
 }
 // ---- the creatures: spiders on threads and on the floor, bats, rats ----
 const BEAST = { phil: { w: 28, h: 120 }, crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
-function beastBox(b) { const k = BEAST[b.kind]; return { x0: b.x - k.w, x1: b.x + k.w, y0: b.y - k.h, y1: b.y }; }
+function beastBox(b) {
+  const k = BEAST[b.kind];
+  if (BIRD[b.kind] && b.state !== "perch") { const cy = b.y + 20; return { x0: b.x - k.w * 1.25, x1: b.x + k.w * 1.25, y0: cy - k.h * 0.7, y1: cy + k.h * 0.7 }; }   // (Glen 11-06) flying: drawn centred at y + 20, so the box is too (it sat above the bird)
+  return { x0: b.x - k.w, x1: b.x + k.w, y0: b.y - k.h, y1: b.y };
+}
 // a Philistine (above): can he stand at x? (his own floor or ledge goes on there)
 const philFloor = (b, x) => { const c = Math.floor(x / T), rr = Math.floor(b.hy / T); return Math.abs(x - b.hx) < b.range + 8 * T && (isSolid(c, rr) || isOneway(c, rr)); };
+// where his feet go at x: his floor, or the top of whatever solid stands on it (null: no floor there, the end of his post)
+function philSurf(b, x) {
+  const c = Math.floor(x / T), rr = Math.floor(b.hy / T);
+  if (!philFloor(b, x)) return null;
+  let k = 0; while (k < 12 && isSolid(c, rr - 1 - k)) k++;
+  return k ? (rr - k) * T : b.hy;   // (Glen 11-06: his own floor at its real height, a walkway's planks, not the tile row's top: he stood on the railing)
+}
 function philHit(b, s) {
-  if (!(b.state === "wait" || b.state === "run" || b.state === "back")) return false;
+  if (!(b.state === "wait" || b.state === "run" || b.state === "back" || b.state === "hold")) return false;
   if (!(Math.abs(s.x - b.x) < 30 && s.y > b.y - 125 && s.y < b.y + 4)) return false;
   if (b.cool > 0) return true;   // (one sword stroke, one hit)
   b.cool = s.sword ? 0.3 : 0.05; b.flash = 0.25;
@@ -1278,7 +1351,7 @@ function philHit(b, s) {
   if (typeof stoneHit === "function" && !s.sword) stoneHit(s);
   if (b.state === "wait") { b.state = "run"; b.t = 0; }   // (struck from afar: he comes for you)
   if (b.hp <= 0) {
-    b.state = SPR.phil_drop ? "drop" : "flee"; b.t = 0; b.dropX = b.x; b.fleeDir = Math.sign(b.x - david.x) || 1; b.strTaken = true; strGain("phil");
+    b.state = SPR.phil_drop ? "drop" : "flee"; b.t = 0; b.dropX = b.x; b.dropY = b.y; b.fleeDir = Math.sign(b.x - david.x) || 1; b.strTaken = true; strGain("phil");
     sfx("lion_hit", b.x, 0.4, 1.6); setTimeout(() => sfx("phil_nusu_1", b.x, 0.7), 500);   // "Nusu!" (Run!)
     if (!region.philFled) { region.philFled = true; toast("He throws down his shield and runs. (1 Samuel 18:30)"); }
   }
@@ -1286,19 +1359,38 @@ function philHit(b, s) {
 }
 function updatePhil(b, dt) {
   const d = david, P = PHIL; b.flash = Math.max(0, (b.flash || 0) - dt);
-  const step = v => { const nx = b.x + v * dt; if (philFloor(b, nx + Math.sign(v) * 14)) b.x = nx; };
+  // a step: on flat ground he walks; a wall up to HOP tiles he jumps (only when he's after David); taller, he's blocked
+  const step = (v, hop = false) => {
+    const nx = b.x + v * dt, s = philSurf(b, nx + Math.sign(v) * 14); if (s == null) return false;
+    if (b.air) { if (s >= b.y - 2) { b.x = nx; return true; } return false; }   // in the air: on over it if he's high enough
+    const rise = b.y - s;
+    if (rise <= 4) { b.x = nx; return true; }
+    if (hop && rise <= P.HOP * T + 4) { b.air = true; b.vy = -Math.sqrt(2 * P.GRAV * (rise + 30)); return false; }
+    return false;
+  };
+  const canGo = dir => { const s = philSurf(b, b.x + dir * (T * 0.5 + 14)); return s != null && b.y - s <= P.HOP * T + 4; };   // not the tower, not the end of his post
   if (b.state === "wait") {   // pacing his post
-    b.pdir = b.pdir || -1; step(b.pdir * P.PACE_SPEED); b.facing = b.pdir;
-    if (Math.abs(b.x - b.hx) > P.PACE * T && Math.sign(b.x - b.hx) === b.pdir) b.pdir = -b.pdir;
+    b.pdir = b.pdir || -1;
+    if (Math.abs(b.x - b.hx) > P.PACE * T + T) { b.pdir = Math.sign(b.hx - b.x); step(b.pdir * P.PACE_SPEED * 1.6, true); }   // away from his post: back to it (over what's in the way)
+    else { if (!step(b.pdir * P.PACE_SPEED)) b.pdir = -b.pdir;   // (a wall at his post: turn)
+      if (Math.abs(b.x - b.hx) > P.PACE * T && Math.sign(b.x - b.hx) === b.pdir) b.pdir = -b.pdir; }
+    b.facing = b.pdir;
     if (Math.abs(d.x - b.x) < P.NEAR * T && Math.abs(d.y - b.y) < 140 && d.deadT <= 0) {
       b.state = "run"; b.t = 0; sfxOne(["phil_hedad", "phil_hedad_2"], b.x, 0.75);   // "Hedad!", his battle cry
       if (!region.philTold) { region.philTold = true; toast("Philistines! Three stones (or one charged) and he'll drop his shield and run."); }
     }
   } else if (b.state === "run") {
     const dir = Math.sign(d.x - b.x) || -1; b.facing = dir;
-    if (d.deadT <= 0) step(dir * P.SPEED);
+    if (d.deadT <= 0 && Math.abs(d.x - b.x) > 24) step(dir * P.SPEED, true);   // (Glen 11-06: right under or over him: he stands, no shaking back and forth)
+    if (Math.abs(d.y - b.y) > 200 && !b.air) { b.state = "wait"; b.t = 0; }   // David up or down on another walkway: back to pacing his own
+    if (!b.air && !canGo(dir) && Math.abs(d.x - b.x) > 40) { b.state = "hold"; b.t = 0; b.ax = b.x; b.pdir = -dir; }   // the tower (or as far as he goes): he can't get to David
     if (Math.abs(d.x - b.x) < 30 && d.y > b.y - 100 && d.y < b.y + 40 && d.deadT <= 0) { hurtDavid(b.x); b.state = "back"; b.t = 0; }
     if (Math.abs(d.y - b.y) > 260 || Math.abs(d.x - b.x) > (P.NEAR + 6) * T) { b.state = "wait"; b.t = 0; }   // he's lost him: back to his post
+  } else if (b.state === "hold") {   // stopped at the tower: pacing behind it, shield up, watching for a way round
+    b.facing = Math.sign(d.x - b.x) || b.facing;
+    if (!step(b.pdir * P.PACE_SPEED * 1.4) || (Math.abs(b.x - b.ax) > P.HOLD_PACE * T && Math.sign(b.x - b.ax) === b.pdir)) b.pdir = -b.pdir;
+    if (b.t > 0.6 && !b.air && canGo(Math.sign(d.x - b.x) || -1) && Math.abs(b.x - b.ax) < T) { b.state = "run"; b.t = 0; }   // a way to David again: after him
+    if (Math.abs(d.y - b.y) > 260 || Math.abs(d.x - b.x) > (P.NEAR + 6) * T) { b.state = "wait"; b.t = 0; }
   } else if (b.state === "back") {   // shield up, backing off; a breath, and he comes again
     if (Math.abs(d.x - b.x) > 20) b.facing = Math.sign(d.x - b.x) || -1;
     if (b.t < P.BACK) step(-b.facing * P.BACK_SPEED * (1 - b.t / P.BACK * 0.5));
@@ -1306,19 +1398,25 @@ function updatePhil(b, dt) {
   } else if (b.state === "drop") {
     if (b.t * 1000 >= P.DROP_MS * SPR.phil_drop.frames) { b.state = "flee"; b.t = 0; }
   } else if (b.state === "flee") {   // away from David, fading as he goes
-    b.x += b.fleeDir * P.FLEE_SPEED * dt; b.alpha = Math.max(0, 1 - b.t / P.FADE);
+    if (!step(b.fleeDir * P.FLEE_SPEED, true) && !b.air) b.x += b.fleeDir * P.FLEE_SPEED * dt * 0.5;   // (fading anyway: a wall doesn't hold him long)
+    b.alpha = Math.max(0, 1 - b.t / P.FADE);
     if (b.alpha <= 0) b.dead = true;
+  }
+  const ground = philSurf(b, b.x);
+  if (ground != null && (b.air || b.y < ground - 1)) {   // in the air, or he's walked off the top of something
+    b.air = true; b.vy = (b.vy || 0) + P.GRAV * dt; b.y += b.vy * dt;
+    if (b.vy > 0 && b.y >= ground) { b.y = ground; b.vy = 0; b.air = false; }
   }
 }
 function drawPhil(b, x) {
   const now = performance.now() / 1000, fl = b.flash > 0 ? "brightness(2)" : "", near = Math.abs(david.x - b.x) < 5 * T;
   if ((b.state === "flee" || b.state === "drop") && b.dropX !== undefined) {   // his shield and spear, left lying where he dropped them
-    const gx = b.dropX - (b.x - x), gy = b.hy; ctx.save(); ctx.globalAlpha = b.state === "flee" ? b.alpha : 1;
+    const gx = b.dropX - (b.x - x), gy = b.dropY ?? b.hy; ctx.save(); ctx.globalAlpha = b.state === "flee" ? b.alpha : 1;
     ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(gx - 50, gy - 3); ctx.lineTo(gx + 40, gy - 4); ctx.stroke();
     ctx.fillStyle = "#9a7440"; ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(gx - 22, gy - 5, 26, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
   }
   if (b.state === "wait") drawSprite("phil_run", frameOf("phil_run", (now + b.hx) * 0.45), x, b.y, b.facing, 1, 1, fl);   // pacing: his run, slowed to a walk
-  else if (b.state === "back") drawSprite("phil_charge", frameOf("phil_charge", now * 0.6), x, b.y, b.facing, 1, 1, fl);
+  else if (b.state === "back" || b.state === "hold") drawSprite("phil_charge", frameOf("phil_charge", now * 0.6), x, b.y, b.facing, 1, 1, fl);
   else if (b.state === "run") { const nm = near ? "phil_charge" : "phil_run"; drawSprite(nm, frameOf(nm, now + b.hx), x, b.y, b.facing, 1, 1, fl); }
   else if (b.state === "drop") drawSprite("phil_drop", frameOf("phil_drop", b.t, PHIL.DROP_MS), x, b.y, -(b.facing || -1), 1, 1, fl);   // (the sheet starts facing left)
   else drawSprite("phil_flee", frameOf("phil_flee", now + b.hx), x, b.y, b.fleeDir, 1, b.alpha);
@@ -1426,10 +1524,26 @@ function drawFloorCrumbles(camX) {
   }
 }
 // ---- the Harp Room (1 Samuel 18:10-11) ----
+// (Glen 11-06) Saul's dark music (Part One's saul_dark) while the king is troubled: low while David plays, gone once he's calm
+const SAUL_MUSIC = { VOL: 0.55, UNDER_HARP: 0.1, FADE: 0.8, LEAVE_AT: 3, LEAVE_TIME: 1.5 };   // LEAVE_AT: s after the verse closes, he gets up and goes
+let saulDarkSong = null, saulDarkVol = 0;
+function updateSaulMusic(dt, r) {
+  const M = SAUL_MUSIC, troubled = !regionHas("taken", "g_harp_done");
+  const want = r && r.id === "harp" && troubled && !regionHushed() && david.deadT <= 0 ? (david.harp ? M.UNDER_HARP : M.VOL) : 0;
+  if (!saulDarkSong && want > 0) saulDarkSong = Object.assign(new Audio(`../assets/audio/saul_dark.mp3?v=${window.BUILD || 0}`), { loop: true, volume: 0, _music: true });
+  if (!saulDarkSong) return;
+  saulDarkVol = fadeLoop(saulDarkSong, saulDarkVol, want, dt, M.FADE);
+}
+const regionStageQuiet = () => REGION_ON && (region.room || {}).id === "harp" && !regionHas("taken", "g_harp_done");   // main.js: no fields music under the king's
 function updateHarpRoom(dt, r) {
   const hr = region.harp, d = david, H_ = RTUNE.HARP; if (!hr) return;
+  updateSaulMusic(dt, r);
   if (regionHas("taken", "g_harp_done")) {   // (Glen 11-05) won: once David has left, the room is empty; the spears stay in the wall
     hr.phase = "calm"; if (r.id !== "harp") hr.empty = true; hr.hitCool = Math.max(0, (hr.hitCool || 0) - dt);
+    if (r.id === "harp" && !hr.empty) {   // (Glen 11-06) the king, calm now, gets up and goes: the hidden wall can be struck right away
+      hr.t += dt; if (!(dialog.t > 0) && !region.jscene) hr.goT = (hr.goT || 0) + dt;   // (after the verse, and the Journal if it opens)
+      if (hr.goT > SAUL_MUSIC.LEAVE_AT + SAUL_MUSIC.LEAVE_TIME) hr.empty = true;
+    }
     for (const p of hr.dust) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy -= 10 * dt; p.r += 14 * dt; }
     hr.dust = hr.dust.filter(p => p.t < p.life);
     if (!hr.stuck.length) hr.stuck.push(GR * T - H_.SPEAR_Y, GR * T - H_.SPEAR_Y - 34);
@@ -1489,7 +1603,8 @@ function drawHarpRoom(camX) {
   }
   for (const y of hr.stuck) { const k = KIT.hr_spearwall, im = kitImg("hr_spearwall"); if (im) ctx.drawImage(im, Math.round(hr.wallX - 30 - camX), Math.round(y - k.h / 2), k.w * 0.8, k.h * 0.8); }
   if (hr.empty) {}   // (gone)
-  else if (hr.phase === "calm") drawSprite("saul_sit", Math.min(SPR.saul_sit.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_sit.ms)), x, GR * T, -1, SAUL_BIG);   // (Glen's purple Saul throughout: he sinks down, quiet)
+  else if (hr.phase === "calm") drawSprite("saul_sit", Math.min(SPR.saul_sit.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_sit.ms)), x, GR * T, -1, SAUL_BIG,
+                                          Math.max(0, Math.min(1, 1 - ((hr.goT || 0) - SAUL_MUSIC.LEAVE_AT) / SAUL_MUSIC.LEAVE_TIME)));   // (fading: he goes)   // (Glen's purple Saul throughout: he sinks down, quiet)
   else if (hr.phase === "throw") drawSprite("saul_throw", Math.min(SPR.saul_throw.frames - 1, Math.floor(hr.t * 1000 / SPR.saul_throw.ms)), x, GR * T, -1, SAUL_BIG);
   else { const n = SPR.saul_look_back.frames, k = Math.floor(hr.t * 1000 / 140) % (2 * n - 2); drawSprite("saul_look_back", k < n ? k : 2 * n - 2 - k, x, GR * T, -1, SAUL_BIG); }   // troubled, the spear in his hand
   if (hr.phase === "throw" && !hr.thrown) {   // the warning: the spear is up
@@ -1714,7 +1829,7 @@ function regionMapFrame(dt) {   // true while the map (or the card, or the Journ
   } else if (region.mapT > 0.15) {
     const back = pressed("select") || pressed("b") || pressed("start") || (region.page === 0 && pressed("a"));
     if (!region.bookLeave && (pressed("left") || pressed("right"))) { region.page = 1 - region.page; region.mapT = 0.15; if (typeof sfxPageTurn === "function") sfxPageTurn(); }
-    else if (region.page === 1 && pressed("a")) songToggle();
+    else if (region.page === 1 && pressed("a") && SONG_ON) songToggle();
     else if (back) { bookClose(); return true; }
   }
   region.mapT += dt;
@@ -1767,14 +1882,18 @@ const JOURNAL_VERSE = ["Be merciful to me, O God", "Be merciful to me", "My soul
   "Until the storm has passed away", "Until the danger disappears", "Beneath the shadow of Your wings", "I will find refuge here"];
 const STORY_STEPS = ["g_song", "g_jonathan", "g_harp_done", "g_michal"];
 let CARD_SONG = null;
+// (Glen 11-06) like his first game: David's song isn't played until the very end of the game. The Journal pages (the gate's
+// last one too) have only the journal harp while he writes. SONG_ON: true brings back "A: play the song" on the card
+const SONG_ON = false;
 const CARD_FACE = Object.assign(new Image(), { src: "../assets/items/david_portrait.png?v=" + (window.BUILD || 0) });   // (Glen 11-05: his portrait, cut from green)   // Glen's whole song, played from the Journal page (A)
 function bookOpen(page, leave = false) {
   region.mapOpen = true; region.mapT = 0; region.page = page; region.bookLeave = leave;
-  if (leave && !(CARD_SONG && !CARD_SONG.paused)) songToggle(true);
+  if (leave && SONG_ON && !(CARD_SONG && !CARD_SONG.paused)) songToggle(true);
 }
 function bookClose() {
   region.mapOpen = false;
   if (CARD_SONG && !CARD_SONG.paused) CARD_SONG.pause();   // (the stage's music picks up again by itself: updateMusic)
+  if (typeof journalMusic !== "undefined" && !journalMusic.paused) journalMusic.pause();   // (the gate's page: the harp carried on into the card)
   if (region.bookLeave) { region.bookLeave = false; region.trans = { t: 0, leave: true }; }
 }
 function songToggle(on = !(CARD_SONG && !CARD_SONG.paused)) {
@@ -1807,22 +1926,31 @@ const JSCENE = {
 };
 const JS_IMG = Object.assign(new Image(), { src: "../assets/journal/david_journal_ots.png?v=" + (window.BUILD || 0) });
 const storyDone = () => STORY_STEPS.filter(id => regionHas("taken", id)).length;
+// (Glen 11-06) what he's found, kept at the bottom of the left page the whole time: a line for each kind once he's found
+// the first one, more added as he finds them (written in the next time he writes); "of N" only on the gate's last page.
+// JFIRST: the kinds whose first one sits him down to write straight away
+const JFOUND = [["truth", "Truths"], ["stone", "Stones of remembrance"], ["pomegranate", "Pomegranates"], ["oil", "Oil jars"]], JFIRST = ["stone", "truth"];
+const jFound = k => region.relics.filter(f => f.kind === k && regionHas("taken", f.id)).length;
+const jAll = k => region.relics.filter(f => f.kind === k).length;
 function journalWatch() {   // updateRegion: a story moment just finished? he sits down and writes
   const d = david;
   if (region.jscene || region.mapOpen || region.script.length || region.wait > 0 || region.trans || region.climb || (dialog && dialog.t > 0) || !d.onGround || d.deadT > 0) return;
-  if (storyDone() > (region.save.jAt || 0)) jsceneOpen(false);
+  const jW = region.save.jW || {}, first = (region.save.jAt || 0) < 9 && JFIRST.some(k => jFound(k) > 0 && !jW[k]);   // (jAt 9: the tests, no Journal)
+  if (storyDone() > (region.save.jAt || 0) || first) jsceneOpen(false);
 }
 function jsceneOpen(final) {
   const prev = region.save.jAt || 0, n = storyDone();
   region.save.jAt = Math.max(prev, n); regionWrite();
   const snap = document.createElement("canvas"); snap.width = W; snap.height = H; snap.getContext("2d").drawImage(ctx.canvas, 0, 0);   // the game behind, blurred
-  region.jscene = { t: 0, prev: final ? Math.min(prev, n) : prev, n, final, wasFinal: final && regionHas("taken", "g_jfinal"), snap, out: 0 };
+  region.jscene = { t: 0, prev: final ? Math.min(prev, n) : prev, n, final, wasFinal: final && regionHas("taken", "g_jfinal"), snap, out: 0, jW: Object.assign({}, region.save.jW || {}) };
+  region.save.jW = Object.fromEntries(JFOUND.map(([k]) => [k, jFound(k)])); regionWrite();   // (what's written now: next time only what's new is)
   if (final) regionAdd("taken", "g_jfinal");
   hushStage();
-  if (final) songToggle(true);
+  if (final && SONG_ON) songToggle(true);
   else if (typeof journalMusic !== "undefined") { journalMusic.currentTime = 0; journalMusic.volume = typeof JTUNE !== "undefined" ? JTUNE.MUSIC_VOLUME : 0.5; journalMusic.play().catch(() => {}); }
   jsceneLayout(region.jscene);
 }
+const regionHushed = () => REGION_ON && (!!region.jscene || (region.mapOpen && region.bookLeave) || (typeof CARD_SONG !== "undefined" && CARD_SONG && !CARD_SONG.paused));   // main.js updateMusic: the stage's music stays out
 function hushStage() {   // the stage's music stops (updateMusic brings it back afterward)
   if (typeof hushLoops === "function") hushLoops();
   for (const a of [typeof dayMusic !== "undefined" && dayMusic, typeof nightMusic !== "undefined" && nightMusic, typeof caveMusic !== "undefined" && caveMusic,
@@ -1846,13 +1974,25 @@ function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, c
       y += 19 * k; items.push({ text: "— " + ref, x: 30, y, px: 17 * k, color: JSCENE.INK_REF, isNew });
       y += 8 * k;
     }
-    // what he's found (written fresh each time: it's a tally)
-    const found = k2 => region.relics.filter(f => f.kind === k2 && regionHas("taken", f.id)).length, all = k2 => region.relics.filter(f => f.kind === k2).length;
-    const truths = region.relics.filter(f => f.kind === "truth" && regionHas("taken", f.id)).map(f => (f.text.match(/\(([^()]+)\)\s*$/) || [])[1]).filter(Boolean);
-    const tally = [`Found in ${REGION.name}:`, `Truths ${found("truth")} of ${all("truth")}${truths.length ? " (" + truths.join("; ") + ")" : ""}.`,
-      `Pomegranates ${found("pomegranate")} of ${all("pomegranate")}. Stones of remembrance ${found("stone")} of ${all("stone")}. Oil jars ${found("oil")} of ${all("oil")}.`];
-    y += 14 * k;
-    for (const [i, t] of tally.entries()) for (const l of wrap(t, 18 * k, LW - 24)) { y += 20 * k; items.push({ text: l, x: 12, y, px: 18 * k, color: i ? JSCENE.INK_REF : JSCENE.INK, isNew: true }); }
+    // what he's found: at the bottom of the page, a line for each kind found so far (new ones, or new counts, written now)
+    const list = [];
+    for (const [kind, name] of JFOUND) {
+      const n = jFound(kind); if (!n) continue;
+      let t = J.final ? `${name}: ${n} of ${jAll(kind)}` : `${name}: ${n}`;
+      if (kind === "truth") { const refs = region.relics.filter(f => f.kind === "truth" && regionHas("taken", f.id)).map(f => (f.text.match(/\(([^()]+)\)\s*$/) || [])[1]).filter(Boolean); if (refs.length) t += ` (${refs.join("; ")})`; }
+      list.push([t, J.final ? !J.wasFinal : n !== (J.jW[kind] || 0)]);
+    }
+    if (list.length) {
+      const lines = []; for (const [t, isNew] of list) for (const l of wrap(t, 18 * k, LW - 24)) lines.push([l, isNew]);
+      const H_ = JSCENE.PAGE.left[1], top = H_ - 12 - lines.length * 20 * k - 24 * k;
+      if (top < y + 12 * k) y = H_ + 100;   // (no room: fit() tries smaller)
+      else {
+        let ly = top;
+        items.push({ text: `Found in ${REGION.name}:`, x: 12, y: ly, px: 19 * k, isNew: !Object.values(J.jW).some(Boolean) });
+        for (const [l, isNew] of lines) { ly += 20 * k; items.push({ text: l, x: 20, y: ly, px: 18 * k, color: JSCENE.INK_REF, isNew }); }
+        y = ly;
+      }
+    }
     return { items, bottom: y };
   });
   // the right page: Glen's song, two lines a story moment, all of it at the gate
@@ -1884,7 +2024,7 @@ function jsceneFrame(dt) {
     J.out += dt;
     if (J.out >= JSCENE.FADE) {
       region.jscene = null;
-      if (typeof journalMusic !== "undefined" && !journalMusic.paused) journalMusic.pause();
+      if (!J.final && typeof journalMusic !== "undefined" && !journalMusic.paused) journalMusic.pause();   // (the gate's: on under the card)
       if (J.final) bookOpen(1, true);   // then the card, the song still playing; B: on to the road
       return;
     }
@@ -2007,18 +2147,19 @@ function drawCardSpread() {
   ctx.fillStyle = "rgba(40,24,12,0.92)"; ctx.font = handFont(38);
   for (let i = 0; i < n; i++) { ctx.fillText(JOURNAL_VERSE[i], rx + (i % 2 ? 30 : 0), jy); jy += i === 3 ? 66 : 44; }
   if (n && n < JOURNAL_VERSE.length) { ctx.fillStyle = FAINT; ctx.font = "italic 16px Georgia, serif"; ctx.fillText("(more as the story goes on)", rx, jy + 6); }
-  // the song: A
+  // the song: A (only once it's played: SONG_ON)
   const playing = CARD_SONG && !CARD_SONG.paused, sy = R.y + R.h - 64;
+  if (SONG_ON) {
   ctx.fillStyle = INK; ctx.font = "18px Georgia, serif";
   ctx.fillText(playing ? "A: stop the song" : "A: play the song", rx, sy);
   if (CARD_SONG && CARD_SONG.duration) {
     const f = CARD_SONG.currentTime / CARD_SONG.duration, bw2 = R.w - 100;
     ctx.fillStyle = "#cdb98f"; ctx.fillRect(rx, sy + 14, bw2, 6); ctx.fillStyle = GOLD; ctx.fillRect(rx, sy + 14, bw2 * f, 6);
-  }
+  } }
 
   // the footer
   ctx.textAlign = "center"; ctx.fillStyle = "#e9dcc0"; ctx.font = "17px Georgia, serif";
-  ctx.fillText(region.bookLeave ? "A: the song      B: on to the road" : "Left / Right: the map      A: the song      Select or B: back to the game", W / 2, H - 22);
+  ctx.fillText(region.bookLeave ? (SONG_ON ? "A: the song      B: on to the road" : "B: on to the road") : SONG_ON ? "Left / Right: the map      A: the song      Select or B: back to the game" : "Left / Right: the map      Select or B: back to the game", W / 2, H - 22);
   ctx.restore();
 }
 // (Glen 11-06) his old map sheet (torn parchment, a leather border, Gibeah's hill top-left, a compass bottom-right),

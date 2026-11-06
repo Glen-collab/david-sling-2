@@ -8,7 +8,10 @@
 // Settings are saved in localStorage "david2Settings" (SETTINGS in main.js). Up/Down choose, Left/Right change,
 // A or Start picks, B goes back.
 
-const MENU_TITLE_BG = "../assets/backgrounds/title.jpg";   // Glen's painting: David and the flock at sunset above Bethlehem
+// (Glen 11-06) Part Two's own title, so it's never mistaken for the first game: his painting goes in title2.jpg; until
+// then Gibeah's fields stand in. TITLE: the words on it (draft, for Glen)
+const MENU_TITLE_BG = "../assets/backgrounds/title2.jpg", MENU_TITLE_STANDIN = "../assets/rooms/gibeah/fields_far.jpg";
+const TITLE = { name: "David", part: "PART TWO", sub: "My Heart Is Steadfast" };
 const CONTROLLERS = ["keyboard", "nes", "snes"];
 const CONTROLLER_NAMES = { keyboard: "Keyboard", nes: "NES controller", snes: "SNES controller" };
 
@@ -35,6 +38,9 @@ const SCENES_ALL_OPEN = false;
 const trialOpen = p => SCENES_ALL_OPEN || !!(p["8-2"] || {}).cleared;
 const trialBossOpen = (b, p) => SCENES_ALL_OPEN || !!(p[b.stage] || {}).cleared;
 const sceneOpen = (c, p) => SCENES_ALL_OPEN || c.seen(p);
+function forgetRegions(n) {   // a game's region saves ("david2Region..._gibeah"): gone with the game
+  try { const pre = slotKey("david2Region", n) + "_"; Object.keys(localStorage).filter(k => k.startsWith(pre)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+}
 function slotProgress(n) { try { return JSON.parse(localStorage.getItem(slotKey("david2Progress", n)) || "{}"); } catch (e) { return {}; } }
 function hasSave(n = SLOT) { const p = slotProgress(n); return Object.keys(p).some(k => /^\d-\d$/.test(k)) || !!p.skills || !!p.olives; }
 const slotTaken = n => hasSave(n) || !!slotNames()[n];
@@ -66,7 +72,7 @@ const Menu = {
   open(screen, fromStage = false) {
     this.fromStage = fromStage; this.active = true; this.t = 0; this.msg = null;
     if (screen === "title") {
-      if (!this.bg) { this.bg = new Image(); this.bg.src = MENU_TITLE_BG + "?v=" + (window.BUILD || 0); }
+      if (!this.bg) { this.bg = new Image(); this.bg.onerror = () => { this.bg.onerror = null; this.bg.src = MENU_TITLE_STANDIN; }; this.bg.src = MENU_TITLE_BG + "?v=" + (window.BUILD || 0); }
       this.snap = null;
     } else {   // keep a picture of what's underneath (the game is paused behind the menu)
       this.snap = document.createElement("canvas"); this.snap.width = W; this.snap.height = H;
@@ -129,7 +135,9 @@ const Menu = {
       { label: "Resume", act: () => this.close() },
       { label: "Settings", act: () => this.go("settings") },
       ...(FILM_CLIPS.some(c => sceneOpen(c, loadProgress())) ? [{ label: "Scenes", act: () => this.go("scenes") }] : []),   // (Glen) watch a scene again without leaving the stage
-      ...(this.under === "stage" ? [{ label: "Start the stage again", act: () => startStage(LEVEL_NAME) }] : []),   // stuck somewhere? start over (sheep and olives from this try are lost)
+      ...(this.under === "stage" && REGION_ON ? [{ label: "Back to your last olive press", act: () => startStage(LEVEL_NAME) },
+                                                 { label: `Start ${REGION.name} over`, act: () => this.go("fresh") }]   // (Glen 11-06) a clean run, nothing found
+        : this.under === "stage" ? [{ label: "Start the stage again", act: () => startStage(LEVEL_NAME) }] : []),   // stuck somewhere? start over (sheep and olives from this try are lost)
       this.under === "stage" && TRIAL ? { label: "Leave the Trial", act: () => { try { sessionStorage.setItem("david2TrialBack", "1"); } catch (e) {} location.href = "index.html"; } }
       : this.under === "stage" ? { label: "Back to the map", act: () => backToMap() }
                              : { label: "Title screen", act: () => { this.under = null; this.open("title"); } },
@@ -147,6 +155,10 @@ const Menu = {
         { label: "Back", act: () => this.go(this.home) },
       ];
     }
+    if (this.screen === "fresh") return [   // the region from the very start: its save (rooms, finds, strength, Journal) is emptied
+      { label: "No, keep playing", act: () => this.go("pause") },
+      { label: "Yes, start over", act: () => { try { localStorage.removeItem(regionSaveKey()); } catch (e) {} startStage(LEVEL_NAME); } },
+    ];
     if (this.screen === "confirm") return [   // erase a game
       { label: "No, keep it", act: () => this.go("files") },
       { label: "Yes, erase it", act: () => this.eraseFile(this.eraseN) },
@@ -200,6 +212,7 @@ const Menu = {
   },
   startFile(n, diff) {   // a new game in an empty file: its name, how hard, and off to the journey map
     for (const k of SLOT_KEYS) try { localStorage.removeItem(slotKey(k, n)); } catch (e) {}
+    forgetRegions(n);
     setSlotName(n, this.name);
     try { localStorage.setItem(slotKey("david2Difficulty", n), diff); } catch (e) {}
     this.switchTo(n);
@@ -207,6 +220,7 @@ const Menu = {
   eraseFile(n) {
     const who = slotName(n);
     for (const k of SLOT_KEYS) try { localStorage.removeItem(slotKey(k, n)); } catch (e) {}
+    forgetRegions(n);
     setSlotName(n, null);
     this.go("files"); this.msg = `${who}'s game is erased.`;
   },
@@ -287,6 +301,7 @@ const Menu = {
     if (pressed("b")) {
       if (this.screen === "controls") this.go("settings");
       else if (this.screen === "confirm" || this.screen === "erase") this.go("files");
+      else if (this.screen === "fresh") this.go("pause");
       else if (this.screen === "newdiff") this.go("name");
       else if (this.screen === "settings" || this.screen === "files" || this.screen === "scenes" || this.screen === "trial") this.go(this.home);
       else if (this.screen === "pause") this.close();
@@ -319,22 +334,32 @@ const Menu = {
     if (title) {
       // gold letters with a dark outline and a soft glow, so they read against the bright sunset sky
       ctx.lineJoin = "round"; ctx.shadowColor = "rgba(60,30,5,0.6)"; ctx.shadowBlur = 18;
-      ctx.font = "bold 96px Georgia, serif"; ctx.lineWidth = 10; ctx.strokeStyle = "#4a2a10"; ctx.strokeText("David", W / 2, 150);
-      ctx.shadowBlur = 0; ctx.fillStyle = "#ffd76a"; ctx.fillText("David", W / 2, 150);
-      ctx.font = "italic bold 36px Georgia, serif"; ctx.lineWidth = 7; ctx.strokeText("The Shepherd's Sling", W / 2, 202);
-      ctx.fillStyle = "#fff4d6"; ctx.fillText("The Shepherd's Sling", W / 2, 202);
+      ctx.font = "bold 96px Georgia, serif"; ctx.lineWidth = 10; ctx.strokeStyle = "#4a2a10"; ctx.strokeText(TITLE.name, W / 2, 130);
+      ctx.shadowBlur = 0; ctx.fillStyle = "#ffd76a"; ctx.fillText(TITLE.name, W / 2, 130);
+      // PART TWO: spaced capitals between two gold rules, then the subtitle
+      ctx.font = "bold 26px Georgia, serif"; if ("letterSpacing" in ctx) ctx.letterSpacing = "8px";
+      ctx.lineWidth = 6; ctx.strokeText(TITLE.part, W / 2, 172); ctx.fillStyle = "#ffd76a"; ctx.fillText(TITLE.part, W / 2, 172);
+      const pw = ctx.measureText(TITLE.part).width; if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+      ctx.strokeStyle = "#4a2a10"; ctx.lineWidth = 6; for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(W / 2 + sx * (pw / 2 + 16), 163); ctx.lineTo(W / 2 + sx * (pw / 2 + 110), 163); ctx.stroke(); }
+      ctx.strokeStyle = "#ffd76a"; ctx.lineWidth = 2.5; for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(W / 2 + sx * (pw / 2 + 16), 163); ctx.lineTo(W / 2 + sx * (pw / 2 + 110), 163); ctx.stroke(); }
+      ctx.strokeStyle = "#4a2a10"; ctx.font = "italic bold 36px Georgia, serif"; ctx.lineWidth = 7; ctx.strokeText(TITLE.sub, W / 2, 218);
+      ctx.fillStyle = "#fff4d6"; ctx.fillText(TITLE.sub, W / 2, 218);
     } else {
-      ctx.fillStyle = "#ffe08a"; ctx.font = "bold 44px Georgia, serif"; ctx.fillText(this.screen === "pause" ? "Paused" : this.screen === "scenes" ? "Scenes" : this.screen === "trial" ? "The Shepherd's Trial"
+      ctx.fillStyle = "#ffe08a"; ctx.font = "bold 44px Georgia, serif"; ctx.fillText(this.screen === "pause" ? "Paused" : this.screen === "fresh" ? `Start ${REGION.name} over?` : this.screen === "scenes" ? "Scenes" : this.screen === "trial" ? "The Shepherd's Trial"
                  : this.screen === "files" ? "Choose a game" : this.screen === "erase" ? "Erase which game?" : this.screen === "newdiff" ? `How hard, ${this.name}?` : "Settings", W / 2, 150);
       if (this.screen === "newdiff") { ctx.fillStyle = "#e9dcc4"; ctx.font = "18px sans-serif"; ctx.fillText("You can change it later in Settings.", W / 2, 182); }
       if (this.screen === "trial") { ctx.fillStyle = "#e9dcc4"; ctx.font = "18px sans-serif"; ctx.fillText("Every fight again. No counsel, no help. How fast can you do it?", W / 2, 182); }
+    }
+    if (this.screen === "fresh") {
+      ctx.fillStyle = "#fff"; ctx.font = "22px sans-serif";
+      ctx.fillText(`Start ${REGION.name} over from the fields? Everything found, the rooms explored, strength and the Journal start again.`, W / 2, 320);
     }
     if (this.screen === "confirm") {
       ctx.fillStyle = "#fff"; ctx.font = "22px sans-serif";
       ctx.fillText(`Erase ${slotName(this.eraseN)}'s game? Stages, sheep, olives, skills and Trial times will all be gone.`, W / 2, 320);
     }
     // the list
-    const sc = ["scenes", "trial", "files", "erase", "newdiff"].includes(this.screen), it = this.items(), rowH = this.screen === "trial" ? 40 : this.screen === "scenes" ? 35 : sc ? 44 : 54, top = this.screen === "confirm" ? 380 : title ? 330 : this.screen === "trial" ? 234 : ["files", "erase", "newdiff"].includes(this.screen) ? 250 : this.screen === "scenes" ? 206 : sc ? 200 : 220;
+    const sc = ["scenes", "trial", "files", "erase", "newdiff"].includes(this.screen), it = this.items(), rowH = this.screen === "trial" ? 40 : this.screen === "scenes" ? 35 : sc ? 44 : 54, top = this.screen === "confirm" || this.screen === "fresh" ? 380 : title ? 330 : this.screen === "trial" ? 234 : ["files", "erase", "newdiff"].includes(this.screen) ? 250 : this.screen === "scenes" ? 206 : sc ? 200 : 220;
     const bw = this.screen === "files" || this.screen === "erase" ? 820 : this.screen === "settings" || sc ? 620 : 420;
     ctx.fillStyle = "rgba(25,14,6,0.72)"; ctx.beginPath(); ctx.roundRect(W / 2 - bw / 2, top - 40, bw, it.length * rowH + 30, 16); ctx.fill();
     it.forEach((m, i) => {

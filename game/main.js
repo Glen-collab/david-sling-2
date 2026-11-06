@@ -502,7 +502,7 @@ const ladderRoof = l => ladderTop(l).dir;   // which side its roof is on (0 = no
 // and knees, up and stepping off. Per frame: [px from the roof edge (toward the roof), px below the roof top] for his feet.
 const TOPOUT_POS = () => [[-T, 238 * SCALE - 12], [-T, 192 * SCALE - 8], [-12, 42 * SCALE], [26, 0], [44, 0]];
 const TOPOUT_FRAME = 0.2, TOPDOWN_FRAME = 0.15;   // seconds per frame going up, and going back down onto the ladder
-const ladderAt = d => ladders.find(l => d.x > l.c * T - 4 && d.x < (l.c + 2) * T + 4 && d.y > l.r * T - 4 && d.y <= GR * T + 2);   // the ladder he's in front of
+const ladderAt = d => ladders.find(l => d.x > l.c * T - 4 && d.x < (l.c + 2) * T + 4 && d.y > l.r * T - 4 && d.y <= (l.bot ?? GR) * T + 2);   // (bot: a ladder between two walkways, region.js)   // the ladder he's in front of
 const setPiece = (kind, c, r = GR - 1, o = {}) => setPieces.push({ kind, c, r, x: c * T + T / 2, y: (r + 1) * T, ...o });
 const deadfall = (c, r, w, h) => { block(c, r, w, h, 8); deadfalls.push({ c, r, w, h, broken: false, told: false }); };
 const stepStone = c => { plat(c, GR, 1); setPiece("stepstone", c, GR); };   // a flat rock in a stream: a ledge level with the bank (drawn in world3.js)
@@ -2442,6 +2442,7 @@ function updateDavid(dt) {
       setState("topout"); d.topDir = ladderRoof(l); d.topRev = false;
     }
     else if (d.y <= l.r * T) { d.y = l.r * T; d.onGround = true; d.ladder = null; setState("idle"); }   // up at the top: standing on the top rung
+    else if (v > 0 && l.bot != null && d.y >= l.bot * T) { d.y = l.bot * T; d.onGround = true; d.ladder = null; setState("idle"); }   // down onto the walkway below
     else if (v > 0 && isSolid(Math.floor(d.x / T), Math.floor(d.y / T))) { d.y = Math.floor(d.y / T) * T; d.onGround = true; d.ladder = null; setState("idle"); }   // down at the bottom
     else if (pressed("a")) {   // jump off, the way he's pushing (or straight back down)
       if (dir) d.facing = dir;
@@ -2631,7 +2632,8 @@ function drawDavid(camX) {
     case "landHeavy": drawSprite("david_land_heavy", frameOf("david_land_heavy", t, TUNE.LAND_HEAVY_MS), x, y, d.facing); break;
     case "slip": drawSprite("david_slip", frameOf("david_slip", t, TUNE.SLIP_MS), x, y, d.facing); break;
     case "topout": drawSprite("david_topout", d.topK || 0, x, y, (d.topK || 0) < 2 ? 1 : d.topDir); break;   // back view, then from the side
-    case "climb": drawSprite("david_climb", Math.floor((d.climbDist || 0) / TUNE.CLIMB_STRIDE) % SPR.david_climb.frames, x, y, 1); break;   // his back to us
+    case "climb": { const nm = SPR.david_ladder ? "david_ladder" : "david_climb";   // (Glen 11-06: his ladder climb, shield on his back)
+      drawSprite(nm, Math.floor((d.climbDist || 0) / TUNE.CLIMB_STRIDE) % SPR[nm].frames, x, y, 1); break; }   // his back to us
     case "roll": drawSprite("david_roll", Math.min(11, Math.floor(d.rollT / TUNE.ROLL_TIME * 12)), x, y, d.facing); break;
     case "getup": drawSprite("david_roll_getup", Math.min(6, 3 + Math.floor(d.t / 0.07)), x, y, d.facing); break;
     case "crouch": drawSprite("david_crouch", frameOf("david_crouch", t, 40), x, y, d.facing); break;
@@ -4617,6 +4619,7 @@ function updateMusic(dt) {
   if (openingMusic) openingVol = fadeLoop(openingMusic, openingVol, opening ? OPENING_MUSIC[WORLD][1] : 0, dt, opening ? 0.6 : 0.7);
   const words = dialog.t > 0, want = preFilm.active || opening || (typeof w1intro !== "undefined" && w1intro.active) || (typeof w2intro !== "undefined" && w2intro.active) || (typeof w3intro !== "undefined" && w3intro.active) ? 0 : cutScene ? TUNE.MUSIC_SCENE : words ? TUNE.MUSIC_DUCK : 1;
   musicDuck += (want - musicDuck) * Math.min(1, dt * (want < musicDuck ? 3 : 1.2));
+  if (typeof regionHushed === "function" && (regionHushed() || regionStageQuiet())) { musicDuck = 0; dayVol = nightVol = caveVol = stageThemeVol = 0; }   // (Glen 11-06) region.js: the Journal (or his song) alone, no stage music under it
   // (Glen) 7-4, once the shield-bearer is beaten: Goliath walks in and speaks. No harp themes from here to the end, only his music
   const grave = typeof sb !== "undefined" && sb && sb.beaten;
   const darkOn = !musicFight && !grave && !(david.state === "harp") ? TUNE.DARK_MUSIC_VOLUME * (finish.active ? (["land", "open", "close"].includes(finish.phase) || LEVEL_STAGE === "8-4" ? 0.5 : 0) : 1) * musicDuck : 0;   // (Glen) at the gate it sinks to half; under the stage-clear jingle it goes out altogether
