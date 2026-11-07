@@ -17,6 +17,9 @@ const R2 = {
   // Saul's men (the stealth): how far they see, how close a crouch in the dark gets, how long a look takes to be sure
   SIGHT: 340, SIGHT_LOW: 120, LEVEL: 80, SPOT_T: 0.55, GUARD_SPEED: 62, TURN_WAIT: 1.8, CAUGHT_T: 1.0,
   TORCH_H: 80, TORCH_GRIP: 0.95, TORCH_DX: 17, TORCH_DY: 62,   // a guard's torch: how tall, where he holds it (0 top, 1 bottom), his hand
+  SAUL_DOWN: 0.9,   // the chase's end: Saul sinks (saul_weep) this long, then lies face down
+  WOLF_HOWL: 1.6,   // a sitting wolf howls this long, every 6-10 s
+  EZEL_K: 0.85, TABLE_K: 0.8, SHELF_K: 0.6, SHELF_WALK_K: 0.5,   // the sizes of his stone Ezel, the feast table, Naioth's scroll shelves
   LIGHT: 175,            // a lamp's or a torch's light, px across (half of it: lit enough to be seen in)
   NIGHT: [38, 48, 92], INDOOR: [92, 80, 110],   // the night wash (multiplied over everything), outside and indoors
   // the wolves on the road
@@ -370,10 +373,18 @@ function r2Build(R) {
     const walks = r2Walks("naioth", rows, { floor: [{ x0: X(1), x1: X(nr.w - 1), y: GR * T }], ladders: true });
     walks.forEach((u, i) => {
       const mid = walkMid(u);
-      if (i % 3 === 0) rPiece("naioth", "c_jars", mid * T - 60, u.y);   // jars of scrolls on a bench
-      else if (i % 3 === 1) oliveRow(mid - 2, u.y / T - 1.4, 4);
+      if (i % 3 === 1) oliveRow(mid - 2, u.y / T - 1.4, 4);
       if (i % 4 === 2) rBreak("lamp", "naioth", mid + 3, onTop(u.y));
     });
+    // (Glen 11-07) his scroll shelves, only where there's room: not under a walkway's braces, no ladder or rope through them
+    { const ls = region.ladders.filter(l => l.room === "naioth"), k = KIT.hall_scrolls;
+      const free = (x0, x1, top, bot) => !walks.some(u => u.x1 + 12 > x0 && u.x0 - 12 < x1 && u.y > top - 175 && u.y < bot - 4)
+        && !ls.some(l => l.x + 28 > x0 && l.x - 28 < x1 && l.top < bot && l.bot > top);
+      const shelf = (x, bot, s) => { const w = k.w * s, h = k.h * s; if (!free(x - w / 2, x + w / 2, bot - h, bot)) return false;
+        region.props.push({ room: "naioth", n: "hall_scrolls", x: x - w / 2, y: bot - h + 4, s, back: true }); return true; };
+      for (let j = 7, last = -99; j < 48; j++) if (j - last > 6 && ![14, 26, 38].some(q => Math.abs(j + 0.5 - q) < 3.5) && shelf(X(j) + T / 2, FOOT, R2.SHELF_K)) last = j;
+      walks.forEach((u, i) => { if (i % 2 === 0) { const m = walkMid(u); for (const dj of [0, -3, 3]) if (shelf((m + dj) * T, u.y, R2.SHELF_WALK_K)) break; } });
+    }
     const at = (k, j) => walks.filter(u => u.k === k)[j] || walks[walks.length - 1];
     { const u = at(2, 1); rRelic("r2_truth_naioth", "truth", walkMid(u) + 2, onTop(u.y),
       "When they saw the company of the prophets prophesying, and Samuel standing as head over them, God's Spirit came on Saul's messengers, and they also prophesied. (1 Samuel 19:20)"); }
@@ -402,6 +413,11 @@ function r2Build(R) {
     r2.lights.push({ room: "feast", x: X(12) + 18, y: GR * T - 120, r: 300 }, { room: "feast", x: X(33) + 18, y: GR * T - 120, r: 300 });
     r2Torch("feast", "tw_torch_bowl", X(18), GR * T - 330); r2Torch("feast", "tw_torch_bowl", X(26), GR * T - 330);
     r2.feastJ = X(7); r2.saulX = X(32); r2.tableX = [X(15), X(29)];
+    { const s = R2.TABLE_K, k = KIT.hall_table, x = (r2.tableX[0] + r2.tableX[1]) / 2 - k.w * s / 2;   // (Glen 11-07) his table: bread, a cup, a lamp, figs
+      region.props.push({ room: "feast", n: "hall_table", x, y: FOOT - k.h * s, s, back: true });
+      region.props.push({ room: "feast", n: "hall_cushion_blue", x: x - 40, y: FOOT - KIT.hall_cushion_blue.h * s + 4, s, back: true });
+      region.props.push({ room: "feast", n: "hall_cushion_tan", x: x + k.w * s / 2 - KIT.hall_cushion_tan.w * s / 2, y: FOOT - KIT.hall_cushion_tan.h * s + 6, s, back: true });   // David's place, empty (20:25)
+      r2.lights.push({ room: "feast", x: x + 281 * s, y: FOOT - (k.h - 23) * s, r: 150 }); }
   }
   r2.story = {
     michal: r2Has("r2_window") ? "after" : "wait",
@@ -517,7 +533,10 @@ function r2Wolves(dt, r) {
     w.t += dt; w.flash = Math.max(0, (w.flash || 0) - dt);
     if (w.dead) continue;
     const dx = d.x - w.x, same = Math.abs(d.y - w.y) < 140;
-    if (w.state === "sit") { if (Math.abs(dx) < Wf.SEE && same && !region.script.length) { w.state = "run"; w.t = 0; w.facing = Math.sign(dx) || 1; sfx("jackal", w.x, 0.6, 0.75); } }
+    if (w.state === "sit") {
+      w.howl = Math.max(0, (w.howl || 0) - dt); w.ht = (w.ht ?? 1 + Math.random() * 5) - dt;   // (Glen 11-07) now and then he howls
+      if (w.ht < 0) { w.ht = 6 + Math.random() * 4; w.howl = R2.WOLF_HOWL; if (same && Math.abs(dx) < W) sfx("jackal", w.x, 0.35, 0.6); }
+      if (Math.abs(dx) < Wf.SEE && same && !region.script.length) { w.howl = 0; w.state = "run"; w.t = 0; w.facing = Math.sign(dx) || 1; sfx("jackal", w.x, 0.6, 0.75); } }
     else if (w.state === "run") {
       w.x += w.facing * Wf.SPEED * dt;
       if ((w.facing > 0 && w.x > d.x + Wf.PAST) || (w.facing < 0 && w.x < d.x - Wf.PAST)) { w.state = "turn"; w.t = 0; }
@@ -681,7 +700,7 @@ function r2SpearUpdate(dt, r) {
   }
   if (sp.x < roomById("feast").c0 * T + T) {
     r2.spear = null;
-    if (sp.hit) { F.phase = "again"; F.t = 0; rPlay([{ wait: 1.0 }, { say: ["Saul", "Son of a perverse rebellious woman! (1 Samuel 20:30)"] }, { fn() { F.phase = "throw"; F.t = 0; toast("Again! Jump the spear (A)."); } }]); }
+    if (sp.hit) { F.phase = "again"; F.t = 0; rPlay([{ wait: 1.0 }, { say: ["Saul", "Son of a perverse rebellious woman! (1 Samuel 20:30)"] }, { fn() { F.phase = "throw"; F.t = 0; toast("Again! Jump the spear (A), or duck (Down)."); } }]); }
     else { F.phase = "done"; rPlay([
       { say: ["", "Saul cast his spear at him to strike him. So Jonathan arose from the table in fierce anger, and ate no food the second day of the month; for he was grieved for David. (1 Samuel 20:33–34)"] },
       { fn() { regionAdd("taken", "r2_feast"); r2ArrowsStart(); } },
@@ -819,7 +838,7 @@ function r2Draw(camX) {
   }
   if (r.id === "ramah") {
     for (const [n, x, f, sc] of r2.townsfolk || []) if (SPR[n] && on(x)) drawSprite(n, frameOf(n, r2.t + x), x - camX, gy, f, sc || 1);
-    if (S.samuel === "ramah" || S.samuel === "walk") drawSprite("samuel_anoint", 0, r2.samX - camX, gy, S.samuel === "walk" ? 1 : -1);
+    if (S.samuel === "ramah" || S.samuel === "walk") drawSprite("samuel_stand", 0, r2.samX - camX, gy, S.samuel === "walk" ? 1 : -1);
   }
   if (r.id === "naioth") {
     for (const [n, x, f, sc] of r2.prophets || []) if (SPR[n] && on(x)) drawSprite(n, frameOf(n, r2.t + x), x - camX, gy, f, sc || 1);
@@ -827,17 +846,18 @@ function r2Draw(camX) {
       const g = ctx.createRadialGradient(r2.samNX - camX, gy - 60, 10, r2.samNX - camX, gy - 60, R2.CHASE.ZONE);
       g.addColorStop(0, "rgba(255,236,170,0.22)"); g.addColorStop(1, "rgba(255,236,170,0)");
       ctx.fillStyle = g; ctx.fillRect(r2.samNX - camX - R2.CHASE.ZONE, gy - 60 - R2.CHASE.ZONE, R2.CHASE.ZONE * 2, R2.CHASE.ZONE * 2);
-      drawSprite("samuel_anoint", 0, r2.samNX - camX, gy, -1);
+      drawSprite("samuel_stand", 0, r2.samNX - camX, gy, -1);   // (Glen 11-07: his Samuel with a staff)
     }
     for (const m of r2.men) {
       if (m.state === "wait") continue;
-      if (m.state === "kneel") { drawSprite("saul_soldier_look", frameOf("saul_soldier_look", m.t * 0.6), m.x - camX, gy, m.facing * R2.GUARD_FLIP, 0.92 * R2.SOLDIER_K); continue; }
+      if (m.state === "kneel") { drawSprite("saul_soldier_kneel", Math.min(SPR.saul_soldier_kneel.frames - 1, Math.floor(m.t / 0.17)), m.x - camX, gy, -m.facing * R2.GUARD_FLIP, R2.SOLDIER_K); continue; }   // (Glen 11-07: his kneel sheet: the spear down, on his knees, hands up. It faces left)
       drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", m.t * 2.2), m.x - camX, gy, m.facing * R2.GUARD_FLIP, R2.SOLDIER_K);
     }
     const s = r2.saul;
     if (s) {
       if (s.state === "walk") drawSprite("saul_walk", frameOf("saul_walk", s.t), s.x - camX, gy, 1, SAUL_BIG);
-      else drawSprite("saul_weep", Math.min(SPR.saul_weep.frames - 1, Math.floor(s.t * 8)), s.x - camX, gy, 1, SAUL_BIG);
+      else if (s.t < R2.SAUL_DOWN || !SPR.saul_lie) drawSprite("saul_weep", Math.min(SPR.saul_weep.frames - 1, Math.floor(s.t * 8)), s.x - camX, gy, 1, SAUL_BIG);
+      else drawSprite("saul_lie", 0, s.x - camX + 40, gy, 1, SAUL_BIG);   // (Glen 11-07) face down before Samuel (19:24)
     }
   }
   if (r.id === "field") {
@@ -853,10 +873,6 @@ function r2Draw(camX) {
     if (region.pose && region.pose.crouch) drawSprite("david_crouch", 0, david.x - camX, gy, -1);   // (hidden by the stone: drawn behind it)
   }
   if (r.id === "feast") {
-    // the king's table (a stand-in: ART_NEEDED_W2.md), its cups and bread, and the empty seat
-    const [t0, t1] = r2.tableX;
-    ctx.fillStyle = "#5b3a20"; ctx.fillRect(t0 - camX, gy - 58, t1 - t0, 16); ctx.fillStyle = "#3e2614"; ctx.fillRect(t0 - camX + 10, gy - 42, 14, 42); ctx.fillRect(t1 - camX - 24, gy - 42, 14, 42);
-    for (let x = t0 + 40; x < t1 - 30; x += 70) { ctx.fillStyle = "#c9a35a"; ctx.beginPath(); ctx.ellipse(x - camX, gy - 64, 16, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#a5672f"; ctx.fillRect(x - camX + 22, gy - 80, 9, 18); }
     const F = r2.feast;
     if (F && (F.phase === "throw")) drawSprite("saul_throw", Math.min(SPR.saul_throw.frames - 1, Math.floor(F.t / 0.09)), r2.saulX - camX, gy, -1, SAUL_BIG);
     else if (F && F.phase === "fly") drawSprite("saul_throw", SPR.saul_throw.frames - 1, r2.saulX - camX, gy, -1, SAUL_BIG);
@@ -883,8 +899,8 @@ function r2Draw(camX) {
   }
   for (const w of r2.wolves) {
     if (w.room !== r.id || w.dead || !on(w.x)) continue;
-    const n = w.state === "sit" ? "wolf_sit" : w.state === "home" ? "wolf_walk" : "wolf_run";
-    drawSprite(n, w.state === "turn" ? 0 : frameOf(n, w.t), w.x - camX, w.y, w.facing, 1, w.flash > 0 && Math.floor(w.flash * 30) % 2 ? 0.5 : 1);
+    const n = w.state === "sit" ? (w.howl > 0 && SPR.wolf_howl ? "wolf_howl" : "wolf_sit") : w.state === "home" ? "wolf_walk" : "wolf_run";
+    drawSprite(n, w.state === "turn" || n === "wolf_howl" ? 0 : frameOf(n, w.t), w.x - camX, w.y, w.facing, 1, w.flash > 0 && Math.floor(w.flash * 30) % 2 ? 0.5 : 1);
   }
 }
 function r2GuardHand(g) { return [g.x + g.facing * R2.TORCH_DX * R2.SOLDIER_K, g.y - R2.TORCH_DY * R2.SOLDIER_K]; }
@@ -903,9 +919,9 @@ function r2DrawArrow(x, y, ang) {
 }
 function r2DrawFront(camX) {
   const r = region.room; if (!r) return;
-  if (r.id === "field") {   // the stone Ezel: big, in front of whoever hides behind it (his field rock, twice the size)
-    const im = kitImg("f_rock"), k = KIT.f_rock, s = 1.9, x = r2.ezelX - camX - k.w * s / 2;
-    if (im && x < W && x + k.w * s > 0) ctx.drawImage(im, Math.round(x), Math.round(FOOT - k.h * s + 8), k.w * s, k.h * s);
+  if (r.id === "field") {   // the stone Ezel (Glen's, 11-07): tall, in front of whoever hides behind it
+    const im = kitImg("f_ezel"), k = KIT.f_ezel, s = R2.EZEL_K, x = r2.ezelX - camX - k.w * s / 2;
+    if (im && x < W && x + k.w * s > 0) ctx.drawImage(im, Math.round(x), Math.round(FOOT - k.h * s + 6), k.w * s, k.h * s);
   }
   if (r2.choice) {}
 }
@@ -915,6 +931,10 @@ function r2DrawDavid(d, x, y) {
   if (region.pose && region.pose.kneel) { drawSprite("david_kneel", Math.min(SPR.david_kneel.frames - 1, Math.floor(r2.t * 6) % 99), x, y, d.facing); return true; }
   if (r.id !== "feast") return false;
   const st = d.state, air = !d.onGround;
+  // (Glen 11-07) his duck: down on Down, back up when he lets go (the spear flies over: R2.SPEAR.Y is above LOW_H)
+  const dt = Math.max(0, Math.min(0.1, r2.t - (r2.duckLast ?? r2.t))); r2.duckLast = r2.t;
+  r2.duckT = !air && r2Crouched() ? (r2.duckT || 0) + dt : Math.max(0, (r2.duckT || 0) - dt * 1.5);
+  if (r2.duckT > 0 && SPR.jonathan_duck) { drawSprite("jonathan_duck", Math.min(SPR.jonathan_duck.frames - 1, Math.floor(r2.duckT / 0.07)), x, y, d.facing, 1.08); return true; }
   const n = d.inv > 0 && SPR.jonathan_hit && d.inv > TUNE.HURT_INVINCIBLE * 0.6 ? "jonathan_hit" : air ? "jonathan_jump" : st === "run" ? "jonathan_run" : (st === "walk" || Math.abs(d.vx) > 20) ? "jonathan_walk" : "jonathan_idle";
   const fr = n === "jonathan_jump" ? Math.max(1, Math.min(SPR[n].frames - 2, Math.round((SPR[n].frames - 1) / 2 + d.vy / 1000 * (SPR[n].frames / 3)))) : frameOf(n, r2.t);
   drawSprite(n, fr, x, y, d.facing, 1.08);

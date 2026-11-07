@@ -124,8 +124,8 @@ const TUNE = {
     david_sling_throw: 0.92,
     david_play_harp: 0.81, david_sit_harp: 0.81,
     david_crawl: 0.92,
-    saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1,   // Saul's men: a head taller than David
-    saul_walk: 1.15, saul_sit: 1.15, saul_stand: 1.15, saul_look_back: 1.15, saul_weep: 1.15, saul_throw: 1.15, saul_sleep: 1.15,   // Saul: taller than any of them (1 Samuel 9:2)
+    saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1, saul_soldier_kneel: 1.1,   // Saul's men: a head taller than David
+    saul_walk: 1.15, saul_sit: 1.15, saul_stand: 1.15, saul_look_back: 1.15, saul_weep: 1.15, saul_throw: 1.15, saul_sleep: 1.15, saul_lie: 1.15,   // Saul: taller than any of them (1 Samuel 9:2)
     villager_woman_stand: 0.66, villager_woman_run: 0.66,           // (Glen 11-05, the town's singing women: his villager sheets are
     villager_girl_stand: 0.59, villager_girl_run: 0.59,             //  drawn 1.44x David; a woman a touch shorter than him, a girl,
     villager_braidgirl_stand: 0.5, villager_braidgirl_run: 0.5,     //  a child)

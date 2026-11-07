@@ -132,13 +132,14 @@ const KIT = {
   // from the piece's top), its cedar railing on its own (drawn in front of David), the arched door, the stair, a
   // pedestal, a cedar column
   hall_ledge_left: { w: 163, h: 72, top: 0 }, hall_ledge_mid: { w: 143, h: 67, top: 2 }, hall_ledge_right: { w: 163, h: 72, top: 0 },
-  hall_rail: { w: 168, h: 79 }, hall_door: { w: 110, h: 194 }, hall_stair: { w: 175, h: 121 },
+  hall_rail: { w: 168, h: 79 }, hall_door: { w: 110, h: 194 }, hall_table: { w: 463, h: 184 }, hall_cushion_tan: { w: 192, h: 60 }, hall_cushion_blue: { w: 98, h: 62 }, hall_scrolls: { w: 222, h: 358 },   // (11-07: his feast table, cushions, scroll shelf)
+  hall_stair: { w: 175, h: 121 },
   hall_pedestal: { w: 120, h: 117 }, hall_column: { w: 63, h: 215 },
   // (Glen 11-05) the Fields kit, assets/rooms/gibeah/kit_fields (sized for the game when cut): the terrace wall in three
   // (stone: the top of the stone, px up from the piece's bottom), a boulder, the olive tree with its branch to stand on,
   // the round watchtower, a field gate, a low wall, a fig tree; and the foreground plants (fg_*: drawn over David, sliding faster)
   f_wall_left: { w: 187, h: 164, stone: 141 }, f_wall_mid: { w: 177, h: 151, stone: 141 }, f_wall_right: { w: 176, h: 162, stone: 141 },
-  f_rock: { w: 179, h: 117 }, f_olive: { w: 536, h: 520 }, f_tower: { w: 281, h: 376 }, f_gate: { w: 178, h: 159 },
+  f_rock: { w: 179, h: 117 }, f_ezel: { w: 211, h: 519 }, f_olive: { w: 536, h: 520 }, f_tower: { w: 281, h: 376 }, f_gate: { w: 178, h: 159 },
   f_lowwall: { w: 202, h: 83 }, f_fig: { w: 252, h: 256 }, fg_grass: { w: 313, h: 310 }, fg_branch: { w: 218, h: 457 }, fg_thorn: { w: 317, h: 191 },
   // (Glen 11-05) the Town kit, assets/rooms/gibeah/kit_town: flat roofs in three (top: the walking top, px down from the
   // piece's top), a striped awning, a stone post with a beam, a house front, the stair (steps: each 36 px column's top),
@@ -222,12 +223,14 @@ function rTerrace(room, c, nMid) {   // a terrace wall from column c, solid, its
   for (const n of parts) { region.props.push({ room, n, x: px, y: FOOT - KIT[n].h }); px += KIT[n].w - 6; }
   const c1 = Math.floor((px + 6 - 10) / T), top = FOOT - 141 + 5, r = Math.floor(top / T) + 1;
   block(c + 1, r, c1 - c - 2, GR - r, 1); platAt(c, top, c1 - c);   // (the solid part inside the art's edges: no earth showing past them)
+  (region.tops ||= []).push({ x0: c * T, x1: c1 * T, top, low: r * T });   // (the block's top is lower than the stones': regionStoneTop)
   for (let k = c; k < c1; k++) artSolid.add(k + "," + r);
   return c1;
 }
 function rLowWall(room, c) {   // a low wall to hop onto (5 wide)
   const k = KIT.f_lowwall; region.props.push({ room, n: "f_lowwall", x: c * T + 2.5 * T - k.w / 2, y: FOOT - k.h });
   block(c, GR - 1, 5, 1, 1); platAt(c, FOOT - 72 + 4, 5); for (let i = 0; i < 5; i++) artSolid.add((c + i) + "," + (GR - 1));
+  (region.tops ||= []).push({ x0: c * T, x1: (c + 5) * T, top: FOOT - 72 + 4, low: (GR - 1) * T });
 }
 function rBoulder(room, c) {   // a boulder on the ground: its flat top to stand on (5 wide, the top the middle 3)
   const k = KIT.f_rock; region.props.push({ room, n: "f_rock", x: c * T + 2.5 * T - k.w / 2, y: FOOT - k.h });
@@ -747,10 +750,17 @@ function regionInit() {
 function regionGo(x, facing, after = null) {   // fade out, move, fade in (after: what happens once he's moved, e.g. onto a rope)
   region.trans = { t: 0, x, facing, moved: false, after };
 }
+// (Glen 11-07: "he ran along the bottom of the top of the bricks") a wall's solid block can only start on a tile line,
+// below its stone top (the ledge): a little hop that cleared the block but not the ledge landed him on the block, down
+// in the stones. Standing there, he's lifted onto the stones' top
+function regionStoneTop(d) {
+  if (!region.tops || !d.onGround || d.ladder) return;
+  for (const t of region.tops) if (d.x > t.x0 && d.x < t.x1 && Math.abs(d.y - t.low) < 3) { d.y = t.top; if (d.vy > 0) d.vy = 0; return; }
+}
 function updateRegion(dt) {
   if (!REGION_ON) return;
   if (!region.inited) regionInit();
-  const d = david;
+  const d = david; regionStoneTop(d);
   // the room he's in: the camera, the background and the map follow it
   const r = roomAt(d.x);
   if (r !== region.room) {

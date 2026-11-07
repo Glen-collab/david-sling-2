@@ -1,0 +1,11 @@
+{
+  "frames": 1,
+  "frame_w": 165,
+  "frame_h": 164,
+  "ms_per_frame": 100,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 91,
+  "anchor_y": 163,
+  "source": "wolf_howl/wolf_howl.png"
+}

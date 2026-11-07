@@ -3564,6 +3564,18 @@ window.SPRITE_DATA = {
   "ay": 306,
   "align": "feet"
  },
+ "jonathan_duck": {
+  "src": "../assets/sprites/jonathan_duck.png",
+  "frames": 3,
+  "w": 149,
+  "h": 244,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 48,
+  "ay": 243,
+  "align": "feet"
+ },
  "jonathan_gifts": {
   "src": "../assets/sprites/jonathan_gifts.png",
   "frames": 24,
@@ -5100,6 +5112,18 @@ window.SPRITE_DATA = {
   "ay": 284,
   "align": "feet"
  },
+ "samuel_stand": {
+  "src": "../assets/sprites/samuel_stand.png",
+  "frames": 1,
+  "w": 125,
+  "h": 300,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 48,
+  "ay": 299,
+  "align": "feet"
+ },
  "saul": {
   "src": "../assets/sprites/saul.png",
   "frames": 6,
@@ -5146,6 +5170,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 121,
   "ay": 333,
+  "align": "feet"
+ },
+ "saul_lie": {
+  "src": "../assets/sprites/saul_lie.png",
+  "frames": 1,
+  "w": 250,
+  "h": 56,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 125,
+  "ay": 55,
   "align": "feet"
  },
  "saul_look_back": {
@@ -5230,6 +5266,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 104,
   "ay": 304,
+  "align": "feet"
+ },
+ "saul_soldier_kneel": {
+  "src": "../assets/sprites/saul_soldier_kneel.png",
+  "frames": 6,
+  "w": 230,
+  "h": 257,
+  "ms": 170,
+  "loop": false,
+  "pingpong": false,
+  "ax": 156,
+  "ay": 256,
   "align": "feet"
  },
  "saul_soldier_look": {
@@ -6394,6 +6442,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 254,
   "ay": 68,
+  "align": "feet"
+ },
+ "wolf_howl": {
+  "src": "../assets/sprites/wolf_howl.png",
+  "frames": 1,
+  "w": 165,
+  "h": 164,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 91,
+  "ay": 163,
   "align": "feet"
  },
  "wolf_run": {

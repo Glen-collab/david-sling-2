@@ -1,0 +1,11 @@
+{
+  "frames": 1,
+  "frame_w": 250,
+  "frame_h": 56,
+  "ms_per_frame": 100,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 125,
+  "anchor_y": 55,
+  "source": "saul_lie/saul_lie.png"
+}
