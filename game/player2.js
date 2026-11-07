@@ -73,7 +73,9 @@ const P2_ROSTER = {
   "9-3": ["armorbearer", "jonathan", "abishai", "benaiah", "asahel"],
   "9-4": ["jonathan", "armorbearer"],
 };
-const p2Roster = () => STAGE_INFO.p2 || P2_ROSTER[LEVEL_NAME] || ["armorbearer"];
+// (Glen 11-06) Gibeah: the armor-bearer until the covenant, then Jonathan comes with David (region.js storyAward)
+const p2Gibeah = () => LEVEL_NAME === "9-5" && typeof regionHas === "function" ? (regionHas("taken", "g_jonathan") ? ["jonathan", "armorbearer"] : ["armorbearer"]) : null;
+const p2Roster = () => STAGE_INFO.p2 || p2Gibeah() || P2_ROSTER[LEVEL_NAME] || ["armorbearer"];
 
 const p2 = { on: false, who: null, x: 0, y: 0, vx: 0, vy: 0, onGround: false, facing: 1, holdT: 0, t: 0, act: null, hitT: 0, inv: 0,
   low: false, slideT: 0, skidT: 0, farT: 0, pushT: 0, fell: false, toldJoin: false };
@@ -108,7 +110,7 @@ function moveRock(k, dir) {
 // joining, leaving, changing who
 // ---------------------------------------------------------------------------
 function p2Place(x, y) {   // beside David, on his ground
-  Object.assign(p2, { x, y, vx: 0, vy: 0, onGround: false, act: null, hitT: 0, low: false, slideT: 0, skidT: 0, farT: 0, fell: false });
+  Object.assign(p2, { x, y, vx: 0, vy: 0, onGround: false, act: null, ladder: null, hitT: 0, low: false, slideT: 0, skidT: 0, farT: 0, fell: false });
   for (let k = 0; k < 14; k++) bits.push({ x, y: y - 40, vx: (Math.random() - 0.5) * 360, vy: -Math.random() * 380, life: 0.6, color: "#fff7c2" });
 }
 function p2BesideDavid() { p2Place(david.x - david.facing * 60, david.y); p2.inv = P2.INV_T; }
@@ -140,6 +142,7 @@ function updateP2(dt) {
   if (Math.abs(p2.x - david.x) > W * P2.FAR || Math.abs(p2.y - david.y) > H * 0.8) { p2.farT += dt; if (p2.farT > P2.FAR_T) { p2BesideDavid(); return; } } else p2.farT = 0;
 
   const dir = (held2("right") ? 1 : 0) - (held2("left") ? 1 : 0);
+  if (p2Climb(C, dir, dt)) return;
   if (p2.hitT > 0) {   // knocked back
     p2.hitT -= dt; p2.vx *= 0.92;
   } else {
@@ -180,6 +183,20 @@ function updateP2(dt) {
   }
   p2Hurts();
   p2Gather(C);   // anyone gathers the olives he walks over
+}
+// (Glen 11-06) ladders (Gibeah's walls): Up in front of one to climb, Down at its top to climb down, A jumps off
+function p2Climb(C, dir, dt) {
+  const l0 = !p2.ladder && !p2.act && p2.hitT <= 0 && ladderAt(p2), atTop = l0 && p2.onGround && p2.y <= l0.r * T + 2;
+  if (l0 && ((held2("up") && !atTop) || (pressed2("down") && atTop))) { p2.ladder = l0; p2.climbD = 0; p2.low = false; }
+  const l = p2.ladder; if (!l) return false;
+  const v = (held2("down") ? 1 : 0) - (held2("up") ? 1 : 0), stop = () => { p2.onGround = true; p2.ladder = null; };
+  p2.vx = 0; p2.vy = 0; p2.onGround = false; p2.x += ((l.c + 1) * T - p2.x) * Math.min(1, dt * 14);
+  p2.y += v * TUNE.CLIMB_SPEED * dt; p2.climbD += Math.abs(v) * TUNE.CLIMB_SPEED * dt;
+  if (p2.y <= l.r * T) { p2.y = l.r * T; stop(); }   // up on the walkway at the top
+  else if (v > 0 && l.bot != null && p2.y >= l.bot * T) { p2.y = l.bot * T; stop(); }   // down onto the one below
+  else if (v > 0 && isSolid(Math.floor(p2.x / T), Math.floor(p2.y / T))) { p2.y = Math.floor(p2.y / T) * T; stop(); }
+  else if (pressed2("a")) { if (dir) p2.facing = dir; p2.ladder = null; p2.vy = -C.jump * 0.7; p2.vx = dir * C.walk; sfx("jump", p2.x, 0.35, 1.15); }
+  return true;
 }
 function p2Headroom(h) {
   const C = P2C(), c0 = Math.floor((p2.x - C.w / 2 + 2) / T), c1 = Math.floor((p2.x + C.w / 2 - 2) / T);
@@ -274,6 +291,7 @@ function p2CaveLights() { return p2.on && P2C().lamp ? [[p2.x, p2.y - 50, P2C().
 // ---------------------------------------------------------------------------
 function p2Sheet() {   // [sheet, frame]
   const C = P2C(), now = p2.t;
+  if (p2.ladder) return [C.walkA, Math.floor((p2.climbD || 0) / 26) % SPR[C.walkA].frames];   // (on a ladder: stepping up it; a climb sheet of their own can come later)
   if (p2.act) { const m = p2.act.m, n = SPR[m.sheet].frames; return [m.sheet, Math.min(n - 1, Math.floor(p2.act.t / m.time * n))]; }
   if (p2.hitT > 0 && C.hit) { const n = SPR[C.hit].frames; return [C.hit, Math.min(n - 1, Math.floor((1 - p2.hitT / P2.HIT_T) * n))]; }
   if (p2.slideT > 0) return [C.slideA, p2.slideT > 0.45 ? 1 : p2.slideT > 0.12 ? 3 : 4];

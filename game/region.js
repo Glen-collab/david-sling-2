@@ -1689,7 +1689,14 @@ function storyAward() {   // Jonathan's robe (one heart more, for good) and his 
   const d = david; d.maxHearts += RTUNE.HP_PER_HEART; d.hearts = d.maxHearts;
   if (typeof chime === "function") { chime(4); setTimeout(() => chime(7), 150); }
   toast("Jonathan's robe: one more heart, for good. His sword: press {sword} to swing it.");
+  // (Glen 11-06) with a Player 2, Jonathan comes along from here: he leaves his spot in the halls and walks beside David
 }
+function jonJoins() {
+  if (typeof p2 === "undefined" || !p2.on || p2.who === "jonathan") return;
+  p2.who = "jonathan"; p2Place(region.story.jon.x, GR * T); p2.facing = -1;
+  toast("Jonathan comes with David! Player 2 is Jonathan now: B shoots his bow, X his sword. (Select: the armor-bearer)");
+}
+const jonWithDavid = () => typeof p2 !== "undefined" && p2.on && p2.who === "jonathan";   // (then he isn't standing in the halls too)
 function updateStory(dt, r) {
   const S = region.story, d = david; if (!S) return;
   for (const w of S.women) {
@@ -1722,7 +1729,8 @@ function updateStory(dt, r) {
       { fn() { J.mode = "gifts"; J.t = 0; }, wait: SPR.jonathan_gifts.frames * STORY.GIFTS_MS / 1000 },
       { fn() { J.mode = "give"; J.t = 0; region.pose = { hide: true }; }, wait: SPR.jonathan_gives_david.frames * STORY.GIVE_MS / 1000 },
       { say: ["1 Samuel 18:3-4", "Then Jonathan and David made a covenant, because he loved him as his own soul. Jonathan stripped himself of the robe that was on him and gave it to David with his clothing, even including his sword, his bow, and his sash."] },
-      { fn() { region.pose = null; J.mode = "after"; storyAward(); } },
+      { fn() { region.pose = null; J.mode = "after"; storyAward(); }, wait: 2.4 },
+      { fn() { jonJoins(); } },
     ]);
     return;
   }
@@ -1778,7 +1786,7 @@ function storyNear() {   // Jonathan or Michal, if David's close enough to talk 
   const room = roomAt(d.x).id;
   if (room === "town") { let best = null; for (const w of S.women) if (w.mode === "stand" && Math.abs(d.x - w.x) < STORY.TALK_REACH && (!best || Math.abs(d.x - w.x) < Math.abs(d.x - best.x))) best = w; return best; }   // (the nearest one)
   if (room !== "halls") return null;
-  if (S.jon.mode === "after" && Math.abs(d.x - S.jon.x) < STORY.TALK_REACH) return S.jon;
+  if (S.jon.mode === "after" && !jonWithDavid() && Math.abs(d.x - S.jon.x) < STORY.TALK_REACH) return S.jon;
   if (S.michal.mode === "idle" && Math.abs(d.x - S.michal.x) < STORY.TALK_REACH) return S.michal;
   return null;
 }
@@ -1799,7 +1807,7 @@ function drawStory(camX) {
     else drawSprite(w.n + "_stand", 0, w.x - camX, gy - (w.mode === "sing" ? Math.abs(Math.sin(w.t * 5)) * STORY.BOB : 0), 1);
   }
   const J = S.jon;
-  if (on(J.x)) {   // (his sheets face right; David comes from the left, so they're flipped)
+  if (on(J.x) && !(jonWithDavid() && (J.mode === "after" || J.mode === "talk") && regionHas("taken", "g_jonathan"))) {   // (his sheets face right; David comes from the left, so they're flipped)
     if (J.mode === "gifts") drawSprite("jonathan_gifts", onceFrame(SPR.jonathan_gifts.frames, J.t, STORY.GIFTS_MS), J.x - camX, gy, -1);
     else if (J.mode === "give") drawSprite("jonathan_gives_david", onceFrame(SPR.jonathan_gives_david.frames, J.t, STORY.GIVE_MS), J.x - camX, gy, -1);
     else if (J.mode === "talk") drawSprite("jonathan_talk", frameOf("jonathan_talk", J.t), J.x - camX, gy, -1);

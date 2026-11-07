@@ -61,6 +61,36 @@ Judah): pick a place you've opened and walk there. Olive presses are the save po
 | The walls | archers on the towers | shield (W4): the arrow-slit walkway | stone of remembrance |
 | The harp room | the boss: calm Saul, dodge the spear twice (18:10-11) | | |
 
+### World 2: The Window (Glen 2026-11-06: "Make it all one region and the map can circle back to Gibeah at night")
+**One region.** It starts in Gibeah by night, runs out to Ramah, and circles back to the field outside Gibeah. On the
+land map it's the Ramah stop. Same castle, now hostile (Castlevania's trick): the Gibeah rooms he knows, at night with
+torches, and Saul's men on watch where friends stood. Story order, 1 Samuel 19-20:
+
+| # | Room (draft) | What happens | Notes |
+|---|---|---|---|
+| 1 | Michal's room | 19:11-13: men watch the house "to kill him in the morning"; the rope drill (9-4 built), the figure in the bed | learn the **rope** |
+| 2 | The palace wall at night | the watchtower in reverse: start at the top, down a wall 5-6 screens tall on the rope, soldiers on ledges, torch-lit windows | tall room |
+| 3 | Gibeah's rooftops | stealth across the town: soldiers with torches (cones of light); crouch in the shadows. Never strike them | learn **crouch-walk / hide in shadows** (engedi.js has the sight and hiding code) |
+| 4 | Gibeah's halls and town by night | the rooms from World 1, night version: torches, guards | going back: the town well (rope) and under the city wall (crouch) open now |
+| 5 | The night road to Ramah | wilderness; wolves and hyenas (fightable); a wolf pack mid-boss; the sky lightens toward morning as he goes (mood only, no timer) | |
+| 6 | The great well at Secu (19:22, *check*) | where Saul stops on his way; a deep vertical room, down on the rope, secrets at the bottom | tall room |
+| 7 | Ramah | Samuel's town: the safe haven, an olive press | |
+| 8 | Naioth, the prophets' house | Castlevania's library: a tall hall of scroll shelves, ladders and walkways; most of the Truths | tall room |
+| 9 | (boss) the chase at Naioth | 19:20-24: three waves of Saul's men; lead each to Samuel and they fall to their knees (soldier_fear sprites); Saul comes last and falls down before Samuel (kid-clean: no stripping) | |
+| 10 | The New Moon feast (20:24-34) | Gibeah's halls at night: Saul's spear at Jonathan this time. **Played as Jonathan:** Player 2 if there is one, else Player 1 plays him | |
+| 11 | The field of the arrows, the stone Ezel | David hides three days (20:19); Jonathan shoots, Player 1 reads where the arrows land ("isn't the arrow beyond you?", 20:37); the goodbye (20:41-42); the Journal and the gate | |
+
+- **Player 2 is Jonathan** in World 2 (the armor-bearer by Select). Where the story is Jonathan's alone (the feast),
+  Player 1 plays him when there's no Player 2.
+- **The goodbye gift: Jonathan's bow** (18:4; Glen 11-06). David's long-range arrow shot, the sling's partner.
+- **Truths (draft, all *check*):** Psalm 59's heading ("when Saul sent, and they watched the house to kill him", found
+  in Michal's room); "there is but a step between me and death" (20:3); "Jonathan loved him as his own soul" (20:17);
+  the covenant between their houses, "Go in peace" (20:42), which sets up the Mephibosheth ending.
+- **Psalm 57 line:** 57:1, "in the shadow of your wings I will take refuge, until disaster has passed."
+- **The bronze key** (top of Gibeah's tower): a locked gate in Gibeah by night (his `tw_lever` / `tw_gate` art).
+- **Art in hand:** Michal (rope, bed), Jonathan (bow shots, sword), Samuel, Saul's soldiers (look, alert, turn),
+  the fearful soldiers, David's crouch and rope climb. **To paint:** the rooms above (prompts in ART_PROMPTS_W2.md).
+
 ## Big systems
 **Truths.** Every hidden spot holds a Truth: a short Bible moment, scroll or verse piece that fills in the Journal. All Truths in a world open something extra; all Truths in the game open the secret ending.
 
@@ -122,7 +152,8 @@ beside the card, showing what grew.
 
 ## Player 2
 One second player at a time. Who it is depends on where you are:
-- **Worlds 1-2: Jonathan** (bow and sword). He returns briefly at Horesh in World 7 (23:16-18), their last meeting.
+- **Worlds 1-2: Jonathan** (bow and sword). In Gibeah (built 11-06): Player 2 starts as the armor-bearer, and Jonathan
+  comes along right after the covenant (he leaves his spot in the halls; Select switches back). Both climb ladders. He returns briefly at Horesh in World 7 (23:16-18), their last meeting.
 - **Always available: the armor-bearer,** a young boy. Carries the lamp, picks up olives and stones, and fits through tiny tunnels David can't (two-player secrets). Good for a little kid playing with a parent.
 - **From World 4: the mighty men.** Once recruited, Player 2 can switch to any of them at an olive press. Each plays differently. Recruited men who aren't being played stand at the camp and in the crowd at the end.
 
