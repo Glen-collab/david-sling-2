@@ -6,7 +6,7 @@
 const LAND_IMG = "../assets/maps/land_map.jpg";
 const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself, in story order)
   { id: "gibeah", name: "Gibeah", world: "World 1", x: 738, y: 300, stage: "9-5", after: null },
-  { id: "ramah", name: "Ramah", world: "World 2", x: 719, y: 384, stage: null, after: "gibeah" },   // 1 Samuel 19:18: David fled to Samuel at Ramah
+  { id: "ramah", name: "Ramah", world: "World 2", x: 719, y: 384, stage: "9-6", after: "gibeah" },   // 1 Samuel 19:18: David fled to Samuel at Ramah
   { id: "nob", name: "Nob", world: "World 3", x: 684, y: 125, stage: null, after: "ramah" },
   { id: "gath", name: "Gath", world: "World 3", x: 219, y: 356, stage: null, after: "nob" },
   { id: "adullam", name: "Adullam", world: "World 4", x: 525, y: 281, stage: null, after: "gath" },

@@ -88,6 +88,7 @@ torches, and Saul's men on watch where friends stood. Story order, 1 Samuel 19-2
   the covenant between their houses, "Go in peace" (20:42), which sets up the Mephibosheth ending.
 - **Psalm 57 line:** 57:1, "in the shadow of your wings I will take refuge, until disaster has passed."
 - **The bronze key** (top of Gibeah's tower): a locked gate in Gibeah by night (his `tw_lever` / `tw_gate` art).
+- **Built 11-06 (game/ramah.js, stage 9-6; SESSION_2026-11-06.md).** Art still wanted: ART_NEEDED_W2.md.
 - **Art in hand:** Michal (rope, bed), Jonathan (bow shots, sword), Samuel, Saul's soldiers (look, alert, turn),
   the fearful soldiers, David's crouch and rope climb. **To paint:** the rooms above (prompts in ART_PROMPTS_W2.md).
 

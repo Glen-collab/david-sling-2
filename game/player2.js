@@ -74,7 +74,8 @@ const P2_ROSTER = {
   "9-4": ["jonathan", "armorbearer"],
 };
 // (Glen 11-06) Gibeah: the armor-bearer until the covenant, then Jonathan comes with David (region.js storyAward)
-const p2Gibeah = () => LEVEL_NAME === "9-5" && typeof regionHas === "function" ? (regionHas("taken", "g_jonathan") ? ["jonathan", "armorbearer"] : ["armorbearer"]) : null;
+const p2Gibeah = () => LEVEL_NAME === "9-6" ? ["jonathan", "armorbearer"]   // (World 2: Jonathan, Glen 11-06)
+  : LEVEL_NAME === "9-5" && typeof regionHas === "function" ? (regionHas("taken", "g_jonathan") ? ["jonathan", "armorbearer"] : ["armorbearer"]) : null;
 const p2Roster = () => STAGE_INFO.p2 || p2Gibeah() || P2_ROSTER[LEVEL_NAME] || ["armorbearer"];
 
 const p2 = { on: false, who: null, x: 0, y: 0, vx: 0, vy: 0, onGround: false, facing: 1, holdT: 0, t: 0, act: null, hitT: 0, inv: 0,
@@ -132,6 +133,7 @@ function updateP2(dt) {
   if (WORLD !== 9) return;
   updateP2Stage(dt);
   if (!p2.on) { if (["left", "right", "up", "down", "a", "b", "x"].some(pressed2)) p2Join(); return; }
+  if (p2.hide) { p2.vx = 0; return; }   // (a story scene of his own: ramah.js stands him aside)
   if (pressed2("select")) p2Switch();
   if (david.deadT > 0 || inCutscene() || (typeof drill !== "undefined" && drill.on)) { p2.vx = 0; return; }   // (a drill: Player 2's hands are busy)
   const C = P2C(); p2.t += dt;
@@ -312,7 +314,7 @@ function p2Sheet() {   // [sheet, frame]
   return [C.idle, frameOf(C.idle, now)];
 }
 function drawP2(camX) {
-  if (!p2.on || WORLD !== 9) return;
+  if (!p2.on || WORLD !== 9 || p2.hide) return;
   const [nm, i] = p2Sheet(); if (!SPR[nm]) return;
   const blink = p2.inv > 0 && Math.floor(performance.now() / 80) % 2;
   drawSprite(nm, i, p2.x - camX, p2.y, p2.facing, 1, blink ? 0.45 : 1);

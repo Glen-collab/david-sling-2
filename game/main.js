@@ -416,7 +416,8 @@ const STAGE_INFO = {
   "9-1": { cols: 214, bg: "w2_3", ter: "w2s", name: "The Rocks of the Wild Goats" },   // Part Two test: En-Gedi (engedi.js)
   "9-2": { cols: 92, bg: "w2_3", ter: "w2s", name: "The Leap of Faith" },             // Part Two test: the hidden bridge (leap.js)
   "9-4": { cols: 60, bg: "w4_4", ter: "w4p", name: "The Window" },                      // Part Two test: the D-pad drills (drill.js); Glen's palace at night
-  "9-5": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Gibeah" },              // Part Two test: the first region, Castlevania-style (region.js)
+  "9-5": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Gibeah" },
+  "9-6": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Window" },           // Part Two: World 2, the second region (ramah.js on region.js)              // Part Two test: the first region, Castlevania-style (region.js)
   "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
   "1-2": { cols: 228, bg: "w1_2", name: "The Wandering Flock" },
@@ -584,7 +585,9 @@ const talk = (c, who, say, teach = null) => talks.push({ x: c * T, who, say, tea
 // The movement test (#test) and "?allskills" have everything.
 const SKILL_NAMES = { aimUp: "Aim up: hold Up as you throw", harpCall: "The harp calls lost sheep to you", roll: "Roll: {roll}", charge: "Charged sling: hold B",
   quick: "Quick release: tap B twice, quick, for two stones",
-  leap: "The scout's leap: press A again in the air to jump again" };   // leap: Tobi, 5-2   // quick: Gera, 4-2
+  leap: "The scout's leap: press A again in the air to jump again",
+  rope: "Michal's rope: climb ropes, and go down wells (Up at one)",   // (Part Two, World 2)
+  bow: "Jonathan's bow: hold Up and press {sword} to shoot an arrow, far" };   // leap: Tobi, 5-2   // quick: Gera, 4-2
 const skills = new Set();
 try { for (const k of JSON.parse(localStorage.getItem(slotKey("david2Progress")) || "{}").skills || []) skills.add(k); } catch (e) {}
 const ALL_SKILLS = LEVEL_NAME === "test" || new URLSearchParams(location.search).has("allskills");
@@ -1102,7 +1105,7 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
-} else if (LEVEL_NAME === "9-5") {
+} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6") {
   buildRegion();   // Gibeah, the first region: rooms, doors, seals and finds (region.js)
 } else if (LEVEL_NAME === "9-4") {
   // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets
@@ -2403,7 +2406,8 @@ function updateDavid(dt) {
     if (d.throwT >= dur) { d.throwT = -1; d.runThrow = false; d.quickUsed = false; d.quickQueued = false; }
   }
 
-  if (typeof updateSword === "function" && (typeof regionSword !== "function" || regionSword())) updateSword(d, dt, busy);   // (in Gibeah, once Jonathan gives it: region.js)   // engedi.js: X swings the sword
+  if (typeof regionBow === "function" && regionBow(d, busy)) { /* (Part Two: Jonathan's bow, Up + the sword button: ramah.js) */ }
+  else if (typeof updateSword === "function" && (typeof regionSword !== "function" || regionSword())) updateSword(d, dt, busy);   // (in Gibeah, once Jonathan gives it: region.js)   // engedi.js: X swings the sword
 
   // --- ladders: hold Up in front of one to climb it (Down from the top to climb down), A to jump off
   if (!busy && !d.harp && !d.carrying && d.throwT < 0) {
@@ -2632,8 +2636,9 @@ function drawDavid(camX) {
     case "landHeavy": drawSprite("david_land_heavy", frameOf("david_land_heavy", t, TUNE.LAND_HEAVY_MS), x, y, d.facing); break;
     case "slip": drawSprite("david_slip", frameOf("david_slip", t, TUNE.SLIP_MS), x, y, d.facing); break;
     case "topout": drawSprite("david_topout", d.topK || 0, x, y, (d.topK || 0) < 2 ? 1 : d.topDir); break;   // back view, then from the side
-    case "climb": { const nm = SPR.david_ladder ? "david_ladder" : "david_climb";   // (Glen 11-06: his ladder climb, shield on his back)
-      drawSprite(nm, Math.floor((d.climbDist || 0) / TUNE.CLIMB_STRIDE) % SPR[nm].frames, x, y, 1); break; }   // his back to us
+    case "climb": { const nm = d.ladder && d.ladder.rope ? "david_climb" : SPR.david_ladder ? "david_ladder" : "david_climb";   // (a rope: his rope climb)   // (Glen 11-06: his ladder climb, shield on his back)
+      const hx = nm === "david_climb" && typeof RTUNE !== "undefined" ? x + (SPR[nm].ax - RTUNE.ROPE_IN_HANDS) * SCALE * (TUNE.SPRITE_SIZE[nm] || 1) : x;   // (Glen 11-07: his hands on the rope, as on the well's rope)
+      drawSprite(nm, Math.floor((d.climbDist || 0) / TUNE.CLIMB_STRIDE) % SPR[nm].frames, hx, y, 1); break; }   // his back to us
     case "roll": drawSprite("david_roll", Math.min(11, Math.floor(d.rollT / TUNE.ROLL_TIME * 12)), x, y, d.facing); break;
     case "getup": drawSprite("david_roll_getup", Math.min(6, 3 + Math.floor(d.t / 0.07)), x, y, d.facing); break;
     case "crouch": drawSprite("david_crouch", frameOf("david_crouch", t, 40), x, y, d.facing); break;

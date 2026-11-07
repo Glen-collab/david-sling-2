@@ -1,5 +1,7 @@
 # World 2 (The Window): prompts for the room paintings
 
+(The sprites and kit pieces World 2 still needs are in ART_NEEDED_W2.md.)
+
 Same look as Gibeah: warm, painterly, storybook 3D style, ancient Israel around 1000 BC. Every prompt ends with the
 same tail, so the rooms match each other:
 

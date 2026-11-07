@@ -12,7 +12,9 @@
 // the fortress, the palace at night, and the cave layers) until Glen paints the palace.
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
-const REGION_ON = location.hash === "#9-5";
+// (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
+const REGION_KEY = location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;
+const REGION_ON = !!REGION_KEY;
 const REGION_UP = 110;   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
 const RTUNE = {
   GAP: 6,            // columns of solid rock between rooms
@@ -75,7 +77,7 @@ const SEAL_SKILL = {
 
 // ---- Gibeah ----
 // mx, my, mw: where the room sits on the map screen (cells), and how many cells wide it is
-const REGION = {
+const REGION_GIBEAH = {
   key: "gibeah", name: "Gibeah",
   strCap: 4,   // (Glen 11-05) strength from fighting can't go past this level in this world
   rooms: [
@@ -99,6 +101,7 @@ const REGION = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
+const REGION = REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -160,7 +163,7 @@ const KIT = {
   tw_slab: { w: 221, h: 80 }, tw_step2: { w: 200, h: 115 }, tw_blocks: { w: 287, h: 67 }, tw_corbel: { w: 188, h: 253 },
   tw_buttress: { w: 306, h: 631 }, tw_buttress_ruin: { w: 292, h: 559 }, tw_pier: { w: 241, h: 498 }, tw_pier_stub: { w: 310, h: 233 },
   tw_key: { w: 80, h: 231 }, tw_lever_up: { w: 118, h: 345 }, tw_lever_down: { w: 151, h: 221 }, tw_gate_shut: { w: 219, h: 377 }, tw_gate_open: { w: 187, h: 311 },   // (his key, lever and gate: the key at the top of the tower; the lever and gate for what it opens, to come)
-  tw_door_shut: { w: 159, h: 215 }, tw_door_open: { w: 162, h: 221 }, tw_hatch: { w: 155, h: 161 }, tw_door_arch: { w: 211, h: 244 }, tw_door_plank: { w: 134, h: 226 }, tw_win_slit: { w: 94, h: 198, pad: [3, 3, 10, 45] }, tw_win: { w: 134, h: 170, pad: [3, 2, 12, 64] }, tw_win_arch: { w: 138, h: 200, pad: [3, 3, 22, 48] }, tw_win_slit_dark: { w: 95, h: 190, pad: [3, 3, 3, 0] }, tw_win_glow: { w: 170, h: 194, pad: [0, 2, 0, 0] },   // (his tower doors and windows)
+  tw_door_shut: { w: 159, h: 215 }, tw_door_open: { w: 162, h: 221 }, tw_hatch: { w: 155, h: 161 }, tw_door_arch: { w: 211, h: 244 }, tw_door_plank: { w: 134, h: 226 }, tw_win_slit: { w: 94, h: 198, pad: [3, 3, 10, 45] }, tw_win: { w: 134, h: 170, pad: [3, 2, 12, 64] }, tw_win_arch: { w: 138, h: 200, pad: [3, 3, 22, 48] }, tw_win_slit_dark: { w: 95, h: 190, pad: [3, 3, 3, 0] }, tw_win_glow: { w: 170, h: 194, pad: [0, 2, 0, 0] }, tw_win_slit_moon: { w: 115, h: 227 }, tw_win_dusk: { w: 155, h: 206 }, tw_win_arch_moon: { w: 165, h: 224 }, tw_win_slit_night: { w: 114, h: 229 }, tw_win_night: { w: 181, h: 216 }, tw_win_arch_lit: { w: 165, h: 224 }, "tw_win_arch_lit-outside_wall": { w: 165, h: 224 }, "tw_win_arch_lit_with-rope": { w: 165, h: 224 }, "tw_win_arch_moon_with-rope": { w: 165, h: 224 }, tw_torch_wall: { w: 318, h: 371 }, tw_torch_stand: { w: 182, h: 629 }, tw_torch_bowl: { w: 123, h: 407 }, tw_torch_hand: { w: 173, h: 488 },   // (11-07: his night windows)   // (his tower doors and windows)
   hr_spearwall: { w: 173, h: 167 }, hr_wall0: { w: 216, h: 632 }, hr_wall1: { w: 216, h: 632 }, hr_wall2: { w: 216, h: 632 }, hr_wall3: { w: 216, h: 632 }, hr_wall4: { w: 216, h: 632 }, hr_stool: { w: 89, h: 56 }, hr_rug: { w: 323, h: 30 }, hr_rack: { w: 86, h: 173 },   // (hr_wall0-4: Glen 11-05, the plaster between the first two carved pillars, from his harp_strip_source and _strike1, 2, 4, 5)
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
@@ -337,6 +340,7 @@ function drawRegionLadders(camX) {
   const w = 2 * T - 4, sc = w / img.naturalWidth, segH = img.naturalHeight * sc * 0.86;   // (tiled: the picture repeats down a long one)
   for (const l of region.ladders) {
     const x = l.x - camX - w / 2; if (x > W || x + w < 0) continue;
+    if (l.rope) { drawRope(l.x - camX, l.top - 30, l.bot + 2); continue; }   // (World 2: a rope between two walkways, climbed like a ladder)
     const top = l.top - 26, bot = l.bot + 4;
     ctx.save(); ctx.beginPath(); ctx.rect(x - 4, top, w + 8, bot - top); ctx.clip();
     for (let y = top; y < bot; y += segH) ctx.drawImage(img, x, y, w, img.naturalHeight * sc);
@@ -348,9 +352,11 @@ function drawProps(camX) {
     if (p.front) continue;   // (drawRegionFront: over David)
     const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), s = p.s || 1; if (!im || x > W || x + k.w * s < 0) continue;
     if (p.y > camY + H + 50 || p.y + k.h * s < camY - 120) continue;   // (a tall room: off above or below)
+    if (p.filter) { ctx.save(); ctx.filter = p.filter; }   // (e.g. a window at night)
     if (k.pad) { const [l, t, r, b] = k.pad; ctx.drawImage(im, x - l * s, Math.round(p.y - t * s), (k.w + l + r) * s, (k.h + t + b) * s); }   // (pad: the picture runs past the piece's box, its light spilling out: w, h are the frame)
     else if (p.flip) { ctx.save(); ctx.translate(x + k.w * s, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, Math.round(p.y), k.w * s, k.h * s); ctx.restore(); }   // (mirrored)
     else ctx.drawImage(im, x, Math.round(p.y), k.w * s, k.h * s);
+    if (p.filter) ctx.restore();
     if (p.legs) {   // the legs on down to the ground: the band of rows that's only legs, again and again
       const [a, b] = KIT.LEG, bh = b - a;
       for (let y = p.y + b; y < GR * T + 6; y += bh) ctx.drawImage(im, 0, a, k.w, bh, x, Math.round(y), k.w, bh);
@@ -375,9 +381,18 @@ function regionCamY() {   // main.js: how far up the camera is (0 but in a tall 
 }
 function regionWrite() { try { localStorage.setItem(regionSaveKey(), JSON.stringify(region.save)); } catch (e) {} }
 const regionHas = (list, id) => region.save[list].includes(id);
+const everHas = id => regionHas("taken", id) || (region.carried || []).some(c => (c.taken || []).includes(id));   // (this region, or one before it)
 function regionAdd(list, id) { if (!regionHas(list, id)) { region.save[list].push(id); regionWrite(); } }
 // where David starts: the olive press he last saved at, or the start of the fields
-function regionStartCol() { return region.save.at != null ? region.save.at : roomById("fields").c0 + 3; }
+function regionStartCol() {   // the olive press you last saved at
+  const s = region.save, home = roomById(REGION.start || "fields").c0 + 3;
+  if (s.at == null) return home;
+  // (11-07: saved by room + offset, so adding rooms doesn't move it. An old save (a bare column): the nearest press to it,
+  //  and only if it's close; otherwise the region's start.)
+  if (s.atRoom && REGION.rooms.some(r => r.id === s.atRoom)) return roomById(s.atRoom).c0 + s.atOff;
+  let best = null; for (const f of fires) { const c = Math.round((f.x - 30) / T); if (best == null || Math.abs(c - s.at) < Math.abs(best - s.at)) best = c; }
+  return best != null && Math.abs(best - s.at) <= 2 ? best : home;
+}
 
 // ---- building (called by main.js's layout, so its helpers exist by then) ----
 // a door: kind "door" (a doorway), "stairs" (a stair going down / up), "well" (down a well), "rope" (a rope up out of
@@ -406,6 +421,7 @@ function buildRegion() {
   for (const r of REGION.rooms) rock(r.c0 - RTUNE.GAP, TOP_ROW, RTUNE.GAP, ROWS - TOP_ROW);
   const last = REGION.rooms[REGION.rooms.length - 1]; rock(last.c0 + last.w, 0, RTUNE.GAP, ROWS);
   const R = id => roomById(id).c0;
+  if (REGION.build) { REGION.build(R); return; }   // (another region's own rooms: ramah.js)
 
   // -- The Fields: Philistine raids come later; for now the wild things, a ledge climb to a stone, and the watchtower rock
   let c = R("fields");
@@ -718,9 +734,14 @@ function regionInit() {
   for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) { roomImg("gibeah/sky_clouds"); roomImg("gibeah/sky_strip.jpg"); } }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
-  const poms = region.save.taken.filter(id => id.startsWith("g_pom")).length;
-  const extra = (Math.floor(poms / 4) + (regionHas("taken", "g_jonathan") ? 1 : 0)) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
-  david.specialStones += region.save.taken.filter(id => id.startsWith("g_stone")).length;
+  // (Glen 11-06) a later region keeps what David earned before (REGION.carry: the regions before it): pomegranates,
+  // Jonathan's robe, stones of remembrance, strength
+  region.carried = (REGION.carry || []).map(k => { try { return JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + k) || "{}"); } catch (e) { return {}; } });
+  for (const c of region.carried) region.save.str = Math.max(region.save.str || 0, c.str || 0);
+  const allTaken = [region.save, ...region.carried].flatMap(c => c.taken || []);
+  const poms = allTaken.filter(id => /^[a-z0-9]+_pom/.test(id)).length;
+  const extra = (Math.floor(poms / 4) + (everHas("g_jonathan") ? 1 : 0)) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
+  david.specialStones += allTaken.filter(id => /^[a-z0-9]+_stone/.test(id)).length;
   { const up = (strLevel() - 1) * STR.HP; david.maxHearts += up; david.hearts += up; }   // (strength: health for each level)
 }
 function regionGo(x, facing, after = null) {   // fade out, move, fade in (after: what happens once he's moved, e.g. onto a rope)
@@ -739,8 +760,10 @@ function updateRegion(dt) {
     for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0 });
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
+    if (REGION.enter) REGION.enter(r);
   }
   updateBreaks(dt); updateBeasts(dt, r); strWatch(); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r); updateRegionScript(dt); updateStory(dt, r); journalWatch();
+  if (REGION.update) REGION.update(dt, r);   // (another region's own: ramah.js)
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
@@ -776,7 +799,7 @@ function updateRegion(dt) {
   if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
   if (pressed("up") && d.onGround) {
-    const door = region.doors.find(o => o.kind !== "hole" && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - GR * T) < 30);
+    const door = region.doors.find(o => o.kind !== "hole" && !o.shut && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - (o.y ?? GR * T)) < 30);
     if (door && door.kind === "exit") {   // the locked gate out
       const left = STORY_STEPS.find(id => !regionHas("taken", id));   // (Glen 11-06) not before the story's done, key or no key
       if (left) sayLine("David", GATE_NOT_YET[left]);
@@ -787,7 +810,7 @@ function updateRegion(dt) {
     if (door) {
       const seal = door.need && region.seals.find(s => s.need === door.need && Math.abs(s.x - door.x) < 3 * T);
       if (door.need && !hasSkill(door.need)) { if (seal) sealSay(seal); }
-      else { const to = region.doors.find(o => o.id === door.to); regionGo(to.x + 30, 1); }
+      else { const to = region.doors.find(o => o.id === door.to); regionGo(to.x + 30, 1, to.y != null ? () => { david.y = to.y; david.vy = 0; if (typeof p2 !== "undefined" && p2.on) p2.y = to.y; region.camFootY = to.y; snapCamera(); if (to.land) to.land(); } : null); }
       return;
     }
   }
@@ -844,7 +867,7 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     c.t += dt; d.x = c.o.x; d.y = GR * T;
     if ((!sh || c.t >= sh.frames * RTUNE.WELL_MS / 1000) && !c.done) {
       c.done = true;
-      if (c.dir < 0) wellDown();
+      if (c.dir < 0) wellDown(c.o);
       else {   // crouched on the rim: he hops down off it, out to the right
         const r = wellRim(c.o); region.climb = null;
         d.x = r.x; d.y = r.y; d.facing = 1; d.onGround = false;
@@ -862,7 +885,7 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
   if (c.kind === "rope") {
     d.x = c.x; d.y += v * RTUNE.CLIMB_SPEED * dt; c.dist += Math.abs(v) * RTUNE.CLIMB_SPEED * dt;
     if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }   // down on the floor
-    if (d.y <= RTUNE.ROPE_TOP + RTUNE.ROPE_HANG - 10 && !c.gone) {   // up into the well shaft: out into the town
+    if (d.y <= ropeTop(c.o) + RTUNE.ROPE_HANG - 10 && !c.gone) {   // up into the well shaft: out into the town
       c.gone = true; const w = region.doors.find(o => o.id === ((c.o && c.o.to) || "d_well"));
       if (w.kind === "well") regionGo(w.x, 1, () => { wellOut(w); snapCamera(); });
       else regionGo(w.x + 3 * T, 1, () => { region.climb = null; d.onGround = true; setState("idle"); snapCamera(); });   // (up out of the hole: onto the floor beside it)
@@ -880,10 +903,11 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
   }
   return true;
 }
-function wellDown() {   // crouched on the rim: the fade, and he's on the rope in the cisterns
-  const to = region.doors.find(o => o.id === "d_wellrope");
+const ropeTop = o => o && o.top != null ? o.top : RTUNE.ROPE_TOP;   // (a tall room's well mouth is higher up: o.top, World 2's Secu)
+function wellDown(o) {   // crouched on the rim: the fade, and he's on the rope in the cisterns
+  const to = region.doors.find(q => q.id === ((o && o.to) || "d_wellrope"));
   regionGo(to.x, 1, () => {
-    region.climb = { kind: "rope", x: to.x, dist: 0 }; david.x = to.x; david.y = RTUNE.ROPE_TOP + RTUNE.ROPE_HANG; snapCamera();
+    region.climb = { kind: "rope", x: to.x, dist: 0, o: to }; david.x = to.x; david.y = ropeTop(to) + RTUNE.ROPE_HANG; region.camFootY = david.y; snapCamera();
     if (!region.ropeTold) { region.ropeTold = true; toast("Down the rope: hold Down. Up climbs back out. A lets go."); }
   });
 }
@@ -949,7 +973,8 @@ function drawRegionFire(f, camX) {   // main.js drawFires: true if it drew it (G
 }
 function regionFireLit(f) {   // an olive press (a campfire, for now): save here
   if (!REGION_ON) return;
-  region.save.at = Math.round((f.x - 30) / T); regionWrite();
+  const c = Math.round((f.x - 30) / T), r = REGION.rooms.find(q => c >= q.c0 && c < q.c0 + q.w);
+  region.save.at = c; if (r) { region.save.atRoom = r.id; region.save.atOff = c - r.c0; } regionWrite();
 }
 
 // ---- health, and things to break (Glen 11-03: Castlevania-style) ----
@@ -968,6 +993,7 @@ function breakBox(b) {   // the whole thing (about two thirds of its picture's w
 }
 function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the sword's edge): true if it broke something
   if (!REGION_ON) return false;
+  if (REGION.stoneHits && REGION.stoneHits(s)) return true;   // (another region's own: ramah.js)
   const hr = region.harp;
   if (hr && hr.empty && !regionHas("taken", "g_harp_wall") && s.x < hr.crackX + HARP_WALL.W - 10 && s.x > hr.crackX + 10 && s.y > HARP_WALL.HIT_Y && s.y < GR * T) {
     if (hr.hitCool > 0) return true;   // (one swing, one hit)
@@ -1094,6 +1120,10 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
     const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
     for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) ctx.drawImage(strip, Math.round(x), 0, Math.ceil(sw) + 1, H);
+    if (r.up) {   // (a tall room, World 2: the wall's middle band, without its floor and ceiling, repeated on up over the ceiling)
+      const f0 = r.cave ? 0.12 : 0.095, b0 = strip.naturalHeight * f0, bh = strip.naturalHeight * (r.cave ? 0.62 : 0.69), dh = bh * H / strip.naturalHeight;   // (Glen 11-07, the halls: a whole storey, from the beam over the hangings down to the wall above the floor, so each repeat is a full floor: no hangings cut in half)
+      for (let y = f0 * H - dh; y > camY - dh; y -= dh) for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) ctx.drawImage(strip, 0, b0, strip.naturalWidth, bh, Math.round(x), Math.round(y), Math.ceil(sw) + 1, Math.ceil(dh) + 1);
+    }
     if (r.id === "harp") drawHarpWall(camX);   // (part of the wall: under everything else)
     return true;
   }
@@ -1240,16 +1270,18 @@ function drawRegion(camX) {
     const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
     ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);
   }
+  if (REGION.drawBack) REGION.drawBack(camX);   // (a region's own backdrop pieces, behind the props: ramah.js)
   drawTowerEnds(camX); drawProps(camX); drawRegionLadders(camX); drawLedges(camX);
   drawFloorCrumbles(camX);
   drawBreaks(camX);
   drawBeasts(camX);
   drawHarpRoom(camX);
   drawStory(camX);
+  if (REGION.draw) REGION.draw(camX);
   for (const o of region.doors) {
     const x = o.x - camX; if (x < -200 || x > W + 200) continue;
-    if (!o.kit && !(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
-    if (o.kind !== "hole" && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - GR * T) < 60 && !region.trans) upHint(x, GR * T - 200);
+    if (!o.kit && !o.noArt && o.y == null && !(roomArt(roomAt(o.x)) && (o.kind === "door" || o.kind === "stairs"))) drawDoorArt(o, x);
+    if (o.kind !== "hole" && !o.shut && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - (o.y ?? GR * T)) < 60 && !region.trans) upHint(x, (o.y ?? GR * T) - 200);
   }
   // the cracked wall in the cellars, until it's broken
   if (region.crack) {   // (Glen 11-05: his cracked wall; split open once it's broken)
@@ -1324,15 +1356,26 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
     ctx.strokeStyle = "#4e4234"; ctx.lineWidth = 2;
     for (let r = 0; r < 3; r++) for (let k = 0; k < 4; k++) ctx.strokeRect(x - 46 + k * 23 + (r % 2) * 11, y - 52 + r * 17, 23, 17);
   } else if (o.kind === "hole") {   // (the hole's own edges are drawn: rHole)
-  } else if (o.kind === "rope" && o.to !== "d_well") {   // (Glen 11-05) his iron ring in the rock, the rope hanging from it
+  } else if (o.kind === "rope" && (region.doors.find(q => q.id === o.to) || {}).kind !== "well") {   // (Glen 11-05) his iron ring in the rock, the rope hanging from it
     const k = KIT.p_ring, im = kitImg("p_ring");
     if (im) ctx.drawImage(im, Math.round(x - k.w / 2), 0, k.w, k.h);
     drawRope(x, k.h - 40, y - 24);
   } else if (o.kind === "rope") {   // a rope hanging down out of the well's mouth, and a little daylight
-    const lg = ctx.createRadialGradient(x, 2 * T, 4, x, 2 * T, 160);
+    const ty = ropeTop(o);
+    if (o.top != null) {   // (Glen 11-07: a tall shaft: the well's mouth up top, sky in it, and a shaft of daylight down the rope)
+      const bm = ctx.createLinearGradient(0, ty, 0, ty + 620);
+      bm.addColorStop(0, "rgba(255,240,200,0.55)"); bm.addColorStop(1, "rgba(255,240,200,0)");
+      ctx.fillStyle = bm; ctx.beginPath(); ctx.moveTo(x - 70, ty); ctx.lineTo(x + 70, ty); ctx.lineTo(x + 170, ty + 620); ctx.lineTo(x - 170, ty + 620); ctx.fill();
+      ctx.fillStyle = "#3a2c22"; ctx.beginPath(); ctx.ellipse(x, ty - 6, 96, 30, 0, 0, Math.PI * 2); ctx.fill();   // the rock lip
+      const sk = ctx.createRadialGradient(x, ty - 10, 6, x, ty - 10, 84);
+      sk.addColorStop(0, "#fffbe8"); sk.addColorStop(0.6, "#cfe8f7"); sk.addColorStop(1, "#8fbad6");
+      ctx.fillStyle = sk; ctx.beginPath(); ctx.ellipse(x, ty - 8, 82, 22, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#6b4a2e"; ctx.fillRect(x - 100, ty - 12, 200, 9);   // the beam the rope is tied to
+    }
+    const lg = ctx.createRadialGradient(x, ty, 4, x, ty, 160);
     lg.addColorStop(0, "rgba(255,236,190,0.7)"); lg.addColorStop(1, "rgba(255,220,150,0)");
-    ctx.fillStyle = lg; ctx.fillRect(x - 160, 0, 320, 260);
-    drawRope(x, 2 * T, y - 24);
+    ctx.fillStyle = lg; ctx.fillRect(x - 160, ty - 2 * T, 320, 260);
+    drawRope(x, ty, y - 24);
   }
   ctx.restore();
 }
@@ -1671,9 +1714,10 @@ function regionHoldDavid(d, dt) {   // main.js updateDavid: while a scene plays 
   return true;
 }
 function regionDrawDavid(d, x, y) {   // main.js drawDavid: hidden while he's in a two-shot
+  if (REGION_ON && REGION.drawDavid && REGION.drawDavid(d, x, y)) return true;
   return REGION_ON && !!region.pose && !!region.pose.hide;
 }
-const regionSword = () => !REGION_ON || ALL_SKILLS || regionHas("taken", "g_jonathan");   // Jonathan's sword (18:4): X in Gibeah only once he's given it
+const regionSword = () => !REGION_ON || ALL_SKILLS || (REGION.sword ? REGION.sword() : everHas("g_jonathan"));   // Jonathan's sword (18:4): X in Gibeah only once he's given it
 function storyBuild(R) {   // buildRegion: where everyone stands
   const done = id => regionHas("taken", id);
   const t = R("town"), h = R("halls");
@@ -1828,11 +1872,13 @@ function drawRegionFront(camX) {   // main.js, after David: the railings he walk
     if (!im || x > W || x + w < 0) continue;
     ctx.drawImage(im, x, Math.round(p.y), w, k.h);
   }
+  if (REGION.drawFront) REGION.drawFront(camX);
   const near = region.story && !region.script.length && !(dialog.t > 0) && david.onGround && storyNear();
   if (near) upHint(near.x - camX, GR * T - 175);   // Up: hear them (over the railings: Glen 11-05)
 }
 function drawRegionOver() {
   if (!REGION_ON) return;
+  if (REGION.drawOver) REGION.drawOver(camX);   // (the night, the lamps: ramah.js)
   if (region.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${region.fade})`; ctx.fillRect(0, 0, W, H); }
 }
 
@@ -1862,7 +1908,7 @@ const STR = {
   HP: 5,          // health each level adds
   DMG: 0.25,      // each level: a stone (or a sword stroke) takes this much more off a Philistine (one is 1)
   // what driving each one off is worth (not the harmless ones: the whip snake, the hedgehog)
-  XP: { scorpion: 1, viper: 2, rat: 1, rat2: 1, spider: 1, spiderw: 1, bat2: 1, crow: 1, raven: 1, eagle: 3, jackal: 2, phil: 4 },
+  XP: { scorpion: 1, viper: 2, rat: 1, rat2: 1, spider: 1, spiderw: 1, bat2: 1, crow: 1, raven: 1, eagle: 3, jackal: 2, phil: 4, wolf: 3 },
 };
 const strXP = () => region.save.str || 0;
 const strLevel = (xp = strXP()) => { let l = 1; while (l < STR.NEED.length && xp >= STR.NEED[l]) l++; return Math.min(l, REGION.strCap); };
@@ -1896,9 +1942,9 @@ const CARD = [
 ];
 // the Journal page: Glen's song (SONG_PSALM57.md, Verse 1 for Gibeah, his words exactly). David writes two lines after
 // each of the story's moments (STORY_STEPS); all of it once he's through the gate
-const JOURNAL_VERSE = ["Be merciful to me, O God", "Be merciful to me", "My soul takes refuge in You", "My shelter, Lord, are Your wings",
+const JOURNAL_VERSE = REGION.verse || ["Be merciful to me, O God", "Be merciful to me", "My soul takes refuge in You", "My shelter, Lord, are Your wings",
   "Until the storm has passed away", "Until the danger disappears", "Beneath the shadow of Your wings", "I will find refuge here"];
-const STORY_STEPS = ["g_song", "g_jonathan", "g_harp_done", "g_michal"];
+const STORY_STEPS = REGION.steps || ["g_song", "g_jonathan", "g_harp_done", "g_michal"];
 // (Glen 11-06, draft words) the gate out, before the story's done: what's still waiting (the first one missed)
 const GATE_NOT_YET = {
   g_song: "Not yet. The army is coming home, and the whole town is going out to meet it.",
@@ -1942,13 +1988,13 @@ const JSCENE = {
   INK: "rgba(40,24,12,0.92)", INK_REF: "rgba(92,62,36,0.85)",
   TITLE_INK: "rgba(120,62,8,0.95)", TITLE_WAIT: 1.2, GLOW: 0.32,   // (the gate: the song's title in deep gold, after a breath, and a warm light on the page)
   // (draft words, for Glen to change) what David writes after each story moment (STORY_STEPS, in order), and at the gate
-  ENTRIES: [
+  ENTRIES: REGION.entries || [
     ["The women sang about me, and the king grew angry. The glory belongs to the LORD, not to me.", "1 Samuel 18:7–9"],
     ["Jonathan gave me his robe, his sword, his bow and his sash. He loves me as his own soul.", "1 Samuel 18:1–4"],
     ["I played for the king, and he threw his spear at me twice. I did not throw it back. The LORD kept me safe.", "1 Samuel 18:10–11"],
     ["Michal loves me. Saul is afraid of me, because he sees that the LORD is with me.", "1 Samuel 18:28–29"],
   ],
-  END: ["Tonight I leave Gibeah. Wherever I go, the LORD my God is with me.", "Joshua 1:9"],
+  END: REGION.end || ["Tonight I leave Gibeah. Wherever I go, the LORD my God is with me.", "Joshua 1:9"],
 };
 const JS_IMG = Object.assign(new Image(), { src: "../assets/journal/david_journal_ots.png?v=" + (window.BUILD || 0) });
 const storyDone = () => STORY_STEPS.filter(id => regionHas("taken", id)).length;
@@ -2025,10 +2071,11 @@ function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, c
   const [RW_] = JSCENE.PAGE.right, lines = (J.final ? JOURNAL_VERSE.length : Math.min(JOURNAL_VERSE.length, J.n * 2)), was = J.final && J.wasFinal ? lines : Math.min(JOURNAL_VERSE.length, J.prev * 2);
   // (Glen 11-06) only the words until the gate; there, once every line is down, a breath, and then the title, big, last
   J.right = fit("right", k => {
-    const items = []; let y = J.final ? 70 * k : 4 * k;
-    if (J.final) {
-      items.push({ text: "My Heart Is Steadfast", x: RW_ / 2, y: 40 * k, px: 40 * k, center: true, color: JSCENE.TITLE_INK, isNew: !J.wasFinal, last: true, title: true });
-      items.push({ text: "Psalm 57", x: RW_ / 2, y: 64 * k, px: 21 * k, center: true, color: JSCENE.INK_REF, isNew: !J.wasFinal, last: true });
+    const titled = J.final || REGION.key !== "gibeah", newTitle = J.final && !J.wasFinal && REGION.key === "gibeah";   // (after Gibeah the song has its title: written there, at the end)
+    const items = []; let y = titled ? 70 * k : 4 * k;
+    if (titled) {
+      items.push({ text: "My Heart Is Steadfast", x: RW_ / 2, y: 40 * k, px: 40 * k, center: true, color: JSCENE.TITLE_INK, isNew: newTitle, last: true, title: newTitle });
+      items.push({ text: "Psalm 57", x: RW_ / 2, y: 64 * k, px: 21 * k, center: true, color: JSCENE.INK_REF, isNew: newTitle, last: true });
     }
     for (let i = 0; i < lines; i++) {
       const ind = i % 2 ? 16 : 0;
@@ -2164,7 +2211,7 @@ function drawCardSpread() {
   // the four traits
   y += 34;
   for (const tr of CARD) {
-    const got = tr.from.filter(([id]) => regionHas("taken", id)), left = tr.from.length - got.length;
+    const got = tr.from.filter(([id]) => everHas(id)), left = tr.from.length - got.length;
     ctx.fillStyle = INK; ctx.font = "bold 22px Georgia, serif"; ctx.fillText(tr.name, lx, y);
     for (let i = 0; i < tr.from.length; i++) {   // a mark for each, filled once it's grown
       const px = lx + lw - (tr.from.length - 1 - i) * 22 - 8;
@@ -2175,7 +2222,7 @@ function drawCardSpread() {
     const vl = wrapLines(`“${tr.verse}” (${tr.ref})`, lw);
     for (const l of vl) { ctx.fillText(l, lx, y); y += 18; }
     ctx.font = "15px Georgia, serif";
-    for (const [, what] of got.length ? tr.from.filter(([id]) => regionHas("taken", id)) : []) { ctx.fillStyle = INK; ctx.fillText("✓ " + what, lx + 10, y); y += 18; }
+    for (const [, what] of got.length ? tr.from.filter(([id]) => everHas(id)) : []) { ctx.fillStyle = INK; ctx.fillText("✓ " + what, lx + 10, y); y += 18; }
     if (left) { ctx.fillStyle = FAINT; ctx.fillText(got.length ? `…and ${left} more to find in ${REGION.name}` : `Not yet. ${left === 1 ? "Something" : left + " things"} in ${REGION.name} will grow it.`, lx + 10, y); y += 18; }
     y += 18;
   }

@@ -236,7 +236,7 @@ function drawWorld3(camX) {
   }
   for (const t of stairTowers) if (on(t.c * T, (t.c + 9) * T) && ok("town_stair_tower")) drawStairTower(t);
   for (const h of houses) if (on(h.c * T, (h.c + h.w) * T)) drawHouse(h);
-  for (const l of ladders) if (on(l.c * T, (l.c + 2) * T)) drawLadder(l);
+  for (const l of ladders) if (!l.room && on(l.c * T, (l.c + 2) * T)) drawLadder(l);   // (a region's ladders and ropes, l.room, are drawn by region.js: Glen 11-07, "the rope and the ladder")
   for (const p of setPieces) if (p.kind === "barley" && on(p.c * T, (p.c + p.w) * T)) drawBarley(p, now);
   for (const p of setPieces) if (p.kind === "stepstone" && on(p.c * T, (p.c + 1) * T)) drawStepStone(p);
   for (const p of setPieces) if (p.kind === "drain" && on(p.c * T, (p.c + p.w) * T)) drawDrain(p);
