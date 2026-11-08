@@ -1,0 +1,11 @@
+{
+  "frames": 4,
+  "frame_w": 152,
+  "frame_h": 254,
+  "ms_per_frame": 70,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 57,
+  "anchor_y": 253,
+  "source": "david_bow_sheet.png"
+}

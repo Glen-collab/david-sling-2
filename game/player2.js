@@ -30,19 +30,22 @@ const P2_CHARS = {
   armorbearer: {
     name: "the armor-bearer", w: 26, h: 66, lowH: 30, walk: 250, run: 400, jump: 900, crawl: 140, lamp: 170,
     idle: "armorbearer_idle", walkA: "armorbearer_walk", runA: "armorbearer_run", jumpA: "armorbearer_jump", hit: "armorbearer_hit",
+    climbA: "armorbearer_climb", ropeA: "armorbearer_rope",   // (Glen 11-07, from his videos: back view on ladders, side-on on ropes)
     crawlA: "armorbearer_crawl", talk: "armorbearer_talk",
     act: { sheet: "armorbearer_pickup", time: 0.75, kind: "gather" },
   },
   jonathan: {
     name: "Jonathan", w: 30, h: 100, walk: 270, run: 440, jump: 1000,
     idle: "jonathan_idle", walkA: "jonathan_walk", runA: "jonathan_run", jumpA: "jonathan_jump", hit: "jonathan_hit", talk: "jonathan_talk",
+    climbA: "jonathan_climb", ropeA: "jonathan_rope",   // (Glen 11-07, from his videos: the back-view climb on ladders; side-on, hand over hand, on ropes)
     act: { sheet: "jonathan_shoot", time: 0.8, at: 0.66, kind: "arrow", ang: 0 },
     actUp: { sheet: "jonathan_shoot_high", time: 0.8, at: 0.5, kind: "arrow", ang: -0.75 },
     act2: { sheet: "jonathan_sword_slash", time: 0.5, from: 0.22, to: 0.55, kind: "melee", reach: [30, 95], y: [-105, -22] },
   },
   abishai: {
     name: "Abishai", w: 30, h: 108, lowH: 64, walk: 260, run: 400, jump: 950, crawl: 130,
-    idle: "abishai_idle", walkA: "abishai_walk", runA: "abishai_walk", jumpA: null, airFrame: ["abishai_walk", 3], hit: null,
+    idle: "abishai_idle", walkA: "abishai_walk", runA: "abishai_walk", jumpA: "abishai_jump", hit: "abishai_hit",   // (Glen 11-08: jump and hit from his still sheet)
+    climbA: "abishai_climb", ropeA: "abishai_rope",   // (Glen 11-08, his videos: back view on ladders; the rope frames picked by hand)
     crawlA: "abishai_sneak", talk: "abishai_talk",
     act: { sheet: "abishai_thrust", time: 0.6, from: 0.3, to: 0.65, kind: "melee", reach: [40, 135], y: [-80, -24] },
   },
@@ -50,6 +53,7 @@ const P2_CHARS = {
     name: "Benaiah", w: 36, h: 118, lowH: 70, walk: 240, run: 380, jump: 900, crawl: 0, strong: true,
     idle: "benaiah_idle", walkA: "benaiah_walk", runA: "benaiah_run", jumpA: null, airFrame: ["benaiah_run", 2], hit: "benaiah_hit",
     crouch: ["benaiah_lift", 5], talk: "benaiah_talk", pushA: "benaiah_push",
+    climbA: "benaiah_climb", ropeA: "benaiah_rope",   // (Glen 11-08, his videos: back view on ladders, the video's ladder erased; the rope frames picked by hand)
     act: { sheet: "benaiah_swing", time: 0.85, from: 0.3, to: 0.62, kind: "melee", reach: [30, 120], y: [-95, -24] },
     actUp: { sheet: "benaiah_smash", time: 0.9, from: 0.52, to: 0.66, kind: "melee", heavy: true, reach: [40, 110], y: [-60, -8] },
   },
@@ -57,6 +61,7 @@ const P2_CHARS = {
     name: "Asahel", w: 28, h: 104, lowH: 50, walk: 290, run: 520, sprint: 650, jump: 1060, crawl: 0, longJump: 1.35,
     idle: "asahel_idle", walkA: "asahel_walk", runA: "asahel_run", sprintA: "asahel_sprint", jumpA: "asahel_long_jump", hit: "asahel_hit",
     crouch: ["asahel_slide", 3], talk: "asahel_talk", slideA: "asahel_slide", skidA: "asahel_skid",
+    climbA: "asahel_climb", ropeA: "asahel_rope",   // (Glen 11-08, his videos: back view on ladders; the rope frames picked by hand)
     act: { sheet: "asahel_throw2", time: 0.85, at: 0.72, kind: "javelin", ang: -0.12 },
     actRun: { sheet: "asahel_run_throw", time: 0.65, at: 0.55, kind: "javelin", ang: -0.08 },
   },
@@ -293,7 +298,7 @@ function p2CaveLights() { return p2.on && P2C().lamp ? [[p2.x, p2.y - 50, P2C().
 // ---------------------------------------------------------------------------
 function p2Sheet() {   // [sheet, frame]
   const C = P2C(), now = p2.t;
-  if (p2.ladder) return [C.walkA, Math.floor((p2.climbD || 0) / 26) % SPR[C.walkA].frames];   // (on a ladder: stepping up it; a climb sheet of their own can come later)
+  if (p2.ladder) { const a = p2.ladder.rope && C.ropeA && SPR[C.ropeA] ? C.ropeA : C.climbA && SPR[C.climbA] ? C.climbA : C.walkA; return [a, Math.floor((p2.climbD || 0) / (a === C.ropeA ? 10 : a === C.climbA ? 14 : 26)) % SPR[a].frames]; }   // (on a ladder: his climb sheet, or stepping up it on his walk frames)
   if (p2.act) { const m = p2.act.m, n = SPR[m.sheet].frames; return [m.sheet, Math.min(n - 1, Math.floor(p2.act.t / m.time * n))]; }
   if (p2.hitT > 0 && C.hit) { const n = SPR[C.hit].frames; return [C.hit, Math.min(n - 1, Math.floor((1 - p2.hitT / P2.HIT_T) * n))]; }
   if (p2.slideT > 0) return [C.slideA, p2.slideT > 0.45 ? 1 : p2.slideT > 0.12 ? 3 : 4];

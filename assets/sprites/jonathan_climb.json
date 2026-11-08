@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 110,
+  "frame_h": 236,
+  "ms_per_frame": 188,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 54,
+  "anchor_y": 235,
+  "source": "jonathan_climb_back.mp4",
+  "video_frames": [
+    102,
+    106,
+    111,
+    116,
+    120,
+    124,
+    129,
+    134,
+    138,
+    142
+  ]
+}

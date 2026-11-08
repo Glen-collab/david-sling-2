@@ -116,8 +116,8 @@ function drawDeadfalls(camX) {   // logs stacked up the pile, a little crooked, 
 Object.assign(TUNE.SPRITE_SIZE, { eliab_walk: 1.08, eliab_arms_crossed: 1.08, eliab_draw_sword: 1.08 });   // the eldest: a bit taller than David
 Object.assign(TUNE.SPRITE_SIZE, { shammah_walk: 1.1, shammah_talk: 1.1, shammah_idle: 1.1 });   // the third son: a grown man too
 Object.assign(TUNE.SPRITE_SIZE, { abinadab_walk: 1.1, abinadab_idle: 1.1, abinadab_point: 1.1 });   // the second son
-Object.assign(TUNE.SPRITE_SIZE, { abishai_idle: 1.2, abishai_talk: 1.2, abishai_walk: 1.2, abishai_thrust: 1.2, abishai_kneel_point: 1.2, abishai_sneak: 1.2 });   // Part Two: David's nephew, a grown man (his clips cut a little shorter than David's)
-Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "run", "smash", "swing", "lift", "hit", "push_start", "push"].map(n => ["benaiah_" + n, 1.3])));   // Part Two: Benaiah, the strongest of the mighty men, half a head taller than David
+Object.assign(TUNE.SPRITE_SIZE, { abishai_idle: 1.2, abishai_talk: 1.2, abishai_walk: 1.2, abishai_thrust: 1.2, abishai_kneel_point: 1.2, abishai_sneak: 1.2, abishai_jump: 1.2, abishai_hit: 1.2, abishai_climb: 1.2, abishai_rope: 1.2 });   // Part Two: David's nephew, a grown man (his clips cut a little shorter than David's)
+Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "run", "smash", "swing", "lift", "hit", "push_start", "push", "climb", "rope"].map(n => ["benaiah_" + n, 1.3])));   // Part Two: Benaiah, the strongest of the mighty men, half a head taller than David
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "jump", "talk", "rope", "rope_loop", "bed", "point"].map(n => ["michal_" + n, 0.95])));   // Part Two: Michal, Saul's daughter, a little shorter than David
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "jump", "talk", "bow_small", "kneel", "hit", "donkey_walk"].map(n => ["abigail_" + n, 0.95])));   // Part Two: Abigail of Carmel (1 Samuel 25), Michal's height
 TUNE.SPRITE_SIZE.abigail_ride = 1.1;   // riding: her head above the donkey, so the whole is taller than her standing
@@ -129,7 +129,7 @@ Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "run", "atta
 Object.assign(TUNE.SPRITE_SIZE, { raider_flee_start: 0.95, raider_flee: 0.95 });   // Glen's flee clip: evened to the raider's running height
 Object.assign(TUNE.SPRITE_SIZE, { raider_camel_start: 1.35, raider_camel: 1.35 });   // camel and rider; the rider's head matched to the raider on foot
 Object.assign(TUNE.SPRITE_SIZE, { egyptian_weak: 0.95, egyptian_revive: 0.95, egyptian_walk: 0.95, egyptian_run: 0.95, egyptian_talk: 0.95, egyptian_point: 0.95, egyptian_talk_close: 0.95, egyptian_sit: 0.55, egyptian_eat: 0.6, egyptian_drink: 0.6 });   // Meta clips zoom: the sitting sheets matched by head to the revive clip (sitting and standing at one scale)
-Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "walk_calm", "talk", "run", "sprint", "long_jump", "throw", "hit", "slide", "skid", "run_throw", "throw2"].map(n => ["asahel_" + n, 1.15])));   // Part Two: Asahel, Abishai's slim younger brother
+Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "walk_calm", "talk", "run", "sprint", "long_jump", "throw", "hit", "slide", "skid", "run_throw", "throw2", "climb", "rope"].map(n => ["asahel_" + n, 1.15])));   // Part Two: Asahel, Abishai's slim younger brother
 function drawCampfirePeople(camX) {
   const now = performance.now() / 1000;
   for (const f of fires) {

@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 263,
+  "frame_h": 327,
+  "ms_per_frame": 246,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 134,
+  "anchor_y": 325,
+  "source": "asahel_climb/a_1.mp4",
+  "video_frames": [
+    120,
+    126,
+    132,
+    138,
+    144,
+    150,
+    155,
+    161,
+    167,
+    173
+  ]
+}

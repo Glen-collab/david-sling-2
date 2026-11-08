@@ -1,0 +1,12 @@
+{
+  "frames": 4,
+  "frame_w": 186,
+  "frame_h": 216,
+  "ms_per_frame": 120,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 87,
+  "anchor_y": 214,
+  "source": "abishai_jump/abishai_jump_sheet_src.png",
+  "note": "Glen 11-08: crouch, tucked (rising), crouch (falling), crouch"
+}

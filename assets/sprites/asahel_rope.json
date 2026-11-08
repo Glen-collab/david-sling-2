@@ -1,0 +1,26 @@
+{
+  "frames": 12,
+  "frame_w": 116,
+  "frame_h": 247,
+  "ms_per_frame": 208,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 84,
+  "anchor_y": 246,
+  "source": "asahel_climb/a_2.mp4",
+  "picked": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "note": "frames picked out of order from the whole clip and shifted so the rope is one column; anchor_x: the rope (Glen 11-08) (whole clip: vid2sprite.py --once --frames 48 --green; picked 5-10 and 17-22, the side-on stretches; he turns to the camera in between)"
+}

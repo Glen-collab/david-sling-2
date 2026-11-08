@@ -1,0 +1,24 @@
+{
+  "frames": 10,
+  "frame_w": 101,
+  "frame_h": 230,
+  "ms_per_frame": 229,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 78,
+  "anchor_y": 229,
+  "source": "ab_2.mp4",
+  "video_frames": [
+    14,
+    20,
+    25,
+    30,
+    36,
+    42,
+    47,
+    52,
+    58,
+    64
+  ],
+  "note": "anchor_x: the rope (his hands), not his feet: drawn at the rope x (Glen 11-07)"
+}

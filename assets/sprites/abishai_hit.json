@@ -1,0 +1,12 @@
+{
+  "frames": 1,
+  "frame_w": 220,
+  "frame_h": 214,
+  "ms_per_frame": 300,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 86,
+  "anchor_y": 212,
+  "source": "abishai_jump/abishai_jump_sheet_src.png",
+  "note": "Glen 11-08: knocked back, arms out"
+}

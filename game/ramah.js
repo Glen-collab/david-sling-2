@@ -30,6 +30,7 @@ const R2 = {
   SPEAR: { SPEED: 640, Y: 80, LEN: 150, AT: 0.55 },
   // David's bow (Jonathan's, 18:4; Glen 11-06): a long, straight shot
   ARROW: { SPEED: 1350, GRAV: 0.1, LIFE: 1.7, COOL: 0.65 },
+  BOW_DRAW: 0.24, BOW_HOLD: 0.22,   // David's bow: drawing it (3 frames), then the release frame held this long
   SOLDIER_K: 1.3,        // (Glen 11-07: "they look like miniatures") Saul's men drawn this much bigger in World 2
   GUARD_FLIP: 1,         // (which way the soldier sheets face)
 };
@@ -573,14 +574,30 @@ function r2StoneHits(s) {
 }
 
 // ---- Jonathan's bow (Glen 11-06: the goodbye gift, 18:4 / 20): hold Up and press the sword button. Anywhere in Part
-//      Two once learned. (David's own drawing-the-bow pictures are still to come: ART_NEEDED_W2.md)
-function regionBow(d, busy) {
-  const now = performance.now() / 1000;   // (its own clock: it works in every region, not only this one)
+//      Two once learned. (Glen 11-07: his drawing-the-bow frames: David draws, and the arrow goes on the release)
+function r2LooseArrow(d, dir) {
+  stones.push({ x: d.x + dir * 34, y: d.y - (d.h === LOW_H ? 44 : 72), vx: dir * R2.ARROW.SPEED, vy: -30, grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
+  sfx("sling_throw_quick", undefined, 0.6, 1.4);
+}
+function regionBow(d, busy, dt) {   // (main.js updateDavid, every frame)
+  const now = r2.bowClock = (r2.bowClock || 0) + (dt || 1 / 60);   // (its own game clock: it works in every region, not only this one)
+  const B = r2.bowShot;
+  if (B && now - B.t0 < R2.BOW_DRAW + R2.BOW_HOLD) {   // drawing: he stands; the arrow goes at the release
+    d.vx = 0; d.facing = B.dir;
+    if (!B.fired && now - B.t0 >= R2.BOW_DRAW) { B.fired = true; r2LooseArrow(d, B.dir); }
+    return true;
+  }
   if (typeof REGION_ON === "undefined" || !REGION_ON || !hasSkill("bow") || !held("up") || !pressed("x") || busy || now < (r2.bowAt || 0) || d.harp || d.throwT >= 0) return false;
   if (region.room && region.room.id === "feast") return false;
   r2.bowAt = now + R2.ARROW.COOL;
-  stones.push({ x: d.x + d.facing * 34, y: d.y - (d.h === LOW_H ? 44 : 72), vx: d.facing * R2.ARROW.SPEED, vy: -30, grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
-  sfx("sling_throw_quick", undefined, 0.6, 1.4);
+  if (d.onGround && d.h !== LOW_H && typeof SPR !== "undefined" && SPR.david_bow) r2.bowShot = { t0: now, dir: d.facing, fired: false };
+  else r2LooseArrow(d, d.facing);   // (in the air or crouched: straight off, no drawing)
+  return true;
+}
+function regionBowPose(d, x, y) {   // region.js regionDrawDavid: his bow frames while he draws and lets go
+  const B = r2.bowShot; if (!B || typeof SPR === "undefined" || !SPR.david_bow) return false;
+  const t = (r2.bowClock || 0) - B.t0; if (t > R2.BOW_DRAW + R2.BOW_HOLD || !d.onGround) return false;
+  drawSprite("david_bow", t < R2.BOW_DRAW ? Math.min(2, Math.floor(t / R2.BOW_DRAW * 3)) : 3, x, y, B.dir);
   return true;
 }
 

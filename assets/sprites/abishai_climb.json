@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 122,
+  "frame_h": 244,
+  "ms_per_frame": 217,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 70,
+  "anchor_y": 242,
+  "source": "abishai_climb/ab_1.mp4",
+  "video_frames": [
+    112,
+    117,
+    122,
+    128,
+    133,
+    138,
+    143,
+    148,
+    154,
+    159
+  ]
+}

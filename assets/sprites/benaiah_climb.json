@@ -1,0 +1,24 @@
+{
+  "frames": 10,
+  "frame_w": 298,
+  "frame_h": 327,
+  "ms_per_frame": 221,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 151,
+  "anchor_y": 325,
+  "source": "benaiah_climb/b_2.mp4 (ladder erased: tools/erase_thin.py -> b_2_noladder.mp4)",
+  "video_frames": [
+    76,
+    81,
+    87,
+    92,
+    97,
+    102,
+    108,
+    113,
+    118,
+    124
+  ],
+  "note": "Glen 11-08: --pad 80 so Glen can paint in the hands the video cut off"
+}

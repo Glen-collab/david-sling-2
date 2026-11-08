@@ -1724,6 +1724,7 @@ function regionHoldDavid(d, dt) {   // main.js updateDavid: while a scene plays 
   return true;
 }
 function regionDrawDavid(d, x, y) {   // main.js drawDavid: hidden while he's in a two-shot
+  if (REGION_ON && typeof regionBowPose === "function" && regionBowPose(d, x, y)) return true;   // (his bow: ramah.js)
   if (REGION_ON && REGION.drawDavid && REGION.drawDavid(d, x, y)) return true;
   return REGION_ON && !!region.pose && !!region.pose.hide;
 }

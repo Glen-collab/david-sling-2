@@ -2406,7 +2406,7 @@ function updateDavid(dt) {
     if (d.throwT >= dur) { d.throwT = -1; d.runThrow = false; d.quickUsed = false; d.quickQueued = false; }
   }
 
-  if (typeof regionBow === "function" && regionBow(d, busy)) { /* (Part Two: Jonathan's bow, Up + the sword button: ramah.js) */ }
+  if (typeof regionBow === "function" && regionBow(d, busy, dt)) { /* (Part Two: Jonathan's bow, Up + the sword button: ramah.js) */ }
   else if (typeof updateSword === "function" && (typeof regionSword !== "function" || regionSword())) updateSword(d, dt, busy);   // (in Gibeah, once Jonathan gives it: region.js)   // engedi.js: X swings the sword
 
   // --- ladders: hold Up in front of one to climb it (Down from the top to climb down), A to jump off

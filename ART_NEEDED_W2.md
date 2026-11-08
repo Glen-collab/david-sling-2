@@ -11,10 +11,6 @@ holds (kneeling, lying down, crouched, ducking, howling), or a sheet of a few fr
 
 | # | Who and what | Where it's used | Stand-in today | Notes for the clip |
 |---|---|---|---|---|
-| 1 | **Jonathan climbing a ladder** | Player 2 on every ladder (Gibeah's Walls, Naioth) | his walk frames, stepping in place | back to us, like your David ladder climb; bow and quiver on his back; a loop of 6 frames |
-| 2 | **The armor-bearer climbing a ladder** | Player 2 on every ladder | his walk frames | the same, back to us; the little lamp at his belt |
-| 3 | **Jonathan and the armor-bearer climbing a rope** | Player 2 on the ropes down the palace wall | the same walk frames | like David's rope climb (`david_climb`): hand over hand, back to us |
-| 4 | **David drawing and shooting the bow** | Up + the sword button, once Jonathan teaches him | no pose at all: the arrow just flies | side view, facing right: reach back for an arrow, draw, release; standing, and maybe crouched |
 | 8 | **The prophets of Naioth** (2 or 3 old men in white, singing / lifting hands) | around Samuel | Part One's villagers standing | swaying, hands raised, mouths singing |
 | 9 | **David crouched, hiding behind a big stone** | the stone Ezel, before the arrows | `david_crouch` frame 0 | crouched low, peeking over the top; a breathing loop |
 | 10 | **The boy running and picking up arrows** (20:36-40) | the arrows | `boy_walk` / `boy_idle` (Part One's boy) | run, stop, bend and pick up an arrow, hand them to Jonathan |

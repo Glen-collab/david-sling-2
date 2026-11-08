@@ -192,6 +192,30 @@ window.SPRITE_DATA = {
   "ay": 256,
   "align": "feet"
  },
+ "abishai_climb": {
+  "src": "../assets/sprites/abishai_climb.png",
+  "frames": 10,
+  "w": 122,
+  "h": 244,
+  "ms": 217,
+  "loop": true,
+  "pingpong": false,
+  "ax": 70,
+  "ay": 242,
+  "align": "feet"
+ },
+ "abishai_hit": {
+  "src": "../assets/sprites/abishai_hit.png",
+  "frames": 1,
+  "w": 220,
+  "h": 214,
+  "ms": 300,
+  "loop": false,
+  "pingpong": false,
+  "ax": 86,
+  "ay": 212,
+  "align": "feet"
+ },
  "abishai_idle": {
   "src": "../assets/sprites/abishai_idle.png",
   "frames": 12,
@@ -204,6 +228,18 @@ window.SPRITE_DATA = {
   "ay": 285,
   "align": "feet"
  },
+ "abishai_jump": {
+  "src": "../assets/sprites/abishai_jump.png",
+  "frames": 4,
+  "w": 186,
+  "h": 216,
+  "ms": 120,
+  "loop": false,
+  "pingpong": false,
+  "ax": 87,
+  "ay": 214,
+  "align": "feet"
+ },
  "abishai_kneel_point": {
   "src": "../assets/sprites/abishai_kneel_point.png",
   "frames": 16,
@@ -214,6 +250,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 153,
   "ay": 285,
+  "align": "feet"
+ },
+ "abishai_rope": {
+  "src": "../assets/sprites/abishai_rope.png",
+  "frames": 11,
+  "w": 94,
+  "h": 246,
+  "ms": 208,
+  "loop": true,
+  "pingpong": false,
+  "ax": 74,
+  "ay": 245,
   "align": "feet"
  },
  "abishai_sneak": {
@@ -408,6 +456,18 @@ window.SPRITE_DATA = {
   "ay": 240,
   "align": "feet"
  },
+ "armorbearer_climb": {
+  "src": "../assets/sprites/armorbearer_climb.png",
+  "frames": 10,
+  "w": 113,
+  "h": 238,
+  "ms": 212,
+  "loop": true,
+  "pingpong": false,
+  "ax": 58,
+  "ay": 237,
+  "align": "feet"
+ },
  "armorbearer_crawl": {
   "src": "../assets/sprites/armorbearer_crawl.png",
   "frames": 12,
@@ -480,6 +540,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "armorbearer_rope": {
+  "src": "../assets/sprites/armorbearer_rope.png",
+  "frames": 10,
+  "w": 101,
+  "h": 230,
+  "ms": 229,
+  "loop": true,
+  "pingpong": false,
+  "ax": 78,
+  "ay": 229,
+  "align": "feet"
+ },
  "armorbearer_run": {
   "src": "../assets/sprites/armorbearer_run.png",
   "frames": 12,
@@ -516,6 +588,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "asahel_climb": {
+  "src": "../assets/sprites/asahel_climb.png",
+  "frames": 10,
+  "w": 263,
+  "h": 327,
+  "ms": 246,
+  "loop": true,
+  "pingpong": false,
+  "ax": 134,
+  "ay": 325,
+  "align": "feet"
+ },
  "asahel_hit": {
   "src": "../assets/sprites/asahel_hit.png",
   "frames": 12,
@@ -550,6 +634,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 220,
   "ay": 314,
+  "align": "feet"
+ },
+ "asahel_rope": {
+  "src": "../assets/sprites/asahel_rope.png",
+  "frames": 12,
+  "w": 116,
+  "h": 247,
+  "ms": 208,
+  "loop": true,
+  "pingpong": false,
+  "ax": 84,
+  "ay": 246,
   "align": "feet"
  },
  "asahel_run": {
@@ -876,6 +972,18 @@ window.SPRITE_DATA = {
   "ay": 41,
   "align": "center"
  },
+ "benaiah_climb": {
+  "src": "../assets/sprites/benaiah_climb.png",
+  "frames": 10,
+  "w": 298,
+  "h": 327,
+  "ms": 221,
+  "loop": true,
+  "pingpong": false,
+  "ax": 151,
+  "ay": 325,
+  "align": "feet"
+ },
  "benaiah_hit": {
   "src": "../assets/sprites/benaiah_hit.png",
   "frames": 12,
@@ -934,6 +1042,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 246,
   "ay": 305,
+  "align": "feet"
+ },
+ "benaiah_rope": {
+  "src": "../assets/sprites/benaiah_rope.png",
+  "frames": 20,
+  "w": 138,
+  "h": 247,
+  "ms": 208,
+  "loop": true,
+  "pingpong": false,
+  "ax": 109,
+  "ay": 246,
   "align": "feet"
  },
  "benaiah_run": {
@@ -1535,6 +1655,18 @@ window.SPRITE_DATA = {
   "ax": 102,
   "ay": 127,
   "align": "center"
+ },
+ "david_bow": {
+  "src": "../assets/sprites/david_bow.png",
+  "frames": 4,
+  "w": 152,
+  "h": 254,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 57,
+  "ay": 253,
+  "align": "feet"
  },
  "david_carry_lamb_arms": {
   "src": "../assets/sprites/david_carry_lamb_arms.png",
@@ -3564,6 +3696,18 @@ window.SPRITE_DATA = {
   "ay": 306,
   "align": "feet"
  },
+ "jonathan_climb": {
+  "src": "../assets/sprites/jonathan_climb.png",
+  "frames": 10,
+  "w": 110,
+  "h": 236,
+  "ms": 188,
+  "loop": true,
+  "pingpong": false,
+  "ax": 54,
+  "ay": 235,
+  "align": "feet"
+ },
  "jonathan_duck": {
   "src": "../assets/sprites/jonathan_duck.png",
   "frames": 3,
@@ -3634,6 +3778,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 124,
   "ay": 301,
+  "align": "feet"
+ },
+ "jonathan_rope": {
+  "src": "../assets/sprites/jonathan_rope.png",
+  "frames": 10,
+  "w": 105,
+  "h": 236,
+  "ms": 142,
+  "loop": true,
+  "pingpong": false,
+  "ax": 77,
+  "ay": 235,
   "align": "feet"
  },
  "jonathan_run": {
