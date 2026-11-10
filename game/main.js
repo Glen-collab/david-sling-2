@@ -417,6 +417,7 @@ const STAGE_INFO = {
   "9-2": { cols: 92, bg: "w2_3", ter: "w2s", name: "The Leap of Faith" },             // Part Two test: the hidden bridge (leap.js)
   "9-4": { cols: 60, bg: "w4_4", ter: "w4p", name: "The Window" },                      // Part Two test: the D-pad drills (drill.js); Glen's palace at night
   "9-5": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Gibeah" },
+  "9-7": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Nob and Gath" },          // Part Two: World 3 (nobgath.js on region.js)
   "9-6": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Window" },           // Part Two: World 2, the second region (ramah.js on region.js)              // Part Two test: the first region, Castlevania-style (region.js)
   "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
@@ -1105,7 +1106,7 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
-} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6") {
+} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7") {
   buildRegion();   // Gibeah, the first region: rooms, doors, seals and finds (region.js)
 } else if (LEVEL_NAME === "9-4") {
   // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets

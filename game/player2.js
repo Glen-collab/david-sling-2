@@ -79,7 +79,7 @@ const P2_ROSTER = {
   "9-4": ["jonathan", "armorbearer"],
 };
 // (Glen 11-06) Gibeah: the armor-bearer until the covenant, then Jonathan comes with David (region.js storyAward)
-const p2Gibeah = () => LEVEL_NAME === "9-6" ? ["armorbearer"]   // (Glen 11-09: David runs from Saul alone, and Jonathan is in the story at the stone and the feast)
+const p2Gibeah = () => LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" ? ["armorbearer"]   // (Glen 11-09: David runs from Saul alone, and Jonathan is in the story at the stone and the feast)
   : LEVEL_NAME === "9-5" && typeof regionHas === "function" ? (regionHas("taken", "g_jonathan") ? ["jonathan", "armorbearer"] : ["armorbearer"]) : null;
 const p2Roster = () => STAGE_INFO.p2 || p2Gibeah() || P2_ROSTER[LEVEL_NAME] || ["armorbearer"];
 

@@ -13,7 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
-const REGION_KEY = location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;
+const REGION_KEY = location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
 const REGION_UP = 110;   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
 const RTUNE = {
@@ -101,7 +101,7 @@ const REGION_GIBEAH = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
-const REGION = REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
+const REGION = REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -169,11 +169,15 @@ const KIT = {
   c_arch: { w: 179, h: 202 }, c_crackwall: { w: 235, h: 615 }, c_crackopen: { w: 293, h: 616 }, c_brokendoor: { w: 294, h: 338 }, c_ruindoor: { w: 375, h: 317 },
   // (Glen 11-05) the olive press (the save point) and a campfire, side on
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
+  // (Glen 11-10) World 3's pieces, assets/rooms/w3/kit (from david-sling-2-art/w3/cut, sized for the game): the holy
+  // bread table (two rows of six), Goliath's sword wrapped in its cloth, the ephod on its stand, a clay lamp, Gath's gate door
+  w3_holy_bread_table2: { w: 611, h: 130 }, w3_holy_bread_loaf: { w: 89, h: 40 }, w3_goliath_sword: { w: 86, h: 210 }, w3_ephod_stand: { w: 132, h: 200 },
+  w3_oil_lamp: { w: 60, h: 64 }, w3_gath_door: { w: 226, h: 300 }, w3_gath_door_scribbled: { w: 144, h: 300 },
 };
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = n.startsWith("w3_") ? "../assets/rooms/w3/kit/" + n + ".png" : "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
@@ -735,7 +739,7 @@ function regionCam() {
 function regionInit() {
   region.inited = true;
   roomImg(MAP_SHEET.img); kitImg("olive_press");   // (the save point's picture: ready before the first one comes on screen)
-  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) { roomImg("gibeah/sky_clouds"); roomImg("gibeah/sky_strip.jpg"); } }
+  for (const r of REGION.rooms) { for (const k of ["strip", "floor", "art", "block", "far", "mid", "near"]) roomImg(r[k]); (r.tower || []).forEach(roomImg); if (r.tower) { Object.values(TOWER.END).forEach(e => roomImg(e.img)); TOWER_TOP.pieces.forEach(p => roomImg(p.img)); } if (r.tallWall) Object.values(r.tallWall).forEach(roomImg); if (r.tower || r.tallWall) { roomImg("gibeah/sky_clouds"); roomImg("gibeah/sky_strip.jpg"); } }
   for (const n in KIT) if (n.startsWith("tw_")) kitImg(n);   // (the tower's kit, ready before he climbs)   // load them all now (no old backdrop flashing first)
   for (const n in KIT) if (KIT[n].w) kitImg(n);
   // (Glen 11-06) a later region keeps what David earned before (REGION.carry: the regions before it): pomegranates,
@@ -1123,6 +1127,8 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
       for (let x = o; x < W; x += w) ctx.drawImage(im, Math.round(x), y, Math.ceil(w) + 1, h); };
     tile(far, 0.12, 0, H);
     if (mid) tile(mid, 0.45, r.midY || 0, mid.naturalHeight);
+    const near = roomImg(r.near);   // (Glen 11-10: "far, mid and near ground", as Part One) a third layer, nearer and faster, its bottom at nearY (default: the ground line)
+    if (near) tile(near, 0.75, (r.nearY ?? GR * T + 20) - near.naturalHeight, near.naturalHeight);
     return true;
   }
   if (r.tower) { drawTowerWall(r, camX); return true; }
