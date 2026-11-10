@@ -1,0 +1,33 @@
+{
+  "frames": 20,
+  "frame_w": 695,
+  "frame_h": 344,
+  "ms_per_frame": 88,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 298,
+  "anchor_y": 339,
+  "source": "saul_feast_clip1.mp4",
+  "video_frames": [
+    104,
+    106,
+    108,
+    110,
+    113,
+    115,
+    117,
+    119,
+    121,
+    123,
+    126,
+    128,
+    130,
+    132,
+    134,
+    136,
+    139,
+    141,
+    143,
+    145
+  ]
+}

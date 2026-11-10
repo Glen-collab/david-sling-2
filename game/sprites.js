@@ -1992,6 +1992,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "david_peek": {
+  "src": "../assets/sprites/david_peek.png",
+  "frames": 1,
+  "w": 84,
+  "h": 178,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 84,
+  "ay": 176,
+  "align": "feet"
+ },
  "david_pet_lamb": {
   "src": "../assets/sprites/david_pet_lamb.png",
   "frames": 10,
@@ -4956,6 +4968,42 @@ window.SPRITE_DATA = {
   "ay": 375,
   "align": "feet"
  },
+ "prophet_drum": {
+  "src": "../assets/sprites/prophet_drum.png",
+  "frames": 16,
+  "w": 197,
+  "h": 283,
+  "ms": 115,
+  "loop": true,
+  "pingpong": false,
+  "ax": 114,
+  "ay": 282,
+  "align": "feet"
+ },
+ "prophet_lyre": {
+  "src": "../assets/sprites/prophet_lyre.png",
+  "frames": 16,
+  "w": 197,
+  "h": 283,
+  "ms": 148,
+  "loop": true,
+  "pingpong": false,
+  "ax": 74,
+  "ay": 282,
+  "align": "feet"
+ },
+ "prophet_old": {
+  "src": "../assets/sprites/prophet_old.png",
+  "frames": 16,
+  "w": 186,
+  "h": 283,
+  "ms": 146,
+  "loop": true,
+  "pingpong": false,
+  "ax": 78,
+  "ay": 282,
+  "align": "feet"
+ },
  "raddai_idle": {
   "src": "../assets/sprites/raddai_idle.png",
   "frames": 2,
@@ -5362,6 +5410,30 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 160,
   "ay": 305,
+  "align": "feet"
+ },
+ "saul_feast_eat": {
+  "src": "../assets/sprites/saul_feast_eat.png",
+  "frames": 16,
+  "w": 491,
+  "h": 331,
+  "ms": 130,
+  "loop": true,
+  "pingpong": false,
+  "ax": 257,
+  "ay": 326,
+  "align": "feet"
+ },
+ "saul_feast_throw": {
+  "src": "../assets/sprites/saul_feast_throw.png",
+  "frames": 20,
+  "w": 695,
+  "h": 344,
+  "ms": 88,
+  "loop": false,
+  "pingpong": false,
+  "ax": 298,
+  "ay": 339,
   "align": "feet"
  },
  "saul_joy": {

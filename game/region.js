@@ -1131,8 +1131,8 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (strip) {   // a long room's backdrop, repeating (it scrolls with the room)
     const x0 = r.c0 * T - camX, sw = strip.naturalWidth * H / strip.naturalHeight;
     for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) ctx.drawImage(strip, Math.round(x), 0, Math.ceil(sw) + 1, H);
-    if (r.up) {   // (a tall room, World 2: the wall's middle band, without its floor and ceiling, repeated on up over the ceiling)
-      const f0 = r.cave ? 0.12 : 0.095, b0 = strip.naturalHeight * f0, bh = strip.naturalHeight * (r.cave ? 0.62 : 0.69), dh = bh * H / strip.naturalHeight;   // (Glen 11-07, the halls: a whole storey, from the beam over the hangings down to the wall above the floor, so each repeat is a full floor: no hangings cut in half)
+    if (r.up) {   // (r.band: [top, height] of the storey that repeats, as fractions of the strip's height; Glen's Naioth, 11-10) (a tall room, World 2: the wall's middle band, without its floor and ceiling, repeated on up over the ceiling)
+      const f0 = r.band ? r.band[0] : r.cave ? 0.12 : 0.095, b0 = strip.naturalHeight * f0, bh = strip.naturalHeight * (r.band ? r.band[1] : r.cave ? 0.62 : 0.69), dh = bh * H / strip.naturalHeight;   // (Glen 11-07, the halls: a whole storey, from the beam over the hangings down to the wall above the floor, so each repeat is a full floor: no hangings cut in half)
       for (let y = f0 * H - dh; y > camY - dh; y -= dh) for (let x = x0 + Math.floor(-x0 / sw) * sw; x < W; x += sw) ctx.drawImage(strip, 0, b0, strip.naturalWidth, bh, Math.round(x), Math.round(y), Math.ceil(sw) + 1, Math.ceil(dh) + 1);
     }
     if (r.id === "harp") drawHarpWall(camX);   // (part of the wall: under everything else)

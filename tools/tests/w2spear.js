@@ -1,4 +1,5 @@
 startSetup = () => {}; setup.active = false; region.save.jAt = 9;
+if (typeof region !== "undefined") { region.save.taken = region.save.taken.filter(k => !/^r2_/.test(k)); for (const k of ["r2_window","r2_samuel","r2_naioth","r2_ezel"]) region.save.taken.push(k); }
 const log = m => TEST_ERRORS.push("INFO " + m);
 const skip = () => { if (dialog.t > 0) { dialog.hold = false; dialog.t = 0; } };
 let jumped = false;

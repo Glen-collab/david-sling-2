@@ -1,0 +1,29 @@
+{
+  "frames": 16,
+  "frame_w": 197,
+  "frame_h": 283,
+  "ms_per_frame": 115,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 114,
+  "anchor_y": 282,
+  "source": "prophets_clip3.mp4",
+  "video_frames": [
+    75,
+    78,
+    81,
+    83,
+    86,
+    89,
+    91,
+    94,
+    97,
+    100,
+    103,
+    105,
+    108,
+    111,
+    113,
+    116
+  ]
+}

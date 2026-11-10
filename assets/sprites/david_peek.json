@@ -1,0 +1,11 @@
+{
+  "frames": 1,
+  "frame_w": 84,
+  "frame_h": 178,
+  "ms_per_frame": 100,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 84,
+  "anchor_y": 176,
+  "source": "david_ezel_poses.png (Glen's still)"
+}
