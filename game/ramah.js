@@ -439,6 +439,8 @@ function r2Enter(r) {
   if (r.id === "road" && !r2Has("r2_naioth")) r2Tell("wolves", "Wolves on the road! Stones (or the sword) drive them off.");
   if (r.id === "gibgate" && !r2Has("r2_gateshut")) { const [a, n] = r2CityFound();
     toast("Once you go on, Saul's men will bar the gate behind you: no going back into Gibeah tonight." + (a < n ? ` (You found ${a} of ${n} things in the city.)` : "")); }
+  if ((r.id === "ramah" || r.id === "naioth") && r2Has("r2_arrows")) r2Tell("goezel", "The story here is done. To go on, go back to the stone Ezel and press Up by it.");
+  if (r.id === "field" && r2Has("r2_arrows")) toast("The stone Ezel, where Jonathan said goodbye. Up by the stone: the road to Nob, when you're ready to go.");
   if (r.id === "field" && !r2Has("r2_gateshut")) { regionAdd("taken", "r2_gateshut"); toast("Behind you, Saul's men bar the gate of Gibeah."); }
   if (r.id === "field" && !r2Has("r2_naioth")) r2Tell("ezel", "A great stone stands in the field: the stone Ezel.");
   if (r.id === "rooftops") r2Tell("roofs", "Gibeah by night. Over the rooftops, or creep past the men in the street.");
@@ -470,13 +472,19 @@ function r2Update(dt, r) {
   if (r.id === "house" && S.michal === "after" && pressed("up") && Math.abs(d.x - r2.bedX) < 120) { sayLine("Michal", "Go, while it's still dark. I've laid something in your bed, so they'll think you're sick. (19:13-14)"); return; }
   // Samuel at Ramah (19:18)
   if (r.id === "ramah" && S.samuel === "ramah" && d.x > r2.samX - 150 && d.onGround) { r2SamuelScene(); return; }
-  if (r.id === "ramah" && pressed("up") && d.onGround) { const f = (r2.townsfolk || []).find(([, x]) => Math.abs(x - d.x) < 90); if (f) { sayLine("In Ramah", R2_TALK[(r2.talkI = ((r2.talkI || 0) + 1)) % R2_TALK.length]); return; } }
+  if (r.id === "ramah" && pressed("up") && d.onGround) { const f = (r2.townsfolk || []).find(([, x]) => Math.abs(x - d.x) < 90); if (f) { const i = r2.talkI = (r2.talkI || 0) + 1;
+      sayLine("In Ramah", r2Has("r2_arrows") && i % 2 ? "Leaving us? Your road goes on from the stone Ezel. Back past the well, and press Up by the stone." : R2_TALK[i % R2_TALK.length]); return; } }
   // the chase at Naioth (19:19-24)
   if (r.id === "naioth" && r2Has("r2_samuel") && !r2Has("r2_naioth") && !r2.chase && d.x > roomById("naioth").c0 * T + 18 * T && d.y > GR * T - 40 && d.onGround) { r2ChaseStart(); return; }
   if (r.id === "naioth" && r2Has("r2_samuel") && pressed("up") && Math.abs(d.x - r2.samNX) < 100 && d.onGround && (!r2.chase || r2.chase.phase === "done")) {
-    if (r2Has("r2_naioth") && !r2Has("r2_ezel")) sayLine("Samuel", "Go back to Jonathan, my son: he waits for you at the stone Ezel. The door at the far left will take you to him.");   // (Glen 11-07: "where do I go?")
+    if (r2Has("r2_arrows")) sayLine("Samuel", "Your road goes on, David. Go back to the stone Ezel, where Jonathan left you, and the LORD will lead you on from there.");   // (Glen 11-09: someone should say where the way out is)
+    else if (r2Has("r2_naioth") && !r2Has("r2_ezel")) sayLine("Samuel", "Go back to Jonathan, my son: he waits for you at the stone Ezel. The door at the far left will take you to him.");   // (Glen 11-07: "where do I go?")
     else sayLine("Samuel", R2_SAMUEL[(r2.samI = ((r2.samI || 0) + 1)) % R2_SAMUEL.length]);
     return; }
+  // (Glen 11-09) the way out, once Jonathan has said goodbye: Up by the stone Ezel, and David takes the road to Nob
+  //  (1 Samuel 21:1): the fade, then the land map. Back in the region later, the same stone is the way out again
+  if (r.id === "field" && r2Has("r2_arrows") && d.onGround && Math.abs(d.x - r2.ezelX) < 140 && pressed("up")) {
+    rPlay([{ say: ["", "Then David came to Nob, to Ahimelech the priest. (1 Samuel 21:1)"] }, { fn() { region.trans = { t: 0, leave: true }; } }]); return; }
   // Jonathan at the stone (20:1-23), then hiding by it
   if (r.id === "field" && S.jon === "wait" && Math.abs(d.x - r2.jonX) < 4 * T && d.onGround) { r2EzelScene(); return; }
   if (r.id === "field" && r2Has("r2_ezel") && !r2Has("r2_feast") && r2Crouched() && Math.abs(d.x - r2.ezelX) < 70) { r2HideScene(); return; }
@@ -941,6 +949,7 @@ function r2DrawFront(camX) {
     if (im && x < W && x + k.w * s > 0) ctx.drawImage(im, Math.round(x), Math.round(FOOT - k.h * s + 6), k.w * s, k.h * s);
   }
   if (r2.choice) {}
+  if (r.id === "field" && r2Has("r2_arrows") && Math.abs(david.x - r2.ezelX) < 140 && !region.trans && !region.script.length) upHint(r2.ezelX - camX, GR * T - R2.EZEL_K * KIT.f_ezel.h + 15);   // (Glen 11-09: Up, the way out: over the stone, drawn in front of it)
 }
 // David at the feast is Jonathan (Glen 11-06: Player 1 plays him when the story is his), and kneeling at the goodbye
 function r2DrawDavid(d, x, y) {

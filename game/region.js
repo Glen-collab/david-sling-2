@@ -2033,7 +2033,7 @@ function jsceneOpen(final) {
   else if (typeof journalMusic !== "undefined") { journalMusic.currentTime = 0; journalMusic.volume = typeof JTUNE !== "undefined" ? JTUNE.MUSIC_VOLUME : 0.5; journalMusic.play().catch(() => {}); }
   jsceneLayout(region.jscene);
 }
-const regionHushed = () => REGION_ON && (!!region.jscene || (region.mapOpen && region.bookLeave) || (typeof CARD_SONG !== "undefined" && CARD_SONG && !CARD_SONG.paused));   // main.js updateMusic: the stage's music stays out
+const regionHushed = () => REGION_ON && (!!region.jscene || region.mapOpen || (typeof CARD_SONG !== "undefined" && CARD_SONG && !CARD_SONG.paused));   // main.js updateMusic: the stage's music stays out   // (Glen 11-09: and the map and card pages are silent too, birds and all)
 function hushStage() {   // the stage's music stops (updateMusic brings it back afterward)
   if (typeof hushLoops === "function") hushLoops();
   for (const a of [typeof dayMusic !== "undefined" && dayMusic, typeof nightMusic !== "undefined" && nightMusic, typeof caveMusic !== "undefined" && caveMusic,
@@ -2285,7 +2285,9 @@ function drawRegionMap() {
     const x = ox + r.mx * C, y = oy + r.my * C, mh = (r.mh || 1) * C;   // (mh: a tall room)
     ctx.fillStyle = r.cave ? M.CAVE : M.WASH; ctx.fillRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
     ctx.strokeStyle = M.INK; ctx.lineWidth = 2.5; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
-    ctx.fillStyle = M.INK; ctx.font = hand(22); ctx.fillText(r.name.replace(/^The /, ""), x + r.mw * C / 2, y + mh - 11);
+    { const nm = r.name.replace(/^The /, ""), room = r.mw * C - 16; let px = 22; ctx.font = hand(px);   // (Glen 11-09: a long name in a narrow room shrinks to fit, not into its neighbor)
+      while (px > 12 && ctx.measureText(nm).width > room) ctx.font = hand(--px);
+      ctx.fillStyle = M.INK; ctx.fillText(nm, x + r.mw * C / 2, y + mh - 11); }
     // the edges you can walk through: a gap in the ink line
     ctx.fillStyle = M.PAPER;
     if (r.right) ctx.fillRect(x + r.mw * C - 5, y + C / 2 - 10, 10, 20);

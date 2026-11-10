@@ -4643,7 +4643,7 @@ function updateSound(dt) {
   if (!fight && typeof bear !== "undefined" && bear.on && bear.state === "pen") bossIntroPlayed = false;
   bossVol = fadeLoop(bossMusic, bossVol, fight ? TUNE.BOSS_MUSIC_VOLUME : 0, dt, fight ? 0.5 : 0.4);
   const calm = !fight && !(david.state === "harp") && !finish.active;
-  ambVol = fadeLoop(ambience, ambVol, STAGE_INFO.night || DARK_STAGES.includes(LEVEL_STAGE) || cave.room ? 0 : calm ? TUNE.AMBIENCE_VOLUME : (finish.active ? TUNE.AMBIENCE_VOLUME * 0.5 : 0), dt, 0.3);
+  ambVol = fadeLoop(ambience, ambVol, (typeof regionHushed === "function" && regionHushed()) || STAGE_INFO.night || DARK_STAGES.includes(LEVEL_STAGE) || cave.room ? 0 : calm ? TUNE.AMBIENCE_VOLUME : (finish.active ? TUNE.AMBIENCE_VOLUME * 0.5 : 0), dt, 0.3);
   musicFight = fight;
   rainVol = fadeLoop(rainLoop, rainVol, STAGE_INFO.storm && !cave.room ? TUNE.RAIN_VOLUME : 0, dt, 0.4);
   const d = david;
