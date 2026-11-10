@@ -151,7 +151,7 @@ function updateP2(dt) {
   if (!p2.on) { if (["left", "right", "up", "down", "a", "b", "x"].some(pressed2)) p2Join(); else if (!p2.rejoined && p2Saved() && david.onGround) { p2.rejoined = true; p2Join(true); } return; }
   if (p2.hide) { p2.vx = 0; return; }   // (a story scene of his own: ramah.js stands him aside)
   if (pressed2("select")) p2Switch();
-  if (david.deadT > 0 || inCutscene() || (typeof drill !== "undefined" && drill.on)) { p2.vx = 0; return; }   // (a drill: Player 2's hands are busy)
+  if (david.deadT > 0 || inCutscene() || (typeof drill !== "undefined" && (drill.on || mash.on))) { p2.vx = 0; return; }   // (a drill: Player 2's hands are busy)
   const C = P2C(); p2.t += dt;
   p2.inv = Math.max(0, p2.inv - dt);
   // too far from David (left behind, run off ahead, or he went into a cave): back beside him

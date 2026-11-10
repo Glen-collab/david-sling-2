@@ -29,6 +29,7 @@ function drillRound() {
 const drillPressed = b => drill.p2 ? pressed2(b) : pressed(b);
 function updateDrill(dt) {
   if (drill.msgT > 0) drill.msgT -= dt;
+  updateMash(dt);
   if (!drill.on) return;
   drill.shake = Math.max(0, drill.shake - dt);
   if (drill.wait > 0) { drill.wait -= dt; if (drill.wait <= 0) { if (drill.round >= drill.rounds.length) drillFinish(); else drillRound(); } return; }
@@ -53,9 +54,70 @@ function drillMiss(say) {
   sfx("stone_hit", undefined, 0.4, 0.6); drill.ready = 0.45;
 }
 function drillFinish() { drill.on = false; drill.progress = 1; const f = drill.onDone; drill.onDone = null; if (f) f(); }
+// The button mash (Glen 11-10, Gath: David acts mad before Achish, 1 Samuel 21:13). A bar like a life bar: every press of
+// A or B fills it, it drains on its own, and it has to be full before the clock runs out. Too slow and he's found out.
+// With two players both mash into the same bar.
+//   startMash({ title, need: 40, time: 7, drain: 0.10, onDone, onFail })
+//   mash.level (0-1) is how full the bar is, for the scene (David's madness speeds up with it).
+const MASH = {
+  NEED: 40,        // presses to fill the bar from empty (with no drain)
+  TIME: 7,         // seconds on the clock
+  DRAIN: 0.10,     // bar lost per second on its own (0.10 = a tenth of the bar a second): stop pressing and it falls
+  READY: 1.2,      // "Ready..." before the clock starts
+  RETRY_T: 1.6,    // after a fail with no onFail: this long, then it starts over
+};
+const mash = { on: false, title: "", need: 0, time: 0, drain: 0, level: 0, t: 0, ready: 0, presses: 0, flash: { a: 0, b: 0 }, onDone: null, onFail: null, retry: 0, shake: 0 };
+function startMash(o) {
+  Object.assign(mash, { on: true, title: o.title || "Act mad!", need: o.need || MASH.NEED, time: o.time || MASH.TIME, drain: o.drain ?? MASH.DRAIN,
+    level: 0, t: 0, ready: MASH.READY, presses: 0, flash: { a: 0, b: 0 }, onDone: o.onDone || null, onFail: o.onFail || null, retry: 0, shake: 0 });
+}
+function updateMash(dt) {
+  if (!mash.on) return;
+  mash.flash.a = Math.max(0, mash.flash.a - dt); mash.flash.b = Math.max(0, mash.flash.b - dt); mash.shake = Math.max(0, mash.shake - dt);
+  if (mash.retry > 0) { mash.retry -= dt; if (mash.retry <= 0) startMash(mash); return; }
+  if (mash.ready > 0) { mash.ready -= dt; return; }
+  mash.t += dt;
+  for (const b of ["a", "b"]) {
+    const n = (pressed(b) ? 1 : 0) + (typeof p2 !== "undefined" && p2.on && pressed2(b) ? 1 : 0);
+    if (n) { mash.level += n / mash.need; mash.presses += n; mash.flash[b] = 0.12; if (mash.presses % 4 === 0) sfx("olive_pickup", undefined, 0.25, 0.8 + mash.level * 0.6); }
+  }
+  mash.level = Math.max(0, mash.level - mash.drain * dt);
+  if (mash.level >= 1) {
+    mash.level = 1; mash.on = false; drill.msg = "He's lost his mind!"; drill.msgT = 1.4; if (typeof chime === "function") chime(6);
+    const f = mash.onDone; mash.onDone = null; if (f) f();
+  } else if (mash.t >= mash.time) {
+    drill.msg = "Too slow! They see through it!"; drill.msgT = 1.6; mash.shake = 0.4; sfx("stone_hit", undefined, 0.4, 0.6);
+    if (mash.onFail) { mash.on = false; const f = mash.onFail; mash.onFail = null; f(); } else mash.retry = MASH.RETRY_T;
+  }
+}
+function drawMash() {
+  if (!mash.on) return;
+  ctx.save();
+  const cx = W / 2, y0 = 160, bw = 520, sh = mash.shake > 0 ? Math.sin(performance.now() / 18) * 10 * mash.shake / 0.4 : 0;
+  ctx.fillStyle = "rgba(10,8,6,0.62)"; ctx.beginPath(); ctx.roundRect(cx - bw / 2 - 30, y0 - 40, bw + 60, 200, 18); ctx.fill();
+  ctx.textAlign = "center"; ctx.fillStyle = "#ffd76a"; ctx.font = "bold 26px Georgia, serif"; ctx.fillText(mash.title, cx, y0 - 6);
+  ctx.font = "16px sans-serif"; ctx.fillStyle = "#f3e6c8";
+  ctx.fillText(typeof p2 !== "undefined" && p2.on ? "Both players: mash A and B as fast as you can!" : "Mash A and B as fast as you can!", cx, y0 + 18);
+  // the bar (like a life bar): David's madness
+  const by = y0 + 34, bh = 30, x0 = cx - bw / 2 + sh;
+  ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.beginPath(); ctx.roundRect(x0, by, bw, bh, 8); ctx.fill();
+  const g = ctx.createLinearGradient(x0, 0, x0 + bw, 0); g.addColorStop(0, "#b8452a"); g.addColorStop(0.6, "#e08a2a"); g.addColorStop(1, "#ffe07a");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x0, by, Math.max(0.001, bw * mash.level), bh, 8); ctx.fill();
+  ctx.strokeStyle = "#ffd76a"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(x0, by, bw, bh, 8); ctx.stroke();
+  ctx.font = "bold 15px sans-serif"; ctx.fillStyle = "#fff"; ctx.fillText("MADNESS", cx + sh, by + 20);
+  // the A and B keys, lighting up as they're pressed
+  for (const [b, x] of [["a", cx - 50], ["b", cx + 50]]) { const on = mash.flash[b] > 0; drawArrowKey(b, x, by + 74, on ? 58 : 50, on ? "#ffffff" : "#bfae8a", on ? "#ffd76a" : "#6a5a40"); }
+  // the clock
+  const left = mash.ready > 0 ? 1 : Math.max(0, 1 - mash.t / mash.time);
+  ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(cx - bw / 2, by + 112, bw, 10);
+  ctx.fillStyle = left > 0.5 ? "#7fdc7a" : left > 0.25 ? "#ffd76a" : "#ff6a4a"; ctx.fillRect(cx - bw / 2, by + 112, bw * left, 10);
+  if (mash.ready > 0) { ctx.font = "bold 18px sans-serif"; ctx.fillStyle = "#ffd76a"; ctx.fillText("Ready...", cx, by + 142); }
+  ctx.restore();
+}
+
 // David waits while a drill is on (main.js updateDavid)
 function drillHold(d, dt) {
-  if (!drill.on && !(typeof w94 !== "undefined" && w94 && w94.hold)) return false;
+  if (!drill.on && !mash.on && !(typeof w94 !== "undefined" && w94 && w94.hold)) return false;
   d.vx = 0; d.charging = false; d.throwT = -1;
   d.vy = Math.min(TUNE.MAX_FALL, d.vy + TUNE.GRAVITY * dt); collideBody(d, BODY_W, d.h, dt);
   if (d.state !== "idle") setState("idle");
@@ -76,6 +138,7 @@ function drawArrowKey(b, x, y, s, fill, line) {
   ctx.restore();
 }
 function drawDrill() {
+  drawMash();
   if (!drill.on && drill.msgT <= 0) return;
   ctx.save();
   const cx = W / 2, y0 = 218, sh = drill.shake > 0 ? Math.sin(performance.now() / 18) * 10 * drill.shake / DRILL.SHAKE_T : 0;

@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 298,
+  "frame_h": 326,
+  "ms_per_frame": 149,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 162,
+  "anchor_y": 324,
+  "source": "doeg_clip3.mp4",
+  "video_frames": [
+    84,
+    88,
+    92,
+    95,
+    99,
+    103,
+    107,
+    111,
+    115,
+    118,
+    122,
+    126
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 287,
+  "frame_h": 327,
+  "ms_per_frame": 160,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 132,
+  "anchor_y": 324,
+  "source": "nob_priest1_clip1.mp4",
+  "video_frames": [
+    20,
+    24,
+    28,
+    32,
+    35,
+    39,
+    43,
+    47,
+    51,
+    54,
+    58,
+    62
+  ]
+}

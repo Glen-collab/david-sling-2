@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 325,
+  "frame_h": 328,
+  "ms_per_frame": 104,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 165,
+  "anchor_y": 325,
+  "source": "gath_elite_clip3.mp4",
+  "video_frames": [
+    101,
+    103,
+    106,
+    109,
+    111,
+    113,
+    116,
+    119,
+    121,
+    123,
+    126,
+    129
+  ]
+}

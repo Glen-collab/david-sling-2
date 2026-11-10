@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 219,
+  "frame_h": 286,
+  "ms_per_frame": 52,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 75,
+  "anchor_y": 284,
+  "source": "gath_guard_clip3.mp4",
+  "video_frames": [
+    28,
+    29,
+    30,
+    32,
+    33,
+    34,
+    36,
+    37,
+    38,
+    39,
+    40,
+    42
+  ]
+}

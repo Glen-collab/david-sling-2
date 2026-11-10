@@ -1,0 +1,29 @@
+{
+  "frames": 16,
+  "frame_w": 412,
+  "frame_h": 330,
+  "ms_per_frame": 143,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 234,
+  "anchor_y": 328,
+  "source": "david_mad_clip1.mp4",
+  "video_frames": [
+    18,
+    21,
+    25,
+    28,
+    32,
+    35,
+    39,
+    42,
+    46,
+    49,
+    52,
+    56,
+    59,
+    63,
+    66,
+    70
+  ]
+}
