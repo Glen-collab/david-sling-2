@@ -353,6 +353,7 @@ function drawRegionLadders(camX) {
 function drawProps(camX) {
   for (const p of region.props) {
     if (p.front) continue;   // (drawRegionFront: over David)
+    if (p.draw && p.draw(p, camX)) continue;   // (a prop that draws itself, e.g. Michal in her window, ramah.js; false: the picture)
     const k = KIT[p.n], im = kitImg(p.n), x = Math.round(p.x - camX), s = p.s || 1; if (!im || x > W || x + k.w * s < 0) continue;
     if (p.y > camY + H + 50 || p.y + k.h * s < camY - 120) continue;   // (a tall room: off above or below)
     if (p.filter) { ctx.save(); ctx.filter = p.filter; }   // (e.g. a window at night)

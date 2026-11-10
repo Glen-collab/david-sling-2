@@ -30,6 +30,9 @@ const R2 = {
   SPEAR: { SPEED: 640, Y: 80, LEN: 150, AT: 0.55 },
   // David's bow (Jonathan's, 18:4; Glen 11-06): a long, straight shot
   ARROW: { SPEED: 1350, GRAV: 0.1, LIFE: 1.7, COOL: 0.65 },
+  MICHAL_WIN_K: 0.5, MICHAL_BACK: 1.5,   // (MICHAL_BACK: how much faster she goes back in than she came)   // Michal's window sheet (330 wide) drawn at the window picture's width (165)
+  DJ_GAP: 158,   // the goodbye two-shots: David stands this far right of Jonathan (the clip's anchor), in sheet px (times SCALE)
+  BOY_REACH: 30, BOY_PICK: [4, 9, 16],   // the arrows: he stops this far short of the arrow; boy_stone frames: start (standing, leaning), the arrow is taken up, stands holding it
   BOW_DRAW: 0.24, BOW_HOLD: 0.22,   // David's bow: drawing it (3 frames), then the release frame held this long
   SOLDIER_K: 1.3,        // (Glen 11-07: "they look like miniatures") Saul's men drawn this much bigger in World 2
   GUARD_FLIP: 1,         // (which way the soldier sheets face)
@@ -181,7 +184,7 @@ function r2Build(R) {
     // down (19:12, "Michal let David down through the window"). (Glen 11-07: no balcony; not stepping out, climbing down)
     { const first = walks.filter(u => u.k === 0).sort((a, b) => a.x0 - b.x0)[0];
       const wx = Math.min(first.x0 + 5 * T, first.x1 - 2 * T), winTop = deck + 70, sillY = winTop + 182, wk = "tw_win_arch_lit_with-rope";
-      region.props.push({ room: "palace", n: wk, x: wx - 88, y: winTop, back: true });   // (his window, lamplit, his rope over the sill: the rope at x 88 in the picture)
+      region.props.push({ room: "palace", n: wk, x: wx - 88, y: winTop, back: true, draw: r2MichalWindow });   // (his window, lamplit, his rope over the sill: the rope at x 88 in the picture)
       r2.lights.push({ room: "palace", x: wx, y: sillY - 20, r: 230 });
       r2Rope("palace", wx, sillY, first.y); const rope = ladders[ladders.length - 1];
       region.ladders[region.ladders.length - 1].top = winTop + 220;   // (drawn from the picture's bottom edge down: his rope over the sill is in the picture)
@@ -460,7 +463,8 @@ function r2Update(dt, r) {
     return;
   }
   { const nd = region.doors.find(o => o.id === "d_naiothdown"); if (nd) nd.to = r2Has("r2_naioth") && !r2Has("r2_ezel") ? "d_ezelin" : "d_naioth"; }   // (out of Naioth: to Jonathan, once)
-  const d = david; r2.t += dt;
+  const d = david; r2.t += dt; { const s = SPR.michal_window, end = s ? s.frames * s.ms / 1000 : 10, on = david.state === "climb" && david.ladder === r2.winRope && region.room.id === "palace";
+    r2.mwT = Math.max(0, Math.min(end, (r2.mwT || 0) + (on ? dt : -R2.MICHAL_BACK * dt))); }
   if (!r2.entry) r2Enter(r);
   r2CaughtUpdate(dt);
   if (!region.jscene && !region.mapOpen) { r2Guards(dt, r); r2Wolves(dt, r); r2Chase(dt, r); r2SpearUpdate(dt, r); r2ArrowsUpdate(dt); r2Walkers(dt); }
@@ -749,6 +753,9 @@ function r2ArrowsStart() {
     ]);
   });
 }
+function r2TwoShot(n) {   // David and Jonathan in one clip, played once (then held on its last frame), David hidden meanwhile
+  const J = r2.jonW; if (r2.dw) { david.x = r2.dw.x; r2.dw = null; } J.mode = "two"; J.clip = n; J.t = 0; region.pose = { hide: true }; region.wait = SPR[n].frames * SPR[n].ms / 1000 + 0.2;
+}
 function r2ChoiceUpdate() {
   const C = r2.choice; C.t += 1 / 60; region.wait = Math.max(region.wait, 0.05);
   if (pressed("left") || pressed("right")) { C.sel = 1 - C.sel; if (typeof chime === "function") chime(1); }
@@ -758,11 +765,21 @@ function r2ChoiceUpdate() {
     rPlay([
       { say: right ? ["", "Yes. “The arrows are beyond you” meant go: Saul means harm, and the LORD is sending David away. (1 Samuel 20:22)"]
                    : ["", "Not this time. “The arrows are beyond you” was the sign to go: Saul means harm. (1 Samuel 20:22)"] },
-      { fn() { r2.boy.mode = "walk"; r2.boy.to = -9999; r2.jonW.mode = "idle"; }, say: ["", "The boy gathered up the arrows and went into the city. But Jonathan and David understood the matter. (from 1 Samuel 20:38–40)"] },
-      { fn() { region.pose = { kneel: true }; david.facing = -1; }, wait: 0.4 },
-      { say: ["", "David arose out of the south, and fell on his face to the ground, and bowed himself three times. They kissed one another and wept with one another. (from 1 Samuel 20:41)"] },
-      { fn() { region.pose = null; r2.jonW.mode = "talk"; }, say: ["Jonathan", "Go in peace, because we have both sworn in the name of the LORD, saying, ‘The LORD will be between me and you, and between my offspring and your offspring, forever.’ (1 Samuel 20:42)"] },
-      { say: ["Jonathan", "You've carried my bow since the day I gave it to you. Now draw it the way I do: far, and true."] },
+      { fn() { const A = r2.arrows[0]; r2.boy.mode = "run"; r2.boy.to = (A ? A.x : r2.boy.x + 60) - R2.BOY_REACH; r2.boy.then = "pick"; r2.jonW.mode = "idle"; }, wait: 3.6 },   // (Glen 11-09: his pick-up-a-stone move, as is)
+      { say: ["", "The boy gathered up the arrows and went into the city. But Jonathan and David understood the matter. (from 1 Samuel 20:38–40)"] },
+      // (Glen 11-09: his clip of the goodbye, three two-shots: dj_bow, dj_embrace, dj_givebow; Jonathan is the anchor)
+      { fn() {   // David comes out from behind the stone (left of it, in the open) and Jonathan comes to meet him
+        const J = r2.jonW, meet = r2.ezelX - KIT.f_ezel.w * R2.EZEL_K / 2 - 30;
+        region.pose = { hide: true }; r2.dw = { x: david.x, to: meet, t: 0 }; david.facing = -1;
+        J.mode = "walk"; J.to = meet - R2.DJ_GAP * SCALE; region.wait = Math.max(Math.abs(J.to - J.x), Math.abs(meet - david.x)) / 120 + 0.4; } },
+      { fn() { r2TwoShot("dj_bow"); } },
+      { say: ["", "David arose out of the south, and fell on his face to the ground, and bowed himself three times. (1 Samuel 20:41)"] },
+      { fn() { r2TwoShot("dj_embrace"); } },
+      { say: ["", "They kissed one another and wept with one another, until David wept the most. (1 Samuel 20:41)"] },
+      { say: ["Jonathan", "Go in peace, because we have both sworn in the name of the LORD, saying, ‘The LORD will be between me and you, and between my offspring and your offspring, forever.’ (1 Samuel 20:42)"] },
+      { fn() { r2TwoShot("dj_givebow"); } },
+      { say: ["Jonathan", "I shot the sign with it today. Take my bow, David, and draw it the way I do: far, and true."] },
+      { fn() { const J = r2.jonW; region.pose = null; david.x = J.x + R2.DJ_GAP * SCALE; david.facing = -1; J.mode = "idle"; J.facing = 1; J.t = 0; }, wait: 0.3 },
       { fn() { learnSkill("bow"); r2.jonW.mode = "walk"; r2.jonW.to = -9999; }, say: ["", "He arose and departed; and Jonathan went into the city. (1 Samuel 20:42)"] },
       { fn() { if (typeof p2 !== "undefined") p2.hide = false; regionAdd("taken", "r2_arrows"); regionAdd("taken", "g_exit_open"); jsceneOpen(true); } },
     ]);
@@ -775,9 +792,15 @@ function r2Walkers(dt) {   // the people the story moves: Samuel up to Naioth, J
   const S = r2.story;
   if (S.samuel === "walk" && r2In("ramah")) { r2.samX += 110 * dt; if (r2.samX > roomById("ramah").c0 * T + 72 * T) S.samuel = "naioth"; }
   if (S.jon === "leave" && r2In("field")) { r2.jonX -= 130 * dt; if (r2.jonX < roomById("field").c0 * T) S.jon = "gone"; }
+  if (r2.dw) { const w = r2.dw, dx = w.to - w.x; w.t += dt; w.moving = Math.abs(dx) > 3; if (w.moving) w.x += Math.sign(dx) * Math.min(Math.abs(dx), 120 * dt); }   // David walking out of hiding (drawn by ramah.js)
   for (const p of [r2.jonW, r2.boy]) {
     if (!p) continue; p.t = (p.t || 0) + dt;
-    if (p.mode === "walk" || p.mode === "run") { const v = p.mode === "run" ? 260 : 120, dx = p.to - p.x; if (Math.abs(dx) > 4) { p.facing = Math.sign(dx); p.x += p.facing * Math.min(Math.abs(dx), v * dt); } else if (p.mode === "walk") p.mode = "idle"; else p.mode = "idle"; }
+    if (p.mode === "walk" || p.mode === "run") { const v = p.mode === "run" ? 260 : 120, dx = p.to - p.x; if (Math.abs(dx) > 4) { p.facing = Math.sign(dx); p.x += p.facing * Math.min(Math.abs(dx), v * dt); } else if (p.then) { p.mode = p.then; p.then = null; p.t = 0; } else p.mode = "idle"; }
+    if (p.mode === "pick") {   // bend, take the arrow up off the ground, stand holding it; then off to the city
+      const f = R2.BOY_PICK[0] + Math.floor(p.t * 1000 / SPR.boy_stone.ms);
+      if (f >= R2.BOY_PICK[1]) r2.arrows.length = 0;
+      if (f >= R2.BOY_PICK[2]) { p.mode = "walk"; p.to = -9999; p.t = 0; }
+    }
   }
 }
 const R2_TALK = ["Samuel judges Israel from here. People come from all over to hear him.", "The prophets sing and play up at Naioth, day and night.",
@@ -812,6 +835,17 @@ function r2Wall(camX, x0, x1, capSide, tall) {   // a stretch of Gibeah's city w
     const m0 = 260, mh = 520; for (let ty = gy - fh + 260 * s - mh * s; ty > camY - mh * s; ty -= mh * s) ctx.drawImage(en, 0, m0, en.naturalWidth, mh, 0, Math.round(ty), ew, Math.ceil(mh * s) + 1);
   }
   ctx.restore();
+}
+// (Glen 11-09) Michal in the window, letting the rope down (his clip michal_window, seen from outside: the arch, Michal
+//  and the rope): it plays while David is on the rope under her window, held at the end, her hands on the rope; when
+//  he lets go it runs backwards and she goes in, and the window is empty (Glen 11-09). Only on the night itself (till he
+//  reaches Samuel)
+function r2MichalWindow(p, camX) {
+  const s = SPR.michal_window; if (!s || !s.img.naturalWidth || r2Has("r2_samuel")) return false;
+  if (!(r2.mwT > 0)) return false;   // (she's gone in: the empty window)
+  const k = R2.MICHAL_WIN_K, f = Math.min(s.frames - 1, Math.floor(r2.mwT * 1000 / s.ms));
+  ctx.drawImage(s.img, f * s.w, 0, s.w, s.h, Math.round(p.x - camX), Math.round(p.y), s.w * k, s.h * k);
+  return true;
 }
 function r2DrawBack(camX) {   // behind the props: Naioth's compound wall at the end of Ramah; Gibeah's wall and gate outside the city
   const r = region.room; if (!r) return;
@@ -889,11 +923,15 @@ function r2Draw(camX) {
     if (S.jon === "wait" || S.jon === "talk" || S.jon === "leave") drawSprite(S.jon === "leave" ? "jonathan_walk" : S.jon === "talk" ? "jonathan_talk" : "jonathan_idle", frameOf(S.jon === "leave" ? "jonathan_walk" : "jonathan_idle", r2.t), r2.jonX - camX, gy, S.jon === "leave" ? -1 : 1);
     const J = r2.jonW;
     if (J && on(J.x)) {
+      if (J.mode === "two") drawSprite(J.clip, Math.min(SPR[J.clip].frames - 1, Math.floor(J.t * 1000 / SPR[J.clip].ms)), J.x - camX, gy, -1);
+      else {
       const n = J.mode === "walk" ? "jonathan_walk" : J.mode === "shoot" ? "jonathan_shoot" : J.mode === "talk" ? "jonathan_talk" : "jonathan_idle";
-      drawSprite(n, J.mode === "shoot" ? Math.min(SPR[n].frames - 1, Math.floor(J.t * 14)) : frameOf(n, J.t), J.x - camX, gy, J.facing || 1);
+      drawSprite(n, J.mode === "shoot" ? Math.min(SPR[n].frames - 1, Math.floor(J.t * 14)) : frameOf(n, J.t), J.x - camX, gy, J.facing || 1); }
     }
+    if (r2.dw) drawSprite(r2.dw.moving ? "david_walk" : "david_idle", frameOf(r2.dw.moving ? "david_walk" : "david_idle", r2.dw.t), r2.dw.x - camX, gy, -1);
     const B = r2.boy;
-    if (B && on(B.x)) drawSprite(B.mode === "idle" ? "boy_idle" : "boy_walk", frameOf(B.mode === "idle" ? "boy_idle" : "boy_walk", B.t * (B.mode === "run" ? 2 : 1)), B.x - camX, gy, B.facing || 1, 0.85);
+    if (B && on(B.x) && B.mode === "pick") drawSprite("boy_stone", Math.min(R2.BOY_PICK[2], R2.BOY_PICK[0] + Math.floor(B.t * 1000 / SPR.boy_stone.ms)), B.x - camX, gy, 1, 0.85);
+    else if (B && on(B.x)) drawSprite(B.mode === "idle" ? "boy_idle" : "boy_walk", frameOf(B.mode === "idle" ? "boy_idle" : "boy_walk", B.t * (B.mode === "run" ? 2 : 1)), B.x - camX, gy, B.facing || 1, 0.85);
     for (const a of r2.arrows) r2DrawArrow(a.x - camX, a.y, a.down ? 0.5 : Math.atan2(a.vy, a.vx));
     if (region.pose && region.pose.crouch) drawSprite("david_crouch", 0, david.x - camX, gy, -1);   // (hidden by the stone: drawn behind it)
   }

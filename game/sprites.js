@@ -2376,6 +2376,42 @@ window.SPRITE_DATA = {
   "ay": 342,
   "align": "well"
  },
+ "dj_bow": {
+  "src": "../assets/sprites/dj_bow.png",
+  "frames": 12,
+  "w": 437,
+  "h": 349,
+  "ms": 198,
+  "loop": false,
+  "pingpong": false,
+  "ax": 298,
+  "ay": 347,
+  "align": "feet"
+ },
+ "dj_embrace": {
+  "src": "../assets/sprites/dj_embrace.png",
+  "frames": 14,
+  "w": 437,
+  "h": 351,
+  "ms": 235,
+  "loop": false,
+  "pingpong": false,
+  "ax": 296,
+  "ay": 349,
+  "align": "feet"
+ },
+ "dj_givebow": {
+  "src": "../assets/sprites/dj_givebow.png",
+  "frames": 18,
+  "w": 432,
+  "h": 349,
+  "ms": 238,
+  "loop": false,
+  "pingpong": false,
+  "ax": 298,
+  "ay": 346,
+  "align": "feet"
+ },
  "dog_run": {
   "src": "../assets/sprites/dog_run.png",
   "frames": 6,
@@ -4582,6 +4618,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 105,
   "ay": 273,
+  "align": "feet"
+ },
+ "michal_window": {
+  "src": "../assets/sprites/michal_window.png",
+  "frames": 24,
+  "w": 330,
+  "h": 476,
+  "ms": 417,
+  "loop": false,
+  "pingpong": false,
+  "ax": 0,
+  "ay": 0,
   "align": "feet"
  },
  "mud_settle": {

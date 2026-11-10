@@ -1,0 +1,12 @@
+{
+  "frames": 24,
+  "frame_w": 330,
+  "frame_h": 476,
+  "ms_per_frame": 417,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 0,
+  "anchor_y": 0,
+  "source": "michal_window.mp4",
+  "arch_w": 330
+}

@@ -145,6 +145,7 @@ const Menu = {
       ...(this.under === "stage" && REGION_ON ? [{ label: "Back to your last olive press", act: () => startStage(LEVEL_NAME) },
                                                  { label: `Start ${REGION.name} over`, act: () => this.go("fresh") }]   // (Glen 11-06) a clean run, nothing found
         : this.under === "stage" ? [{ label: "Start the stage again", act: () => startStage(LEVEL_NAME) }] : []),   // stuck somewhere? start over (sheep and olives from this try are lost)
+      ...(this.under === "stage" && typeof p2 !== "undefined" && p2.on ? [{ label: "Player 2 leaves", act: () => { p2Leave(); this.close(); } }] : []),   // (Glen 11-09: Player 2 stays for the whole game once in; this lets them out)
       this.under === "stage" && TRIAL ? { label: "Leave the Trial", act: () => { try { sessionStorage.setItem("david2TrialBack", "1"); } catch (e) {} location.href = "index.html"; } }
       : this.under === "stage" && REGION_ON ? { label: "Back to the map", act: () => { try { sessionStorage.setItem("david2TitleSeen", "1"); } catch (e) {} location.href = "index.html"; } }   // (Glen 11-06: Part Two's land map, never the first game's)
       : this.under === "stage" ? { label: "Back to the map", act: () => backToMap() }

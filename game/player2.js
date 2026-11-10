@@ -79,7 +79,7 @@ const P2_ROSTER = {
   "9-4": ["jonathan", "armorbearer"],
 };
 // (Glen 11-06) Gibeah: the armor-bearer until the covenant, then Jonathan comes with David (region.js storyAward)
-const p2Gibeah = () => LEVEL_NAME === "9-6" ? ["jonathan", "armorbearer"]   // (World 2: Jonathan, Glen 11-06)
+const p2Gibeah = () => LEVEL_NAME === "9-6" ? ["armorbearer"]   // (Glen 11-09: David runs from Saul alone, and Jonathan is in the story at the stone and the feast)
   : LEVEL_NAME === "9-5" && typeof regionHas === "function" ? (regionHas("taken", "g_jonathan") ? ["jonathan", "armorbearer"] : ["armorbearer"]) : null;
 const p2Roster = () => STAGE_INFO.p2 || p2Gibeah() || P2_ROSTER[LEVEL_NAME] || ["armorbearer"];
 
@@ -120,15 +120,26 @@ function p2Place(x, y) {   // beside David, on his ground
   for (let k = 0; k < 14; k++) bits.push({ x, y: y - 40, vx: (Math.random() - 0.5) * 360, vy: -Math.random() * 380, life: 0.6, color: "#fff7c2" });
 }
 function p2BesideDavid() { p2Place(david.x - david.facing * 60, david.y); p2.inv = P2.INV_T; }
-function p2Join() {
-  const r = p2Roster(); p2.on = true; p2.who = r[0]; p2BesideDavid(); p2.facing = david.facing;
+// (Glen 11-09: "I want player two for the whole game if player two jumps in") once Player 2 joins, they come along into
+//  every stage after (localStorage "david2P2", per save slot), as the same one when this stage has them, else its first
+const P2_KEY = "david2P2" + (typeof SLOT !== "undefined" && SLOT > 1 ? "@" + SLOT : "");
+function p2Saved() { try { return localStorage.getItem(P2_KEY); } catch (e) { return null; } }
+function p2Save() { try { localStorage.setItem(P2_KEY, p2.who); } catch (e) {} }
+function p2Join(quiet) {
+  const r = p2Roster(), was = p2Saved(); p2.on = true; p2.who = r.includes(was) ? was : r[0]; p2BesideDavid(); p2.facing = david.facing; p2Save();
+  if (quiet) { toast(`Player 2 is ${P2C().name}.`); return; }
   toast(`Player 2 is ${P2C().name}!` + (r.length > 1 ? " Select changes who you play." : ""));
+}
+function p2Leave() {   // (the pause menu) out of this stage and the ones after, till a button on their controller brings them back
+  p2.on = false; p2.rejoined = true; try { localStorage.removeItem(P2_KEY); } catch (e) {}
+  for (let k = 0; k < 14; k++) bits.push({ x: p2.x, y: p2.y - 40, vx: (Math.random() - 0.5) * 300, vy: -Math.random() * 340, life: 0.55, color: "#fff7c2" });
+  toast("Player 2 has gone home. Press a button on the second controller to come back.");
 }
 function p2Switch() {
   const r = p2Roster(); if (r.length < 2) return;
   p2.who = r[(r.indexOf(p2.who) + 1) % r.length]; p2.act = null; p2.low = false; p2.slideT = 0;
   for (let k = 0; k < 16; k++) bits.push({ x: p2.x, y: p2.y - 50, vx: (Math.random() - 0.5) * 300, vy: -Math.random() * 360, life: 0.55, color: "#ffe6a0" });
-  toast(`Player 2 is ${P2C().name}.`);
+  p2Save(); toast(`Player 2 is ${P2C().name}.`);
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +148,7 @@ function p2Switch() {
 function updateP2(dt) {
   if (WORLD !== 9) return;
   updateP2Stage(dt);
-  if (!p2.on) { if (["left", "right", "up", "down", "a", "b", "x"].some(pressed2)) p2Join(); return; }
+  if (!p2.on) { if (["left", "right", "up", "down", "a", "b", "x"].some(pressed2)) p2Join(); else if (!p2.rejoined && p2Saved() && david.onGround) { p2.rejoined = true; p2Join(true); } return; }
   if (p2.hide) { p2.vx = 0; return; }   // (a story scene of his own: ramah.js stands him aside)
   if (pressed2("select")) p2Switch();
   if (david.deadT > 0 || inCutscene() || (typeof drill !== "undefined" && drill.on)) { p2.vx = 0; return; }   // (a drill: Player 2's hands are busy)

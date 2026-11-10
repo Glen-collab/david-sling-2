@@ -1,0 +1,27 @@
+{
+  "frames": 14,
+  "frame_w": 437,
+  "frame_h": 351,
+  "ms_per_frame": 235,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 296,
+  "anchor_y": 349,
+  "source": "david_jonathan_goodbye.mp4",
+  "video_frames": [
+    62,
+    68,
+    74,
+    80,
+    86,
+    92,
+    98,
+    104,
+    110,
+    116,
+    122,
+    128,
+    134,
+    140
+  ]
+}
