@@ -3142,7 +3142,7 @@ addEventListener("keydown", e => {
 
 let helpT = 12;
 function drawHUD() {
-  drawHearts(); drawSpecialCount(); drawLivesAndOil(); drawSheepCount(); drawChargeRing();
+  drawHearts(); drawSpecialCount(); drawLivesAndOil(); drawSheepCount(); drawChargeRing(); drawBread();
   if (!audioUnlocked) {
     ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fillRect(W / 2 - 230, H - 40, 460, 30);
     ctx.fillStyle = "#ffe08a"; ctx.font = "15px sans-serif"; ctx.textAlign = "center";
@@ -3260,6 +3260,27 @@ try {
 } catch (e) {}
 // the game is driving David (walking to the lamb, the hug, the gate): nothing can hurt him, and no hurt-blink
 const inCutscene = () => david.state === "toLamb" || david.state === "rescue" || david.state === "finish" || david.state === "liftSheep" || david.state === "cave";
+// (Glen 11-11) The holy bread from Nob (1 Samuel 21:6): five loaves David carries from then on (kept per save, every
+// world after). When a hit would finish him, he eats one and is strong again: full health, a moment safe.
+const BREAD_GIVEN = 5;
+function breadCount() { try { return Math.max(0, +localStorage.getItem(slotKey("david2Bread")) || 0); } catch (e) { return 0; } }
+function breadSet(n) { try { localStorage.setItem(slotKey("david2Bread"), String(Math.max(0, n))); } catch (e) {} }
+let breadPop = 0;   // the loaf over his head, just after he eats one
+function eatBread() {
+  const n = breadCount(); if (n <= 0) return false;
+  breadSet(n - 1); david.hearts = david.maxHearts; david.inv = Math.max(david.inv, 2); breadPop = 1.6;
+  sfx("heal", undefined, 0.8);
+  toast(n - 1 > 0 ? `You ate a loaf of the holy bread. Strength restored! (${n - 1} left)` : "You ate the last loaf of the holy bread. Strength restored!");
+  return true;
+}
+function drawBread() {   // the HUD: loaves left, under the oil flask; and the loaf over his head as he eats it
+  const img = ITEM.bread, n = breadCount();
+  if (n > 0 && img && img.naturalWidth) { const h = 30, w = img.naturalWidth * h / img.naturalHeight; ctx.drawImage(img, HUD_X - 4, 196, w, h); hudText(`× ${n}`, HUD_X + 50, 220); }
+  if (breadPop > 0 && img && img.naturalWidth) {
+    const k = Math.min(1, breadPop / 0.4), h = 34, w = img.naturalWidth * h / img.naturalHeight;
+    ctx.save(); ctx.globalAlpha = k; ctx.drawImage(img, david.x - camX - w / 2, david.y - david.h - 70 - (1.6 - breadPop) * 20, w, h); ctx.restore();
+  }
+}
 function hurtDavid(fromX, why = "", still = false) {   // why: what hurt him (the poison's verse), kept in the message if it costs a life; still: no knock-back
   const d = david;
   if (d.inv > 0 || d.deadT > 0 || inCutscene()) return;
@@ -3270,6 +3291,7 @@ function hurtDavid(fromX, why = "", still = false) {   // why: what hurt him (th
     d.harp = false; d.charging = false; d.throwT = -1;
     if (d.state !== "carry") setState("jump");
   }
+  if (d.hearts <= 0 && eatBread()) return;   // the holy bread, if he has any
   if (d.hearts <= 0) { d.deadT = 1.2; d.lives--; const tail = d.lives > 0 ? `Back to the ${REGION_ON ? "olive press" : "campfire"}... (${d.lives} ${d.lives === 1 ? "life" : "lives"} left)` : "Out of lives. Back to the start of the stage.";
                        toast(why ? `${why} ${tail}` : d.lives > 0 ? `Ouch! ${tail}` : tail); }
 }
@@ -4903,6 +4925,7 @@ function frame(now) {
   const real = Math.max(0, Math.min(1 / 30, (now - last) / 1000)); last = Math.max(last, now);   // never let time run backwards
   const dt = real * gameSpeed(real);   // the last stone on a boss slows the world down
   if (toastTime > 0) toastTime -= real;
+  if (breadPop > 0) breadPop -= real;
   if (helpT > 0 && helpT < 9000) helpT -= dt;
   // (also wait for the other scripts: world1.js, the Journal and the map load after this one)
   if (loaded < total && loadStalled(real)) loaded = total;   // a picture or two that never answered: go on without them

@@ -297,9 +297,9 @@ function r3BreadScene() {
       r3.scene = null; region.pose = null;
       r3.people = r3.people.filter(p => p.tag !== "doeg");   // (Doeg's gone: off to Saul, 22:9)
       david.x = r3.breadX - B.DAVID_DX * SCALE * B.K; david.facing = -1;   // (where he stands in the clip)
-      david.hearts = david.maxHearts;
+      david.hearts = david.maxHearts; breadSet(BREAD_GIVEN);   // (main.js: five loaves to carry; one is eaten when a hit would finish him)
       regionAdd("taken", "r3_bread");
-      toast("The holy bread (1 Samuel 21:6). Strength restored. And the man who was watching is gone...");
+      toast(`The holy bread (1 Samuel 21:6): strength restored, and ${BREAD_GIVEN} loaves to carry. When you're about to fall, David eats one. And the man who was watching is gone...`);
     } },
   ]);
 }
