@@ -43,6 +43,10 @@ const R3 = {
   // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
   //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
   BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131 },   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
+  // (Glen 11-11) Gath (21:10-15): at the gate the guard knows him, and he acts mad (mash, scribbling on the doors);
+  //  in Achish's court, mad again before the king, then once more to get past the elite guards ("Get this crazy
+  //  person out of here!"). Mash sizes: [presses to fill, seconds, drain a second] (drill.js startMash)
+  MAD: { GATE_AT: 14, COURT_AT: 26, GATE: [30, 7, 0.08], KING: [36, 7, 0.10], GUARDS: [40, 7, 0.10] },
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -82,7 +86,7 @@ const NOBGATH = {
   build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
-const r3 = { t: 0, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null };
+const r3 = { t: 0, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
 const r3Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function r3Tell(k, text) { if (!r3.told[k]) { r3.told[k] = true; toast(text); } }
 // someone standing in a room: [sprite, x, facing, size]; drawn by r3Draw, looping their sheet
@@ -95,7 +99,7 @@ function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces
 // building
 // ---------------------------------------------------------------------------
 function r3Build(R) {
-  r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null;
+  r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
 
   // -- The Road to Nob (21:1): out of Gibeah's country, fields and hills, on to the priests' town
   let c = R("nobroad");
@@ -190,11 +194,12 @@ function r3Build(R) {
   { const X = k => (c + k) * T;
     ground(c, c + 43);
     campfire(c + 3, GR - 1);
-    r3Person("gath", "gath_servants_whisper", X(11), -1);
-    r3Person("gath", "gath_guard_idle", X(18), -1);
+    r3Person("gath", "gath_servants_whisper", X(11), -1, R3.NPC_K, "servants");
+    r3Person("gath", "gath_guard_idle", X(18), -1, R3.NPC_K, "guard1");
     rDoor("d_gathgate", "gath", c + 22, "door", "d_streetin"); region.doors[region.doors.length - 1].noArt = true;   // (the gate in his picture)
-    r3Person("gath", "gath_guard_idle", X(27), -1);
+    r3Person("gath", "gath_guard_idle", X(27), -1, R3.NPC_K, "guard2");
     r3Person("gath", "gath_guard_idle", X(38), -1);
+    r3.gateAt = X(R3.MAD.GATE_AT); r3.gateX = X(22);
   }
 
   // -- The streets of Gath (DESIGN.md: "watched or not"): his street, guards looking up and down it, his stalls,
@@ -232,10 +237,11 @@ function r3Build(R) {
   { const X = k => (c + k) * T;
     ground(c, c + 47);
     rKitDoor("d_courtin", "court", c + 5, "door", "d_palace", "hall_door");
-    r3Person("court", "gath_elite_idle", X(16), 1);
-    r3Person("court", "gath_elite_idle", X(24), 1);
+    r3Person("court", "gath_elite_idle", X(16), 1, R3.NPC_K, "elite1");
+    r3Person("court", "gath_elite_idle", X(24), 1, R3.NPC_K, "elite2");
+    r3.courtAt = X(R3.MAD.COURT_AT);
     r3Prop("court", "w3_throne_dais", X(37));
-    r3.people.push({ room: "court", name: "achish_idle", x: X(35), facing: 1, k: R3.NPC_K, ph: 0, y: GR * T - 33 });   // (standing on his dais by the throne; his sheets face left)
+    r3.people.push({ room: "court", name: "achish_idle", x: X(35), facing: 1, k: R3.NPC_K, ph: 0, y: GR * T - 33, tag: "achish" });   // (standing on his dais by the throne; his sheets face left)
     r3Person("court", "gath_elite_idle", X(42), -1);
   }
 }
@@ -249,6 +255,7 @@ function r3Enter(r) {
 }
 function r3Update(dt) {
   r3.t += dt; if (r3.scene) r3.scene.t += dt;
+  if (r3.mad) { r3.mad.t += dt; region.wait = Math.max(region.wait, 0.05); }   // (acting mad: he's held while the mash runs)
   const d = david, r = region.room; if (!r) return;
   for (const q of r3.chips) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 1400 * dt; }
   r3.chips = r3.chips.filter(q => q.t < q.life);
@@ -256,6 +263,9 @@ function r3Update(dt) {
   if (r3.might) { r3MightUpdate(dt); return; }
   if (r3SneakUpdate(dt)) return;
   const free = !region.script.length && region.wait <= 0 && !region.trans && !(dialog && dialog.t > 0) && d.onGround && d.deadT <= 0;
+  // Gath: the guard knows him at the gate (21:11); Achish's court (21:14-15)
+  if (r.id === "gath" && !r3Has("r3_gath") && free && d.x > r3.gateAt) { r3GateScene(); return; }
+  if (r.id === "court" && !r3Has("r3_mad") && free && d.x > r3.courtAt) { r3CourtScene(); return; }
   // Nob: the holy bread, the first time he walks up to Ahimelech (21:1-6)
   if (r.id === "nob" && !r3Has("r3_bread") && free && d.x > r3.breadAt && d.x < r3.breadX) { r3BreadScene(); return; }
   // Nob: Goliath's sword, wrapped in a cloth behind the ephod (21:8-9)
@@ -291,6 +301,57 @@ function r3BreadScene() {
       regionAdd("taken", "r3_bread");
       toast("The holy bread (1 Samuel 21:6). Strength restored. And the man who was watching is gone...");
     } },
+  ]);
+}
+// ---------------------------------------------------------------------------
+// Gath (1 Samuel 21:10-15): David acting mad
+// ---------------------------------------------------------------------------
+const r3Who = tag => r3.people.find(p => p.tag === tag);
+function r3Anim(tag, name, facing) { const p = r3Who(tag); if (p && SPR[name]) { p.name = name; p.ph = -r3.t; if (facing) p.facing = facing; } }   // (from its first frame)
+function r3MadMash(title, [need, time, drain], pose, then) {   // David acting mad (pose: his sheet) while you mash; then
+  david.vx = 0; r3.mad = { pose, t: 0 };
+  startMash({ title, need, time, drain, onDone() { r3.mad = null; region.wait = 0; then(); } });
+}
+function r3GateScene() {
+  const d = david; d.facing = 1;
+  rPlay([
+    { fn() { r3Anim("guard1", "gath_guard_point"); }, wait: 0.8 },
+    { say: ["A guard of Gath", "Isn't this David, the king of the land? Didn't they sing about him in their dances: \"Saul has struck down his thousands, and David his ten thousands\"? (1 Samuel 21:11)"] },
+    { say: ["", "David took these words to heart, and was very afraid of Achish the king of Gath. (1 Samuel 21:12)"] },
+    { fn() {
+      regionAdd("taken", "r3_gath"); d.x = r3.gateX - 10; d.facing = 1;   // (at the doors)
+      r3MadMash("Act mad! Scribble on the gate!", R3.MAD.GATE, "david_mad_scribble", () => {
+        r3Anim("guard1", "gath_guard_laugh"); r3Anim("guard2", "gath_guard_laugh");
+        rPlay([
+          { say: ["", "He scribbled on the doors of the gate, and let his spit run down his beard. (1 Samuel 21:13)"], wait: 0.3 },
+          { say: ["A guard of Gath", "Ha! Look at him! That's no king, that's a madman. Let him in. Achish can laugh at him too."] },
+          { fn() { r3Anim("guard1", "gath_guard_idle"); r3Anim("guard2", "gath_guard_idle"); } },
+        ]);
+      });
+    } },
+  ]);
+}
+function r3CourtScene() {
+  const d = david; d.facing = 1;
+  r3Anim("elite1", "gath_elite_idle", -1); r3Anim("elite2", "gath_elite_idle", -1);   // (they turn to him)
+  rPlay([
+    { say: ["", "Achish's servants brought David before the king. So he changed his behavior before them, and acted mad in their hands. (1 Samuel 21:13)"] },
+    { fn() { r3MadMash("Act mad before the king!", R3.MAD.KING, "david_mad_stagger", () => {
+      r3Anim("achish", "achish_exasperated");
+      rPlay([
+        { say: ["Achish", "Look, the man is mad! Why have you brought him to me? Do I lack madmen, that you've brought this fellow to play the madman in front of me? Shall this fellow come into my house? (1 Samuel 21:14-15)"] },
+        { fn() { r3Anim("achish", "achish_point"); r3Anim("elite1", "gath_elite_block", -1); r3Anim("elite2", "gath_elite_block", -1); } },
+        { say: ["", "The king's guards close in. Keep it up, all the way out the door!"] },
+        { fn() { r3MadMash("Get past the guards! Keep acting crazy!", R3.MAD.GUARDS, "david_mad_stagger", () => {
+          rPlay([
+            { say: ["A royal guard", "Get this crazy person out of here!"] },
+            { fn() { regionAdd("taken", "r3_mad"); } },
+            { say: ["", "So David departed from there, and escaped to the cave of Adullam. (1 Samuel 22:1)"] },
+            { fn() { regionAdd("taken", "g_exit_open"); jsceneOpen(true); } },
+          ]);
+        }); } },
+      ]);
+    }); } },
   ]);
 }
 function r3SwordScene() {
@@ -343,6 +404,10 @@ function r3MightUpdate(dt) {
 // David with Goliath's sword (region.js drawDavid hook): lifted while you mash, the smash, the blade on the ground
 function r3DrawDavid(d, x, y) {
   const m = r3.might;
+  if (r3.mad && SPR[r3.mad.pose]) {   // acting mad: wilder as the bar fills
+    const k = typeof mash !== "undefined" ? mash.level : 0.5, sh = (Math.random() - 0.5) * 3 * k;
+    drawSprite(r3.mad.pose, frameOf(r3.mad.pose, r3.mad.t * (0.7 + k * 1.3)), x + sh, y, d.facing, R3.GSWORD_K); return true;
+  }
   if (r3.inDoor) {   // in the alcove, his back to the street, in its shadow
     const n = "david_back_walk"; if (!SPR[n]) return false;   // (Glen 11-11: the cloaked one, sword or not, so he looks the same)
     ctx.save(); ctx.filter = "brightness(0.62)"; drawSprite(n, 0, x, y, 1, 0.92); ctx.restore(); return true;
