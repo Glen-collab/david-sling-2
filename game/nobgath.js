@@ -47,6 +47,11 @@ const R3 = {
   //  in Achish's court, mad again before the king, then once more to get past the elite guards ("Get this crazy
   //  person out of here!"). Mash sizes: [presses to fill, seconds, drain a second] (drill.js startMash)
   MAD: { GATE_AT: 14, COURT_AT: 26, GATE: [30, 7, 0.08], KING: [36, 7, 0.10], GUARDS: [40, 7, 0.10] },
+  // (Glen 11-11) the Hall of the Tribes, off Nob: his twelve tablets set in the floor, out of order. Walk them in the
+  //  order Jacob blessed his sons (Genesis 49:3-27): the blessing's words show at the top, find the picture. A right
+  //  one glows and stays safe; a wrong one cracks and drops him back to the door (time, not a heart)
+  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6,
+    FLOOR: ["judah", "gad", "reuben", "joseph", "levi", "asher", "dan", "zebulun", "benjamin", "simeon", "naphtali", "issachar"] },   // (left to right)
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -60,6 +65,8 @@ const NOBGATH = {
       far: "w3/nob/far", mid: "w3/nob/mid.png", midP: 0.6, near: "w3/nob/near.png", nearY: 606, floor: "w3/nob/floor.png" },   // (Glen 11-10: his far hills, his court wall on green (the tiled roofs cut off), his row of jars and baskets in front)   // (Glen's sanctuary court, the linen hangings and the bronze altar, with his tileable court either side (11-10): one copy, the room's width; the painted court from column 29)
     { id: "crack",    name: "Beneath Nob",           w: 66, up: 30, cave: true, mx: 2, my: 2, mw: 2, mh: 2,
       strip: "w3/crack_strip", floor: "w3/crack_dirt.png", band: [0.04, 0.72] },   // (his cracked wall, a storey repeating up: Castlevania)
+    { id: "tribes",   name: "The Hall of the Tribes", w: 96, bg: "w4_4", mx: 4, my: 2, mw: 3,
+      strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },   // (11-11: Saul's halls stand in till Glen paints Nob's own)
     { id: "gathroad", name: "The Road Down to Gath", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 3, left: "nob", right: "gath",
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },   // (+ his near layer: sycamore shrubs, a broken jar, a mud-brick stub)
     { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 8, my: 1, mw: 2, left: "gathroad",
@@ -83,7 +90,7 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
+  pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
 const r3 = { t: 0, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
@@ -140,6 +147,7 @@ function r3Build(R) {
     if (!r3Has("r3_bread")) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
     rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "stair_down");
     oliveRow(c + 92, 16, 5); rRelic("r3_stone_nob", "stone", c + 100, 16);
+    rKitDoor("d_nobtribes", "nob", c + 104, "door", "d_tribesout", "hall_door");   // (the Hall of the Tribes)
   }
 
   // -- Beneath Nob: the cracked wall, a tall shaft of walkways and ladders (Castlevania). Goliath's sword will break
@@ -170,6 +178,20 @@ function r3Build(R) {
     if (top[0]) rRelic("r3_pom_crack", "pomegranate", mid(top[0]), onTop(top[0].y));
     if (top[1]) rRelic("r3_truth_crack", "truth", mid(top[1]), onTop(top[1].y),
       "Be merciful to me, God, for man wants to swallow me up. All day long he attacks and oppresses me. (Psalm 56:1)");
+  }
+
+  // -- The Hall of the Tribes (Genesis 49): twelve tablets in the floor; walk them in the order of Jacob's blessing
+  c = R("tribes");
+  { const tr = roomById("tribes"), K = R3.TRIBES, done = r3Has("r3_tribes");
+    ground(c, c + tr.w - 1);
+    rKitDoor("d_tribesout", "tribes", c + 3, "door", "d_nobtribes", "hall_door");
+    r3.trial = { start: (c + 6) * T, next: done ? 12 : 0, tiles: K.FLOOR.map((name, i) => {
+      const tc = c + K.AT + i * K.STEP; pitFloor(tc, K.W); platAt(tc, GR * T, K.W);
+      kitImg("w3_tribe_" + name);   // (asked for now, so it's there when he walks in)
+      return { name, c: tc, x0: tc * T, x1: (tc + K.W) * T, lit: done, glow: 0, crack: 0, open: false, fall: 0 };
+    }) };
+    rRelic("r3_truth_tribes", "truth", c + tr.w - 12, 16, "All these are the twelve tribes of Israel, and this is what their father spoke to them, and blessed them. (Genesis 49:28)", "r3_tribes");
+    rRelic("r3_pom_tribes", "pomegranate", c + tr.w - 7, 16, null, "r3_tribes");
   }
 
   // -- The Road Down to Gath (21:10): west to the coast, the sea far off, sycamores on the low hills. Glen's three layers
@@ -248,6 +270,7 @@ function r3Build(R) {
 
 function r3Enter(r) {
   if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
+  if (r.id === "tribes" && !r3Has("r3_tribes")) r3Tell("tribes", "The Hall of the Tribes: a tablet for each of Jacob's twelve sons. Step on them in the order Jacob blessed them.");
   if (r.id === "crack") r3Tell("crack", "Under Nob: cracked walls. A heavy sword could break them...");
   if (r.id === "streets") r3Tell("streets", "The streets of Gath. Achish's men are everywhere: keep out of sight.");
   if (r.id === "goliath") r3Tell("goliath", "Goliath's house. Everything in it is made for a giant.");
@@ -260,6 +283,7 @@ function r3Update(dt) {
   for (const q of r3.chips) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 1400 * dt; }
   r3.chips = r3.chips.filter(q => q.t < q.life);
   for (const w of r3.walls) w.shake = Math.max(0, w.shake - dt);
+  if (r.id === "tribes") r3TrialUpdate(dt);
   if (r3.might) { r3MightUpdate(dt); return; }
   if (r3SneakUpdate(dt)) return;
   const free = !region.script.length && region.wait <= 0 && !region.trans && !(dialog && dialog.t > 0) && d.onGround && d.deadT <= 0;
@@ -284,6 +308,85 @@ function r3Update(dt) {
 // ---------------------------------------------------------------------------
 // Goliath's sword (21:8-9) and the cracked walls ("test your might")
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// The Hall of the Tribes (Genesis 49): Jacob's blessing, son by son, in the order he spoke it. (World English Bible)
+// ---------------------------------------------------------------------------
+const TRIBE_ORDER = [
+  ["reuben", "Reuben", "“Boiling over like water, you shall not excel.” (Genesis 49:4)"],
+  ["simeon", "Simeon", "“Simeon and Levi are brothers. Their swords are weapons of violence.” (49:5)"],
+  ["levi", "Levi", "“I will divide them in Jacob.” (49:7) Levi's sons became the priests, who wore the breastplate."],
+  ["judah", "Judah", "“Judah is a lion’s cub.” (49:9)"],
+  ["zebulun", "Zebulun", "“He will be for a haven of ships.” (49:13)"],
+  ["issachar", "Issachar", "“Issachar is a strong donkey.” (49:14)"],
+  ["dan", "Dan", "“Dan will be a serpent on the trail.” (49:17)"],
+  ["gad", "Gad", "“A troop will press on Gad, but he will press on their heel.” (49:19) Look for the army's tent."],
+  ["asher", "Asher", "“Asher’s food will be rich.” (49:20)"],
+  ["naphtali", "Naphtali", "“Naphtali is a doe set free.” (49:21)"],
+  ["joseph", "Joseph", "“Joseph is a fruitful vine, a fruitful vine by a spring.” (49:22)"],
+  ["benjamin", "Benjamin", "“Benjamin is a ravenous wolf.” (49:27)"],
+];
+function r3TrialUpdate(dt) {
+  const tr = r3.trial, K = R3.TRIBES, d = david; if (!tr) return;
+  for (const t of tr.tiles) {
+    if (t.glow > 0) t.glow = Math.max(0, t.glow - dt);
+    if (t.open) t.fall += dt;
+    else if (t.crack > 0 && (t.crack += dt) > K.SHAKE) {   // it gives way
+      t.open = true; t.fall = 0; sfx("stone_hit", t.x0, 0.5, 0.5);
+      for (let x = t.c; x < t.c + K.W; x++) { oneway[GR][x] = false; onewayTop.delete(GR * COLS + x); }
+    }
+  }
+  if (tr.next >= 12 || !d.onGround || d.deadT > 0 || Math.abs(d.y - GR * T) > 2) return;
+  const t = tr.tiles.find(t => d.x > t.x0 && d.x < t.x1); if (!t || t.lit || t.crack > 0) return;
+  if (t.name === TRIBE_ORDER[tr.next][0]) {   // the right one
+    t.lit = true; t.glow = 1.2; chime(tr.next); tr.next++;
+    if (tr.next === 12) {
+      regionAdd("taken", "r3_tribes"); for (const u of tr.tiles) u.glow = 2.5;
+      setTimeout(() => chime(5), 200); setTimeout(() => chime(7), 400);
+      toast("“All these are the twelve tribes of Israel... He blessed everyone according to his own blessing.” (Genesis 49:28) Something waits at the end of the hall.");
+    }
+  } else { t.crack = 0.001; sfx("stone_hit", t.x0, 0.35, 0.8); }
+}
+function r3TrialFall() {   // main.js pitFall: down through a wrong tablet, back to the door, no heart lost
+  const tr = r3.trial, r = region.room; if (!tr || !r || r.id !== "tribes") return false;
+  const d = david, K = R3.TRIBES;
+  for (const t of tr.tiles) if (t.open || t.crack > 0) { t.open = false; t.crack = 0; t.fall = 0; platAt(t.c, GR * T, K.W); }
+  d.x = tr.start; d.y = GR * T; d.vx = d.vy = 0; d.facing = 1; d.inv = 0.6; setState("idle"); snapCamera();
+  toast(`Not that one: back to the door. Listen again: ${TRIBE_ORDER[tr.next][1]}.`);
+  return true;
+}
+function r3TrialDraw(camX) {
+  const tr = r3.trial, K = R3.TRIBES; if (!tr) return;
+  for (const t of tr.tiles) {
+    const x = t.x0 - camX, w = t.x1 - t.x0; if (x > W || x + w < 0) continue;
+    const im = kitImg("w3_tribe_" + t.name);
+    if (t.open) {   // the hole, and the tablet dropping away
+      const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
+      ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, w, H - GR * T + 2);
+      if (im && t.fall < 0.8) { ctx.save(); ctx.globalAlpha = 1 - t.fall / 0.8; ctx.drawImage(im, x + 6, GR * T - K.PROUD + t.fall * t.fall * 900, w - 12, (w - 12) * im.height / im.width); ctx.restore(); }
+      continue;
+    }
+    if (!im) continue;
+    const j = t.crack > 0 ? (Math.random() - 0.5) * 6 : 0, h = w * im.height / im.width;
+    ctx.drawImage(im, Math.round(x + j), GR * T - K.PROUD, w, h);
+    if (t.lit) {   // the blessing on it: gold
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = `rgba(255,190,70,${0.32 + Math.min(1, t.glow) * 0.3})`;
+      ctx.beginPath(); ctx.roundRect(x + 3, GR * T - K.PROUD + 3, w - 6, h - 6, 10); ctx.fill(); ctx.restore();
+      ctx.strokeStyle = "rgba(255,215,120,0.9)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x + 3, GR * T - K.PROUD + 3, w - 6, h - 6, 10); ctx.stroke();
+    }
+  }
+}
+function r3TrialBanner() {   // the next son's blessing, at the top
+  const tr = r3.trial; if (!tr || tr.next >= 12) return;
+  const [, name, words] = TRIBE_ORDER[tr.next];
+  ctx.save(); ctx.textAlign = "center";
+  ctx.font = "19px Georgia, serif"; const wd = Math.min(W - 40, Math.max(560, ctx.measureText(words).width + 60));
+  ctx.fillStyle = "rgba(25,14,6,0.78)"; ctx.beginPath(); ctx.roundRect(W / 2 - wd / 2, 14, wd, 84, 12); ctx.fill();
+  ctx.fillStyle = "#e9dcc4"; ctx.font = "15px sans-serif";
+  ctx.fillText(`Jacob blesses his sons (Genesis 49)     ${tr.next} of 12`, W / 2, 36);
+  ctx.fillStyle = "#ffe08a"; ctx.font = "bold 24px Georgia, serif"; ctx.fillText(name, W / 2, 63);
+  ctx.fillStyle = "#fff6e2"; ctx.font = "19px Georgia, serif"; ctx.fillText(words, W / 2, 88);
+  ctx.restore();
+}
 function r3BreadScene() {
   const B = R3.BREAD, give = SPR.nob_bread_give, eat = SPR.nob_bread_eat;
   const long = give && eat ? (give.frames * give.ms + eat.frames * eat.ms) / 1000 : 0;
@@ -576,6 +679,7 @@ function r3DrawWalls(camX) {
 }
 // over everything: the chips of stone, and the power bar ("test your might")
 function r3DrawMight() {
+  if (region.room && region.room.id === "tribes") r3TrialBanner();
   if (r3.caughtT > 0) { const k = 1 - Math.abs(r3.caughtT - R3.SNEAK.CAUGHT_FADE / 2) / (R3.SNEAK.CAUGHT_FADE / 2); ctx.fillStyle = `rgba(0,0,0,${k})`; ctx.fillRect(0, 0, W, H); }
   for (const q of r3.chips) { ctx.globalAlpha = Math.max(0, 1 - q.t / q.life); ctx.fillStyle = "#e3d3b0"; ctx.fillRect(q.x - camX - q.r / 2, q.y - camY - q.r / 2, q.r, q.r); }
   ctx.globalAlpha = 1;
@@ -606,6 +710,7 @@ function r3DrawMight() {
 
 function r3Draw(camX) {
   const r = region.room; if (!r) return;
+  if (r.id === "tribes") r3TrialDraw(camX);
   const d = david, idle = !r3.might && !region.script.length && !(dialog && dialog.t > 0) && d.onGround;
   if (idle && r.id === "nob" && !hasSkill("heavySword") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);

@@ -3298,6 +3298,7 @@ function hurtDavid(fromX, why = "", still = false) {   // why: what hurt him (th
 // a pit costs a heart and puts him back on the last solid ground he stood on (it's never back to the start)
 function pitFall() {
   if (typeof leapFall === "function" && leapFall()) return;   // leap.js: no heart lost at the Leap of Faith
+  if (typeof REGION_ON !== "undefined" && REGION_ON && REGION.pitFall && REGION.pitFall()) return;   // a region's own pit (nobgath.js: the Hall of the Tribes)
   const d = david;
   d.vx = d.vy = 0;
   if (d.hearts <= HPU) { d.x = (d.safe || checkpoint).x; d.y = (d.safe || checkpoint).y; d.inv = 0; d.hearts = 0.01; hurtDavid(d.x); return; }
