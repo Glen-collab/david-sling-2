@@ -7,8 +7,10 @@ const LAND_IMG = "../assets/maps/land_map.jpg";
 const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself, in story order)
   { id: "gibeah", name: "Gibeah", world: "World 1", x: 738, y: 300, stage: "9-5", after: null },
   { id: "ramah", name: "Ramah", world: "World 2", x: 719, y: 384, stage: "9-6", after: "gibeah" },   // 1 Samuel 19:18: David fled to Samuel at Ramah
-  { id: "nob", name: "Nob", world: "World 3", x: 684, y: 125, stage: null, after: "ramah" },
-  { id: "gath", name: "Gath", world: "World 3", x: 219, y: 356, stage: null, after: "nob" },
+  // (11-11) World 3 is one stage (nobgath.js, saved as "nobgath"): Nob's done with the bread and the sword, then Gath
+  //  shows; choosing Gath starts on the road down to it
+  { id: "nob", name: "Nob", world: "World 3", x: 684, y: 125, stage: "9-7", key: "nobgath", done: "r3_sword", room: "nobroad", after: "ramah" },
+  { id: "gath", name: "Gath", world: "World 3", x: 219, y: 356, stage: "9-7", key: "nobgath", room: "gathroad", after: "nob" },
   { id: "adullam", name: "Adullam", world: "World 4", x: 525, y: 281, stage: null, after: "gath" },
   { id: "keilah", name: "Keilah", world: "World 4", x: 512, y: 350, stage: null, after: "adullam" },
   { id: "ziph", name: "Ziph", world: "World 5", x: 610, y: 565, stage: null, after: "keilah" },
@@ -22,8 +24,9 @@ const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself
 const LAND_ALL = new URLSearchParams(location.search).has("landall");
 const LAND_TUNE = { RING: 26, REVEAL: 2.2, GOLD: "#ffd76a", INK: "#3b2a18" };
 // a region's done once its gate's been opened (its own save, region.js's key for it)
-function landDone(id) {
-  try { const s = JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + id) || "{}"); return (s.taken || []).includes("g_exit_open"); } catch (e) { return false; }
+function landDone(id) {   // (a place in a stage shared with another: its own save key and the thing that finishes it)
+  const p = LAND_PLACES.find(q => q.id === id) || { id }, key = p.key || p.id, flag = p.done || "g_exit_open";
+  try { const s = JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + key) || "{}"); return (s.taken || []).includes(flag); } catch (e) { return false; }
 }
 function landSeen() { try { return JSON.parse(localStorage.getItem(slotKey("david2Land")) || "[]"); } catch (e) { return []; } }
 function landSeenAdd(id) { const s = landSeen(); if (!s.includes(id)) { s.push(id); try { localStorage.setItem(slotKey("david2Land"), JSON.stringify(s)); } catch (e) {} } }
@@ -53,7 +56,11 @@ const LandMap = {
     if (pressed("right") || pressed("down")) { this.sel = (this.sel + 1) % n; if (typeof chime === "function") chime(1); }
     if (pressed("a")) {
       const p = this.places[this.sel];
-      if (p.stage) { this.active = false; startStage(p.stage); }
+      if (p.stage) {
+        this.active = false;
+        try { if (p.room) sessionStorage.setItem("david2StartRoom", p.room); else sessionStorage.removeItem("david2StartRoom"); } catch (e) {}   // (region.js regionStartCol)
+        startStage(p.stage);
+      }
       else { this.msg = `${p.name} is the next stop. It isn't built yet.`; this.msgT = 3; }
     }
   },

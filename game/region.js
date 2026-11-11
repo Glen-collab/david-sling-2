@@ -401,6 +401,13 @@ function regionAdd(list, id) { if (!regionHas(list, id)) { region.save[list].pus
 // where David starts: the olive press he last saved at, or the start of the fields
 function regionStartCol() {   // the olive press you last saved at
   const s = region.save, home = roomById(REGION.start || "fields").c0 + 3;
+  // (11-11) picked from the land map (a place that's one part of a stage: Gath in World 3): start in its room, unless
+  //  the olive press he last saved at is already in or past it
+  let pick = null; try { pick = sessionStorage.getItem("david2StartRoom"); sessionStorage.removeItem("david2StartRoom"); } catch (e) {}
+  if (pick && REGION.rooms.some(r => r.id === pick)) {
+    const at = s.atRoom && REGION.rooms.some(r => r.id === s.atRoom) ? REGION.rooms.findIndex(r => r.id === s.atRoom) : -1;
+    if (at < REGION.rooms.findIndex(r => r.id === pick)) return roomById(pick).c0 + 3;
+  }
   if (s.at == null) return home;
   // (11-07: saved by room + offset, so adding rooms doesn't move it. An old save (a bare column): the nearest press to it,
   //  and only if it's close; otherwise the region's start.)
