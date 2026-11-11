@@ -173,6 +173,13 @@ const KIT = {
   // bread table (two rows of six), Goliath's sword wrapped in its cloth, the ephod on its stand, a clay lamp, Gath's gate door
   w3_holy_bread_table2: { w: 611, h: 130 }, w3_holy_bread_loaf: { w: 89, h: 40 }, w3_goliath_sword: { w: 86, h: 210 }, w3_ephod_stand: { w: 132, h: 200 },
   w3_oil_lamp: { w: 60, h: 64 }, w3_gath_door: { w: 226, h: 300 }, w3_gath_door_scribbled: { w: 144, h: 300 },
+  w3_throne_dais: { w: 335, h: 220 },
+  w3_stall: { w: 199, h: 200 }, w3_baskets: { w: 88, h: 110 }, w3_cart: { w: 162, h: 110 }, w3_jar: { w: 105, h: 120 }, w3_clothline: { w: 223, h: 190 }, w3_crates: { w: 146, h: 170 },   // (11-10: his places to hide in Gath's streets)
+  w3_crackwall: { w: 210, h: 260 }, w3_crackopen: { w: 233, h: 260 },   // (11-10: his first cracked wall, whole and smashed open; not used now)
+  "w3_crackwall-1": { w: 210, h: 1040 }, "w3_crackwall-2": { w: 210, h: 1040 }, "w3_crackwall-3": { w: 210, h: 1040 },
+  "w3_crackwall-4": { w: 210, h: 1040 }, "w3_crackwall-5": { w: 210, h: 1040 },
+  w3_hide_alcove: { w: 134, h: 151 }, w3_hide_sacks: { w: 111, h: 165 }, w3_hide_cart: { w: 118, h: 115 },
+  w3_hide_jar: { w: 125, h: 115 }, w3_hide_rug: { w: 114, h: 162 }, w3_hide_wood: { w: 118, h: 77 },   // (11-10: Glen's hiding spots for the streets of Gath)   // (11-10: Glen's five stages: whole, three hits, broken through)
 };
 const KIT_IMG = {};
 function kitImg(n) {
@@ -1123,10 +1130,10 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   const far = roomImg(r.far);
   if (far) {   // (Glen 11-05) outside: Super Mario World layers, the sky far off barely moving, the hills at half speed
     const rel = camX - r.c0 * T, mid = roomImg(r.mid);
-    const tile = (im, p, y, h) => { const w = im.naturalWidth * h / im.naturalHeight, o = -((rel * p) % w + w) % w;
+    const tile = (im, p, y, h, ox = 0) => { const w = im.naturalWidth * h / im.naturalHeight, o = -((rel * p - ox) % w + w) % w;
       for (let x = o; x < W; x += w) ctx.drawImage(im, Math.round(x), y, Math.ceil(w) + 1, h); };
     tile(far, 0.12, 0, H);
-    if (mid) tile(mid, 0.45, r.midY || 0, mid.naturalHeight);
+    if (mid) tile(mid, r.midP ?? 0.45, r.midY || 0, mid.naturalHeight, r.midX || 0);   // (r.midX: px the picture starts in from the room's left: Gath's painted gate on its door)   // (r.midP: a town's own wall, nearly with the room: World 3)
     const near = roomImg(r.near);   // (Glen 11-10: "far, mid and near ground", as Part One) a third layer, nearer and faster, its bottom at nearY (default: the ground line)
     if (near) tile(near, 0.75, (r.nearY ?? GR * T + 20) - near.naturalHeight, near.naturalHeight);
     return true;

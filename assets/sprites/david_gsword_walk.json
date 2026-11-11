@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 298,
+  "frame_h": 328,
+  "ms_per_frame": 104,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 143,
+  "anchor_y": 325,
+  "source": "david_gsword_walk_clip.mp4",
+  "video_frames": [
+    50,
+    52,
+    55,
+    58,
+    60,
+    62,
+    65,
+    68,
+    70,
+    72,
+    75,
+    78
+  ]
+}

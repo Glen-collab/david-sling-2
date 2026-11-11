@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 342,
+  "frame_h": 328,
+  "ms_per_frame": 138,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 199,
+  "anchor_y": 325,
+  "source": "david_gsword_run_clip.mp4",
+  "video_frames": [
+    48,
+    51,
+    55,
+    58,
+    61,
+    64,
+    68,
+    71,
+    74,
+    78
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 274,
+  "frame_h": 326,
+  "ms_per_frame": 108,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 128,
+  "anchor_y": 324,
+  "source": "david_bread_clip1.mp4",
+  "video_frames": [
+    100,
+    103,
+    105,
+    108,
+    110,
+    113,
+    116,
+    118,
+    121,
+    123
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 268,
+  "frame_h": 329,
+  "ms_per_frame": 133,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 130,
+  "anchor_y": 326,
+  "source": "david_gsword_back_clip.mp4",
+  "video_frames": [
+    22,
+    25,
+    28,
+    32,
+    35,
+    38,
+    41,
+    44,
+    48,
+    51
+  ]
+}

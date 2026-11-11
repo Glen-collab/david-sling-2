@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 394,
+  "frame_h": 318,
+  "ms_per_frame": 156,
+  "loop": false,
+  "align": "center",
+  "anchor_x": 197,
+  "anchor_y": 200,
+  "source": "david_gsword_jump_clip.mp4",
+  "video_frames": [
+    68,
+    72,
+    76,
+    80,
+    84,
+    88,
+    92,
+    96,
+    100,
+    104,
+    108,
+    112
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 367,
+  "frame_h": 317,
+  "ms_per_frame": 100,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 195,
+  "anchor_y": 315,
+  "source": "david_sword_clip2.mp4",
+  "video_frames": [
+    13,
+    15,
+    18,
+    20,
+    23,
+    25,
+    27,
+    30,
+    32,
+    35
+  ]
+}

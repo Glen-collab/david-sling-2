@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 366,
+  "frame_h": 340,
+  "ms_per_frame": 138,
+  "loop": false,
+  "align": "center",
+  "anchor_x": 183,
+  "anchor_y": 211,
+  "source": "david_gsword_clipB.mp4",
+  "video_frames": [
+    78,
+    82,
+    85,
+    89,
+    92,
+    96,
+    99,
+    103,
+    106,
+    110
+  ]
+}

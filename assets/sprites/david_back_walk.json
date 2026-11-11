@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 254,
+  "frame_h": 319,
+  "ms_per_frame": 125,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 129,
+  "anchor_y": 318,
+  "source": "david_back_clip.mp4",
+  "video_frames": [
+    91,
+    94,
+    97,
+    100,
+    103,
+    106,
+    109,
+    112,
+    115,
+    118
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "frames": 14,
+  "frame_w": 658,
+  "frame_h": 357,
+  "ms_per_frame": 432,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 227,
+  "anchor_y": 353,
+  "source": "david_gsword_sling_clip.mp4",
+  "video_frames": [
+    1,
+    12,
+    23,
+    34,
+    45,
+    56,
+    67,
+    79,
+    90,
+    101,
+    112,
+    123,
+    134,
+    145
+  ]
+}

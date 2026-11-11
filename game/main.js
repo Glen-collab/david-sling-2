@@ -588,6 +588,7 @@ const SKILL_NAMES = { aimUp: "Aim up: hold Up as you throw", harpCall: "The harp
   quick: "Quick release: tap B twice, quick, for two stones",
   leap: "The scout's leap: press A again in the air to jump again",
   rope: "Michal's rope: climb ropes, and go down wells (Up at one)",   // (Part Two, World 2)
+  heavySword: "Goliath's sword: Up by a cracked wall, then mash A and B",   // (Part Two, World 3)
   bow: "Jonathan's bow: hold Up and press {sword} to shoot an arrow, far" };   // leap: Tobi, 5-2   // quick: Gera, 4-2
 const skills = new Set();
 try { for (const k of JSON.parse(localStorage.getItem(slotKey("david2Progress")) || "{}").skills || []) skills.add(k); } catch (e) {}

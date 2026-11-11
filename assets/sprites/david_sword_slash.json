@@ -1,11 +1,21 @@
 {
-  "frames": 6,
-  "frame_w": 272,
-  "frame_h": 270,
-  "ms_per_frame": 55,
+  "frames": 8,
+  "frame_w": 445,
+  "frame_h": 327,
+  "ms_per_frame": 115,
   "loop": false,
   "align": "feet",
-  "anchor_x": 103,
-  "anchor_y": 268,
-  "source": "david2"
+  "anchor_x": 251,
+  "anchor_y": 324,
+  "source": "david_sword_clip1.mp4",
+  "video_frames": [
+    1,
+    4,
+    7,
+    10,
+    13,
+    16,
+    19,
+    22
+  ]
 }
