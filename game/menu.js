@@ -273,6 +273,7 @@ const Menu = {
     if (this.name.length < NAME_MAX && Math.floor(this.t * 2) % 2 === 0) { ctx.fillStyle = "#ffd166"; ctx.fillRect(W / 2 + nw / 2 + 4, 250, 28, 4); }
     const cell = 72, gx0 = W / 2 - 4 * cell, gy0 = 340;
     ctx.fillStyle = "rgba(25,14,6,0.72)"; ctx.beginPath(); ctx.roundRect(W / 2 - 360, gy0 - 56, 720, 4 * cell + 34, 16); ctx.fill();
+    keyWordsOff = true;   // (these are letters to pick, not buttons: main.js keyWords must leave "A" an A)
     NAME_GRID.forEach((r, y) => r.forEach((c, x) => {
       const on = y === this.gy && x === this.gx, wide = r.length === 2;
       const cx = wide ? W / 2 + (x ? 140 : -140) : gx0 + x * cell, cy = gy0 + y * cell, bw = wide ? 240 : 60;
@@ -280,6 +281,7 @@ const Menu = {
       ctx.fillStyle = on ? "#ffe08a" : "#f3ead8"; ctx.font = `${on ? "bold " : ""}${wide || c === " " ? 23 : 32}px sans-serif`;
       ctx.fillText(c === "back" ? "◀ Take one back" : c === "done" ? "Done ✓" : c === " " ? "space" : c, cx, cy);
     }));
+    keyWordsOff = false;
     if (this.msg) { ctx.fillStyle = "#ffd166"; ctx.font = "17px sans-serif"; ctx.fillText(this.msg, W / 2, gy0 + 4 * cell + 8); }
   },
   update(dt) {
@@ -337,7 +339,7 @@ const Menu = {
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
     ctx.textAlign = "center";
-    if (this.screen === "controls") { this.drawControls(); ctx.restore(); return; }
+    if (this.screen === "controls") { keyWordsOff = true; try { this.drawControls(); } finally { keyWordsOff = false; } ctx.restore(); return; }   // (written for each controller already)
     if (this.screen === "name") { this.drawName(); this.drawHint(); ctx.restore(); return; }
     const title = this.screen === "title" || (this.screen === "confirm");
     if (title) {
@@ -405,10 +407,10 @@ const Menu = {
   drawHint() {
     ctx.textAlign = "center"; ctx.fillStyle = "rgba(10,6,2,0.9)"; ctx.fillRect(0, H - 46, W, 46);
     ctx.fillStyle = "rgba(255,240,215,0.8)"; ctx.font = "15px sans-serif";
-    ctx.fillText(this.hint(), W / 2, H - 18);
+    keyWordsOff = true; ctx.fillText(this.hint(), W / 2, H - 18); keyWordsOff = false;   // (the hint has its own keyboard words)
   },
   hint() {
-    const k = SETTINGS.controller === "keyboard";
+    const k = controllerKind() === "keyboard";
     if (this.screen === "name") return k ? "Arrows: choose a letter    Z: add it    X: take one back    Enter: done" : "D-pad: choose a letter    A: add it    B: take one back    Start: done";
     return k ? "Arrows: choose    Left / Right: change    Z or Enter: OK    X: back" : "D-pad: choose    Left / Right: change    A: OK    B: back";
   },

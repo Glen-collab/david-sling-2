@@ -235,7 +235,7 @@ const keys = {};
 addEventListener("keydown", e => {
   // playing on the keyboard: any key closes the controller setup (M or F2 opens it again)
   if (setup.active && e.code !== "KeyM" && e.code !== "F2") { setup.active = false; toast("Using the keyboard. Press M to set up a controller."); return; }
-  keys[e.code] = true;
+  keys[e.code] = true; lastInput = "keyboard";
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
 });
 addEventListener("keyup", e => { keys[e.code] = false; });
@@ -368,7 +368,18 @@ function updateSetup(dt) {
 addEventListener("gamepadconnected", e => { if (!padMaps[e.gamepad.id] && !setup.active) setTimeout(() => startSetup(e.gamepad.index), 300); });
 // Holding Select + Start on the controller (default layout) for 2 seconds also starts it.
 const comboT = {};   // per controller (the lamb's can be set up the same way)
+// (Glen 2026-11-11) the words on screen follow what the player last pressed: a key -> the keys' names, player 1's
+// controller (a button, or the D-pad pushed well over) -> the controller's. Player 2's controller (the lamb) doesn't count.
+let lastInput = null;   // null till something's pressed: then the Settings choice (and whether a controller is plugged in) decides
+let padRest = null;   // player 1's buttons and axes as last seen: only a change counts (some pads rest an axis at -1)
+function notePadInput() {
+  const p = readPads()[0]; if (!p) { padRest = null; return; }
+  const now = { b: p.buttons.map(b => !!(b && b.pressed)), a: [...p.axes] };
+  if (padRest && (now.b.some((x, i) => x && !padRest.b[i]) || now.a.some((x, i) => Math.abs(x - (padRest.a[i] ?? x)) > 0.6))) lastInput = "pad";
+  padRest = now;
+}
 function checkCombo(dt) {
+  notePadInput();
   if (setup.active) { for (const k in comboT) comboT[k] = 0; return; }
   for (const p of readPads()) {
     const m = mapFor(p);
@@ -384,6 +395,7 @@ function toast(t) { toastText = keyText(t); toastTime = Math.max(4, t.split(" ")
 // "{ROLL}" / "{roll}" in what people say: the roll on the controller in use. A SNES pad has its own roll button (X); an
 // NES pad only has Down + A. The controller picked in the settings, or the pad that's plugged in if it says keyboard.
 function controllerKind() {
+  if (lastInput === "keyboard") return "keyboard";
   const c = SETTINGS.controller;
   if (c !== "keyboard") return c;
   const p = readPad(); if (!p) return "keyboard";
@@ -395,6 +407,43 @@ function keyText(s) {
   const sword = controllerKind() === "keyboard" ? "V" : "X";
   s = s.replace(/\{sword\}/g, sword);
   return s.replace(/\{ROLL\}/g, roll[0].toUpperCase() + roll.slice(1)).replace(/\{roll\}/g, roll);
+}
+
+// (Glen 2026-11-11) On the keyboard, the game's button words read as the keys: "A: next" -> "Z: next", "hold B" -> "hold X".
+// The keys are Z X C V: A = Z, B = X, Select = C, the SNES X (roll) = V, Start = Enter, the D-pad = the arrows.
+// Done once, where text is drawn (fillText / strokeText), so every prompt, caption, toast and line of talk gets it.
+// Only a button word in a button place is changed ("press A", "A:", "A again:", "Down + A", "A or B", "(A)"), never
+// "A lion came" or "a continue". Text already written for the keyboard (the controls page, the H help) sets
+// keyWordsOff while it draws.
+const KEY_WORDS = { A: "Z", B: "X", X: "V", Y: "C", Select: "C", Start: "Enter", "D-pad": "Arrows" };
+let keyWordsOff = false;
+let kbCache = { t: -1e9, kb: true };
+function onKeyboard() {   // (asked many times a frame: the controller is looked up at most 4 times a second)
+  const now = performance.now();
+  if (now - kbCache.t > 250) { let kb = true; try { kb = controllerKind() === "keyboard"; } catch (e) {} kbCache = { t: now, kb }; }
+  return kbCache.kb;
+}
+// a button's letter for the throw code's boxes, Jesse's lesson and the harp's notes: on the keyboard, its key (B -> X, A -> Z).
+// (Only there: a lone "A" elsewhere, like on the name screen, is just a letter.)
+function btnLetter(table, k) { const v = table[k]; return onKeyboard() && /^(A|B|X|Y)$/.test(v) ? KEY_WORDS[v] : v; }
+function keyWords(s) {
+  if (keyWordsOff || typeof s !== "string" || !/\b(A|B|X|Y|Select|Start)\b|D-pad/.test(s) || !onKeyboard()) return s;
+  if (/player 2/i.test(s)) return s;   // (player 2 is always on a controller: Jonathan's "B shoots his bow")
+  return s.replace(/D-pad/g, "Arrows").replace(/\b(A|B|X|Y|Select|Start)\b/g, (b, _, i, str) => {
+    const before = str.slice(0, i), after = str.slice(i + b.length);
+    const isButton = /\b(press|hold|tap|mash|let go of)\s$/i.test(before)          // "press A", "Hold B"
+      || /^( again| twice)?:/.test(after)                                          // "A: next", "A again: skip"
+      || /\+\s?$/.test(before) || /^\s?\+/.test(after)                             // "Down + A", "A + B"
+      || /^( or| and|,) (A|B|X|Y|Select|Start)\b/.test(after) || /\b(A|B|X|Y|Select|Start)(,| or| and) $/.test(before)   // "A or B", "mash A and B", "Select, A or B"
+      || (/\((or )?$/.test(before) && /^\)/.test(after));                          // "(A)", "Up (or X)"
+    return isButton ? KEY_WORDS[b] : b;
+  }).replace(/\b(Enter|Arrows|[ZXCV]) \(or \1\)/g, "$1");   // ("Press Start (or Enter)" -> "Press Enter")
+}
+for (const C of [CanvasRenderingContext2D.prototype]) {
+  const fill = C.fillText, stroke = C.strokeText, measure = C.measureText;
+  C.fillText = function (t, ...r) { return fill.call(this, keyWords(t), ...r); };
+  C.strokeText = function (t, ...r) { return stroke.call(this, keyWords(t), ...r); };
+  C.measureText = function (t) { return measure.call(this, keyWords(t)); };   // (so wrapping and boxes fit the words shown)
 }
 
 // ============================================================================
@@ -3111,7 +3160,8 @@ function drawHUD() {
   if (TRIAL && typeof drawTrialClock === "function") drawTrialClock();   // trial.js
   drawToastAndSetup();
 }
-function drawHelp() {
+function drawHelp() { keyWordsOff = true; try { drawHelpText(); } finally { keyWordsOff = false; } }   // (written for the keyboard already)
+function drawHelpText() {
   ctx.font = "15px sans-serif";
   const lines = WORLD === 9 ? [   // Part Two (engedi.js)
     "Arrows: move (hold to run)   Z / Space = A: jump, again in the air = flip   Down: crouch (walk crouched to sneak)",
@@ -3146,6 +3196,7 @@ function drawToastAndSetup() {
     tl.forEach((l, i) => ctx.fillText(l, W / 2, H - 40 - bh + 28 + i * 24)); ctx.textAlign = "left";
   }
   if (setup.active) {
+    keyWordsOff = true;   // (setup names the controller's own buttons)
     ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.font = "34px sans-serif";
     const lambPad = readPads()[1];
@@ -3157,6 +3208,7 @@ function drawToastAndSetup() {
     ctx.fillText(`(${setup.step + 1} of ${BUTTONS.length})   Esc on the keyboard to cancel`, W / 2, H / 2 + 40);
     if (setup.step >= NES_BUTTONS) ctx.fillText("No X or Y (an NES controller)? Press START to finish.", W / 2, H / 2 + 70);
     ctx.textAlign = "left";
+    keyWordsOff = false;
   }
 }
 

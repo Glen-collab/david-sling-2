@@ -129,7 +129,7 @@ function drawArrowKey(b, x, y, s, fill, line) {
   ctx.fillStyle = "rgba(20,14,8,0.75)"; ctx.strokeStyle = line; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.roundRect(-s / 2, -s / 2, s, s, 10); ctx.fill(); ctx.stroke();
   ctx.fillStyle = fill;
-  if (b === "a" || b === "b") { ctx.font = `bold ${s * 0.55}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(b.toUpperCase(), 0, 2); }
+  if (b === "a" || b === "b") { ctx.font = `bold ${s * 0.55}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(btnLetter({ a: "A", b: "B" }, b), 0, 2); }   // (on the keyboard: Z, X)
   else {
     ctx.rotate({ up: 0, right: Math.PI / 2, down: Math.PI, left: -Math.PI / 2 }[b]);
     const k = s * 0.3; ctx.beginPath(); ctx.moveTo(0, -k * 1.1); ctx.lineTo(k, k * 0.2); ctx.lineTo(k * 0.38, k * 0.2); ctx.lineTo(k * 0.38, k);
