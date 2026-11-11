@@ -5304,6 +5304,30 @@ window.SPRITE_DATA = {
   "ay": 237,
   "align": "feet"
  },
+ "nob_bread_eat": {
+  "src": "../assets/sprites/nob_bread_eat.png",
+  "frames": 24,
+  "w": 480,
+  "h": 283,
+  "ms": 278,
+  "loop": false,
+  "pingpong": false,
+  "ax": 57,
+  "ay": 280,
+  "align": "feet"
+ },
+ "nob_bread_give": {
+  "src": "../assets/sprites/nob_bread_give.png",
+  "frames": 16,
+  "w": 478,
+  "h": 282,
+  "ms": 214,
+  "loop": false,
+  "pingpong": false,
+  "ax": 62,
+  "ay": 279,
+  "align": "feet"
+ },
  "nob_priest1_talk": {
   "src": "../assets/sprites/nob_priest1_talk.png",
   "frames": 12,

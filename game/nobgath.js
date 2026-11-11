@@ -40,6 +40,9 @@ const R3 = {
   },
   CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45,
     WHIRL: [4, 7], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-7 whirl, 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
+  // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
+  //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
+  BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131 },   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -79,11 +82,11 @@ const NOBGATH = {
   build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
-const r3 = { t: 0, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0 };
+const r3 = { t: 0, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null };
 const r3Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function r3Tell(k, text) { if (!r3.told[k]) { r3.told[k] = true; toast(text); } }
 // someone standing in a room: [sprite, x, facing, size]; drawn by r3Draw, looping their sheet
-function r3Person(room, name, x, facing = 1, k = R3.NPC_K) { r3.people.push({ room, name, x, facing, k, ph: Math.random() * 3 }); }
+function r3Person(room, name, x, facing = 1, k = R3.NPC_K, tag = null) { r3.people.push({ room, name, x, facing, k, ph: Math.random() * 3, tag }); }
 function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces standing on the ground (x: its middle)
   const k = KIT[n]; region.props.push({ room, n, x: x - k.w * s / 2, y: y ?? FOOT - k.h * s, s, back: true });
 }
@@ -92,7 +95,7 @@ function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces
 // building
 // ---------------------------------------------------------------------------
 function r3Build(R) {
-  r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0;
+  r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null;
 
   // -- The Road to Nob (21:1): out of Gibeah's country, fields and hills, on to the priests' town
   let c = R("nobroad");
@@ -121,14 +124,16 @@ function r3Build(R) {
     r3Person("nob", "nob_priest2_walk", X(20), 1);
     // (the painted court: the altar about columns P+11-17, a table P+24-33, another P+35-44, crates P+45-51; Glen's pieces in front)
     r3Prop("nob", "w3_holy_bread_table2", X(P + 28), R3.TABLE_K);
+    region.props[region.props.length - 1].draw = () => !!r3.scene;   // (out of the way while the clip's own table is there)
     r3Prop("nob", "w3_ephod_stand", X(P + 40));
     if (!hasSkill("heavySword")) { r3Prop("nob", "w3_goliath_sword", X(P + 37) + 10); r3.swordProp = region.props[region.props.length - 1]; }
     r3.swordX = X(P + 37) + 10;
     r3Prop("nob", "w3_oil_lamp", X(P + 43));
-    r3Person("nob", "ahimelech_idle", X(P + 34), -1);
+    r3Person("nob", "ahimelech_idle", X(P + 34), -1, R3.NPC_K, "ahimelech");
+    r3.breadX = X(P + 34); r3.breadAt = X(P + R3.BREAD.TRIGGER);
     r3Person("nob", "nob_priest2_lamp", X(P + 20), 1);
     r3Person("nob", "nob_priest1_talk", X(P + 43), -1);
-    r3Person("nob", "doeg_idle", X(P + 6), 1);   // (21:7: "detained before the LORD")
+    if (!r3Has("r3_bread")) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
     rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "stair_down");
     oliveRow(c + 92, 16, 5); rRelic("r3_stone_nob", "stone", c + 100, 16);
   }
@@ -243,7 +248,7 @@ function r3Enter(r) {
   if (r.id === "gath") r3Tell("gath", "Gath, Goliath's own city. Achish's men are watching the road.");
 }
 function r3Update(dt) {
-  r3.t += dt;
+  r3.t += dt; if (r3.scene) r3.scene.t += dt;
   const d = david, r = region.room; if (!r) return;
   for (const q of r3.chips) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 1400 * dt; }
   r3.chips = r3.chips.filter(q => q.t < q.life);
@@ -251,6 +256,8 @@ function r3Update(dt) {
   if (r3.might) { r3MightUpdate(dt); return; }
   if (r3SneakUpdate(dt)) return;
   const free = !region.script.length && region.wait <= 0 && !region.trans && !(dialog && dialog.t > 0) && d.onGround && d.deadT <= 0;
+  // Nob: the holy bread, the first time he walks up to Ahimelech (21:1-6)
+  if (r.id === "nob" && !r3Has("r3_bread") && free && d.x > r3.breadAt && d.x < r3.breadX) { r3BreadScene(); return; }
   // Nob: Goliath's sword, wrapped in a cloth behind the ephod (21:8-9)
   if (r.id === "nob" && !hasSkill("heavySword") && Math.abs(d.x - r3.swordX) < 2.5 * T) {
     r3Tell("sword", "Something long, wrapped in a cloth, behind the ephod. Up: ask the priest.");
@@ -267,6 +274,25 @@ function r3Update(dt) {
 // ---------------------------------------------------------------------------
 // Goliath's sword (21:8-9) and the cracked walls ("test your might")
 // ---------------------------------------------------------------------------
+function r3BreadScene() {
+  const B = R3.BREAD, give = SPR.nob_bread_give, eat = SPR.nob_bread_eat;
+  const long = give && eat ? (give.frames * give.ms + eat.frames * eat.ms) / 1000 : 0;
+  david.facing = 1;
+  rPlay([
+    { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
+    { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
+    { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
+    { fn() { if (long) { r3.scene = { id: "bread", t: 0 }; region.pose = { hide: true }; } }, wait: long },
+    { fn() {
+      r3.scene = null; region.pose = null;
+      r3.people = r3.people.filter(p => p.tag !== "doeg");   // (Doeg's gone: off to Saul, 22:9)
+      david.x = r3.breadX - B.DAVID_DX * SCALE * B.K; david.facing = -1;   // (where he stands in the clip)
+      david.hearts = david.maxHearts;
+      regionAdd("taken", "r3_bread");
+      toast("The holy bread (1 Samuel 21:6). Strength restored. And the man who was watching is gone...");
+    } },
+  ]);
+}
 function r3SwordScene() {
   david.facing = 1;
   rPlay([
@@ -519,7 +545,13 @@ function r3Draw(camX) {
   if (idle && r.id === "nob" && !hasSkill("heavySword") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);
   r3DrawSneak(camX, idle);
+  if (r3.scene && r3.scene.id === "bread") {   // his clip, the three of them; Ahimelech's head on his own spot
+    const g = SPR.nob_bread_give, e = SPR.nob_bread_eat, tg = g.frames * g.ms / 1000, t = r3.scene.t;
+    const [n, f] = t < tg ? ["nob_bread_give", Math.floor(t * 1000 / g.ms)] : ["nob_bread_eat", Math.min(e.frames - 1, Math.floor((t - tg) * 1000 / e.ms))];
+    drawSprite(n, Math.min(SPR[n].frames - 1, f), r3.breadX - camX, GR * T, -1, R3.BREAD.K);
+  }
   for (const p of r3.people) {
+    if (r3.scene && (p.tag === "ahimelech" || p.tag === "doeg")) continue;   // (they're in the clip)
     if (p.room !== r.id || !SPR[p.name]) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     drawSprite(p.name, frameOf(p.name, r3.t + p.ph), x, p.y ?? GR * T, p.facing, p.k);
