@@ -38,7 +38,8 @@ const R3 = {
     NEAR: 14,          // px past a hiding piece's edge that still counts as behind it
     CAUGHT_FADE: 1.2,  // seconds of the fade back to the gate
   },
-  CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45 },   // the sword on his back: run frame time, the last jump frame used, landing frame time
+  CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45,
+    WHIRL: [4, 7], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-7 whirl, 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -317,7 +318,7 @@ function r3MightUpdate(dt) {
 function r3DrawDavid(d, x, y) {
   const m = r3.might;
   if (r3.inDoor) {   // in the alcove, his back to the street, in its shadow
-    const n = hasSkill("heavySword") && SPR.david_gsword_back_walk ? "david_gsword_back_walk" : "david_back_walk"; if (!SPR[n]) return false;
+    const n = "david_back_walk"; if (!SPR[n]) return false;   // (Glen 11-11: the cloaked one, sword or not, so he looks the same)
     ctx.save(); ctx.filter = "brightness(0.62)"; drawSprite(n, 0, x, y, 1, 0.92); ctx.restore(); return true;
   }
   if (!m) return r3DrawCarry(d, x, y);
@@ -414,8 +415,9 @@ function r3DrawSneak(camX, idle) {
 // (Glen 11-10) with Goliath's sword, it's on his back: his walk, run, jump, flip and landing clips. Standing still (no
 //  (Glen 11-10, his straight-up jump and standing clips too)
 function r3DrawCarry(d, x, y) {
-  if (!hasSkill("heavySword") || d.throwT >= 0 || d.swordT >= 0 || d.shield || (typeof w9 !== "undefined" && w9.pose)) return false;   // (the sling, his sword, his shield, a scene: drawn as usual)
+  if (!hasSkill("heavySword") || d.swordT >= 0 || d.shield || (typeof w9 !== "undefined" && w9.pose)) return false;   // (his sword, his shield, a scene: drawn as usual)
   const K = R3.GSWORD_K, t = d.t, mid = y - d.h / 2 - 6;   // (the in-air sheets are centered, like his own)
+  if (d.throwT >= 0) return d.state !== "roll" && d.state !== "flip" && r3DrawCarryThrow(d, x, y, K);
   const has = n => !!SPR[n], one = (n, ms) => Math.min(SPR[n].frames - 1, Math.floor(t * 1000 / ms));
   switch (d.state) {
     case "idle": if (!has("david_gsword_idle")) return false;
@@ -433,6 +435,38 @@ function r3DrawCarry(d, x, y) {
       drawSprite("david_gsword_land", one("david_gsword_land", R3.CARRY.LAND_MS), x, y, d.facing, K); return true;
   }
   return false;
+}
+// (Glen 11-11) the sling with the sword on his back: charging on the run (his legs keep going, the sling whirling), or
+//  standing (and in the air, and the throw from a run): the whirl, then the fling on the frame the stone leaves
+const R3_RUN_SLING_STONE = [[-6, 231], [132, 195], [-51, 203], [115, 206], [-78, 213], [96, 214], [-84, 196], [108, 208], [-36, 216], [130, 200]];
+function r3DrawCarryThrow(d, x, y, K) {
+  const C = R3.CARRY, run = "david_gsword_run_sling", st = "david_gsword_sling_throw";
+  let gx, gy;
+  if (d.charging && d.onGround && Math.abs(d.vx) > TUNE.RUN_THROW_SPEED && SPR[run]) {
+    const i = frameOf(run, d.t * Math.max(0.7, Math.abs(d.vx) / TUNE.RUN_SPEED));
+    drawSprite(run, i, x, y, d.facing, K);
+    const p = R3_RUN_SLING_STONE[i] || R3_RUN_SLING_STONE[0], sc = SCALE * K;
+    gx = x + d.facing * p[0] * sc; gy = y - p[1] * sc;
+  } else {
+    if (!SPR[st]) return false;
+    let i;
+    if (d.charging) i = C.WHIRL[0] + Math.floor(d.charge * 1000 / C.WHIRL_MS) % (C.WHIRL[1] - C.WHIRL[0] + 1);
+    else {   // the throw: the whirl to the fling by the moment main.js lets the stone go, then on to standing
+      const dur = d.runThrow ? TUNE.RUN_THROW_TIME : TUNE.THROW_TIME, rel = (d.runThrow || d.aimingUp ? 9.5 : 7) / 12;
+      const u = Math.min(1, d.throwT / dur);
+      i = u < rel ? C.WHIRL[0] + Math.floor(u / rel * (C.FLING - C.WHIRL[0])) : C.FLING + Math.floor((u - rel) / (1 - rel) * (C.LAST - C.FLING + 0.99));
+      i = Math.min(C.LAST, i);
+    }
+    drawSprite(st, i, x, y, d.facing, K);
+    gx = x - d.facing * 8; gy = y - 230 * SCALE * K;   // (whirling over his head)
+  }
+  if (d.charging && d.charge >= TUNE.CHARGE_TIME && hasSkill("charge")) {   // the gold glow, as without the sword
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    const g = ctx.createRadialGradient(gx, gy, 2, gx, gy, 30);
+    g.addColorStop(0, "rgba(255,215,100,0.85)"); g.addColorStop(1, "rgba(255,180,40,0)");
+    ctx.fillStyle = g; ctx.fillRect(gx - 34, gy - 34, 68, 68); ctx.restore();
+  }
+  return true;
 }
 // the walls (behind David): Glen's five stages (11-10), one more broken with each hit: 1 whole, 2-4 a hit each,
 //  5 broken through (or straight to 5 with a gold swing). Whole stage 1 repeats above it on up the shaft
