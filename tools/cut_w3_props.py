@@ -147,3 +147,16 @@ for side in ("L", "R"):
 led.sort(key=lambda q: -q["top"])
 json.dump({"w": Ww, "h": Hh, "ledges": led}, open(os.path.join(OUT, "w3_climbtree_tall.json"), "w"), indent=1)
 print("tall ledges", [(q["side"], q["top"], q["x0"], q["x1"]) for q in led])
+
+# (Glen 11-12) Achish's palace door and Goliath's house (1792 x 1008 pictures: their own boxes, no F) and his rope bridge
+def piece_raw(rgba, box):
+    p = rgba[box[1]:box[3], box[0]:box[2]].copy(); m = p[..., 3] > 25; ys, xs = np.where(m)
+    return p[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+save(piece_raw(key("palace_door.jpg"), (200, 20, 1600, 960)), "w3_palace_door", 0.4)
+save(piece_raw(key("goliath_door.jpg"), (180, 30, 1640, 940)), "w3_goliath_door", 0.55)
+B = key("rope_bridge.png"); KB = 0.25; info = {}
+for name, box in (("w3_bridge_l", (30, 245, 400, 880)), ("w3_bridge_m1", (470, 370, 935, 885)), ("w3_bridge_m2", (1055, 370, 1550, 880)), ("w3_bridge_r", (1595, 245, 1975, 880))):
+    p, _ = piece(B, box); im = save(p, name, KB); a = np.asarray(im)[..., 3] > 100
+    rows = [y for y in range(a.shape[0]) if a[y].sum() > a.shape[1] * 0.5]   # (the planks: the rows mostly wood)
+    info[name] = {"plank": int(min(rows)) if rows else None}
+print("bridge", info)

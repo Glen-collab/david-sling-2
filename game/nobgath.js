@@ -65,7 +65,10 @@ const R3 = {
   VINE: { EVERY: 3.2, SPEED: 230, BOUNCE: 330, SPIN: 4 },   // the vine balls rolling down the road at him
   LADDER: { FRAME_MS: 140, HIT: 40 },
   TOWER: { SINK: 14, RIM: 26 },   // the tall lookout (w3_towertall): into the ground; its top, where he stands, down from the picture's top
-  COIL: 0.5,         // his rope coiled up (and dropping): its size (the hanging rope is drawn at R3_ROPE.K)   // the rope ladder: each unrolling frame; how close an arrow has to pass the knot
+  COIL: 0.5,
+  // Goliath's yard: his bridge's planks this far down each piece (cut_w3_props.py), the gap broken out of it (px); the dark
+  //  and the fog: how dark at the start and at his door, how thick the fog
+  YARD: { PLANK: { w3_bridge_l: 118, w3_bridge_m1: 103, w3_bridge_m2: 101, w3_bridge_r: 117 }, GAP: 300, DARK0: 0.12, DARK1: 0.5, FOG: 0.3 },         // his rope coiled up (and dropping): its size (the hanging rope is drawn at R3_ROPE.K)   // the rope ladder: each unrolling frame; how close an arrow has to pass the knot
   TREE_SINK: 6,      // the climbing tree, into the ground
   // the swinging ropes (Glen 11-12): their tie (AY, above the top of the screen), length, how far they swing on their own
   //  (A0, radians), the pull of a swing (G), Left/Right pumping it (PUMP), its slowing (DAMP); his hands this far above his
@@ -91,8 +94,12 @@ const NOBGATH = {
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },   // (+ his near layer: sycamore shrubs, a broken jar, a mud-brick stub)
     { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 8, my: 1, mw: 2, left: "gathroad",
       far: "w3/gath/far", mid: "w3/gath/mid.png", midP: 1, midX: 170, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (Glen 11-10: his dunes and sea far off; his walls and gate fixed to the room, the gate on the door at column 22; his broken jar and bricks in front)   // (his city of Gath, one copy the room's width: its own gate is the door in, at column 22)
-    { id: "streets",  name: "The Streets of Gath",   w: 116, bg: "w4_1", mx: 10, my: 1, mw: 3,
+    { id: "streets",  name: "The Streets of Gath",   w: 116, bg: "w4_1", mx: 10, my: 1, mw: 3, right: "giantyard",
       far: "w3/street/far", mid: "w3/street/mid.png", midP: 0.6, midY: -40, near: "w3/street/near.png", nearY: 606, floor: "w3/street/floor.png" },   // (Glen 11-10: his rooftops and sea far off, his houses and awnings, his baskets, jars and sacks in front, their dirt the floor)   // (Glen's street, 11-10, two copies; the sneak: hide behind his stalls and baskets)
+    // (Glen 11-12: "make Goliath's house further back ... challenges and pitfalls ... eerie fog") past the cracked wall at
+    //  the end of the streets: the giant's yard, darker and foggier the further in, his house at the end
+    { id: "giantyard", name: "Goliath's Yard",       w: 96, bg: "w4_1", mx: 10, my: 2, mw: 2, left: "streets", dark: true,
+      far: "w3/street/far", mid: "w3/street/mid.png", midP: 0.6, midY: -40, near: "w3/street/near.png", nearY: 606, floor: "w3/street/floor.png" },
     { id: "court",    name: "The Court of Achish",   w: 48, bg: "w4_4", mx: 13, my: 1, mw: 2,
       strip: "w3/court_strip", floor: "w3/court_floor" },
     { id: "goliath",  name: "Goliath's House",       w: 36, bg: "w4_4", mx: 12, my: 2, mw: 1,
@@ -110,13 +117,15 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  drawFront: camX => r3DrawGuards(camX), holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
+  drawFront: camX => { r3DrawGuards(camX); r3YardFog(camX); }, holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
 const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when the region's built: region.js loads after this file)
   w3_deadtree: { w: 562, h: 382 }, w3_log_l: { w: 189, h: 138 }, w3_log_r: { w: 215, h: 138 }, w3_palm: { w: 362, h: 564 }, w3_palm_b: { w: 343, h: 575 },
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
-  w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 }, w3_climbtree_tall: { w: 466, h: 1354 },
+  w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 },
+  w3_palace_door: { w: 534, h: 357 }, w3_goliath_door: { w: 764, h: 471 },
+  w3_bridge_l: { w: 88, h: 157 }, w3_bridge_m1: { w: 113, h: 126 }, w3_bridge_m2: { w: 120, h: 124 }, w3_bridge_r: { w: 91, h: 156 }, w3_climbtree_tall: { w: 466, h: 1354 },
   w3_ladder_1: { w: 117, h: 165 }, w3_ladder_2: { w: 117, h: 323 }, w3_ladder_3: { w: 108, h: 363 }, w3_ladder_4: { w: 80, h: 397 },
   w3_rope_1: { w: 134, h: 215 }, w3_rope_2: { w: 94, h: 363 }, w3_rope_3: { w: 67, h: 329 }, w3_rope_4: { w: 46, h: 389 } };
 const R3_LADDER_KNOT = [53, 53, 52, 39];   // (w3_ladder.json: each frame's knot, from its left)
@@ -329,6 +338,24 @@ function r3DrawRopeChain(q, camX) {   // his rope picture along the chain: the t
   }
   const a = P[P.length - 2], b = P[P.length - 1]; piece(b, { x: b.x + (b.x - a.x), y: b.y + (b.y - a.y) }, R.BOT, k.h - R.BOT, (k.h - R.BOT) * s);   // (the knot at the end)
   return true;
+}
+// (Glen 11-12: "eerie fog") Goliath's yard: the world darkens the further in (behind David), and fog drifts over everything
+const r3YardK = camX => { const r = region.room; return r && r.id === "giantyard" ? Math.max(0, Math.min(1, (camX + W / 2 - r.c0 * T) / (r.w * T))) : r && r.id === "goliath" ? 1 : -1; };
+function r3YardDark(camX) {
+  const k = r3YardK(camX), Y = R3.YARD; if (k < 0) return;
+  ctx.fillStyle = `rgba(16,12,28,${Y.DARK0 + (Y.DARK1 - Y.DARK0) * k})`; ctx.fillRect(0, camY, W, H);
+}
+function r3YardFog(camX) {
+  const k = r3YardK(camX), Y = R3.YARD; if (k < 0) return;
+  ctx.save(); ctx.fillStyle = `rgba(16,12,28,${0.12 * k})`; ctx.fillRect(0, 0, W, H);
+  const t = r3.t;
+  for (let i = 0; i < 7; i++) {   // big soft wisps drifting low over the ground
+    const x = ((i * 337 + t * (14 + i * 4) - camX * 0.3) % (W + 600) + W + 600) % (W + 600) - 300, y = H * 0.62 + Math.sin(t * 0.3 + i) * 40 + (i % 3) * 50;
+    const g = ctx.createRadialGradient(x, y, 10, x, y, 260); g.addColorStop(0, `rgba(205,205,220,${(0.05 + Y.FOG * k) * 0.55})`); g.addColorStop(1, "rgba(205,205,220,0)");
+    ctx.fillStyle = g; ctx.save(); ctx.translate(x, y); ctx.scale(1.8, 0.55); ctx.translate(-x, -y); ctx.fillRect(x - 300, y - 300, 600, 600); ctx.restore();
+  }
+  const gb = ctx.createLinearGradient(0, H * 0.72, 0, H); gb.addColorStop(0, "rgba(200,200,215,0)"); gb.addColorStop(1, `rgba(200,200,215,${0.08 + Y.FOG * 0.6 * k})`);
+  ctx.fillStyle = gb; ctx.fillRect(0, H * 0.72, W, H * 0.28); ctx.restore();
 }
 function r3SwingDraw(camX) {   // the ropes (his rope picture, turned with the swing)
   const r = region.room; if (!r) return;
@@ -562,16 +589,38 @@ function r3Build(R) {
     rDoor("d_streetin", "streets", c + 3, "door", "d_gathgate"); region.doors[region.doors.length - 1].noArt = true;   // (back out through the gate)
     campfire(c + 7, GR - 1);
     const hide = [["w3_hide_alcove", 14], ["w3_hide_sacks", 23], ["w3_hide_cart", 33], ["w3_hide_jar", 44], ["w3_hide_rug", 54], ["w3_hide_wood", 65],
-      ["w3_hide_alcove", 76], ["w3_hide_sacks", 86], ["w3_hide_jar", 93]];   // (Glen 11-10: his second hiding sheet, each one big enough to crouch behind)
+      ["w3_hide_alcove", 76], ["w3_hide_sacks", 86]];   // (Glen 11-10: his second hiding sheet, each one big enough to crouch behind)
     for (const [n, k] of hide) r3Hide("streets", n, X(k), n === "w3_hide_alcove" ? "door" : "crouch");
     r3Guard("streets", "gath_guard", c + 19, c + 41, -1); r3Guard("streets", "gath_guard", c + 47, c + 71, 1); r3Guard("streets", "gath_elite", c + 74, c + 96, -1);
     r3.streetStart = X(6);
     oliveRow(c + 38, 16, 4); oliveRow(c + 70, 16, 4); rRelic("r3_truth_streets", "truth", c + 48, 16,
       "When I am afraid, I will put my trust in you. In God, whose word I praise, in God I have put my trust. I will not be afraid. (Psalm 56:3-4)");
-    rKitDoor("d_palace", "streets", c + 101, "door", "d_courtin", "w3_gath_door");   // (Achish's house: Glen's carved GATH door)
-    // (Glen 11-10) past the king's door, a cracked wall across the lane: Goliath's sword breaks through to his own house
-    r3Wall("r3_wall_streets", "streets", c + 105, 4);
-    rKitDoor("d_goliath", "streets", c + 112, "door", "d_goliathout", "w3_gath_door");
+    rKitDoor("d_palace", "streets", c + 99, "door", "d_courtin", "w3_palace_door");   // (Achish's palace: Glen's carved doorway, 11-12)
+    // (Glen 11-10) past the king's door, a cracked wall across the lane: Goliath's sword breaks through, on to his yard
+    r3Wall("r3_wall_streets", "streets", c + 108, 4);
+  }
+
+  // -- Goliath's yard (Glen 11-12): a pit, a giant's step, the rope bridge broken in the middle (a swinging rope over the
+  //    gap), thorns, the vine balls rolling down from his house, a second step, and his door (his dark doorway, the giant's
+  //    spear, shield and helmet against it). Darker and foggier the further in (r3YardDark)
+  c = R("giantyard");
+  { const X = k => (c + k) * T, Y = R3.YARD;
+    ground(c, c + 95);
+    rHole("giantyard", c + 8, 4);
+    rTerrace("giantyard", c + 15, 2);
+    rHole("giantyard", c + 27, 29);
+    // the bridge: its post on this side, three plank pieces, the gap, three more, the far post. Its planks level with the ground
+    const seg = (n, x) => { const k = KIT[n]; region.props.push({ room: "giantyard", n, x, y: GR * T - Y.PLANK[n] }); return x + k.w - 4; };
+    const walk = (x0, x1) => { const a = Math.floor(x0 / T), b = Math.ceil(x1 / T); platAt(a, GR * T, b - a); };
+    let x = X(26) + 6; const b0 = x; x = seg("w3_bridge_l", x); x = seg("w3_bridge_m1", x); x = seg("w3_bridge_m2", x); x = seg("w3_bridge_m1", x); walk(b0 + 40, x - 6);
+    const gap0 = x; x += Y.GAP; const gap1 = x;
+    r3Swing("giantyard", (gap0 + gap1) / 2);
+    const b1 = x; x = seg("w3_bridge_m2", x); x = seg("w3_bridge_m1", x); x = seg("w3_bridge_m2", x); const pr = x; x = seg("w3_bridge_r", x); walk(b1 + 6, pr + 40);
+    r3Thorn("giantyard", X(61)); r3Thorn("giantyard", X(64));
+    r3VineZone("giantyard", X(57), X(72));
+    rTerrace("giantyard", c + 67, 1);
+    rKitDoor("d_goliath", "giantyard", c + 85, "door", "d_goliathout", "w3_goliath_door");
+    oliveRow(c + 3, 16, 3); rRelic("r3_stone_yard", "stone", c + 17, onTop(FOOT - 136));
   }
 
   // -- Goliath's house (Glen's picture, 11-10): the giant's bed, his jar, his sandals, his bronze helmet (17:5). A Truth
@@ -608,6 +657,7 @@ function r3Enter(r) {
   if (r.id === "crack") r3Tell("crack", "Under Nob: cracked walls. A heavy sword could break them...");
   if (r.id === "streets") r3Tell("streets", "The streets of Gath. Achish's men are everywhere: keep out of sight.");
   if (r.id === "goliath") r3Tell("goliath", "Goliath's house. Everything in it is made for a giant.");
+  if (r.id === "giantyard") r3Tell("giantyard", "Goliath's yard. Something heavy has been dragged this way...");
   if (r.id === "gath") r3Tell("gath", "Gath, Goliath's own city. Achish's men are watching the road.");
 }
 function r3Update(dt) {
@@ -1117,7 +1167,7 @@ function r3DrawMight() {
 function r3Draw(camX) {
   const r = region.room; if (!r) return;
   if (r.id === "tribes") r3TrialDraw(camX);
-  r3HangDraw(camX); r3PropsDraw(camX); r3SwingDraw(camX);
+  r3YardDark(camX); r3HangDraw(camX); r3PropsDraw(camX); r3SwingDraw(camX);
   const d = david, idle = !r3.might && !region.script.length && !(dialog && dialog.t > 0) && d.onGround;
   if (idle && r.id === "nob" && !hasSkill("heavySword") && r3Has("r3_hall_key") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);
