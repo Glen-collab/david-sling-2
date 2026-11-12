@@ -63,3 +63,23 @@ All of that is the doors system that's already built (`rKitDoor` with Up), plus 
 - **The 400:** some men are already in the cave when David arrives, and more keep coming as word gets out.
   Side quest: find the newcomers scattered around the cave, greet them (Up), and lead them back to the main camp,
   the other men. A count on the Journal page (like the pomegranates). Going back to the camp shows it getting bigger.
+
+## The map Glen liked (2026-11-12)
+```
+ UPPER (cracks of daylight)   Cave Mouth | The Camp (400) | Lamp Hall (1) | Bat Roost
+ MIDDLE (dark, lamp only)     Rat Warren (1) | The Narrows | Crumbling Ledges (2)      Old Well Shaft (tall, down to the water)
+ LOWER (water, darkest)       Underground River (2) | Flooded Tunnel (swim) | The Deep Pool | Hidden Spring
+```
+(1)/(2): tunnels through the back wall that join rooms not next to each other; on the Journal map, matching numbered arches.
+Order of play: Mouth, Camp (family, 22:1), Lamp Hall (get the lamp), middle (rats, bats, newcomers, oil), Well Shaft down,
+lower (swimming, breath), Hidden Spring (Bethlehem's water, 2 Sam 23), back to a full camp, Gad: on to Keilah.
+
+## The look: far / mid / near, like David 1's caves
+Every cave room gets three painted layers that scroll at different speeds (Super Mario World): **far** = the back wall
+of the chamber (slowest, jpg), **mid** = columns, stalactites, rock shelves (png, see-through), **near** = the rubbly floor and
+rocks in front (png). That's how Part One's caves.js draws its caves (assets/backgrounds/cave_far/mid/near), and the
+stages use the same three layers (main.js BG, BG_LAYER_HEIGHTS).
+**Already in Part Two** (copied with the engine, game/caves.js): the cave layers, Glen's turn-around clips
+`david_turn_away` and `david_walk_away`, `david_light_lamp`, the lamp's circle of light burning olive oil, `bat_hang` / `bat_fly`.
+So the into-the-picture tunnels and the dark with the lamp mostly already exist. New for World 4: a set of layers for each look
+(upper with light shafts, middle, lower with water), the water itself, rats, swimming, the breath meter, the 400.
