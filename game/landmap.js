@@ -9,7 +9,7 @@ const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself
   { id: "ramah", name: "Ramah", world: "World 2", x: 719, y: 384, stage: "9-6", after: "gibeah" },   // 1 Samuel 19:18: David fled to Samuel at Ramah
   // (11-11) World 3 is one stage (nobgath.js, saved as "nobgath"): Nob's done with the bread and the sword, then Gath
   //  shows; choosing Gath starts on the road down to it
-  { id: "nob", name: "Nob", world: "World 3", x: 684, y: 125, stage: "9-7", key: "nobgath", done: "r3_sword", room: "nobroad", after: "ramah" },
+  { id: "nob", name: "Nob", world: "World 3", x: 684, y: 125, stage: "9-7", key: "nobgath", done: ["r3_sword", "r3_gath", "r3_mad", "g_exit_open"], room: "nobroad", after: "ramah" },   // (Glen 11-12: "the main map ... didn't have Gath": with all skills he never picks the sword up; anything past it counts)
   { id: "gath", name: "Gath", world: "World 3", x: 219, y: 356, stage: "9-7", key: "nobgath", room: "gathroad", after: "nob" },
   { id: "adullam", name: "Adullam", world: "World 4", x: 525, y: 281, stage: null, after: "gath" },
   { id: "keilah", name: "Keilah", world: "World 4", x: 512, y: 350, stage: null, after: "adullam" },
@@ -26,7 +26,7 @@ const LAND_TUNE = { RING: 26, REVEAL: 2.2, GOLD: "#ffd76a", INK: "#3b2a18" };
 // a region's done once its gate's been opened (its own save, region.js's key for it)
 function landDone(id) {   // (a place in a stage shared with another: its own save key and the thing that finishes it)
   const p = LAND_PLACES.find(q => q.id === id) || { id }, key = p.key || p.id, flag = p.done || "g_exit_open";
-  try { const s = JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + key) || "{}"); return (s.taken || []).includes(flag); } catch (e) { return false; }
+  try { const s = JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + key) || "{}"); return [].concat(flag).some(f => (s.taken || []).includes(f)); } catch (e) { return false; }
 }
 // (Glen 11-12: "restart that level ... like I don't have the key or the sword, like I'm new to it") Y on the map, twice:
 //  that stage's save gone (rooms, finds, doors), and the skills it taught, so it plays from the beginning
