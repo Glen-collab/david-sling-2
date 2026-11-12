@@ -141,7 +141,8 @@ function r3Build(R) {
     const P = 29;   // (the painted court starts here: his tileable court before and after it)
     ground(c, c + 109);
     campfire(c + 3, GR - 1);
-    oliveRow(c + 8, 16, 5); rBreak("jar", "nob", c + 16, 16);
+    oliveRow(c + 8, 16, 5); rBreak("jar", "nob", c + 27, 16);
+    rKitDoor("d_nobtribes", "nob", c + 16, "door", "d_tribesout", "w3_nob_hallhouse");   // (Glen 11-11: his priests' house, the door into the Hall of the Tribes)
 //    (the olive trees over the strip's joins: gone with the layers, 11-10)   // (olive trees over the two joins, his tileable court to his painted one: the walls are different stone)
     r3Walker("nob", "nob_priest2_walk", X(17), X(26), 60);
     // (the painted court: the altar about columns P+11-17, a table P+24-33, another P+35-44, crates P+45-51; Glen's pieces in front)
@@ -156,9 +157,8 @@ function r3Build(R) {
     r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45);
     r3Person("nob", "nob_priest1_talk", X(P + 43), -1);
     if (!r3Has("r3_bread")) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
-    rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "stair_down");
+    rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "w3_nob_stairhouse");   // (Glen 11-11: his cellar house over the stair down)
     oliveRow(c + 92, 16, 5); rRelic("r3_stone_nob", "stone", c + 100, 16);
-    rKitDoor("d_nobtribes", "nob", c + 104, "door", "d_tribesout", "hall_door");   // (the Hall of the Tribes)
   }
 
   // -- Beneath Nob: the cracked wall, a tall shaft of walkways and ladders (Castlevania). Goliath's sword will break
@@ -527,8 +527,13 @@ function r3DrawDavid(d, x, y) {
     drawSprite(r3.mad.pose, frameOf(r3.mad.pose, r3.mad.t * (0.7 + k * 1.3)), x + sh, y, d.facing, R3.GSWORD_K); return true;
   }
   if (r3.inDoor) {   // in the alcove, his back to the street, in its shadow
-    const n = "david_back_walk"; if (!SPR[n]) return false;   // (Glen 11-11: the cloaked one, sword or not, so he looks the same)
-    ctx.save(); ctx.filter = "brightness(0.62)"; drawSprite(n, 0, x, y, 1, 0.92); ctx.restore(); return true;
+    // (Glen 11-11, his clip) he walks in, turns, and crouches down to hide (david_hide_crouch, once, then held);
+    //  the cloaked back walk's first frame if the sheet's missing
+    const c = SPR.david_hide_crouch;
+    ctx.save(); ctx.filter = "brightness(0.62)";
+    if (c) drawSprite("david_hide_crouch", Math.min(c.frames - 1, Math.floor((r3.t - r3.inDoorAt) * 1000 / c.ms)), x, y, d.facing, 0.92);
+    else if (SPR.david_back_walk) drawSprite("david_back_walk", 0, x, y, 1, 0.92);
+    ctx.restore(); return true;
   }
   if (!m) return r3DrawCarry(d, x, y);
   const n = m.phase === "mash" ? "david_gsword_hold" : m.phase === "smash" ? "david_gsword_smash" : "david_gsword_rest";
@@ -590,7 +595,7 @@ function r3SneakUpdate(dt) {   // true: David's held (in the alcove, or caught)
   }
   const free = !region.script.length && region.wait <= 0 && !region.trans && !(dialog && dialog.t > 0) && d.onGround && d.deadT <= 0;
   const al = r3.hides.find(h => h.room === "streets" && h.kind === "door" && Math.abs(d.x - h.x) < (h.x1 - h.x0) / 2);
-  if (al && free && pressed("up")) { r3.inDoor = al; d.x = al.x; d.vx = 0; return true; }
+  if (al && free && pressed("up")) { r3.inDoor = al; r3.inDoorAt = r3.t; d.x = al.x; d.vx = 0; return true; }
   return false;
 }
 function r3Caught(g) {

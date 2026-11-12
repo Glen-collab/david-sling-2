@@ -1980,6 +1980,18 @@ window.SPRITE_DATA = {
   "ay": 255,
   "align": "feet"
  },
+ "david_hide_crouch": {
+  "src": "../assets/sprites/david_hide_crouch.png",
+  "frames": 20,
+  "w": 307,
+  "h": 318,
+  "ms": 120,
+  "loop": false,
+  "pingpong": false,
+  "ax": 154,
+  "ay": 316,
+  "align": "feet"
+ },
  "david_hit": {
   "src": "../assets/sprites/david_hit.png",
   "frames": 10,

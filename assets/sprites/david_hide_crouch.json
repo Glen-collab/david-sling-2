@@ -1,0 +1,33 @@
+{
+  "frames": 20,
+  "frame_w": 307,
+  "frame_h": 318,
+  "ms_per_frame": 120,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 154,
+  "anchor_y": 316,
+  "source": "david_back_crouch_clip1.mp4",
+  "video_frames": [
+    24,
+    29,
+    35,
+    40,
+    45,
+    51,
+    56,
+    61,
+    67,
+    72,
+    77,
+    82,
+    88,
+    93,
+    98,
+    104,
+    109,
+    114,
+    120,
+    125
+  ]
+}

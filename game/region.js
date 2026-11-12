@@ -171,7 +171,7 @@ const KIT = {
   olive_press: { w: 159, h: 169 }, campfire2: { w: 155, h: 125 },
   // (Glen 11-10) World 3's pieces, assets/rooms/w3/kit (from david-sling-2-art/w3/cut, sized for the game): the holy
   // bread table (two rows of six), Goliath's sword wrapped in its cloth, the ephod on its stand, a clay lamp, Gath's gate door
-  w3_holy_bread_table2: { w: 611, h: 130 }, w3_holy_bread_loaf: { w: 89, h: 40 }, w3_goliath_sword: { w: 86, h: 210 }, w3_ephod_stand: { w: 132, h: 200 },
+  w3_holy_bread_table2: { w: 611, h: 130 }, w3_holy_bread_loaf: { w: 89, h: 40 }, w3_goliath_sword: { w: 86, h: 210 }, w3_ephod_stand: { w: 132, h: 200 }, w3_nob_stairhouse: { w: 709, h: 347 }, w3_nob_hallhouse: { w: 678, h: 433 },   // (11-11: tools/cut_nob_houses.py)
   w3_oil_lamp: { w: 60, h: 64 }, w3_gath_door: { w: 226, h: 300 }, w3_gath_door_scribbled: { w: 144, h: 300 },
   w3_throne_dais: { w: 335, h: 220 },
   w3_stall: { w: 199, h: 200 }, w3_baskets: { w: 88, h: 110 }, w3_cart: { w: 162, h: 110 }, w3_jar: { w: 105, h: 120 }, w3_clothline: { w: 223, h: 190 }, w3_crates: { w: 146, h: 170 },   // (11-10: his places to hide in Gath's streets)
