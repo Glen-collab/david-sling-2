@@ -980,7 +980,7 @@ function takeRelic(f) {
   if (typeof chime === "function") { chime(4); setTimeout(() => chime(7), 140); }
   if (f.kind === "truth") { sayLine("A Truth", f.text); return; }
   if (f.kind === "stone") { david.specialStones++; toast("A stone of remembrance! Keep it, or A + B for a Power Sling."); return; }
-  if (f.kind === "key") { toast("A bronze key from the top of the watchtower! It must open something..."); return; }
+  if (f.kind === "key") { toast(f.text || "A bronze key from the top of the watchtower! It must open something..."); return; }
   if (f.kind === "oil") { david.lampOil += 20; toast("An oil jar! Your lamp will burn longer."); return; }
   if (f.kind === "pomegranate") {
     const n = region.save.taken.filter(id => id.startsWith("g_pom")).length;

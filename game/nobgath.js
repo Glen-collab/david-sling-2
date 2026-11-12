@@ -50,7 +50,7 @@ const R3 = {
   // (Glen 11-11) the Hall of the Tribes, off Nob: his twelve tablets set in the floor, out of order. Walk them in the
   //  order Jacob blessed his sons (Genesis 49:3-27): the blessing's words show at the top, find the picture. A right
   //  one glows and stays safe; a wrong one cracks and drops him back to the door (time, not a heart)
-  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6,
+  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.22, PROUD: 6,   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
     FLOOR: ["judah", "gad", "reuben", "joseph", "levi", "asher", "dan", "zebulun", "benjamin", "simeon", "naphtali", "issachar"] },   // (left to right)
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
@@ -203,6 +203,7 @@ function r3Build(R) {
     }) };
     rRelic("r3_truth_tribes", "truth", c + tr.w - 12, 16, "All these are the twelve tribes of Israel, and this is what their father spoke to them, and blessed them. (Genesis 49:28)", "r3_tribes");
     rRelic("r3_pom_tribes", "pomegranate", c + tr.w - 7, 16, null, "r3_tribes");
+    rRelic("r3_hall_key", "key", c + tr.w - 4, 16, "The priests' key! It opens the chest behind the ephod, back in the sanctuary court.", "r3_tribes");   // (Glen 11-11: the hall has to give you something)
   }
 
   // -- The Road Down to Gath (21:10): west to the coast, the sea far off, sycamores on the low hills. Glen's three layers
@@ -281,6 +282,7 @@ function r3Build(R) {
 
 function r3Enter(r) {
   if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
+  if (r.id === "tribes") r3TrialMend();
   if (r.id === "tribes" && !r3Has("r3_tribes")) r3Tell("tribes", "The Hall of the Tribes: a tablet for each of Jacob's twelve sons. Step on them in the order Jacob blessed them.");
   if (r.id === "crack") r3Tell("crack", "Under Nob: cracked walls. A heavy sword could break them...");
   if (r.id === "streets") r3Tell("streets", "The streets of Gath. Achish's men are everywhere: keep out of sight.");
@@ -309,8 +311,8 @@ function r3Update(dt) {
   if (r.id === "nob" && !r3Has("r3_bread") && free && d.x > r3.breadAt && d.x < r3.breadX) { r3BreadScene(); return; }
   // Nob: Goliath's sword, wrapped in a cloth behind the ephod (21:8-9)
   if (r.id === "nob" && !hasSkill("heavySword") && Math.abs(d.x - r3.swordX) < 2.5 * T) {
-    r3Tell("sword", "Something long, wrapped in a cloth, behind the ephod. Up: ask the priest.");
-    if (free && pressed("up")) r3SwordScene();
+    if (!r3Has("r3_hall_key")) r3Tell("swordlock", "Something long, wrapped in a cloth, locked in a chest behind the ephod. The priests keep its key in the Hall of the Tribes (their house, back near the gate).");
+    else { r3Tell("sword", "Something long, wrapped in a cloth, behind the ephod. Up: ask the priest."); if (free && pressed("up")) r3SwordScene(); }
   }
   // a cracked wall: Up or X beside it, facing it, with Goliath's sword: test your might
   const w = r3.walls.find(w => w.room === r.id && !w.broken && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T && Math.sign((w.x0 + w.x1) / 2 - d.x) === d.facing);
@@ -346,7 +348,7 @@ function r3TrialUpdate(dt) {
     if (t.glow > 0) t.glow = Math.max(0, t.glow - dt);
     if (t.open) t.fall += dt;
     else if (t.crack > 0 && (t.crack += dt) > K.SHAKE) {   // it gives way
-      t.open = true; t.fall = 0; sfx("stone_hit", t.x0, 0.5, 0.5);
+      t.open = true; t.fall = 0; sfx("stone_hit", t.x0, 0.5, 0.5); r3TrialCrumble(t);
       for (let x = t.c; x < t.c + K.W; x++) { oneway[GR][x] = false; onewayTop.delete(GR * COLS + x); }
     }
   }
@@ -357,14 +359,28 @@ function r3TrialUpdate(dt) {
     if (tr.next === 12) {
       regionAdd("taken", "r3_tribes"); for (const u of tr.tiles) u.glow = 2.5;
       setTimeout(() => chime(5), 200); setTimeout(() => chime(7), 400);
-      toast("“All these are the twelve tribes of Israel... He blessed everyone according to his own blessing.” (Genesis 49:28) Something waits at the end of the hall.");
+      toast("“All these are the twelve tribes of Israel... He blessed everyone according to his own blessing.” (Genesis 49:28) A key waits at the end of the hall.");
     }
-  } else { t.crack = 0.001; sfx("stone_hit", t.x0, 0.35, 0.8); }
+  } else {   // the wrong one: it cracks under him, he can't get off it, down they go
+    t.crack = 0.001; sfx("stone_hit", t.x0, 0.35, 0.8);
+    d.x = (t.x0 + t.x1) / 2; d.vx = 0; region.wait = K.SHAKE + 1.2;
+  }
+}
+// (Glen 11-11: "crumble more") the tablet in pieces, each its own way down, and dust off the broken edges
+function r3TrialCrumble(t) {
+  t.pieces = [];
+  for (let j = 0; j < 2; j++) for (let i = 0; i < 3; i++)
+    t.pieces.push({ i, j, dx: (i - 1) * (20 + Math.random() * 50), dy: Math.random() * 40, spin: (Math.random() - 0.5) * 5, late: Math.random() * 0.12 });
+  for (let k = 0; k < 22; k++) r3.chips.push({ x: t.x0 + Math.random() * (t.x1 - t.x0), y: GR * T - 4, vx: (Math.random() - 0.5) * 260, vy: -80 - Math.random() * 260, t: 0, life: 0.6 + Math.random() * 0.5, r: 3 + Math.random() * 7 });
+}
+function r3TrialMend() {   // every broken tablet back in the floor (after a fall, and coming back into the hall)
+  const tr = r3.trial; if (!tr) return;
+  for (const t of tr.tiles) if (t.open || t.crack > 0) { t.open = false; t.crack = 0; t.fall = 0; t.pieces = null; platAt(t.c, GR * T, R3.TRIBES.W); }
 }
 function r3TrialFall() {   // main.js pitFall: down through a wrong tablet, back to the door, no heart lost
   const tr = r3.trial, r = region.room; if (!tr || !r || r.id !== "tribes") return false;
   const d = david, K = R3.TRIBES;
-  for (const t of tr.tiles) if (t.open || t.crack > 0) { t.open = false; t.crack = 0; t.fall = 0; platAt(t.c, GR * T, K.W); }
+  r3TrialMend(); region.wait = 0;
   d.x = tr.start; d.y = GR * T; d.vx = d.vy = 0; d.facing = 1; d.inv = 0.6; setState("idle"); snapCamera();
   toast(`Not that one: back to the door. Listen again: ${TRIBE_ORDER[tr.next][1]}.`);
   return true;
@@ -375,9 +391,20 @@ function r3TrialDraw(camX) {
     const x = t.x0 - camX, w = t.x1 - t.x0; if (x > W || x + w < 0) continue;
     const im = kitImg("w3_tribe_" + t.name);
     if (t.open) {   // the hole, and the tablet dropping away
+      if (!t.jag) { t.jag = []; for (let k = 0; k <= 10; k++) t.jag.push(Math.random()); }   // (its broken edge: fixed once)
       const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
-      ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, w, H - GR * T + 2);
-      if (im && t.fall < 0.8) { ctx.save(); ctx.globalAlpha = 1 - t.fall / 0.8; ctx.drawImage(im, x + 6, GR * T - K.PROUD + t.fall * t.fall * 900, w - 12, (w - 12) * im.height / im.width); ctx.restore(); }
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 8, H); ctx.lineTo(x - 8, GR * T + 6);
+      t.jag.forEach((v, k) => ctx.lineTo(x - 8 + (w + 16) * k / 10, GR * T - 4 + v * 14 + (k === 0 || k === 10 ? 10 : 0)));
+      ctx.lineTo(x + w + 8, H); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(90,64,40,0.9)";   // the broken stone lips, either side
+      for (const s of [-1, 1]) { const ex = s < 0 ? x - 8 : x + w + 8; ctx.beginPath(); ctx.moveTo(ex, GR * T - 2); ctx.lineTo(ex - s * 16, GR * T + 4 + t.jag[s < 0 ? 1 : 9] * 10); ctx.lineTo(ex, GR * T + 26); ctx.closePath(); ctx.fill(); }
+      if (im && t.pieces && t.fall < 1.1) {
+        const pw = im.width / 3, ph = im.height / 2, sw = (w - 12) / 3, sh = sw * ph / pw;
+        for (const p of t.pieces) { const f = Math.max(0, t.fall - p.late);
+          ctx.save(); ctx.globalAlpha = Math.max(0, 1 - f / 1.0);
+          ctx.translate(x + 6 + (p.i + 0.5) * sw + p.dx * f, GR * T - K.PROUD + (p.j + 0.5) * sh + p.dy * f + f * f * 1100); ctx.rotate(p.spin * f);
+          ctx.drawImage(im, p.i * pw, p.j * ph, pw, ph, -sw / 2, -sh / 2, sw, sh); ctx.restore(); }
+      }
       continue;
     }
     if (!im) continue;
@@ -732,7 +759,7 @@ function r3Draw(camX) {
   const r = region.room; if (!r) return;
   if (r.id === "tribes") r3TrialDraw(camX);
   const d = david, idle = !r3.might && !region.script.length && !(dialog && dialog.t > 0) && d.onGround;
-  if (idle && r.id === "nob" && !hasSkill("heavySword") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
+  if (idle && r.id === "nob" && !hasSkill("heavySword") && r3Has("r3_hall_key") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);
   r3DrawSneak(camX, idle);
   if (r3.scene && r3.scene.id === "bread") {   // his clip, the three of them; Ahimelech's head on his own spot
