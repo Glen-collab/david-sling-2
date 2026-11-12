@@ -39,7 +39,7 @@ const R3 = {
     CAUGHT_FADE: 1.2,  // seconds of the fade back to the gate
   },
   CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45,
-    WHIRL: [4, 7], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-7 whirl, 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
+    WHIRL: [4, 6], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-6 whirl (11-12: not 7, his front foot steps out there; it plays on the throw), 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
   // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
   //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
   BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131 },   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
