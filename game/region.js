@@ -1140,7 +1140,11 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
     const rel = camX - r.c0 * T, mid = roomImg(r.mid);
     const tile = (im, p, y, h, ox = 0) => { const w = im.naturalWidth * h / im.naturalHeight, o = -((rel * p - ox) % w + w) % w;
       for (let x = o; x < W; x += w) ctx.drawImage(im, Math.round(x), y, Math.ceil(w) + 1, h); };
-    tile(far, 0.12, 0, H);
+    // (Glen 11-12: up a tall tree on a road, the camera goes up) the far sky rises with the camera (a little slower: a sense
+    //  of climbing), and above it, its own top edge stretched up: no unpainted sky
+    const fy = camY < 0 ? Math.round(camY * 0.85) : 0;
+    if (camY < 0) ctx.drawImage(far, 0, 0, far.naturalWidth, 3, 0, camY - 2, W, fy - camY + 6);
+    tile(far, 0.12, fy, H);
     if (mid) tile(mid, r.midP ?? 0.45, r.midY || 0, mid.naturalHeight, r.midX || 0);   // (r.midX: px the picture starts in from the room's left: Gath's painted gate on its door)   // (r.midP: a town's own wall, nearly with the room: World 3)
     const near = roomImg(r.near);   // (Glen 11-10: "far, mid and near ground", as Part One) a third layer, nearer and faster, its bottom at nearY (default: the ground line)
     if (near) tile(near, 0.75, (r.nearY ?? GR * T + 20) - near.naturalHeight, near.naturalHeight);

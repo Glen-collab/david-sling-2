@@ -87,7 +87,7 @@ const NOBGATH = {
       strip: "w3/crack_strip", floor: "w3/crack_dirt.png", band: [0.04, 0.72] },   // (his cracked wall, a storey repeating up: Castlevania)
     { id: "tribes",   name: "The Hall of the Tribes", w: 96, bg: "w4_4", mx: 4, my: 2, mw: 3,
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },   // (11-11: Saul's halls stand in till Glen paints Nob's own)
-    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 14, bg: "w4_1", mx: 5, my: 1, mw: 3, left: "nob", right: "gath",
+    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 24, bg: "w4_1", mx: 5, my: 1, mw: 3, left: "nob", right: "gath",
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },   // (+ his near layer: sycamore shrubs, a broken jar, a mud-brick stub)
     { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 8, my: 1, mw: 2, left: "gathroad",
       far: "w3/gath/far", mid: "w3/gath/mid.png", midP: 1, midX: 170, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (Glen 11-10: his dunes and sea far off; his walls and gate fixed to the room, the gate on the door at column 22; his broken jar and bricks in front)   // (his city of Gath, one copy the room's width: its own gate is the door in, at column 22)
@@ -116,12 +116,11 @@ const NOBGATH = {
 const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when the region's built: region.js loads after this file)
   w3_deadtree: { w: 562, h: 382 }, w3_log_l: { w: 189, h: 138 }, w3_log_r: { w: 215, h: 138 }, w3_palm: { w: 362, h: 564 }, w3_palm_b: { w: 343, h: 575 },
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
-  w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 },
+  w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 }, w3_climbtree_tall: { w: 466, h: 1354 },
   w3_ladder_1: { w: 117, h: 165 }, w3_ladder_2: { w: 117, h: 323 }, w3_ladder_3: { w: 108, h: 363 }, w3_ladder_4: { w: 80, h: 397 },
   w3_rope_1: { w: 134, h: 215 }, w3_rope_2: { w: 94, h: 363 }, w3_rope_3: { w: 67, h: 329 }, w3_rope_4: { w: 46, h: 389 } };
 const R3_LADDER_KNOT = [53, 53, 52, 39];   // (w3_ladder.json: each frame's knot, from its left)
-const R3_CLIMBTREE = [{ side: "L", top: 503, x0: 0, x1: 194 }, { side: "R", top: 459, x0: 275, x1: 450 }, { side: "L", top: 370, x0: 45, x1: 194 },
-  { side: "R", top: 313, x0: 275, x1: 383 }, { side: "L", top: 245, x0: 91, x1: 194 }];   // (w3_climbtree.json: its branches, tree px)
+const R3_CLIMBTREE = [{ side: "L", top: 1234, x0: 15, x1: 253 }, { side: "R", top: 1189, x0: 213, x1: 464 }, { side: "L", top: 1089, x0: 1, x1: 253 }, { side: "R", top: 979, x0: 213, x1: 465 }, { side: "L", top: 851, x0: 50, x1: 253 }, { side: "L", top: 720, x0: 1, x1: 253 }, { side: "R", top: 610, x0: 213, x1: 465 }, { side: "L", top: 483, x0: 50, x1: 253 }, { side: "L", top: 382, x0: 69, x1: 253 }, { side: "R", top: 323, x0: 213, x1: 406 }];   // (w3_climbtree_tall.json: its branches, low to high, tree px; Glen 11-12: "way taller so the screen has to go up")   // (w3_climbtree.json: its branches, tree px)
 const R3_DATES = [{ n: "w3_dates_1", x: 144, y: 255 }, { n: "w3_dates_2", x: 196, y: 256 }, { n: "w3_dates_3", x: 206, y: 197 }];   // (w3_palm_b.json)
 const R3_ROPE_KNOT = [72, 44, 39, 29];   // (w3_rope.json)
 const r3 = { t: 0, hangs: [], thorns: [], vines: [], vineT: 0, ladders: [], swings: [], swing: null, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
@@ -525,11 +524,11 @@ function r3Build(R) {
     for (const k of [78, 82, 86]) r3Thorn("gathroad", X(k));
     r3VineZone("gathroad", X(75), X(90));   // (past the tower: they break on it)
     r3Wall("r3_log_gathroad", "gathroad", c + 92, 16, "log");
-    { const k = KIT.w3_climbtree, tx = X(116) + T / 2 - k.w / 2, ty = FOOT - k.h + R3.TREE_SINK;   // its branches: ledges
-      region.props.push({ room: "gathroad", n: "w3_climbtree", x: tx, y: ty });
-      for (const b of R3_CLIMBTREE.slice(0, 4)) { const c0 = Math.ceil((tx + b.x0) / T), c1 = Math.floor((tx + b.x1) / T); platAt(c0, ty + b.top + 4, c1 - c0); }
+    { const k = KIT.w3_climbtree_tall, tx = X(116) + T / 2 - k.w / 2, ty = FOOT - k.h + R3.TREE_SINK;   // its branches: ledges
+      region.props.push({ room: "gathroad", n: "w3_climbtree_tall", x: tx, y: ty });
+      for (const b of R3_CLIMBTREE) { const c0 = Math.ceil((tx + b.x0) / T), c1 = Math.floor((tx + b.x1) / T); platAt(c0, ty + b.top + 4, c1 - c0); }
       // (its top branch is only to look at: from it the crown would be a jump; the rope is the way up there)
-      const tb = R3_CLIMBTREE[3], tc = Math.floor((tx + (tb.x0 + tb.x1) / 2) / T);
+      const tb = R3_CLIMBTREE[R3_CLIMBTREE.length - 1], tc = Math.floor((tx + (tb.x0 + tb.x1) / 2) / T);
       rRelic("r3_pom_tree", "pomegranate", tc, onTop(ty + tb.top + 4));
       // (Glen 11-12) the crown: too high to jump to from the top branch; his rope's coiled up there: shoot it down, climb up
       const C = R3.CROWN, cy = ty + C.TOP, k0 = Math.ceil((tx + C.X0) / T), k1 = Math.floor((tx + C.X1) / T);

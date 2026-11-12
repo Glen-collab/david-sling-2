@@ -101,3 +101,49 @@ json.dump({"knot": knots}, open(os.path.join(OUT, "w3_rope.json"), "w")); print(
 TT = key("tower_tall.png"); p, _ = piece(TT, (0, 0, 2000 / F * 1152 / 2048, 2000)); save(p, "w3_towertall", 0.3)
 a_ = np.asarray(Image.open(os.path.join(OUT, "w3_towertall.png")))[..., 3] > 100; rows = np.where(a_.any(1))[0]
 mid = a_.shape[1] // 2; print("tower top row at middle", int(np.where(a_[:, mid])[0].min()), "body", [int(v) for v in np.where(a_[a_.shape[0] // 2])[0][[0, -1]]])
+
+# the tall climbing tree (Glen 11-12: "make this tree way taller so the screen has to go up"): his climbing tree's crown and
+#  top branches, his trunk column (its branches) twice, then the tree's own lower branches and roots; joined where the trunk
+#  is plain (no branches), lined up on the trunk's middle, the joins faded. Its branches are ledges (w3_climbtree_tall.json)
+CT = key("climb_trees.png")[:, round(150 * F):round(975 * F)]; COL = key("trunk_column.png")
+CUT = 760; c0, c1 = 700, 1400   # (the tree cut at a plain stretch of trunk; the column's plain-to-plain stretch)
+def mid_x(a, y): xs = np.where(a[y, :, 3] > 100)[0]; return (xs.min() + xs.max()) / 2
+parts = [(CT[:CUT], mid_x(CT, CUT - 2)), (COL[c0:c1], mid_x(COL, c0 + 2)), (COL[c0:c1], mid_x(COL, c0 + 2)), (CT[CUT:], mid_x(CT, CUT + 2))]
+Wc = 900; Hc = sum(p.shape[0] for p, _ in parts) - FADE_ * (len(parts) - 1) if (FADE_ := 30) else 0
+canvas = np.zeros((Hc, Wc, 4)); y = 0
+for i, (p, m) in enumerate(parts):   # each piece starts FADE_ rows up into the one above, faded in over it
+    x = int(Wc / 2 - m); h, w = p.shape[:2]; xs0, xs1 = max(0, x), min(Wc, x + w); src = p[:, xs0 - x:xs1 - x].copy()
+    if i > 0:
+        y -= FADE_
+        ramp = (np.arange(h) / FADE_).clip(0, 1)[:, None]
+        dst = canvas[y:y + h, xs0:xs1]
+        edge = (src[..., 3] < 40) & (np.arange(h)[:, None] < FADE_ * 2)   # (the piece above sticking out past this one: faded off, no square corner)
+        dst[..., 3] = np.where(edge, dst[..., 3] * (1 - (np.arange(h) / (FADE_ * 2)).clip(0, 1)[:, None]), dst[..., 3])
+        dst[..., 3] = np.where((src[..., 3] < 40) & (np.arange(h)[:, None] >= FADE_ * 2) & (np.arange(h)[:, None] < FADE_ * 4), 0, dst[..., 3])
+        As = src[..., 3] / 255 * ramp; Ad = dst[..., 3] / 255
+        Ao = As + Ad * (1 - As); w_ = np.where(Ao > 0, 1 / np.maximum(Ao, 1e-6), 0)
+        for ch in range(3): dst[..., ch] = (src[..., ch] * As + dst[..., ch] * Ad * (1 - As)) * w_
+        dst[..., 3] = Ao * 255
+    else: canvas[y:y + h, xs0:xs1] = src
+    y += h
+tall, _ = piece(canvas, (0, 0, Wc / F, Hc / F)) if False else (canvas, None)
+xs = np.where(tall[..., 3].max(0) > 25)[0]; tall = tall[:, xs.min():xs.max() + 1]
+im = save(tall, "w3_climbtree_tall", 0.55)
+a = np.asarray(im)[..., 3] > 100; Hh, Ww = a.shape; tmid = Ww / 2
+crownT = int(CUT * 0.55 * 0.58)   # (below the crown's leaves)
+led = []
+for side in ("L", "R"):
+    cols = range(0, int(tmid - 55)) if side == "L" else range(int(tmid + 55), Ww)
+    band = a[:, list(cols)]; rows = band.sum(1) > 10; yy = crownT
+    while yy < Hh - 20:
+        if rows[yy]:
+            y2 = yy
+            while y2 < Hh and rows[y2]: y2 += 1
+            xs_ = np.where(band[yy:y2].any(0))[0]; xa = list(cols)[xs_.min()]; xb = list(cols)[xs_.max()]
+            if y2 - yy > 6 and (tmid - xa if side == "L" else xb - tmid) > 140:   # (a branch reaches out; a bulge of the trunk doesn't)
+                led.append({"side": side, "top": int(yy), "x0": int(xa if side == "L" else tmid - 20), "x1": int(tmid + 20 if side == "L" else xb)})
+            yy = y2
+        yy += 1
+led.sort(key=lambda q: -q["top"])
+json.dump({"w": Ww, "h": Hh, "ledges": led}, open(os.path.join(OUT, "w3_climbtree_tall.json"), "w"), indent=1)
+print("tall ledges", [(q["side"], q["top"], q["x0"], q["x1"]) for q in led])
