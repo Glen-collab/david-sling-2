@@ -1102,9 +1102,9 @@ function r3BreadScene() {
   rPlay([
     // (Glen 11-12: "we should have Doeg walking in the background as he speaks ... stop each time until we hit A") a
     //  few steps nearer with each line, then he stands and listens
-    { fn: r3DoegStep, wait: R3.BREAD.DOEG_STEP }, { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
-    { fn: r3DoegStep, wait: R3.BREAD.DOEG_STEP }, { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
-    { fn: r3DoegStep, wait: R3.BREAD.DOEG_STEP }, { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
+    { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
+    { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
+    { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
     { fn() { if (long) { r3.scene = { id: "bread", t: 0 }; region.pose = { hide: true }; } }, wait: long },
     { fn() {
       r3.scene = null; region.pose = null;
