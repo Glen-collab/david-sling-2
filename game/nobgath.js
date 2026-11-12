@@ -42,7 +42,7 @@ const R3 = {
     WHIRL: [4, 6], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-6 whirl, the sling overhead (11-12: Glen redrew 3-6 with his feet together), 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
   // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
   //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
-  BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131 },   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
+  BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131, DOEG_STEP: 1.1, DOEG_V: 55 },   // (DOEG_STEP: seconds Doeg walks each line, at DOEG_V px/s)   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
   // (Glen 11-11) Gath (21:10-15): at the gate the guard knows him, and he acts mad (mash, scribbling on the doors);
   //  in Achish's court, mad again before the king, then once more to get past the elite guards ("Get this crazy
   //  person out of here!"). Mash sizes: [presses to fill, seconds, drain a second] (drill.js startMash)
@@ -902,6 +902,9 @@ function r3Update(dt) {
   if (r.id === "tribes") r3TrialUpdate(dt);
   r3HangUpdate(dt); r3PropsUpdate(dt); r3SwingUpdate(dt);
   for (const q of r3.swings) if (q.room === r.id) r3RopeChain(q, dt);
+  for (const p of r3.people) if (p.stroll > 0 && !r3.scene) {   // (Doeg, edging nearer while they talk)
+    p.stroll -= dt; p.x += R3.BREAD.DOEG_V * dt; if (p.stroll <= 0) { p.stroll = 0; p.name = "doeg_idle"; }
+  }
   for (const p of r3.people) if (p.walking && p.arrive && !r3.scene) {   // walking in to his place, then standing there
     p.x = Math.min(p.arrive.to, p.x + p.arrive.v * dt); if (p.x >= p.arrive.to) { p.walking = false; p.name = "doeg_idle"; }
   }
@@ -1079,14 +1082,17 @@ function r3TrialBanner() {   // the next son's blessing, at the top
   ctx.fillStyle = "#fff6e2"; ctx.font = "19px Georgia, serif"; ctx.fillText(words, W / 2, 88);
   ctx.restore();
 }
+function r3DoegStep() { const p = r3Who("doeg"); if (p) Object.assign(p, { walking: false, stroll: R3.BREAD.DOEG_STEP, name: "doeg_walk", facing: 1 }); }
 function r3BreadScene() {
   const B = R3.BREAD, give = SPR.nob_bread_give, eat = SPR.nob_bread_eat;
   const long = give && eat ? (give.frames * give.ms + eat.frames * eat.ms) / 1000 : 0;
   david.facing = 1;
   rPlay([
-    { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
-    { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
-    { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
+    // (Glen 11-12: "we should have Doeg walking in the background as he speaks ... stop each time until we hit A") a
+    //  few steps nearer with each line, then he stands and listens
+    { fn: r3DoegStep }, { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
+    { fn: r3DoegStep }, { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
+    { fn: r3DoegStep }, { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
     { fn() { if (long) { r3.scene = { id: "bread", t: 0 }; region.pose = { hide: true }; } }, wait: long },
     { fn() {
       r3.scene = null; region.pose = null;
