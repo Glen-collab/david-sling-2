@@ -83,3 +83,10 @@ stages use the same three layers (main.js BG, BG_LAYER_HEIGHTS).
 `david_turn_away` and `david_walk_away`, `david_light_lamp`, the lamp's circle of light burning olive oil, `bat_hang` / `bat_fly`.
 So the into-the-picture tunnels and the dark with the lamp mostly already exist. New for World 4: a set of layers for each look
 (upper with light shafts, middle, lower with water), the water itself, rats, swimming, the breath meter, the 400.
+
+## Ledges that match (Glen 2026-11-12: "rock ledges and stuff to match the color and topography of the caves")
+For each look (upper, middle, lower), a kit of separate pieces cut from green screen in the same rock color and lighting as that
+look's layers: ledges (short, long, sloped), stalagmite pillars, rock steps, a crumbling ledge (falls when stood on), a hanging rock shelf
+under the ceiling, a narrow crack to squeeze through, and wet slick rock for the lower level. Placed the way the World 3 kit is
+(kitImg / platAt: the drawn top of a piece is where he stands). Prompts: generate the far/mid/near layers first, then make the
+ledges "in the same rock and light as this picture" from them, so the colors match.
