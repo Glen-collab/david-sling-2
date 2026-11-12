@@ -52,8 +52,8 @@ const R3 = {
   //  one glows and stays safe; a wrong one cracks and drops him back to the door (time, not a heart)
   TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6, PAD: 80,
     // (Glen's Meta frames, cut_tribe_crumble.py: _c1 cracked, _c2 broken; the rest break in drawn pieces till theirs come)
-    C1: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "reuben", "simeon"],
-    C2: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
+    C1: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon", "zebulun"],
+    C2: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon", "zebulun"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
     FLOOR: ["judah", "gad", "reuben", "joseph", "levi", "asher", "dan", "zebulun", "benjamin", "simeon", "naphtali", "issachar"] },   // (left to right)
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
