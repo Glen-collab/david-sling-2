@@ -607,7 +607,7 @@ function r3Build(R) {
     oliveRow(c + 8, 16, 5); rBreak("jar", "nob", c + 27, 16);
     rKitDoor("d_nobtribes", "nob", c + 16, "door", "d_tribesout", "w3_nob_hallhouse");   // (Glen 11-11: his priests' house, the door into the Hall of the Tribes)
 //    (the olive trees over the strip's joins: gone with the layers, 11-10)   // (olive trees over the two joins, his tileable court to his painted one: the walls are different stone)
-    if (!mourn) r3Walker("nob", "nob_priest2_walk", X(17), X(26), 60);
+    if (!mourn) r3Walker("nob", "nob_priest2_walk", X(17), X(26), 60, "priest_door");
     // (the painted court: the altar about columns P+11-17, a table P+24-33, another P+35-44, crates P+45-51; Glen's pieces in front)
     if (!mourn) { r3Prop("nob", "w3_holy_bread_table2", X(P + 28), R3.TABLE_K);
     region.props[region.props.length - 1].draw = () => !!r3.scene; }   // (out of the way while the clip's own table is there)
@@ -617,8 +617,20 @@ function r3Build(R) {
     r3Prop("nob", "w3_oil_lamp", X(P + 43));
     if (!mourn) r3Person("nob", "ahimelech_idle", X(P + 34), -1, R3.NPC_K, "ahimelech");
     r3.breadX = X(P + 34); r3.breadAt = X(P + R3.BREAD.TRIGGER); r3.mournAt = X(P + R3.MOURN.AT);
-    if (!mourn) { r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45); r3Person("nob", "nob_priest1_talk", X(P + 43), -1); }
+    if (!mourn) { r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45, "priest_lamp"); r3Person("nob", "nob_priest1_talk", X(P + 43), -1, R3.NPC_K, "priest_talk"); }
     if (!r3Has("r3_bread") && !mourn) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
+    const who = (tag, intro, talk) => { const p = r3Who(tag); if (p && p.room === "nob") Object.assign(p, { intro, talk }); };
+    who("doeg", "Doeg the Edomite, \u201cthe best of the herdsmen who belonged to Saul\u201d (1 Samuel 21:7).",
+      [["", "Doeg watches David closely, and says nothing."], ["", "He was \u201cdetained before the LORD\u201d at Nob that day (1 Samuel 21:7). He will remember what he sees."]]);
+    who("ahimelech", "Ahimelech the priest, the son of Ahitub (1 Samuel 22:9).", null);
+    who("priest_talk", "A priest of Nob, the town of the priests.",
+      [["A priest", "Peace to you. This is Nob, where the LORD's priests serve. Ahimelech is at the sanctuary, by the bread of the Presence."],
+       ["A priest", "Every Sabbath the twelve loaves are set out before the LORD, and the old bread is for the priests to eat (Leviticus 24:5-9)."]]);
+    who("priest_lamp", "A priest tending the lamps.",
+      [["A priest", "We keep the lamps burning before the LORD from evening until morning (Exodus 27:21)."]]);
+    who("priest_door", "A priest of Nob.",
+      [["A priest", "That door is the priests' house, the Hall of the Tribes: a tablet for each of Jacob's twelve sons."],
+       ["A priest", "Our key is kept in there. Step on the tablets in the order Jacob blessed his sons (Genesis 49)."]]);
     rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "w3_nob_stairhouse");   // (Glen 11-11: his cellar house over the stair down)
     oliveRow(c + 92, 16, 5); rRelic("r3_stone_nob", "stone", c + 100, 16);
   }
@@ -891,6 +903,12 @@ function r3Update(dt) {
     if (f && f.from < r3.groveTop + 60 && d.y >= GR * T - 2 && r3.canopySafe && d.deadT <= 0) {
       moveParty(r3.canopySafe.x, r3.canopySafe.y); snapCamera(); toast("You fell from the treetops! Back up where you were.");
     }
+  }
+  // (Glen 11-12) the people: who they are when he comes up to them (once), and Up beside one to hear them
+  if (!r3.scene) for (const p of r3.people) {
+    if (p.room !== r.id || !(p.intro || p.talk) || Math.abs(d.x - p.x) > 90 || Math.abs(d.y - (p.y ?? GR * T)) > 80) continue;
+    if (p.intro) r3Tell("who_" + p.tag, p.intro);
+    if (p.talk && free && pressed("up") && !region.doors.some(o => Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - (o.y ?? GR * T)) < 30)) { if (p.walk) p.facing = Math.sign(d.x - p.x) || p.facing; rPlay(p.talk.map(l => ({ say: l }))); return; }
   }
   // Nob, empty after Gath: by the altar, what happened (22:9-23), once
   if (r.id === "nob" && r3.mourn && !r3Has("r3_mourn") && free && d.x > r3.mournAt) { r3MournScene(); return; }
@@ -1399,6 +1417,7 @@ function r3Draw(camX) {
   if (idle && r.id === "nob" && !hasSkill("heavySword") && r3Has("r3_hall_key") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);
   r3DrawSneak(camX, idle);
+  if (idle) for (const p of r3.people) if (p.room === r.id && p.talk && Math.abs(d.x - p.x) < 90 && !r3.scene) upHint(p.x - camX, GR * T - 180);   // (Up: hear them)
   if (r3.scene && r3.scene.id === "bread") {   // his clip, the three of them; Ahimelech's head on his own spot
     const g = SPR.nob_bread_give, e = SPR.nob_bread_eat, tg = g.frames * g.ms / 1000, t = r3.scene.t;
     const [n, f] = t < tg ? ["nob_bread_give", Math.floor(t * 1000 / g.ms)] : ["nob_bread_eat", Math.min(e.frames - 1, Math.floor((t - tg) * 1000 / e.ms))];
