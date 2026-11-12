@@ -618,7 +618,8 @@ function r3Build(R) {
     if (!mourn) r3Person("nob", "ahimelech_idle", X(P + 34), -1, R3.NPC_K, "ahimelech");
     r3.breadX = X(P + 34); r3.breadAt = X(P + R3.BREAD.TRIGGER); r3.mournAt = X(P + R3.MOURN.AT);
     if (!mourn) { r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45, "priest_lamp"); r3Person("nob", "nob_priest1_talk", X(P + 43), -1, R3.NPC_K, "priest_talk"); }
-    if (!r3Has("r3_bread") && !mourn) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
+    if (!r3Has("r3_bread") && !mourn) { r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");
+      r3Who("doeg").arrive = { from: X(2), to: X(P + 6), v: 110 }; }   // (Glen 11-12: the first time, he walks in ahead of David, to where he stands)   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
     const who = (tag, intro, talk) => { const p = r3Who(tag); if (p && p.room === "nob") Object.assign(p, { intro, talk }); };
     who("doeg", "Doeg the Edomite, \u201cthe best of the herdsmen who belonged to Saul\u201d (1 Samuel 21:7).",
       [["", "Doeg watches David closely, and says nothing."], ["", "He was \u201cdetained before the LORD\u201d at Nob that day (1 Samuel 21:7). He will remember what he sees."]]);
@@ -826,6 +827,7 @@ function r3Build(R) {
 }
 
 function r3Enter(r) {
+  { const dg = r3Who("doeg"); if (r.id === "nob" && dg && dg.arrive && !r3.told.doegWalk) { r3.told.doegWalk = true; Object.assign(dg, { x: dg.arrive.from, name: "doeg_walk", facing: 1, walking: true }); } }
   if (r.id === "nob" && r3.mourn) r3Tell("nobempty", "Nob is silent. The fires are cold, and no one is here.");
   else if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
   if (r.id === "tribes") r3TrialMend();
@@ -875,6 +877,9 @@ function r3Update(dt) {
   if (r.id === "tribes") r3TrialUpdate(dt);
   r3HangUpdate(dt); r3PropsUpdate(dt); r3SwingUpdate(dt);
   for (const q of r3.swings) if (q.room === r.id) r3RopeChain(q, dt);
+  for (const p of r3.people) if (p.walking && p.arrive && !r3.scene) {   // walking in to his place, then standing there
+    p.x = Math.min(p.arrive.to, p.x + p.arrive.v * dt); if (p.x >= p.arrive.to) { p.walking = false; p.name = "doeg_idle"; }
+  }
   for (const p of r3.people) if (p.walk && !r3.scene) {   // the walkers
     p.x += p.facing * p.walk.v * dt;
     if (p.x > p.walk.x1) { p.x = p.walk.x1; p.facing = -1; } else if (p.x < p.walk.x0) { p.x = p.walk.x0; p.facing = 1; }
