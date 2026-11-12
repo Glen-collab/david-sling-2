@@ -126,9 +126,10 @@ function r3Build(R) {
     rDeco("nobroad", "fg_grass", c + 66, true, 1.35);
     { // (Glen 11-11) the watchtower: in the way now, to climb or jump over, and sunk into the ground (its round base
       //  stood on the dirt). Its top: TOWER_SINK px down from the art's; a boulder before it to jump from
-      const k = KIT.f_tower_low, y = FOOT - k.h, top = y + 8, r0 = Math.ceil(top / T);   // (f_tower_low: Glen's tower, its bottom 86 px cut off)
+      const k = KIT.f_tower_low, y = FOOT - k.h + 22, top = y + 8,   // (Glen 11-12: its base down over the ground's edge, in front of it)
+       _ = 0, r0 = Math.ceil(top / T);   // (f_tower_low: Glen's tower, its bottom 86 px cut off)
       region.props.push({ room: "nobroad", n: "f_tower_low", x: (c + 74) * T + T / 2 - k.w / 2, y });
-      block(c + 71, r0, 7, GR - r0, 1); for (let i = 0; i < 7; i++) for (let r = r0; r < GR; r++) artSolid.add((c + 71 + i) + "," + r);
+      block(c + 71, r0, 7, GR - r0, 6); for (let i = 0; i < 7; i++) for (let r = r0; r < GR; r++) artSolid.add((c + 71 + i) + "," + r);
       platAt(c + 71, top, 7); oliveRow(c + 72, onTop(top) - 0.4, 5);
       region.walls.push({ room: "nobroad", x0: (c + 71) * T, x1: (c + 78) * T, top: r0 * T, need: "wallClimb" });
       rBoulder("nobroad", c + 64);
