@@ -56,10 +56,16 @@ function wildKickBox(b) {   // the wild ass's back legs, behind it, while they'r
 //  up onto (up to HOP.H tiles; taller stops it), it walks along their tops and drops off the far side, and it won't walk
 //  into a pit. stop: it couldn't go on (a tall wall, a pit's edge)
 function wildMove(b, vx, dt) {
-  const Tn = WILD_TUNE, dir = Math.sign(vx), feet = Math.round(b.y / T), c = Math.floor((b.x + dir * Tn.AHEAD) / T);
+  // (Glen 11-12: "the ibex and the ostrich aren't on top of the layer") a ledge's top is where it's drawn (onewayTop),
+  //  not its tile's: the feet go there, as David's do
+  const Tn = WILD_TUNE, dir = Math.sign(vx), row = y => Math.floor((y + 0.5) / T), feet = row(b.y), c = Math.floor((b.x + dir * Tn.AHEAD) / T);
   const solid = (cc, r) => isSolid(cc, r), floor = (cc, r) => isSolid(cc, r) || isOneway(cc, r);
+  const surf = (cc, r) => isOneway(cc, r) ? (onewayTop.get(r * COLS + cc) ?? r * T) : r * T;
+  const stand = (cc, y) => { const r = row(y);   // (a ledge drawn higher up in the tile row above wins: the terrace's top)
+    if (isOneway(cc, r - 1) && surf(cc, r - 1) >= y - T) return surf(cc, r - 1);
+    return floor(cc, r) ? surf(cc, r) : null; };
   let stop = false;
-  if (dir && solid(c, feet - 1)) {   // something in the way at its feet
+  if (dir && solid(c, feet - 1) && !isOneway(c, feet - 1)) {   // something in the way at its feet
     let h = 0; while (h <= Tn.HOP.H && solid(c, feet - 1 - h)) h++;
     if (!b.air && h <= Tn.HOP.H) { b.vy = -Math.sqrt(2 * Tn.GRAV * (h * T + 34)); b.air = true; }
     else if (!b.air || solid(c, Math.floor((b.y - 2) / T))) stop = true;
@@ -70,10 +76,10 @@ function wildMove(b, vx, dt) {
   }
   if (!stop) b.x += vx * dt;
   const cc = Math.floor(b.x / T);
-  if (!b.air && !floor(cc, Math.round(b.y / T))) { b.air = true; b.vy = 0; }
+  if (!b.air) { const sy = stand(cc, b.y); if (sy == null) { b.air = true; b.vy = 0; } else b.y = sy; }   // (along a ledge: its drawn top)
   if (b.air) {
     b.vy += Tn.GRAV * dt; const ny = b.y + b.vy * dt;
-    if (b.vy >= 0) for (let r = Math.ceil(b.y / T - 0.01); r * T <= ny + 0.01; r++) if (floor(cc, r) && r * T >= b.y - 1) { b.y = r * T; b.vy = 0; b.air = false; break; }
+    if (b.vy >= 0) for (let r = row(b.y - 2); r <= row(ny) + 1; r++) { if (!floor(cc, r)) continue; const sy = surf(cc, r); if (sy >= b.y - 1 && sy <= ny + 1) { b.y = sy; b.vy = 0; b.air = false; break; } }
     if (b.air) b.y = ny;
     if (b.y > (GR + 8) * T) { b.dead = true; b.gone = true; }
   }

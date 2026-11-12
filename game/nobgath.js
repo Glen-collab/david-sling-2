@@ -66,7 +66,7 @@ const R3 = {
   LOG: { ROWS: 11, SINK: 14, APART: 30 },
   THORN: { K: 0.85, HURT_W: 0.36, HURT_H: 0.7 },   // a thorn bush: its size, and the part of it that hurts (of its width, height)
   VINE: { EVERY: 3.2, SPEED: 230, BOUNCE: 330, SPIN: 4 },   // the vine balls rolling down the road at him
-  LADDER: { FRAME_MS: 140, HIT: 40 },
+  LADDER: { FRAME_MS: 140, HIT: 56, OUT: 18 },   // (OUT: the knot, just off the wall it hangs on: an arrow reaches it before the stone)
   TOWER: { SINK: 14, RIM: 26 },   // the tall lookout (w3_towertall): into the ground; its top, where he stands, down from the picture's top
   COIL: 0.5,
   // (Glen 11-12) the Tall Trees: the trees' middles (columns), how high their top limbs are (px over the ground), the swing
@@ -259,7 +259,7 @@ function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything brea
     for (let i = 0; i < 14; i++) bits.push({ x: v.x, y: v.y - 55, vx: (Math.random() - 0.5) * 380, vy: -Math.random() * 420, life: 0.9, color: i % 2 ? "#6b6a2c" : "#a7a76a" });
     return true;
   }
-  if (s.bow) for (const o of r3.ladders) if (o.room === r.id && o.state === "up" && r3SegDist(s, o.x, o.top + 14) < R3.LADDER.HIT) {
+  if (s.bow) for (const o of r3.ladders) if (o.room === r.id && o.state === "up" && r3SegDist(s, ...r3Knot(o)) < R3.LADDER.HIT) {
     o.state = "drop"; o.t = 0; regionAdd("taken", o.id); sfx("sling_throw_quick", o.x, 0.6, 0.6); s.life = 0; return true;
   }
   return false;
@@ -268,12 +268,15 @@ function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything brea
 function r3Quiver(room, x, y = FOOT) { r3.quivers.push({ room, x, y, got: false }); }   // (y: its ledge's top, up a tree)
 // (Glen 11-12: "I can't shoot the arrow straight") shooting up: an arrow goes for a rope's or a ladder's knot overhead,
 //  if one's close (ramah.js r2LooseArrow asks); null: the usual angle
+const r3Knot = o => [o.x + (o.kick ? 1 : -1) * R3.LADDER.OUT, o.top + 14];   // (where an arrow cuts a rope ladder or rope loose)
 function r3BowAim(d, dir) {
   const r = region.room; if (!r) return null;
   for (const o of r3.ladders) {
     if (o.room !== r.id || o.state !== "up") continue;
-    const dx = o.x - d.x, dy = d.y - R2.ARROW.UP_DY - (o.top + 14);
-    if (dy > 40 && Math.hypot(dx, dy) < 900 && (Math.abs(dx) < 60 || Math.sign(dx) === dir)) return Math.max(0.3, Math.min(1.52, Math.atan2(dy, Math.abs(dx))));
+    // (Glen 11-12: "I couldn't arrow these down") from where the arrow leaves his bow hand, over his shoulder if need
+    //  be, and a little high for its drop
+    const [kx, ky] = r3Knot(o), sx = d.x + dir * R2.ARROW.UP_DX, dx = (kx - sx) * dir, dy = d.y - R2.ARROW.UP_DY - ky;
+    if (dy > 40 && Math.hypot(dx, dy) < 1000) return Math.max(0.25, Math.min(Math.PI - 0.25, Math.atan2(dy + Math.hypot(dx, dy) * 0.04, dx)));
   }
   return null;
 }
