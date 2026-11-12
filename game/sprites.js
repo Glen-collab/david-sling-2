@@ -2592,6 +2592,18 @@ window.SPRITE_DATA = {
   "ay": 313,
   "align": "feet"
  },
+ "david_sword_overhead_gsword": {
+  "src": "../assets/sprites/david_sword_overhead_gsword.png",
+  "frames": 8,
+  "w": 432,
+  "h": 315,
+  "ms": 120,
+  "loop": false,
+  "pingpong": false,
+  "ax": 204,
+  "ay": 313,
+  "align": "feet"
+ },
  "david_sword_slash": {
   "src": "../assets/sprites/david_sword_slash.png",
   "frames": 8,
