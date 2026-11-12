@@ -78,7 +78,7 @@ function wildMove(b, vx, dt) {
 const wildDur = n => SPR[n] ? SPR[n].frames * SPR[n].ms / 1000 : 1;
 function updateWild(b, dt, r) {
   const W_ = WILD[b.kind], d = david, dx = d.x - b.x, dy = d.y - b.y, Tn = WILD_TUNE;
-  b.flash = Math.max(0, (b.flash || 0) - dt);
+  b.flash = Math.max(0, (b.flash || 0) - dt); b.blockT = Math.max(0, (b.blockT || 0) - dt);
   if (b.dead) return;
   if (b.tree != null && !b.down) {   // (Glen 11-12: "like the leopard in David 1") up in the tree, then down on him
     const Tr = Tn.TREE;
@@ -90,7 +90,7 @@ function updateWild(b, dt, r) {
     else if (b.state === "drop") {
       const f = Math.min(1, b.t / Tr.DROP); b.x = b.ax + (b.mark - b.ax) * f; b.y = b.ay + (b.hy - b.ay) * f - Math.sin(f * Math.PI) * 60;
       b.facing = Math.sign(b.mark - b.ax) || b.facing;
-      if (touchesDavid(wildBox(b))) hurtDavid(b.x);
+      if (touchesDavid(wildBox(b))) wildHurt(b);
       if (f >= 1) { b.y = b.hy; b.down = true; b.state = "idle"; b.t = 0; b.cool = 0.6; b.hx = b.x; }
     }
     return;
@@ -117,7 +117,7 @@ function updateWild(b, dt, r) {
     const vx = Math.sign(tx - b.x) * Math.min(W_.speed, Math.abs(tx - b.x) * 2);
     b.x += vx * dt; b.y += (ty + Math.sin(b.t * 2.2) * 18 - b.y) * Math.min(1, dt * 0.9);
     if (Math.abs(vx) > 5) b.facing = Math.sign(vx);
-    if (b.cool <= 0 && touchesDavid(wildBox(b))) { hurtDavid(b.x); b.cool = Tn.SWARM_HURT; }
+    if (b.cool <= 0 && touchesDavid(wildBox(b))) { wildHurt(b); b.cool = Tn.SWARM_HURT; }
     return;
   }
   if (b.kind === "viper") {
@@ -125,12 +125,12 @@ function updateWild(b, dt, r) {
       if (Math.abs(dx) < W_.near * 1.6) b.facing = dx > 0 ? 1 : -1;
       if (b.cool <= 0 && Math.abs(dx) < W_.near && Math.abs(dy) < 90) { b.state = "act"; b.t = 0; }
     } else if (b.t > wildDur(W_.act)) { b.state = "idle"; b.t = 0; b.cool = 1.1; }
-    if (touchesDavid(wildBox(b))) hurtDavid(b.x);
+    if (touchesDavid(wildBox(b))) wildHurt(b);
     return;
   }
   if (b.kind === "wildass") {
     if (b.state === "idle") { pace(); if (b.cool <= 0 && Math.abs(dx) < W_.near && Math.abs(dy) < 100) { b.state = "act"; b.t = 0; b.facing = dx > 0 ? -1 : 1; } }   // (turns its back on him)
-    else { const q = wildKickBox(b); if (q && touchesDavid(q)) hurtDavid(b.x); if (b.t > wildDur(W_.act)) { b.state = "idle"; b.t = 0; b.cool = 1.2; } }
+    else { const q = wildKickBox(b); if (q && touchesDavid(q)) wildHurt(b); if (b.t > wildDur(W_.act)) { b.state = "idle"; b.t = 0; b.cool = 1.2; } }
     return;
   }
   // the chargers: ostrich, caracal, ibex
@@ -144,9 +144,23 @@ function updateWild(b, dt, r) {
     const m = wildMove(b, b.facing * W_.speed, dt), past = b.facing > 0 ? b.x - d.x : d.x - b.x;
     if (!b.air && (b.t > W_.runFor || past > 320 || m.stop || Math.abs(b.x - b.hx) > far)) { b.state = "idle"; b.t = 0; b.cool = Tn.REST; b.facing *= -1; }
   }
-  if (b.state === "run" && touchesDavid(wildBox(b))) hurtDavid(b.x);
+  if (b.state === "run" && touchesDavid(wildBox(b))) wildHurt(b);
 }
 const wildTold = {};
+// (Glen 11-12: "I have a shield ... it should block bees or donkey or ibex") a hit from in front while he holds the shield
+//  is blocked: nothing lost, and the animal is knocked back (a charge ends, a swarm backs off)
+function wildHurt(b) {
+  const d = david;
+  if (d.shield && Math.sign(b.x - d.x) === d.facing) {
+    if (b.cool > 0.2 && b.blockT > 0) return;
+    sfx("stone_hit", b.x, 0.5, 0.7); b.flash = 0.15; b.blockT = 0.4; b.cool = Math.max(b.cool, WILD_TUNE.REST);
+    if (b.state === "run") { b.state = "idle"; b.t = 0; b.facing *= -1; }
+    b.x += Math.sign(b.x - d.x) * 26;
+    if (!wildTold.shield) { wildTold.shield = true; toast("Blocked with the shield!"); }
+    return;
+  }
+  hurtDavid(b.x);
+}
 // a stone or the sword's edge: true if it hit
 function wildHit(b, s) {
   const W_ = WILD[b.kind]; if (b.dead || b.state === "flee" || W_.shy || W_.orbit || b.state === "perch" || b.state === "watch") return false;

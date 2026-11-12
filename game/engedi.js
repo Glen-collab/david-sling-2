@@ -59,7 +59,8 @@ function updateSword(d, dt, busy) {
 function drawSwordDavid(d, x, y) {
   if (w9.pose && w9.pose.hide) return true;   // he's in Glen's two-shot (saul_robe_cut) instead
   if (w9.pose) { const p = w9.pose; drawSprite(p.name, p.frame !== undefined ? p.frame : frameOf(p.name, d.t), x, y, p.facing || d.facing); return true; }
-  if (d.swordT >= 0) { drawSprite("david_sword_slash", Math.min(5, Math.floor(d.swordT / W9.SWORD_TIME * 6)), x, y, d.facing); return true; }
+  // (Glen 11-12: "his normal swing ... should be david_sword_overhead", not the swipe) all its frames over the swing
+  if (d.swordT >= 0) { const S = SPR.david_sword_overhead; drawSprite("david_sword_overhead", Math.min(S.frames - 1, Math.floor(d.swordT / W9.SWORD_TIME * S.frames)), x, y, d.facing); return true; }
   if (d.shield) { drawSprite("david_shield_block", frameOf("david_shield_block", d.t), x, y, d.facing); return true; }
   return false;
 }

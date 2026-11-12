@@ -1531,6 +1531,18 @@ function drawPhil(b, x) {
   else if (b.state === "drop") drawSprite("phil_drop", frameOf("phil_drop", b.t, PHIL.DROP_MS), x, b.y, -(b.facing || -1), 1, 1, fl);   // (the sheet starts facing left)
   else drawSprite("phil_flee", frameOf("phil_flee", now + b.hx), x, b.y, b.fleeDir, 1, b.alpha);
 }
+// (Glen 11-12: the shield blocks the animals) a bird, a bat or a spider coming at him from in front while he holds it:
+//  turned away, nothing lost (wildlife.js does the same for the road animals)
+function beastHurt(b) {
+  const d = david;
+  if (d.shield && Math.sign(b.x - d.x) === d.facing) {
+    if (b.cool > 0) return;
+    b.cool = 1; if (BIRD[b.kind]) { b.state = "home"; b.t = 0; } else { b.facing *= -1; b.x += Math.sign(b.x - d.x) * 30; }
+    if (typeof sfx === "function") sfx("stone_hit", b.x, 0.4, 0.8);
+    return;
+  }
+  hurtDavid(b.x);
+}
 function updateBeasts(dt, r) {
   const d = david;
   for (const b of region.beasts) {
@@ -1569,7 +1581,7 @@ function updateBeasts(dt, r) {
         if (dd < 8) { b.x = b.hx; b.y = b.hy; b.state = "perch"; b.cool = 2.5; }
         else { b.x += hx / dd * B.speed * dt; b.y += hy / dd * B.speed * dt; b.facing = Math.sign(hx) || b.facing; }
       }
-      if (b.state !== "perch") { const q = beastBox(b); if (touchesDavid(q)) hurtDavid(b.x); }
+      if (b.state !== "perch") { const q = beastBox(b); if (touchesDavid(q)) beastHurt(b); }
       continue;
     } else if (b.kind === "bat2") {   // asleep upside down until he comes near; then swoops at him, out past him, and back
       if (b.state === "hang") { if (Math.abs(dx) < 260 && d.y > b.y) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
@@ -1582,7 +1594,7 @@ function updateBeasts(dt, r) {
         b.x = Math.max(r.c0 * T + 40, Math.min((r.c0 + r.w) * T - 40, b.x));
       }
     }
-    if (b.state !== "hang" || b.kind === "spider") { const q = beastBox(b); if (touchesDavid(q)) hurtDavid(b.x); }
+    if (b.state !== "hang" || b.kind === "spider") { const q = beastBox(b); if (touchesDavid(q)) beastHurt(b); }
   }
 }
 function drawBeasts(camX) {
