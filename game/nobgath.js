@@ -66,6 +66,9 @@ const R3 = {
   LADDER: { FRAME_MS: 140, HIT: 40 },
   TOWER: { SINK: 14, RIM: 26 },   // the tall lookout (w3_towertall): into the ground; its top, where he stands, down from the picture's top
   COIL: 0.5,
+  // (Glen 11-12) Nob after Gath, empty: how dark (0-1, as in Goliath's yard), its fog; the dark music's volume and fade (s);
+  //  columns into the painted court where the story is told (by the altar)
+  MOURN: { K: 0.9, DARK: 0.62, VOL: 0.4, FADE: 2.5, AT: 10 },
   // Goliath's yard: his bridge's planks this far down each piece (cut_w3_props.py), the gap broken out of it (px); the dark
   //  and the fog: how dark at the start and at his door, how thick the fog
   YARD: { PLANK: { w3_bridge_l: 118, w3_bridge_m1: 103, w3_bridge_m2: 101, w3_bridge_r: 117 }, GAP: 300, DARK0: 0.12, DARK1: 0.5, FOG: 0.3 },         // his rope coiled up (and dropping): its size (the hanging rope is drawn at R3_ROPE.K)   // the rope ladder: each unrolling frame; how close an arrow has to pass the knot
@@ -117,6 +120,7 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
+  quiet: () => r3Mourning(),   // (region.js regionStageQuiet: no stage music or birds in an empty Nob)
   drawFront: camX => { r3DrawGuards(camX); r3YardFog(camX); }, holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
@@ -340,10 +344,10 @@ function r3DrawRopeChain(q, camX) {   // his rope picture along the chain: the t
   return true;
 }
 // (Glen 11-12: "eerie fog") Goliath's yard: the world darkens the further in (behind David), and fog drifts over everything
-const r3YardK = camX => { const r = region.room; return r && r.id === "giantyard" ? Math.max(0, Math.min(1, (camX + W / 2 - r.c0 * T) / (r.w * T))) : r && r.id === "goliath" ? 1 : -1; };
+const r3YardK = camX => { const r = region.room; return r && r.id === "giantyard" ? Math.max(0, Math.min(1, (camX + W / 2 - r.c0 * T) / (r.w * T))) : r && r.id === "goliath" ? 1 : r && r.id === "nob" && r3.mourn ? R3.MOURN.K : -1; };
 function r3YardDark(camX) {
   const k = r3YardK(camX), Y = R3.YARD; if (k < 0) return;
-  ctx.fillStyle = `rgba(16,12,28,${Y.DARK0 + (Y.DARK1 - Y.DARK0) * k})`; ctx.fillRect(0, camY, W, H);
+  ctx.fillStyle = r3.mourn && region.room.id === "nob" ? `rgba(14,16,30,${R3.MOURN.DARK})` : `rgba(16,12,28,${Y.DARK0 + (Y.DARK1 - Y.DARK0) * k})`; ctx.fillRect(0, camY, W, H);
 }
 function r3YardFog(camX) {
   const k = r3YardK(camX), Y = R3.YARD; if (k < 0) return;
@@ -456,24 +460,26 @@ function r3Build(R) {
   c = R("nob");
   { const X = k => (c + k) * T;
     const P = 29;   // (the painted court starts here: his tileable court before and after it)
+    // (Glen 11-12) back after Gath: Doeg told Saul, and the priests were killed (1 Samuel 22:9-19). No one is left; the
+    //  fire is cold; the ephod is gone with Abiathar, the one who got away (23:6). Dark, quiet, Saul's dark music low
+    const mourn = r3.mourn = r3Has("r3_mad");
     ground(c, c + 109);
-    campfire(c + 3, GR - 1);
+    if (!mourn) campfire(c + 3, GR - 1);
     oliveRow(c + 8, 16, 5); rBreak("jar", "nob", c + 27, 16);
     rKitDoor("d_nobtribes", "nob", c + 16, "door", "d_tribesout", "w3_nob_hallhouse");   // (Glen 11-11: his priests' house, the door into the Hall of the Tribes)
 //    (the olive trees over the strip's joins: gone with the layers, 11-10)   // (olive trees over the two joins, his tileable court to his painted one: the walls are different stone)
-    r3Walker("nob", "nob_priest2_walk", X(17), X(26), 60);
+    if (!mourn) r3Walker("nob", "nob_priest2_walk", X(17), X(26), 60);
     // (the painted court: the altar about columns P+11-17, a table P+24-33, another P+35-44, crates P+45-51; Glen's pieces in front)
-    r3Prop("nob", "w3_holy_bread_table2", X(P + 28), R3.TABLE_K);
-    region.props[region.props.length - 1].draw = () => !!r3.scene;   // (out of the way while the clip's own table is there)
-    r3Prop("nob", "w3_ephod_stand", X(P + 40));
+    if (!mourn) { r3Prop("nob", "w3_holy_bread_table2", X(P + 28), R3.TABLE_K);
+    region.props[region.props.length - 1].draw = () => !!r3.scene; }   // (out of the way while the clip's own table is there)
+    if (!mourn) r3Prop("nob", "w3_ephod_stand", X(P + 40));
     if (!hasSkill("heavySword")) { r3Prop("nob", "w3_goliath_sword", X(P + 37) + 10); r3.swordProp = region.props[region.props.length - 1]; }
     r3.swordX = X(P + 37) + 10;
     r3Prop("nob", "w3_oil_lamp", X(P + 43));
-    r3Person("nob", "ahimelech_idle", X(P + 34), -1, R3.NPC_K, "ahimelech");
-    r3.breadX = X(P + 34); r3.breadAt = X(P + R3.BREAD.TRIGGER);
-    r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45);
-    r3Person("nob", "nob_priest1_talk", X(P + 43), -1);
-    if (!r3Has("r3_bread")) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
+    if (!mourn) r3Person("nob", "ahimelech_idle", X(P + 34), -1, R3.NPC_K, "ahimelech");
+    r3.breadX = X(P + 34); r3.breadAt = X(P + R3.BREAD.TRIGGER); r3.mournAt = X(P + R3.MOURN.AT);
+    if (!mourn) { r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45); r3Person("nob", "nob_priest1_talk", X(P + 43), -1); }
+    if (!r3Has("r3_bread") && !mourn) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
     rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "w3_nob_stairhouse");   // (Glen 11-11: his cellar house over the stair down)
     oliveRow(c + 92, 16, 5); rRelic("r3_stone_nob", "stone", c + 100, 16);
   }
@@ -648,7 +654,8 @@ function r3Build(R) {
 }
 
 function r3Enter(r) {
-  if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
+  if (r.id === "nob" && r3.mourn) r3Tell("nobempty", "Nob is silent. The fires are cold, and no one is here.");
+  else if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
   if (r.id === "tribes") r3TrialMend();
   r3HangReset(r.id); r3PropsReset(r.id); r3.swing = null;   // (they grow back each time)
   if (r.id === "nobroad") kitImg("w3_rope_4");
@@ -660,8 +667,29 @@ function r3Enter(r) {
   if (r.id === "giantyard") r3Tell("giantyard", "Goliath's yard. Something heavy has been dragged this way...");
   if (r.id === "gath") r3Tell("gath", "Gath, Goliath's own city. Achish's men are watching the road.");
 }
+// (Glen 11-12: "somber dark eerie music, quiet and no one around") Saul's dark music, low, in Nob once it's empty; the
+//  stage's music and the birds stay out (NOBGATH.quiet)
+let r3MournSong = null, r3MournVol = 0;
+const r3Mourning = () => !!r3.mourn && (region.room || {}).id === "nob";
+function r3MournMusic(dt) {
+  const want = r3Mourning() && !regionHushed() && david.deadT <= 0 ? R3.MOURN.VOL : 0;
+  if (!r3MournSong && want > 0) r3MournSong = Object.assign(new Audio(`../assets/audio/saul_dark.mp3?v=${window.BUILD || 0}`), { loop: true, volume: 0, _music: true });
+  if (r3MournSong) r3MournVol = fadeLoop(r3MournSong, r3MournVol, want, dt, R3.MOURN.FADE);
+}
+function r3MournScene() {   // 1 Samuel 22, the WEB's words (checked on ebible.org 11-12)
+  rPlay([
+    { say: ["", "Doeg the Edomite had seen David at Nob. He told Saul, “I saw the son of Jesse coming to Nob, to Ahimelech.” (1 Samuel 22:9)"] },
+    { say: ["", "The king sent for Ahimelech and all the priests who were in Nob. Saul's own servants would not put out their hand against the priests of the LORD. (1 Samuel 22:11, 17)"] },
+    { say: ["", "But Doeg the Edomite turned, and he attacked the priests, and he killed on that day eighty-five people who wore a linen ephod. (1 Samuel 22:18)"] },
+    { say: ["", "Only one escaped: Abiathar, Ahimelech's son. He fled after David, with the ephod in his hand. (1 Samuel 22:20; 23:6)"] },
+    { say: ["David", "I knew on that day, when Doeg the Edomite was there, that he would surely tell Saul. I am responsible for the death of all the persons of your father's house. (1 Samuel 22:22)"] },
+    { say: ["David", "Stay with me. Don't be afraid, for he who seeks my life seeks your life. You will be safe with me. (1 Samuel 22:23)"] },
+    { fn() { regionAdd("taken", "r3_mourn"); } },
+  ]);
+}
 function r3Update(dt) {
   r3.t += dt; if (r3.scene) r3.scene.t += dt;
+  r3MournMusic(dt);
   if (r3.mad) { r3.mad.t += dt; region.wait = Math.max(region.wait, 0.05); }   // (acting mad: he's held while the mash runs)
   const d = david, r = region.room; if (!r) return;
   for (const q of r3.chips) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 1400 * dt; }
@@ -680,6 +708,8 @@ function r3Update(dt) {
   // Gath: the guard knows him at the gate (21:11); Achish's court (21:14-15)
   if (r.id === "gath" && !r3Has("r3_gath") && free && d.x > r3.gateAt) { r3GateScene(); return; }
   if (r.id === "court" && !r3Has("r3_mad") && free && d.x > r3.courtAt) { r3CourtScene(); return; }
+  // Nob, empty after Gath: by the altar, what happened (22:9-23), once
+  if (r.id === "nob" && r3.mourn && !r3Has("r3_mourn") && free && d.x > r3.mournAt) { r3MournScene(); return; }
   // Nob: the holy bread, the first time he walks up to Ahimelech (21:1-6)
   if (r.id === "nob" && !r3Has("r3_bread") && free && d.x > r3.breadAt && d.x < r3.breadX) { r3BreadScene(); return; }
   // Nob: Goliath's sword, wrapped in a cloth behind the ephod (21:8-9)

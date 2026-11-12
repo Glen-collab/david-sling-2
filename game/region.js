@@ -1623,7 +1623,7 @@ function updateSaulMusic(dt, r) {
   if (!saulDarkSong) return;
   saulDarkVol = fadeLoop(saulDarkSong, saulDarkVol, want, dt, M.FADE);
 }
-const regionStageQuiet = () => REGION_ON && (region.room || {}).id === "harp" && !regionHas("taken", "g_harp_done");   // main.js: no fields music under the king's
+const regionStageQuiet = () => REGION_ON && ((region.room || {}).id === "harp" && !regionHas("taken", "g_harp_done") || !!(REGION.quiet && REGION.quiet()));   // (a region's own: nobgath.js's empty Nob)   // main.js: no fields music under the king's
 function updateHarpRoom(dt, r) {
   const hr = region.harp, d = david, H_ = RTUNE.HARP; if (!hr) return;
   updateSaulMusic(dt, r);
