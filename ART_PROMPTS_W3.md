@@ -83,7 +83,7 @@ seen straight from the side, the camera not moving. Every prompt ends with:
 Clip: it sidewinds left to right in S-curves, stops, strikes forward, coils again. (Hides half-buried in sand on the Gath road.)
 
 **5b. Ostrich.** A big male ostrich, black feathers, white wing and tail plumes, long pink legs. Clip: it runs full speed
-left to right, then stops and kicks forward with one big foot. (Job 39:13-18: "she laughs at the horse and his rider".)
+left to right, then stops and kicks forward with one big foot. (Job 39:13-18: "she scorns the horse and his rider".)
 
 **5c. Wild ass (onager).** A tan wild donkey with a dark stripe down its back, ears back, angry. Clip: it charges left to
 right, then rears up and kicks with both back legs. (Job 39:5-8.)
@@ -105,7 +105,7 @@ Philistines' god Baal-zebub, "lord of the flies", 2 Kings 1:2. Smoke from a torc
 (1 Samuel 26:20: David says Saul hunts him "as when one hunts a partridge in the mountains". The perfect bird for him.)
 
 **5i. Rock hyrax (coney).** Small furry brown rock badgers on a boulder, sunning, one standing guard. Clip: they all dive
-into a crack in the rock. (Proverbs 30:26: "they make their houses in the rocks". A hint to David: hide in the rock.)
+into a crack in the rock. (Proverbs 30:26: "yet make they their houses in the rocks". A hint to David: hide in the rock.)
 
 **5j. Hoopoe.** An orange bird with a black-and-white striped crest and wings, crest fanned up. Clip: it flies up in a
 bouncy flight.
