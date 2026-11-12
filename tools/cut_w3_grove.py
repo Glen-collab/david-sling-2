@@ -57,3 +57,26 @@ hv = Image.open(os.path.join(os.path.dirname(__file__), "..", "assets", "items",
 h = np.asarray(hv).copy(); h[:20, :26, 3] = 0; h[:20, 37:, 3] = 0   # (the bit of branch and leaf above it: only its hanging cord stays)
 save(Image.fromarray(h), "w3_hive", 1.0)
 rp = ld("trunk_rope_only.png"); rp = rp.crop(rp.getbbox()); save(rp, "w3_rope_hang", 0.3)
+# (Glen 11-12: "use the other tree I made so it is smoother all the way up") the Road Down to Gath's climbing tree: his
+#  branchy column whole (branches all the way up), taller, w3_trunk_full + w3_trunk_full.json (its ledges)
+HF = 1250; SF = HF / (BOX[3] - BOX[1])
+full = col.crop(BOX); save(full, "w3_trunk_full", SF)
+A = np.asarray(full)[...,3] > 60; rows = []
+for y in range(A.shape[0]):
+    ra, rb = np.where(A[y])[0], np.where(Bm[y])[0]
+    if not len(ra) or not len(rb): rows.append((None, None)); continue
+    l = ra.min() if ra.min() < rb.min() - 50 else None; r = ra.max() if ra.max() > rb.max() + 50 else None
+    rows.append((l and (l, rb.min()), r and (rb.max(), r)))
+fl = []
+for side in (0, 1):
+    cur = None
+    for y, rr in enumerate(rows):
+        v = rr[side]
+        if v and cur is None: cur = [y, v[0], v[1], y]
+        elif v and cur: cur[1] = min(cur[1], v[0]); cur[2] = max(cur[2], v[1]); cur[3] = y
+        elif not v and cur:
+            if cur[3] - cur[0] > 20: fl.append({ "side": "LR"[side], "top": round(cur[0] * SF), "x0": round(cur[1] * SF), "x1": round(cur[2] * SF) })
+            cur = None
+fl.sort(key=lambda q: -q["top"])
+json.dump({ "mid": round((1000 - BOX[0]) * SF), "ledges": fl }, open(os.path.join(OUT, "w3_trunk_full.json"), "w"), indent=1)
+print("  trunk_full ledges", [(q["side"], HF - q["top"]) for q in fl])

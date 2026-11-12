@@ -94,7 +94,9 @@ const R3 = {
   //  more") A0: its sway on its own, small; CATCH: how much of his jump carries into it; PUMP: each push with the swing
   //  (Glen 11-12 again: "way too fast ... not smooth ... way slower": G down (each swing takes longer), PUMP gentler)
   SWING: { AY: -90, LEN: 530, A0: 0.1, CATCH: 0.2, G: 1250, PUMP: 0.9, DAMP: 0.05, HANDS: 104, GRAB: 34, CLIMB: 170, BOOST: 1.25, JUMP: 520, COOL: 0.4, MAX: 0.85 },   // (Glen 11-12: "too fast and wild": A0, PUMP, BOOST, MAX down)
-  CROWN: { TOP: 110, X0: 150, X1: 340, ROPE_X: 330 },   // the climbing tree's crown: a ledge TOP px down its picture, from X0 to X1; the rope tied at ROPE_X
+  // the Road Down to Gath's climbing tree (Glen's branchy column, w3_trunk_full): his limbs added [side, px over the
+  //  ground] where a gap's too big; the treetop's size; the crown's limb (px over the ground): the Truth, the rope
+  TREE: { EXTRA: [[-1, 450], [1, 1100]], CROWN_K: 1.25, CROWN_LEDGE: 1480 },   // the climbing tree's crown: a ledge TOP px down its picture, from X0 to X1; the rope tied at ROPE_X
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -110,7 +112,7 @@ const NOBGATH = {
       strip: "w3/crack_strip", floor: "w3/crack_dirt.png", band: [0.04, 0.72] },   // (his cracked wall, a storey repeating up: Castlevania)
     { id: "tribes",   name: "The Hall of the Tribes", w: 96, bg: "w4_4", mx: 4, my: 2, mw: 2,
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },   // (11-11: Saul's halls stand in till Glen paints Nob's own)
-    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 24, bg: "w4_1", mx: 4, my: 1, mw: 2, left: "nob", right: "grove",
+    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 46, bg: "w4_1", mx: 4, my: 1, mw: 2, left: "nob", right: "grove",
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },   // (+ his near layer: sycamore shrubs, a broken jar, a mud-brick stub)
     // (Glen 11-12) the tall trees: trunks too tall to climb, then one that can be, and the way back across their tops
     { id: "grove",    name: "The Tall Trees",        w: 132, up: 42, bg: "w4_1", mx: 6, my: 1, mw: 2, left: "gathroad", right: "gath",
@@ -149,7 +151,7 @@ const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when t
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
   w3_tamarisk: { w: 374, h: 300 }, w3_broom: { w: 302, h: 150 }, w3_caper: { w: 121, h: 170 }, w3_nettle: { w: 59, h: 80 }, w3_gourd: { w: 85, h: 48 }, w3_tumbleweed: { w: 100, h: 96 },   // (Glen 11-12, tools/cut_w3_plants.py)
   w3_knot_branch: { w: 113, h: 122 },
-  w3_trunk_bare: { w: 109, h: 1000 }, w3_trunk_d: { w: 491, h: 1000 }, w3_limb: { w: 270, h: 48 }, w3_crown: { w: 429, h: 371 }, w3_rope_hang: { w: 118, h: 527 }, w3_hive: { w: 63, h: 91 },   // (tools/cut_w3_grove.py)
+  w3_trunk_bare: { w: 109, h: 1000 }, w3_trunk_d: { w: 491, h: 1000 }, w3_limb: { w: 270, h: 48 }, w3_crown: { w: 429, h: 371 }, w3_rope_hang: { w: 118, h: 527 }, w3_hive: { w: 63, h: 91 }, w3_trunk_full: { w: 614, h: 1250 },   // (tools/cut_w3_grove.py)
   w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 },
   w3_palace_door: { w: 534, h: 357 }, w3_goliath_door: { w: 764, h: 471 },
   w3_bridge_l: { w: 88, h: 157 }, w3_bridge_m1: { w: 113, h: 126 }, w3_bridge_m2: { w: 120, h: 124 }, w3_bridge_r: { w: 91, h: 156 }, w3_climbtree_tall: { w: 466, h: 1354 },
@@ -159,6 +161,7 @@ const R3_LADDER_KNOT = [53, 53, 52, 39];   // (w3_ladder.json: each frame's knot
 const R3_CLIMBTREE = [{ side: "L", top: 1234, x0: 15, x1: 253 }, { side: "R", top: 1189, x0: 213, x1: 464 }, { side: "L", top: 1089, x0: 1, x1: 253 }, { side: "R", top: 979, x0: 213, x1: 465 }, { side: "L", top: 851, x0: 50, x1: 253 }, { side: "L", top: 720, x0: 1, x1: 253 }, { side: "R", top: 610, x0: 213, x1: 465 }, { side: "L", top: 483, x0: 50, x1: 253 }, { side: "L", top: 382, x0: 69, x1: 253 }, { side: "R", top: 323, x0: 213, x1: 406 }];   // (w3_climbtree_tall.json: its branches, low to high, tree px; Glen 11-12: "way taller so the screen has to go up")   // (w3_climbtree.json: its branches, tree px)
 const R3_DATES = [{ n: "w3_dates_1", x: 144, y: 255 }, { n: "w3_dates_2", x: 196, y: 256 }, { n: "w3_dates_3", x: 206, y: 197 }];   // (w3_palm_b.json)
 const R3_ROPE_KNOT = [72, 44, 39, 29];   // (w3_rope.json)
+const R3_TRUNK_FULL = { "mid": 307, "ledges": [  {   "side": "L",   "top": 1162,   "x0": 0,   "x1": 264  },  {   "side": "L",   "top": 1145,   "x0": 0,   "x1": 267  },  {   "side": "R",   "top": 1101,   "x0": 360,   "x1": 614  },  {   "side": "R",   "top": 950,   "x0": 342,   "x1": 526  },  {   "side": "L",   "top": 653,   "x0": 91,   "x1": 275  },  {   "side": "R",   "top": 487,   "x0": 332,   "x1": 481  },  {   "side": "R",   "top": 337,   "x0": 327,   "x1": 431  },  {   "side": "L",   "top": 259,   "x0": 184,   "x1": 281  },  {   "side": "L",   "top": 38,   "x0": 179,   "x1": 281  } ]};   // (cut_w3_grove.py)
 const R3_TRUNK_D = { "mid": 246, "ledges": [  {   "side": "L",   "top": 930,   "x0": 0,   "x1": 211  },  {   "side": "L",   "top": 916,   "x0": 0,   "x1": 213  },  {   "side": "R",   "top": 881,   "x0": 288,   "x1": 491  },  {   "side": "R",   "top": 760,   "x0": 273,   "x1": 421  },  {   "side": "L",   "top": 522,   "x0": 73,   "x1": 220  },  {   "side": "R",   "top": 390,   "x0": 266,   "x1": 385  } ]};   // (Glen's climbing tree in the Tall Trees: cut_w3_grove.py's w3_trunk_d.json)
 const r3 = { t: 0, hangs: [], thorns: [], vines: [], vineZones: [], gourds: [], quivers: [], honey: [], vineT: 0, ladders: [], swings: [], swing: null, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
 const r3Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
@@ -724,18 +727,23 @@ function r3Build(R) {
     r3.gourds.push({ room: "gathroad", x: X(28) + 6 }, { room: "gathroad", x: X(29) + 20 });
     r3Thorn("gathroad", X(110), "w3_nettle");
     r3Wall("r3_log_gathroad", "gathroad", c + 92, 16, "log");
-    { const k = KIT.w3_climbtree_tall, tx = X(116) + T / 2 - k.w / 2, ty = FOOT - k.h + R3.TREE_SINK;   // its branches: ledges
-      region.props.push({ room: "gathroad", n: "w3_climbtree_tall", x: tx, y: ty });
-      for (const b of R3_CLIMBTREE) { const c0 = Math.ceil((tx + b.x0) / T), c1 = Math.floor((tx + b.x1) / T); platAt(c0, ty + b.top + 4, c1 - c0); }
-      // (its top branch is only to look at: from it the crown would be a jump; the rope is the way up there)
-      const tb = R3_CLIMBTREE[R3_CLIMBTREE.length - 1], tc = Math.floor((tx + (tb.x0 + tb.x1) / 2) / T);
+    { // (Glen 11-12: "use the other tree I made so it is smoother all the way up") his branchy column, whole, its branches
+      //  ledges (two of his limbs where a gap was too big to jump), his treetop on it. Up in the crown, a limb with the
+      //  Truth on it; his rope tied on there, hanging down; an eagle guarding it. The pomegranate on the top branch
+      const J = R3_TRUNK_FULL, k = KIT.w3_trunk_full, cx = X(116) + T / 2, x0 = cx - J.mid, ty = FOOT - k.h + R3.TREE_SINK, TR = R3.TREE;
+      region.props.push({ room: "gathroad", n: "w3_trunk_full", x: x0, y: ty });
+      const cr = KIT.w3_crown; region.props.push({ room: "gathroad", n: "w3_crown", x: cx - cr.w * TR.CROWN_K / 2, y: ty - cr.h * TR.CROWN_K + 90, s: TR.CROWN_K });
+      for (const b of J.ledges) { const a = Math.ceil((x0 + b.x0 + 8) / T), z = Math.floor((x0 + b.x1 - 8) / T); if (z > a) platAt(a, ty + b.top + 4, z - a); }
+      const limb = (side, y, len) => { const kl = KIT.w3_limb, w = kl.w * len, x = side > 0 ? cx - 6 : cx - w + 6;
+        region.props.push({ room: "gathroad", n: "w3_limb", x, y: y - 10, s: len, flip: side > 0 });
+        platAt(Math.ceil(x / T), y, Math.max(1, Math.floor((x + w) / T) - Math.ceil(x / T))); return side > 0 ? x + w : x; };
+      for (const [side, h] of TR.EXTRA) limb(side, FOOT - h, 0.75);
+      const tb = J.ledges.reduce((m, b) => b.top < m.top ? b : m), tc = Math.floor((x0 + (tb.x0 + tb.x1) / 2) / T);
       rRelic("r3_pom_tree", "pomegranate", tc, onTop(ty + tb.top + 4));
-      // (Glen 11-12) the crown: too high to jump to from the top branch; his rope's coiled up there: shoot it down, climb up
-      const C = R3.CROWN, cy = ty + C.TOP, k0 = Math.ceil((tx + C.X0) / T), k1 = Math.floor((tx + C.X1) / T);
-      platAt(k0, cy, k1 - k0 + 1);
-      rRelic("r3_truth_tree", "truth", k0 + 1, onTop(cy), "He makes my feet like deer's feet, and sets me on my high places. (Psalm 18:33)");
-      r3RopeLadder("r3_rope_tree", "gathroad", Math.round((tx + C.ROPE_X) / T) * T, cy, "rope", true);   // (tied on, already down)
-      bird("eagle", "gathroad", tx + 200, cy); }   // (Glen 11-12: the challenge is the climb: an eagle guards the crown)
+      const cy = Math.round((FOOT - TR.CROWN_LEDGE) / T) * T, tip = limb(1, cy, 1);
+      rRelic("r3_truth_tree", "truth", Math.floor((cx + 60) / T), onTop(cy), "He makes my feet like deer's feet, and sets me on my high places. (Psalm 18:33)");
+      r3RopeLadder("r3_rope_tree", "gathroad", Math.round((tip - 40) / T) * T, cy, "rope", true);   // (tied on, already down)
+      bird("eagle", "gathroad", cx + 140, cy); }   // (Glen 11-12: the challenge is the climb: an eagle guards the crown)
     campfire(c + 125, GR - 1);
     r3Person("gathroad", "gath_guard_idle", X(128), -1);   // (the first of Achish's men, on the road in)
   }
