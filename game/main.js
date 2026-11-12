@@ -415,7 +415,7 @@ function keyText(s) {
 // Only a button word in a button place is changed ("press A", "A:", "A again:", "Down + A", "A or B", "(A)"), never
 // "A lion came" or "a continue". Text already written for the keyboard (the controls page, the H help) sets
 // keyWordsOff while it draws.
-const KEY_WORDS = { A: "Z", B: "X", X: "V", Y: "C", Select: "C", Start: "Enter", "D-pad": "Arrows" };
+const KEY_WORDS = { A: "Z", B: "X", X: "V", Y: "G", Select: "C", Start: "Enter", "D-pad": "Arrows" };
 let keyWordsOff = false;
 let kbCache = { t: -1e9, kb: true };
 function onKeyboard() {   // (asked many times a frame: the controller is looked up at most 4 times a second)

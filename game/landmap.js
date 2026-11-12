@@ -28,6 +28,30 @@ function landDone(id) {   // (a place in a stage shared with another: its own sa
   const p = LAND_PLACES.find(q => q.id === id) || { id }, key = p.key || p.id, flag = p.done || "g_exit_open";
   try { const s = JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + key) || "{}"); return (s.taken || []).includes(flag); } catch (e) { return false; }
 }
+// (Glen 11-12: "restart that level ... like I don't have the key or the sword, like I'm new to it") Y on the map, twice:
+//  that stage's save gone (rooms, finds, doors), and the skills it taught, so it plays from the beginning
+const LAND_SKILLS = { ramah: ["rope", "bow"], nobgath: ["heavySword"] };
+function landReset(p) {
+  const key = p.key || p.id;
+  try { localStorage.removeItem(slotKey("david2Region") + "_" + key); } catch (e) {}
+  for (const k of LAND_SKILLS[key] || []) skills.delete(k);
+  try { const s = JSON.parse(localStorage.getItem(slotKey("david2Progress")) || "{}"); s.skills = [...skills]; localStorage.setItem(slotKey("david2Progress"), JSON.stringify(s)); } catch (e) {}
+  if (key === "nobgath" && typeof breadSet === "function") breadSet(0);   // (Ahimelech's five loaves)
+  // a place sharing the stage (Gath) is closed again till its first is done; it draws its road out again
+  const shared = LAND_PLACES.filter(q => (q.key || q.id) === key && q !== p && q.after && (LAND_PLACES.find(a => a.id === q.after) || {}).key === key);
+  try { localStorage.setItem(slotKey("david2Land"), JSON.stringify(landSeen().filter(id => !shared.some(q => q.id === id)))); } catch (e) {}
+}
+function landHasSave(p) { try { const s = JSON.parse(localStorage.getItem(slotKey("david2Region") + "_" + (p.key || p.id)) || "null"); return !!(s && ((s.explored || []).length || (s.taken || []).length)); } catch (e) { return false; } }
+// the places open on the map, in story order: the first; the next once the one before is done; and (after a start over)
+//  one seen before stays open, if the one before it is open and isn't the same stage (Gath waits for Nob again)
+function landOpen() {
+  const seen = landSeen(), open = [];
+  for (const p of LAND_PLACES) {
+    const a = p.after && LAND_PLACES.find(q => q.id === p.after);
+    if (LAND_ALL || !a || landDone(a.id) || (seen.includes(p.id) && open.includes(a) && (a.key || a.id) !== (p.key || p.id))) open.push(p);
+  }
+  return open;
+}
 function landSeen() { try { return JSON.parse(localStorage.getItem(slotKey("david2Land")) || "[]"); } catch (e) { return []; } }
 function landSeenAdd(id) { const s = landSeen(); if (!s.includes(id)) { s.push(id); try { localStorage.setItem(slotKey("david2Land"), JSON.stringify(s)); } catch (e) {} } }
 
@@ -36,7 +60,7 @@ const LandMap = {
   open() {
     if (!this.img) { this.img = new Image(); this.img.src = LAND_IMG + "?v=" + (window.BUILD || 0); }
     this.active = true; this.t = 0; this.msg = null;
-    this.places = LAND_PLACES.filter(p => LAND_ALL || !p.after || landDone(p.after));
+    this.places = landOpen();
     // newly opened: draw the road out to it, once
     const fresh = LAND_ALL ? null : this.places.find(p => p.after && !landSeen().includes(p.id));
     this.reveal = fresh ? { to: fresh, from: LAND_PLACES.find(q => q.id === fresh.after), t: 0 } : null;
@@ -54,6 +78,19 @@ const LandMap = {
     const n = this.places.length;
     if (pressed("left") || pressed("up")) { this.sel = (this.sel + n - 1) % n; if (typeof chime === "function") chime(1); }
     if (pressed("right") || pressed("down")) { this.sel = (this.sel + 1) % n; if (typeof chime === "function") chime(1); }
+    if (pressed("y")) {   // start over: twice, to be sure
+      const p = this.places[this.sel], same = q => (q.key || q.id) === (p.key || p.id);
+      if (!p.stage || !landHasSave(p)) { this.msg = `${p.name} hasn't been started yet.`; this.msgT = 2.5; this.sure = null; }
+      else if (this.sure === (p.key || p.id) && this.sureT > 0) {
+        landReset(p); this.sure = null; if (typeof chime === "function") chime(2);
+        const first = LAND_PLACES.find(same); this.msg = `${first.name}: starting over. Press A to play it from the beginning.`; this.msgT = 3.5;
+        this.places = landOpen(); this.sel = Math.max(0, this.places.indexOf(first));
+      } else {
+        const names = LAND_PLACES.filter(same).map(q => q.name).join(" and ");
+        this.sure = p.key || p.id; this.sureT = 4; this.msg = `Start ${names} over from the beginning? Press Y again.`; this.msgT = 4;
+      }
+    }
+    if (this.sureT > 0) this.sureT -= dt;
     if (pressed("a")) {
       const p = this.places[this.sel];
       if (p.stage) {
@@ -118,12 +155,13 @@ const LandMap = {
     ctx.fillStyle = "#e9dcc4"; ctx.font = "italic 16px Georgia, serif"; ctx.fillText(!p.stage ? `${p.world}  ·  coming soon` : landDone(p.id) ? `${p.world}  ·  done: go back for what you missed` : p === this.here ? `${p.world}  ·  you are here` : p.world, HX, 72);
     if (this.msg && this.msgT > 0) {
       ctx.font = "17px sans-serif"; const mw = ctx.measureText(this.msg).width + 40;
-      ctx.fillStyle = "rgba(25,14,6,0.8)"; ctx.beginPath(); ctx.roundRect(W / 2 - mw / 2, H - 92, mw, 34, 10); ctx.fill();
-      ctx.fillStyle = "#ffd166"; ctx.fillText(this.msg, W / 2, H - 69);
+      ctx.fillStyle = "rgba(25,14,6,0.8)"; ctx.beginPath(); ctx.roundRect(W / 2 - mw / 2, H - 152, mw, 34, 10); ctx.fill();   // (above where toasts show)
+      ctx.fillStyle = "#ffd166"; ctx.fillText(this.msg, W / 2, H - 129);
     }
     ctx.fillStyle = "rgba(25,14,6,0.72)"; ctx.fillRect(0, H - 40, W, 40);
     ctx.fillStyle = "#e9dcc4"; ctx.font = "16px sans-serif";
-    ctx.fillText(this.places.length > 1 ? "Left / Right: choose a place     A: go there     Start: menu" : "A: go there     Start: menu", W / 2, H - 14);
+    const again = p.stage && landHasSave(p) ? "     Y: start over" : "";
+    ctx.fillText((this.places.length > 1 ? "Left / Right: choose a place     A: go there" : "A: go there") + again + "     Start: menu", W / 2, H - 14);
     ctx.restore();
   },
 };
