@@ -50,10 +50,10 @@ const R3 = {
   // (Glen 11-11) the Hall of the Tribes, off Nob: his twelve tablets set in the floor, out of order. Walk them in the
   //  order Jacob blessed his sons (Genesis 49:3-27): the blessing's words show at the top, find the picture. A right
   //  one glows and stays safe; a wrong one cracks and drops him back to the door (time, not a heart)
-  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6, PAD: 16,
+  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6, PAD: 80,
     // (Glen's Meta frames, cut_tribe_crumble.py: _c1 cracked, _c2 broken; the rest break in drawn pieces till theirs come)
-    C1: ["asher", "dan", "gad", "issachar", "joseph", "levi", "reuben", "simeon"],
-    C2: ["asher", "dan", "gad", "issachar", "joseph", "levi", "naphtali", "reuben", "simeon"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
+    C1: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "reuben", "simeon"],
+    C2: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
     FLOOR: ["judah", "gad", "reuben", "joseph", "levi", "asher", "dan", "zebulun", "benjamin", "simeon", "naphtali", "issachar"] },   // (left to right)
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };

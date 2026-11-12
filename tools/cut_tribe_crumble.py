@@ -12,7 +12,7 @@ from PIL import Image
 ART = os.path.join(os.path.expanduser("~"), "Desktop", "david-sling-2-art", "w3", "tribes_crumble")
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "rooms", "w3", "kit")
 TW = 216   # the tablet's width in the game
-PAD = 16   # game px of room left and above the tablet's corner in the _c1/_c2 frames (nobgath.js R3.TRIBES.PAD)
+PAD = 80   # game px of room left and above the tablet's corner in the _c1/_c2 frames (nobgath.js R3.TRIBES.PAD)
 
 
 def key(a):
@@ -40,7 +40,7 @@ for path in sorted(glob.glob(os.path.join(ART, "*.png"))):
         fy0 = int(np.argmax(rows > rows.max() * 0.5)); fx0 = int(np.argmax(cols > cols.max() * 0.5))
         ox, oy = fx0, fy0   # (this frame's tablet corner)
         p = round(PAD / k)
-        im = Image.fromarray(f).crop((ox - p, oy - p, ox - p + int((x1 - x0) * 1.35), oy - p + int(f.shape[0] - y0)))
+        im = Image.fromarray(f).crop((ox - p, oy - p, ox + (x1 - x0) + p, f.shape[0]))
         outs.append(im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS))
     whole = Image.fromarray(frames[0]).crop((x0, y0, x1 + 1, ys.max() + 1)); whole = whole.resize((TW, round(whole.height * k)), Image.LANCZOS)
     whole.save(os.path.join(OUT, f"w3_tribe_{name}.png"), optimize=True)
