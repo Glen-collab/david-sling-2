@@ -1,11 +1,17 @@
 {
   "frames": 4,
-  "frame_w": 152,
-  "frame_h": 254,
+  "frame_w": 356,
+  "frame_h": 285,
   "ms_per_frame": 70,
   "loop": false,
   "align": "feet",
-  "anchor_x": 57,
-  "anchor_y": 253,
-  "source": "david_bow_sheet.png"
+  "anchor_x": 70,
+  "anchor_y": 282,
+  "source": "david_bow_clip_nosword.mp4",
+  "video_frames": [
+    158,
+    167,
+    176,
+    65
+  ]
 }

@@ -1683,13 +1683,13 @@ window.SPRITE_DATA = {
  "david_bow": {
   "src": "../assets/sprites/david_bow.png",
   "frames": 4,
-  "w": 152,
-  "h": 254,
+  "w": 356,
+  "h": 285,
   "ms": 70,
   "loop": false,
   "pingpong": false,
-  "ax": 57,
-  "ay": 253,
+  "ax": 70,
+  "ay": 282,
   "align": "feet"
  },
  "david_bow_up": {

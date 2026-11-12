@@ -6,6 +6,7 @@ draws its own). The frames come from different moments of the clip, so they're p
   david_gsword_bow     150, 158, 166 (nocked, drawing, drawn level) + 44 (just let go)
   david_gsword_bow_up  172, 184, 200 (raising it, drawn up)         + 227
   david_bow_up         174, 186, 198                                + 228
+  david_bow            158, 167, 176 (drawing level)                + 65
 python tools/cut_bow_clips.py   (then: python tools/make_manifest.py)
 """
 import os, shutil, subprocess, tempfile, json
@@ -16,7 +17,10 @@ ART = os.path.join(os.path.expanduser("~"), "Desktop", "david-sling-2-art", "w3"
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, "..", "assets", "sprites")
 SHEETS = [("david_gsword_bow", "david_gsword_bow_clip.mp4", [150, 158, 166, 44]),
           ("david_gsword_bow_up", "david_gsword_bow_clip.mp4", [172, 184, 200, 227]),
-          ("david_bow_up", "david_bow_clip_nosword.mp4", [174, 186, 198, 228])]
+          ("david_bow_up", "david_bow_clip_nosword.mp4", [174, 186, 198, 228]),
+          # (level, no sword: replaces the old david_bow, an older-looking David. Its release is from the first shot,
+          #  where the clip has a shield on his back, not the quiver: one frame, a fifth of a second)
+          ("david_bow", "david_bow_clip_nosword.mp4", [158, 167, 176, 65])]
 tmp = tempfile.mkdtemp()
 for name, clip, frames in SHEETS:
     src = os.path.join(ART, clip); pics = []
