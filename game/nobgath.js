@@ -42,7 +42,7 @@ const R3 = {
     WHIRL: [4, 6], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-6 whirl, the sling overhead (11-12: Glen redrew 3-6 with his feet together), 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
   // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
   //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
-  BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131, DOEG_STEP: 1.1, DOEG_V: 55, TABLE: [222, 178] },   // (TABLE: where w3_bread_table was cut from the clip's frame)   // (DOEG_STEP: seconds Doeg walks each line, at DOEG_V px/s)   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
+  BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131, DOEG_STEP: 1.1, DOEG_V: 55, TABLE: [222, 178], TABLE_AT: [168, 100] },   // (TABLE: where w3_bread_table was cut from the clip's frame; TABLE_AT: Glen's loaf tables' corner, the same frame: cut in 11-12 to fit it)   // (DOEG_STEP: seconds Doeg walks each line, at DOEG_V px/s)   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
   // (Glen 11-11) Gath (21:10-15): at the gate the guard knows him, and he acts mad (mash, scribbling on the doors);
   //  in Achish's court, mad again before the king, then once more to get past the elite guards ("Get this crazy
   //  person out of here!"). Mash sizes: [presses to fill, seconds, drain a second] (drill.js startMash)
@@ -154,7 +154,7 @@ const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when t
   w3_deadtree: { w: 562, h: 382 }, w3_log_l: { w: 189, h: 138 }, w3_log_r: { w: 215, h: 138 }, w3_palm: { w: 362, h: 564 }, w3_palm_b: { w: 343, h: 575 },
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
   w3_tamarisk: { w: 374, h: 300 }, w3_broom: { w: 302, h: 150 }, w3_caper: { w: 121, h: 170 }, w3_nettle: { w: 59, h: 80 }, w3_gourd: { w: 85, h: 48 }, w3_tumbleweed: { w: 100, h: 96 },   // (Glen 11-12, tools/cut_w3_plants.py)
-  w3_knot_branch: { w: 113, h: 122 }, w3_bread_table: { w: 256, h: 105 },
+  w3_knot_branch: { w: 113, h: 122 }, w3_bread_table: { w: 256, h: 105 }, w3_bread_table_12: { w: 329, h: 200 }, w3_bread_table_11: { w: 329, h: 200 }, w3_bread_table_6: { w: 329, h: 200 },
   w3_logA: { w: 556, h: 383 }, w3_logA_l: { w: 556, h: 383 }, w3_logA_r: { w: 556, h: 383 },
   w3_logB: { w: 811, h: 275 }, w3_logB_l: { w: 811, h: 275 }, w3_logB_r: { w: 811, h: 275 },
   w3_trunk_bare: { w: 109, h: 1000 }, w3_trunk_d: { w: 491, h: 1000 }, w3_limb: { w: 270, h: 48 }, w3_crown: { w: 429, h: 371 }, w3_rope_hang: { w: 118, h: 527 }, w3_hive: { w: 63, h: 91 }, w3_trunk_full: { w: 614, h: 1250 },   // (tools/cut_w3_grove.py)
@@ -631,8 +631,10 @@ function r3Build(R) {
     // (the painted court: the altar about columns P+11-17, a table P+24-33, another P+35-44, crates P+45-51; Glen's pieces in front)
     // (Glen 11-12: "I want what is in the background when David is eating the bread") the clip's own table, where it is
     //  in the clip (drawn mirrored, as the clip is), so it's the same table before, during and after
-    if (!mourn) { const B = R3.BREAD, s = SCALE * B.K, k = KIT.w3_bread_table;
-      region.props.push({ room: "nob", n: "w3_bread_table", x: X(P + 34) - (B.TABLE[0] + k.w - SPR.nob_bread_eat.ax) * s, y: GR * T - (SPR.nob_bread_eat.ay - B.TABLE[1]) * s, s, flip: true }); }   // (out of the way while the clip's own table is there)
+    //  (Glen 11-12, his loaves on it: 12 loaves; 11 while David eats one; 6 left after he takes five. Drawn over the clip
+    //  while it plays, so Doeg's behind it and its bowls don't show)
+    if (!mourn) { ["w3_bread_table_12", "w3_bread_table_11", "w3_bread_table_6"].forEach(kitImg);
+      region.props.push({ room: "nob", n: "w3_bread_table_12", x: X(P + 34), y: 0, draw: (p, cx) => { if (!r3.scene) r3DrawBreadTable(cx); return true; } }); }   // (out of the way while the clip's own table is there)
     if (!mourn) r3Prop("nob", "w3_ephod_stand", X(P + 40));
     if (!hasSkill("heavySword")) { r3Prop("nob", "w3_goliath_sword", X(P + 37) + 10); r3.swordProp = region.props[region.props.length - 1]; }
     r3.swordX = X(P + 37) + 10;
@@ -1084,6 +1086,13 @@ function r3TrialBanner() {   // the next son's blessing, at the top
   ctx.fillStyle = "#fff6e2"; ctx.font = "19px Georgia, serif"; ctx.fillText(words, W / 2, 88);
   ctx.restore();
 }
+function r3DrawBreadTable(camX) {   // (Glen's three tables: where the clip's own table is, mirrored as the clip is)
+  const B = R3.BREAD, s = SCALE * B.K, E = SPR.nob_bread_eat, g = SPR.nob_bread_give;
+  const eating = r3.scene && r3.scene.id === "bread" && r3.scene.t >= g.frames * g.ms / 1000;
+  const n = r3Has("r3_bread") ? "w3_bread_table_6" : eating ? "w3_bread_table_11" : "w3_bread_table_12", im = kitImg(n), k = KIT[n]; if (!im) return;
+  const [fx, fy] = B.TABLE_AT, x = r3.breadX - camX - (fx + k.w - E.ax) * s, y = GR * T - (E.ay - fy) * s;
+  ctx.save(); ctx.translate(x + k.w * s, y); ctx.scale(-1, 1); ctx.drawImage(im, 0, 0, k.w * s, k.h * s); ctx.restore();
+}
 function r3DoegStep() { const p = r3Who("doeg"); if (p) Object.assign(p, { walking: false, stroll: R3.BREAD.DOEG_STEP, name: "doeg_walk", facing: 1 }); }
 function r3BreadScene() {
   const B = R3.BREAD, give = SPR.nob_bread_give, eat = SPR.nob_bread_eat;
@@ -1467,6 +1476,7 @@ function r3Draw(camX) {
     const g = SPR.nob_bread_give, e = SPR.nob_bread_eat, tg = g.frames * g.ms / 1000, t = r3.scene.t;
     const [n, f] = t < tg ? ["nob_bread_give", Math.floor(t * 1000 / g.ms)] : ["nob_bread_eat", Math.min(e.frames - 1, Math.floor((t - tg) * 1000 / e.ms))];
     drawSprite(n, Math.min(SPR[n].frames - 1, f), r3.breadX - camX, GR * T, -1, R3.BREAD.K);
+    r3DrawBreadTable(camX);   // (his table, with its loaves, over the clip's)
   }
   for (const p of r3.people) {
     if (r3.scene && (p.tag === "ahimelech" || p.tag === "doeg")) continue;   // (they're in the clip)
