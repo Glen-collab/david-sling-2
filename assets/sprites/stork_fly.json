@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 268,
+  "frame_h": 205,
+  "ms_per_frame": 90,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 134,
+  "anchor_y": 104,
+  "source": "stork_fly_clip.mp4",
+  "video_frames": [
+    84,
+    86,
+    88,
+    90,
+    93,
+    95,
+    97,
+    99,
+    101,
+    104,
+    106,
+    108
+  ]
+}

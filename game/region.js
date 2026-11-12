@@ -323,6 +323,10 @@ const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
   eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8 },   // (eagles dive)
+  // (Glen 11-12, his clips: wildlife.js's cutter) the stork on the road to Gath, guarding its patch (Jeremiah 8:7); the
+  //  owl in the ruins of Goliath's yard (Psalm 102:6)
+  stork: { fly: "stork_fly",  perch: "stork_peck", size: 0.8, speed: 250, near: 300, chase: 5 },
+  owl:   { fly: "owl_fly",    perch: "owl_perch",  size: 0.9, speed: 280, near: 340, chase: 6 },
 };
 const rSpider = (room, c, hangY = 200) => beast("spider", room, c, { y: hangY, hy: hangY, state: "hang" });   // hangs on its thread; drops when he's under
 const rCrawler = (room, c, range = 4) => beast("spiderw", room, c, { range: range * T, state: "walk" });     // a spider walking the floor
@@ -786,7 +790,7 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0 });
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : WILD[b.kind] ? "idle" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: WILD[b.kind] ? WILD[b.kind].hp || 1 : PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0, gone: false, flash: 0 });   // (wildlife.js: the road animals)
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
     if (REGION.enter) REGION.enter(r);
@@ -1042,6 +1046,7 @@ function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the swor
   for (const b of region.beasts) {
     if (b.dead) continue;
     if (b.kind === "phil") { if (philHit(b, s)) return true; continue; }
+    if (WILD[b.kind]) { if (wildHit(b, s)) return true; continue; }   // (wildlife.js)
     const q = beastBox(b);
     if (s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8) { b.dead = true; b.state = "dust"; b.t = 0;
       if (BIRD[b.kind]) for (let i = 0; i < 10; i++) bits.push({ x: b.x, y: b.y - 25, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 1.1, color: b.kind === "eagle" ? (i % 2 ? "#6b4a2b" : "#d9cbb0") : (i % 2 ? "#1d1b22" : "#3a3644") });   // (feathers)
@@ -1416,7 +1421,7 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   ctx.restore();
 }
 // ---- the creatures: spiders on threads and on the floor, bats, rats ----
-const BEAST = { phil: { w: 28, h: 120 }, crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
+const BEAST = { stork: { w: 34, h: 74 }, owl: { w: 34, h: 46 }, phil: { w: 28, h: 120 }, crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
 function beastBox(b) {
   const k = BEAST[b.kind];
   if (BIRD[b.kind] && b.state !== "perch") { const cy = b.y + 20; return { x0: b.x - k.w * 1.25, x1: b.x + k.w * 1.25, y0: cy - k.h * 0.7, y1: cy + k.h * 0.7 }; }   // (Glen 11-06) flying: drawn centred at y + 20, so the box is too (it sat above the bird)
@@ -1517,6 +1522,7 @@ function updateBeasts(dt, r) {
     b.t += dt; b.cool = Math.max(0, b.cool - dt);
     if (b.dead) continue;
     if (b.kind === "phil") { updatePhil(b, dt); continue; }
+    if (WILD[b.kind]) { updateWild(b, dt, r); continue; }   // (wildlife.js)
     const dx = d.x - b.x;
     if (b.kind === "spider") {   // waits up on its thread; drops on him when he's under it, waits, climbs back
       if (b.state === "hang") { b.y = b.hy + Math.sin(b.t * 2) * 4; if (!b.cool && Math.abs(dx) < 90 && d.y > b.y) { b.state = "drop"; b.t = 0; } }
@@ -1567,6 +1573,7 @@ function drawBeasts(camX) {
   for (const b of region.beasts) {
     const x = b.x - camX; if (x < -200 || x > W + 200 || roomAt(b.x) !== region.room) continue;
     if (b.kind === "phil") { if (!b.dead) drawPhil(b, x); continue; }
+    if (WILD[b.kind]) { drawWild(b, x); continue; }   // (wildlife.js)
     if (b.dead) {   // a puff of dust, once
       const n = b.kind === "spider" || b.kind === "spiderw" ? "spider_dust" : b.kind + "_dust", sh = SPR[n];
       if (sh && b.t * 1000 < sh.frames * sh.ms) drawSprite(n, frameOf(n, b.t), x, b.y + (b.kind === "spider" ? 0 : 0), b.facing);

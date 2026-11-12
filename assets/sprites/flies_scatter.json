@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 323,
+  "frame_h": 162,
+  "ms_per_frame": 308,
+  "loop": false,
+  "align": "center",
+  "anchor_x": 161,
+  "anchor_y": 82,
+  "source": "flies_clip.mp4",
+  "video_frames": [
+    72,
+    80,
+    88,
+    96,
+    104,
+    113,
+    121,
+    129,
+    137,
+    145
+  ]
+}

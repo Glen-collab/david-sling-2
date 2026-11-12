@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 392,
+  "frame_h": 108,
+  "ms_per_frame": 308,
+  "loop": false,
+  "align": "center",
+  "anchor_x": 196,
+  "anchor_y": 55,
+  "source": "locusts_clip.mp4",
+  "video_frames": [
+    72,
+    80,
+    88,
+    96,
+    104,
+    113,
+    121,
+    129,
+    137,
+    145
+  ]
+}

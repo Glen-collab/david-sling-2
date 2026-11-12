@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 135,
+  "frame_h": 237,
+  "ms_per_frame": 52,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 66,
+  "anchor_y": 234,
+  "source": "../abiathar/abiathar_clip3.mp4",
+  "video_frames": [
+    130,
+    131,
+    132,
+    134,
+    135,
+    136,
+    138,
+    139,
+    140,
+    141,
+    142,
+    144
+  ]
+}

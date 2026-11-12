@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 291,
+  "frame_h": 114,
+  "ms_per_frame": 146,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 176,
+  "anchor_y": 113,
+  "source": "caracal_clip.mp4",
+  "video_frames": [
+    84,
+    88,
+    91,
+    94,
+    98,
+    102,
+    105,
+    108,
+    112,
+    116,
+    119,
+    122
+  ]
+}

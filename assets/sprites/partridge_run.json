@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 113,
+  "frame_h": 81,
+  "ms_per_frame": 49,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 65,
+  "anchor_y": 80,
+  "source": "reel_partridge_hyrax_hoopoe_ibex_owl.mp4",
+  "video_frames": [
+    85,
+    86,
+    87,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    97,
+    98
+  ]
+}

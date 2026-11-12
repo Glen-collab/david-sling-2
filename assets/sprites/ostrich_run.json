@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 324,
+  "frame_h": 295,
+  "ms_per_frame": 56,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 271,
+  "anchor_y": 291,
+  "source": "ostrich_clip.mp4",
+  "video_frames": [
+    118,
+    119,
+    121,
+    122,
+    123,
+    125,
+    126,
+    127,
+    129,
+    130,
+    131,
+    133
+  ]
+}

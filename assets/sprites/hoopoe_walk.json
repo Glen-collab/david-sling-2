@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 92,
+  "frame_h": 63,
+  "ms_per_frame": 94,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 55,
+  "anchor_y": 62,
+  "source": "hoopoe_clip.mp4",
+  "video_frames": [
+    44,
+    46,
+    48,
+    51,
+    53,
+    55,
+    58,
+    60,
+    62,
+    64,
+    66,
+    69
+  ]
+}

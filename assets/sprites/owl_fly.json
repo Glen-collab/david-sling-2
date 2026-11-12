@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 263,
+  "frame_h": 143,
+  "ms_per_frame": 59,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 131,
+  "anchor_y": 72,
+  "source": "owl_clip.mp4",
+  "video_frames": [
+    98,
+    99,
+    101,
+    102,
+    104,
+    105,
+    106,
+    108,
+    109,
+    111,
+    112,
+    114
+  ]
+}

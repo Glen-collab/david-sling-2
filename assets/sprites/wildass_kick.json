@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 478,
+  "frame_h": 208,
+  "ms_per_frame": 150,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 284,
+  "anchor_y": 206,
+  "source": "wildass_clip.mp4",
+  "video_frames": [
+    110,
+    114,
+    118,
+    122,
+    126,
+    129,
+    133,
+    137,
+    141,
+    145
+  ]
+}

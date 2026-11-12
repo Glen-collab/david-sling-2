@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 161,
+  "frame_h": 205,
+  "ms_per_frame": 128,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 108,
+  "anchor_y": 203,
+  "source": "stork_walk_clip.mp4",
+  "video_frames": [
+    25,
+    28,
+    31,
+    34,
+    37,
+    40,
+    43,
+    47,
+    50,
+    53,
+    56,
+    59
+  ]
+}

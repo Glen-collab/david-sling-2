@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 537,
+  "frame_h": 86,
+  "ms_per_frame": 121,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 269,
+  "anchor_y": 83,
+  "source": "viper_clip.mp4",
+  "video_frames": [
+    72,
+    75,
+    78,
+    81,
+    84,
+    88,
+    91,
+    94,
+    97,
+    100
+  ]
+}
