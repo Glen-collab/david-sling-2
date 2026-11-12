@@ -146,3 +146,22 @@ Clips, same man, same green screen, seen straight from the side, the camera not 
 2. **Standing up:** he sees a friend, rises slowly, still holding the ephod to his chest.
 3. **Telling:** standing, talking, upset; one hand points back behind him, then covers his face.
 4. **Walking:** walking left to right with the ephod in his arms (he goes with David).
+
+## 7. Goliath's house, in pieces (11-12)
+Glen: the room picture's furniture is too big. The game shrinks each piece to about twice David's size, so each one comes
+separately on green (white for anything green). Every piece ends with:
+> *Pixar-style storybook 3D, warm painterly light, ancient Philistia around 1000 BC, made for a giant. Orthographic side
+> view, isolated on a flat pure green screen background (#00FF00), no shadow on the ground, no text.*
+
+**7a. The empty room, tileable.** The inside back wall of a giant's mud-brick house: rough plaster, a few bricks
+showing, thick wooden roof beams across the top, warm dusty light, straw on a dirt floor. No furniture, no doorway.
+Seamless and tileable left to right. Side-scrolling 2D game background, orthographic, seen straight on from the side,
+wide 16:9, no people, no text.
+**7b. The giant's bed.** A huge low wooden bed with carved posts, a straw mattress, a woven orange-and-red zigzag
+blanket and two fat pillows.
+**7c. The giant's table.** A massive rough wooden table with thick carved legs, bowls and a basket on top.
+**7d. Wall shelf.** A thick wooden plank shelf on two carved brackets, with a woven basket and clay bowls on it.
+**7e. Giant clay jars, three.** Three big clay storage jars side by side, different sizes, painted zigzag bands, one
+cracked. (These break.)
+**7f. Giant sandals.** A pair of huge leather sandals with thick rope soles.
+**7g. His bronze helmet.** A huge battered bronze helmet with cheek guards, on a wooden peg.
