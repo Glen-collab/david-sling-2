@@ -18,7 +18,7 @@ const WILD = {
   // (Glen 11-12: "put the swarm in there and add a bunch of the single ones so it looks more natural") his swarm picture
   //  (three frames) in the middle, single bugs darting round it; a hit and they scatter (cut_w3_swarms.py)
   locusts:   { idle: "locusts_fly", k: 1, hp: 1, swarm: true, speed: 85, box: [-230, 230, 120],
-               bugs: { swarm: "w3_locust_swarm", single: "w3_locust_single", n: 60, r: 120, k: 0.7, s: 1, a: 0 } },   // (his swarm picture left out: as a block it read as a rectangle; singles only)
+               bugs: { swarm: "w3_locust_swarm", single: "w3_locust_single", n: 44, r: 110, k: 0.5, s: 1, a: 1 } },
   flies:     { idle: "flies_fly", k: 1, hp: 1, swarm: true, speed: 95, box: [-200, 200, 110],
                bugs: { swarm: "w3_fly_swarm", single: "w3_fly_single", n: 34, r: 85, k: 1, s: 1.4 } },
   // (Glen 11-12: "the hornets ... and the honey bees from David 1") hornets chase him; bees buzz round their hive, harmless
