@@ -275,7 +275,11 @@ function r3SwingHold(d, dt) {   // (region.js regionClimbHold) on a swinging rop
 }
 // (Glen 11-12: "the rope looks goofy so big ... longer without making it thicker") his hanging rope at its own thickness
 //  (K), its plain middle repeated for the length; the knots at either end as they are. x: the rope's line; from y0, len long
-const R3_ROPE = { K: 0.9, TOP: 72, BOT: 336 };   // (w3_rope_4: the top knot ends at 72, the bottom one starts at 336)
+const R3_ROPE = { K: 0.9, TOP: 72, BOT: 336,
+  // (Glen 11-12: "longer and more natural with physics") each swinging rope is drawn as a chain of LINKS points that hang
+  //  and pull on each other (Verlet); the game's swing (the straight line it pivots on) leads it: FOLLOW, how hard each
+  //  point is drawn toward that line (most near the top, least at the loose end); SLACK, a little give in it
+  LINKS: 18, FOLLOW: 7, LOOSE: 0.25, DAMP: 0.985, ITER: 10 };   // (w3_rope_4: the top knot ends at 72, the bottom one starts at 336)
 function r3DrawRopeLong(x, y0, len) {
   const im = kitImg("w3_rope_4"), k = KIT.w3_rope_4, R = R3_ROPE, s = R.K; if (!im) return false;
   const w = k.w * s, x0 = x - R3_ROPE_KNOT[3] * s, top = R.TOP * s, bot = (k.h - R.BOT) * s, mid = (R.BOT - R.TOP) * s;
@@ -286,12 +290,51 @@ function r3DrawRopeLong(x, y0, len) {
   ctx.drawImage(im, 0, R.BOT, k.w, k.h - R.BOT, x0, y0 + len - bot, w, bot);
   return true;
 }
+// the rope as a chain: top tied; the rest falls, pulls on its neighbors, and is drawn toward the swing's line (where the
+//  game says the rope is); while he holds it, the point at his hands goes where his hands are
+function r3RopeChain(q, dt) {
+  const R = R3_ROPE, n = R.LINKS, L = q.len + 34, seg = L / n;
+  if (!q.pts) { q.pts = []; for (let i = 0; i <= n; i++) { const [x, y] = r3SwingTip(q, i * seg - 20); q.pts.push({ x, y, ox: x, oy: y }); } }
+  const P = q.pts, held = r3.swing && r3.swing.q === q ? r3.swing.hold + 20 : -1, g = 1600 * dt * dt;
+  for (let i = 1; i <= n; i++) { const p = P[i], vx = (p.x - p.ox) * R.DAMP, vy = (p.y - p.oy) * R.DAMP; p.ox = p.x; p.oy = p.y; p.x += vx; p.y += vy + g; }
+  for (let i = 1; i <= n; i++) {   // drawn toward the swing's line: firmly near the top, loosely at the end (it trails and bends)
+    const f = held >= 0 && i * seg > held ? 0.02 : 1 - (1 - R.LOOSE) * (i / n);
+    const [tx, ty] = r3SwingTip(q, i * seg - 20), k = Math.min(1, R.FOLLOW * f * dt);
+    P[i].x += (tx - P[i].x) * k; P[i].y += (ty - P[i].y) * k;
+  }
+  for (let it = 0; it < R.ITER; it++) {
+    const [ax, ay] = r3SwingTip(q, -20); P[0].x = ax; P[0].y = ay;
+    if (held >= 0) { const [hx, hy] = r3SwingTip(q, held - 20), j = Math.min(n, Math.round(held / seg)); P[j].x = hx; P[j].y = hy; }
+    for (let i = 0; i < n; i++) {
+      const a = P[i], b = P[i + 1], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, e = (d - seg) / d / 2;
+      if (i > 0) { a.x += dx * e; a.y += dy * e; b.x -= dx * e; b.y -= dy * e; } else { b.x -= dx * e * 2; b.y -= dy * e * 2; }
+    }
+  }
+}
+function r3DrawRopeChain(q, camX) {   // his rope picture along the chain: the top knot, the twisted middle piece by piece, the end knot
+  const im = kitImg("w3_rope_4"), k = KIT.w3_rope_4, R = R3_ROPE, s = R.K, P = q.pts; if (!im || !P) return false;
+  const w = k.w * s, ox = R3_ROPE_KNOT[3] * s, mid = R.BOT - R.TOP;
+  const piece = (a, b, sy, sh, len) => {   // a piece of the picture from a to b
+    const ang = Math.atan2(b.x - a.x, b.y - a.y);
+    ctx.save(); ctx.translate(a.x - camX, a.y); ctx.rotate(-ang); ctx.drawImage(im, 0, sy, k.w, sh, -ox, 0, w, len + 1.5); ctx.restore();
+  };
+  let along = 0;
+  for (let i = 0; i < P.length - 1; i++) {
+    const a = P[i], b = P[i + 1], len = Math.hypot(b.x - a.x, b.y - a.y);
+    if (i === 0) piece(a, b, 0, R.TOP, R.TOP * s);   // (the knot it's tied with, at the top)
+    else { const sy = R.TOP + (along / s) % (mid - len / s); piece(a, b, sy, len / s, len); }
+    along += len;
+  }
+  const a = P[P.length - 2], b = P[P.length - 1]; piece(b, { x: b.x + (b.x - a.x), y: b.y + (b.y - a.y) }, R.BOT, k.h - R.BOT, (k.h - R.BOT) * s);   // (the knot at the end)
+  return true;
+}
 function r3SwingDraw(camX) {   // the ropes (his rope picture, turned with the swing)
   const r = region.room; if (!r) return;
   const im = kitImg("w3_rope_4"), k = KIT.w3_rope_4;
   for (const q of r3.swings) {
     if (q.room !== r.id) continue;
     const x = q.ax - camX; if (x < -q.len || x > W + q.len) continue;
+    if (q.pts && r3DrawRopeChain(q, camX)) continue;   // (Glen 11-12: bending, with physics)
     ctx.save(); ctx.translate(x, q.ay); ctx.rotate(-q.ang);
     if (!r3DrawRopeLong(0, -20, q.len + 34)) { ctx.strokeStyle = "#a88a5a"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, q.len); ctx.stroke(); }
     ctx.restore();
@@ -569,6 +612,7 @@ function r3Update(dt) {
   for (const w of r3.walls) w.shake = Math.max(0, w.shake - dt);
   if (r.id === "tribes") r3TrialUpdate(dt);
   r3HangUpdate(dt); r3PropsUpdate(dt); r3SwingUpdate(dt);
+  for (const q of r3.swings) if (q.room === r.id) r3RopeChain(q, dt);
   for (const p of r3.people) if (p.walk && !r3.scene) {   // the walkers
     p.x += p.facing * p.walk.v * dt;
     if (p.x > p.walk.x1) { p.x = p.walk.x1; p.facing = -1; } else if (p.x < p.walk.x0) { p.x = p.walk.x0; p.facing = 1; }
