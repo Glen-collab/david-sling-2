@@ -2036,7 +2036,12 @@ const storyDone = () => STORY_STEPS.filter(id => regionHas("taken", id)).length;
 const JFOUND = [["truth", "Truths"], ["stone", "Stones of remembrance"], ["pomegranate", "Pomegranates"], ["oil", "Oil jars"]], JFIRST = ["truth"];   // (Glen 11-11: not the stones)
 const jFound = k => region.relics.filter(f => f.kind === k && regionHas("taken", f.id)).length;
 const jAll = k => region.relics.filter(f => f.kind === k).length;
+// (Glen 11-11: "too much") as in Part One, the Journal opens by itself only at the end of the region (jsceneOpen(true));
+// along the way it's there when you want it (Select: the map, then David's card and the Journal). true: the old way,
+// a page after every story moment and the first truth
+const JOURNAL_MIDWAY = false;
 function journalWatch() {   // updateRegion: a story moment just finished? he sits down and writes
+  if (!JOURNAL_MIDWAY) return;
   const d = david;
   if (region.jscene || region.mapOpen || region.script.length || region.wait > 0 || region.trans || region.climb || (dialog && dialog.t > 0) || !d.onGround || d.deadT > 0) return;
   const jW = region.save.jW || {}, first = (region.save.jAt || 0) < 9 && JFIRST.some(k => jFound(k) > 0 && !jW[k]);   // (jAt 9: the tests, no Journal)
