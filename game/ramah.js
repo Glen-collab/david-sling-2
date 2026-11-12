@@ -31,7 +31,7 @@ const R2 = {
   // (Glen's feast clip, 11-10) saul_feast_throw lets go on this frame; his hand there (sheet px in front of his feet, above them)
   SAUL_LET_GO: 15, SAUL_HAND: [191, 211],
   // David's bow (Jonathan's, 18:4; Glen 11-06): a long, straight shot
-  ARROW: { SPEED: 1350, GRAV: 0.1, LIFE: 1.7, COOL: 0.65 },
+  ARROW: { SPEED: 1350, GRAV: 0.1, LIFE: 1.7, COOL: 0.65, UP: 0.62 },   // (UP, Glen 11-12: the angle, radians, when he isn't holding forward: high, for birds and things in the trees)
   MICHAL_WIN_K: 0.5, MICHAL_BACK: 1.5,   // (MICHAL_BACK: how much faster she goes back in than she came)   // Michal's window sheet (330 wide) drawn at the window picture's width (165)
   DJ_GAP: 158,   // the goodbye two-shots: David stands this far right of Jonathan (the clip's anchor), in sheet px (times SCALE)
   BOY_REACH: 30, BOY_PICK: [4, 9, 16],   // the arrows: he stops this far short of the arrow; boy_stone frames: start (standing, leaning), the arrow is taken up, stands holding it
@@ -590,8 +590,9 @@ function r2StoneHits(s) {
 
 // ---- Jonathan's bow (Glen 11-06: the goodbye gift, 18:4 / 20): hold Up and press the sword button. Anywhere in Part
 //      Two once learned. (Glen 11-07: his drawing-the-bow frames: David draws, and the arrow goes on the release)
-function r2LooseArrow(d, dir) {
-  stones.push({ x: d.x + dir * 34, y: d.y - (d.h === LOW_H ? 44 : 72), vx: dir * R2.ARROW.SPEED, vy: -30, grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
+function r2LooseArrow(d, dir) {   // (Glen 11-12) Up + the sword: up high; Up + forward + the sword: flat and far, as before
+  const fwd = held(dir > 0 ? "right" : "left"), a = fwd || d.h === LOW_H ? 0.022 : R2.ARROW.UP;
+  stones.push({ x: d.x + dir * 34, y: d.y - (d.h === LOW_H ? 44 : 72), vx: dir * R2.ARROW.SPEED * Math.cos(a), vy: -R2.ARROW.SPEED * Math.sin(a), grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
   sfx("sling_throw_quick", undefined, 0.6, 1.4);
 }
 function regionBow(d, busy, dt) {   // (main.js updateDavid, every frame)

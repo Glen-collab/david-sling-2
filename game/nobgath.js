@@ -55,6 +55,9 @@ const R3 = {
     C1: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon", "zebulun"],
     C2: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon", "zebulun"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
     FLOOR: ["judah", "gad", "reuben", "joseph", "levi", "asher", "dan", "zebulun", "benjamin", "simeon", "naphtali", "issachar"] },   // (left to right)
+  // (Glen 11-12: "make the bow more fun") things hanging high in the trees: only an arrow knocks them down; they grow back
+  //  each time he comes back. HIT: how close an arrow has to pass; OLIVES: a cluster's worth
+  HANG: { HIT: 40, OLIVES: 5, G: 1500, STEM: 46 },
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -93,13 +96,62 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
+  stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
-const r3 = { t: 0, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
+const r3 = { t: 0, hangs: [], people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
 const r3Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function r3Tell(k, text) { if (!r3.told[k]) { r3.told[k] = true; toast(text); } }
 // someone standing in a room: [sprite, x, facing, size]; drawn by r3Draw, looping their sheet
+// something hanging up high (R3.HANG): "olives" (a cluster) or "pom"; hy is where its stem is tied
+function r3Hang(room, kind, x, hy) { r3.hangs.push({ room, kind, x, hy, y: hy + R3.HANG.STEM, state: "hang", vy: 0 }); }
+function r3HangReset(room) { for (const h of r3.hangs) if (h.room === room) Object.assign(h, { y: h.hy + R3.HANG.STEM, state: "hang", vy: 0 }); }
+function r3StoneHits(s) {   // (region.js stoneHitsRegion) an arrow cuts a hanging thing down; a stone's too clumsy for it
+  const r = region.room; if (!r) return false;
+  for (const h of r3.hangs) {
+    if (h.room !== r.id || h.state !== "hang" || r3SegDist(s, h.x, h.y - 18) > R3.HANG.HIT) continue;
+    if (!s.bow) { r3Tell("hangstone", hasSkill("bow") ? "Too high and small for a stone. Jonathan's bow: hold Up and press X." : "Too high and small for a stone."); return false; }
+    h.state = "fall"; h.vy = 0; sfx("stone_hit", h.x, 0.35, 1.6); s.life = 0;
+    for (let i = 0; i < 6; i++) bits.push({ x: h.x, y: h.y - 20, vx: (Math.random() - 0.5) * 160, vy: -Math.random() * 120, life: 0.7, color: i % 2 ? "#5d7a3a" : "#8a6a3c" });   // (leaves and stem)
+    return true;
+  }
+  return false;
+}
+function r3SegDist(s, px, py) {   // how near this frame's stretch of flight passed (an arrow goes 36 px a frame: it'd skip over a small thing)
+  const ax = s.x - (s.vx || 0) / 60, ay = s.y - (s.vy || 0) / 60, dx = s.x - ax, dy = s.y - ay, L = dx * dx + dy * dy || 1;
+  const u = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L));
+  return Math.hypot(ax + u * dx - px, ay + u * dy - py);
+}
+function r3HangUpdate(dt) {
+  const r = region.room, d = david; if (!r) return;
+  for (const h of r3.hangs) {
+    if (h.room !== r.id) continue;
+    if (h.state === "fall") { h.vy += R3.HANG.G * dt; h.y += h.vy * dt; if (h.y >= GR * T) { h.y = GR * T; h.state = "ground"; sfx("stone_hit", h.x, 0.25, 0.7); } }
+    else if (h.state === "ground" && Math.abs(d.x - h.x) < 40 && Math.abs(d.y - h.y) < 60) {
+      h.state = "taken"; if (typeof chime === "function") chime(4);
+      if (h.kind === "pom") { d.hearts = Math.min(d.maxHearts, d.hearts + RTUNE.HP_PER_HEART); toast("A pomegranate, shot down from the fig! A heart back."); }
+      else { d.olives += R3.HANG.OLIVES; d.gathered = (d.gathered || 0) + R3.HANG.OLIVES; toast(`A cluster of olives: ${R3.HANG.OLIVES} more!`); }
+    }
+  }
+}
+function r3HangDraw(camX) {
+  const r = region.room; if (!r) return;
+  for (const h of r3.hangs) {
+    if (h.room !== r.id || h.state === "taken") continue;
+    const x = h.x - camX; if (x < -60 || x > W + 60) continue;
+    if (h.state === "hang") {   // the stem, and a little sway
+      const sw = Math.sin(r3.t * 1.7 + h.x) * 4;
+      ctx.strokeStyle = "#5a4326"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x, h.hy); ctx.quadraticCurveTo(x + sw, h.hy + 20, x + sw, h.y - 22); ctx.stroke();
+      r3HangPic(h, x + sw, h.y);
+    } else r3HangPic(h, x, h.y);
+  }
+}
+function r3HangPic(h, x, y) {   // its bottom at y
+  if (h.kind === "pom") { const im = ITEM.pomegranate; if (im && im.naturalWidth) { const s = 40 / im.naturalHeight; ctx.drawImage(im, x - im.naturalWidth * s / 2, y - 40, im.naturalWidth * s, 40); } return; }
+  const g = ITEM.olive_green, p = ITEM.olive_purple, spots = [[0, -38], [-12, -28], [12, -28], [-6, -16], [8, -14], [0, -4]];
+  spots.forEach(([dx, dy], i) => { const im = i % 2 ? p : g; if (im && im.naturalWidth) ctx.drawImage(im, x + dx - 12, y + dy - 12, 24, 24 * im.naturalHeight / im.naturalWidth);
+    else { ctx.fillStyle = i % 2 ? "#4a2a52" : "#6f8a2a"; ctx.beginPath(); ctx.arc(x + dx, y + dy, 7, 0, 7); ctx.fill(); } });
+}
 function r3Person(room, name, x, facing = 1, k = R3.NPC_K, tag = null) { r3.people.push({ room, name, x, facing, k, ph: Math.random() * 3, tag }); }
 // (Glen 11-11: "this guy is walking in place") someone on a walk sheet: up and down between x0 and x1, v px a second
 function r3Walker(room, name, x0, x1, v, tag = null) { r3Person(room, name, x0, 1, R3.NPC_K, tag); Object.assign(r3.people[r3.people.length - 1], { walk: { x0, x1, v } }); }
@@ -111,7 +163,7 @@ function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces
 // building
 // ---------------------------------------------------------------------------
 function r3Build(R) {
-  r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
+  r3.hangs.length = 0; r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
 
   // -- The Road to Nob (21:1): out of Gibeah's country, fields and hills, on to the priests' town
   let c = R("nobroad");
@@ -120,6 +172,11 @@ function r3Build(R) {
     campfire(c + 4, GR - 1);
     oliveRow(c + 10, 16, 5);
     rDeco("nobroad", "f_olive", c + 20); rDeco("nobroad", "f_rock", c + 30);
+    // (Glen 11-12) the bow up high: olives hanging in the olive tree, a pomegranate in the fig; crows on the tree and the
+    //  wall, a raven on the tower (they come at him when he's near). r3Hang: [room, kind, x, y of where it hangs from]
+    r3Hang("nobroad", "olives", X(18) + 10, FOOT - 330); r3Hang("nobroad", "olives", X(22) - 10, FOOT - 300);
+    r3Hang("nobroad", "pom", X(58) + 20, FOOT - 210);
+    bird("crow", "nobroad", X(20) - 40, FOOT - 470); bird("crow", "nobroad", X(37), FOOT - 83);
     rLowWall("nobroad", c + 36);
     { const c1 = rTerrace("nobroad", c + 44, 1); oliveRow(c + 45, onTop(FOOT - 136) - 0.4, c1 - c - 46); }
     rDeco("nobroad", "f_fig", c + 58); rBreak("jar", "nobroad", c + 62, 16);
@@ -134,6 +191,7 @@ function r3Build(R) {
       region.walls.push({ room: "nobroad", x0: (c + 71) * T, x1: (c + 78) * T, top: r0 * T, need: "wallClimb" });
       rBoulder("nobroad", c + 64);
     }
+    bird("raven", "nobroad", X(75), FOOT - KIT.f_tower_low.h + 30);
     oliveRow(c + 80, 16, 4);
     rRelic("r3_stone_road", "stone", c + 84, 16);
   }
@@ -287,6 +345,8 @@ function r3Build(R) {
 function r3Enter(r) {
   if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
   if (r.id === "tribes") r3TrialMend();
+  r3HangReset(r.id);   // (they grow back each time)
+  if (r.id === "nobroad" && hasSkill("bow")) r3Tell("bowup", "Birds in the trees, and olives hanging high. Jonathan's bow: hold Up and press X to shoot up high.");
   if (r.id === "tribes" && !r3Has("r3_tribes")) r3Tell("tribes", "The Hall of the Tribes: a tablet for each of Jacob's twelve sons. Step on them in the order Jacob blessed them.");
   if (r.id === "crack") r3Tell("crack", "Under Nob: cracked walls. A heavy sword could break them...");
   if (r.id === "streets") r3Tell("streets", "The streets of Gath. Achish's men are everywhere: keep out of sight.");
@@ -301,6 +361,7 @@ function r3Update(dt) {
   r3.chips = r3.chips.filter(q => q.t < q.life);
   for (const w of r3.walls) w.shake = Math.max(0, w.shake - dt);
   if (r.id === "tribes") r3TrialUpdate(dt);
+  r3HangUpdate(dt);
   for (const p of r3.people) if (p.walk && !r3.scene) {   // the walkers
     p.x += p.facing * p.walk.v * dt;
     if (p.x > p.walk.x1) { p.x = p.walk.x1; p.facing = -1; } else if (p.x < p.walk.x0) { p.x = p.walk.x0; p.facing = 1; }
@@ -772,6 +833,7 @@ function r3DrawMight() {
 function r3Draw(camX) {
   const r = region.room; if (!r) return;
   if (r.id === "tribes") r3TrialDraw(camX);
+  r3HangDraw(camX);
   const d = david, idle = !r3.might && !region.script.length && !(dialog && dialog.t > 0) && d.onGround;
   if (idle && r.id === "nob" && !hasSkill("heavySword") && r3Has("r3_hall_key") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);
