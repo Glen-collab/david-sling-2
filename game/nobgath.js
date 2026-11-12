@@ -201,7 +201,7 @@ function r3Build(R) {
     rKitDoor("d_tribesout", "tribes", c + 3, "door", "d_nobtribes", "hall_door");
     r3.trial = { start: (c + 6) * T, next: done ? 12 : 0, tiles: K.FLOOR.map((name, i) => {
       const tc = c + K.AT + i * K.STEP; pitFloor(tc, K.W); platAt(tc, GR * T, K.W);
-      kitImg("w3_tribe_" + name); for (const c of ["C1", "C2"]) if (K[c].includes(name)) kitImg("w3_tribe_" + name + "_" + c.toLowerCase());   // (asked for now, so they're there when he walks in; Glen's cracked and broken frames, cut_tribe_crumble.py)
+      kitImg("w3_tribe_pit"); kitImg("w3_tribe_" + name); for (const c of ["C1", "C2"]) if (K[c].includes(name)) kitImg("w3_tribe_" + name + "_" + c.toLowerCase());   // (asked for now, so they're there when he walks in; Glen's cracked and broken frames, cut_tribe_crumble.py)
       return { name, c: tc, x0: tc * T, x1: (tc + K.W) * T, lit: done, glow: 0, crack: 0, open: false, fall: 0 };
     }) };
     rRelic("r3_truth_tribes", "truth", c + tr.w - 12, 16, "All these are the twelve tribes of Israel, and this is what their father spoke to them, and blessed them. (Genesis 49:28)", "r3_tribes");
@@ -394,6 +394,9 @@ function r3TrialDraw(camX) {
     const x = t.x0 - camX, w = t.x1 - t.x0; if (x > W || x + w < 0) continue;
     const im = kitImg("w3_tribe_" + t.name);
     if (t.open) {   // the hole, and the tablet dropping away
+      const pit = kitImg("w3_tribe_pit");
+      if (pit) { const s = w / 216, pw = pit.naturalWidth * s; ctx.drawImage(pit, Math.round(x + w / 2 - pw / 2), GR * T - 6, pw, pit.naturalHeight * s); }   // (Glen's pit, cut_tribe_pit.py: its opening a tablet wide)
+      else {
       if (!t.jag) { t.jag = []; for (let k = 0; k <= 10; k++) t.jag.push(Math.random()); }   // (its broken edge: fixed once)
       const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
       ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 8, H); ctx.lineTo(x - 8, GR * T + 6);
@@ -401,6 +404,7 @@ function r3TrialDraw(camX) {
       ctx.lineTo(x + w + 8, H); ctx.closePath(); ctx.fill();
       ctx.fillStyle = "rgba(90,64,40,0.9)";   // the broken stone lips, either side
       for (const s of [-1, 1]) { const ex = s < 0 ? x - 8 : x + w + 8; ctx.beginPath(); ctx.moveTo(ex, GR * T - 2); ctx.lineTo(ex - s * 16, GR * T + 4 + t.jag[s < 0 ? 1 : 9] * 10); ctx.lineTo(ex, GR * T + 26); ctx.closePath(); ctx.fill(); }
+      }
       const c2 = K.C2.includes(t.name) && kitImg("w3_tribe_" + t.name + "_c2");
       if (c2 && c2.naturalWidth && t.fall < 1.0) {   // (Glen's broken frame, dropping away)
         ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t.fall / 1.0);
