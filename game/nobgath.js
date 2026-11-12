@@ -1088,7 +1088,7 @@ function r3TrialBanner() {   // the next son's blessing, at the top
 }
 function r3DrawBreadTable(camX) {   // (Glen's three tables: where the clip's own table is, mirrored as the clip is)
   const B = R3.BREAD, s = SCALE * B.K, E = SPR.nob_bread_eat, g = SPR.nob_bread_give;
-  const eating = r3.scene && r3.scene.id === "bread" && r3.scene.t >= g.frames * g.ms / 1000;
+  const eating = r3.scene && r3.scene.id === "bread";   // (Glen 11-12: the loaf's off the table as soon as Ahimelech hands it over)
   const n = r3Has("r3_bread") ? "w3_bread_table_6" : eating ? "w3_bread_table_11" : "w3_bread_table_12", im = kitImg(n), k = KIT[n]; if (!im) return;
   const [fx, fy] = B.TABLE_AT, x = r3.breadX - camX - (fx + k.w - E.ax) * s, y = GR * T - (E.ay - fy) * s;
   ctx.save(); ctx.translate(x + k.w * s, y); ctx.scale(-1, 1); ctx.drawImage(im, 0, 0, k.w * s, k.h * s); ctx.restore();
@@ -1098,12 +1098,13 @@ function r3BreadScene() {
   const B = R3.BREAD, give = SPR.nob_bread_give, eat = SPR.nob_bread_eat;
   const long = give && eat ? (give.frames * give.ms + eat.frames * eat.ms) / 1000 : 0;
   david.facing = 1;
+  { const p = r3Who("doeg"); if (p && p.walking) Object.assign(p, { walking: false, x: p.arrive.to, name: "doeg_idle" }); }   // (Glen 11-12: "no Doeg creeping back there": David outran him; he's there now)
   rPlay([
     // (Glen 11-12: "we should have Doeg walking in the background as he speaks ... stop each time until we hit A") a
     //  few steps nearer with each line, then he stands and listens
-    { fn: r3DoegStep }, { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
-    { fn: r3DoegStep }, { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
-    { fn: r3DoegStep }, { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
+    { fn: r3DoegStep, wait: R3.BREAD.DOEG_STEP }, { say: ["Ahimelech", "Why are you alone, and no one with you? (1 Samuel 21:1)"] },
+    { fn: r3DoegStep, wait: R3.BREAD.DOEG_STEP }, { say: ["David", "The king has sent me on a matter. Now, what do you have on hand? Give me five loaves of bread, or whatever is here. (1 Samuel 21:2-3)"] },
+    { fn: r3DoegStep, wait: R3.BREAD.DOEG_STEP }, { say: ["Ahimelech", "There is no common bread on hand, but there is holy bread. (1 Samuel 21:4)"] },
     { fn() { if (long) { r3.scene = { id: "bread", t: 0 }; region.pose = { hide: true }; } }, wait: long },
     { fn() {
       r3.scene = null; region.pose = null;

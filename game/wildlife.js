@@ -32,7 +32,10 @@ const WILD = {
 };
 // TREE: a caracal up in a tree (o.tree: the branch's y), as Part One's leopard: it sees him (SEE px), watches WATCH s,
 //  picks its spot PICK s before, and drops on it (DROP s). HOP: the most a charger jumps (tiles high, tiles wide)
-const WILD_TUNE = { TREE: { SEE: 330, WATCH: 1.4, PICK: 0.5, DROP: 0.7 }, HOP: { H: 3, W: 5 }, HIT_COOL: 0.3, FLASH: 0.25, REST: 1.4, FLEE: 1.5, LEASH: 16, GRAV: 2200, SWARM_LEASH: 520, AHEAD: 40, SWARM_HURT: 0.8 };
+// BACK: tiles an animal backs off after the shield stops it; BREATHER: seconds before it comes again; LEAP_OVER: its leap
+//  over him when it's boxed in
+// MIN_RUN: tiles off he has to be before a charger charges
+const WILD_TUNE = { BACK: 4, BREATHER: 2.2, LEAP_OVER: 950, MIN_RUN: 3, TREE: { SEE: 330, WATCH: 1.4, PICK: 0.5, DROP: 0.7 }, HOP: { H: 3, W: 5 }, HIT_COOL: 0.3, FLASH: 0.25, REST: 1.4, FLEE: 1.5, LEASH: 16, GRAV: 2200, SWARM_LEASH: 520, AHEAD: 40, SWARM_HURT: 0.8 };
 // a road animal: kind, room, column; o.range: tiles it paces either side of home; o.y: the floor (px) or, for a swarm,
 //  the height it hovers at
 const rWild = (kind, room, c, o = {}) => beast(kind, room, c, Object.assign({ state: "idle", hp: WILD[kind].hp || 1, alpha: 1 }, o, { range: (o.range || 3) * T,
@@ -106,9 +109,11 @@ function updateWild(b, dt, r) {
     return;
   }
   const lo = b.hx - b.range, hi = b.hx + b.range, far = Tn.LEASH * T;
-  if (b.state === "back") {   // (blocked by the shield: away from him a moment, then on as usual)
-    wildMove(b, b.facing * (W_.walk || 60) * 2.5, dt);
-    if (b.t > 0.9) { b.state = "idle"; b.t = 0; b.cool = Math.max(b.cool, Tn.REST); }
+  if (b.state === "back") {   // (Glen 11-12: "have them go away and come back. Like a few tiles away") blocked by the shield:
+    //  off a few tiles (over him, if it's boxed in), a breather, then at him again
+    const m = wildMove(b, b.facing * (W_.speed || 200) * 0.55, dt);
+    if (m.stop && !b.air && !b.leapt) { b.leapt = true; b.facing *= -1; b.backX = b.x + b.facing * (Tn.BACK + 2) * T; b.vy = -Tn.LEAP_OVER; b.air = true; }
+    if (!b.air && ((b.facing > 0 ? b.x >= b.backX : b.x <= b.backX) || b.t > 3 || (m.stop && b.leapt))) { b.state = "idle"; b.t = 0; b.cool = Math.max(b.cool, Tn.BREATHER); b.facing = Math.sign(dx) || b.facing; }
     return;
   }
   const pace = () => {   // (off its patch after a charge: it walks back. Glen 11-12: up onto rocks and low walls, like David)
@@ -151,8 +156,9 @@ function updateWild(b, dt, r) {
   }
   // the chargers: ostrich, caracal, ibex
   if (b.state === "idle") {
+    if (Math.abs(dx) < Tn.MIN_RUN * T && Math.abs(dy) < 150) b.facing = dx > 0 ? -1 : 1;   // (too close to charge: off a little first)
     pace();
-    if (b.cool <= 0 && !b.air && Math.abs(dx) < W_.near && Math.abs(dy) < 150) {
+    if (b.cool <= 0 && !b.air && Math.abs(dx) < W_.near && Math.abs(dx) >= Tn.MIN_RUN * T && Math.abs(dy) < 150) {
       b.state = "run"; b.t = 0; b.facing = dx > 0 ? 1 : -1;
       if (W_.leap) { b.vy = -W_.leap; b.air = true; }
     }
@@ -171,7 +177,7 @@ function wildHurt(b) {
     if (b.cool > 0.2 && b.blockT > 0) return;
     sfx("stone_hit", b.x, 0.5, 0.7); b.flash = 0.15; b.blockT = 0.4; b.cool = Math.max(b.cool, WILD_TUNE.REST);
     // (Glen 11-12: "the ibex is walking right through me ... he should have to turn around") knocked back, it backs off
-    if (!W_.swarm && b.kind !== "viper") { b.state = "back"; b.t = 0; b.facing = Math.sign(b.x - d.x) || 1; }
+    if (!W_.swarm && b.kind !== "viper") { b.state = "back"; b.t = 0; b.facing = Math.sign(b.x - d.x) || 1; b.backX = b.x + b.facing * WILD_TUNE.BACK * T; b.leapt = false; }
     b.x += Math.sign(b.x - d.x) * 26;
     if (!wildTold.shield) { wildTold.shield = true; toast("Blocked with the shield!"); }
     return;
@@ -184,6 +190,9 @@ function wildHit(b, s) {
   const q = wildBox(b);
   if (!(s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8)) return false;
   if (b.cool > 0 && s.sword) return true;
+  if (W_.tough && (s.charged || s.power) && !s.sword) {   // (Glen 11-12: "unless a charged stone hits them") off for good
+    b.state = "flee"; b.t = 0; b.facing = s.x < b.x ? 1 : -1; if (typeof stoneHit === "function") stoneHit(s, 0.6);
+    if (!wildTold.ibexGone) { wildTold.ibexGone = true; toast("The ibex bounds away!"); } return true; }
   if (W_.tough) { if (!wildTold.ibex) { wildTold.ibex = true; toast("The ibex is too tough for that. Jump over it!"); } if (typeof stoneHit === "function" && !s.sword) stoneHit(s, 0.3); b.cool = 0.3; return true; }
   b.cool = s.sword ? WILD_TUNE.HIT_COOL : 0.05; b.flash = WILD_TUNE.FLASH;
   b.hp -= s.charged || s.power ? 9 : 1;
@@ -227,7 +236,7 @@ function drawWild(b, x) {
     return;
   }
   if (b.state === "drop") { drawSprite(W_.run, 4, x, b.y, b.facing, k); return; }
-  const n = b.state === "act" ? W_.act : (b.state === "run" || b.state === "flee") ? (W_.run || W_.fleeSheet || W_.idle) : W_.idle;
+  const n = b.state === "act" ? W_.act : (b.state === "run" || b.state === "flee" || b.state === "back") ? (W_.run || W_.fleeSheet || W_.idle) : W_.idle;
   // (standing still, a walk sheet would walk on the spot: the shy ones and the viper only loop when moving or idle by design)
   const f = b.kind === "viper" && b.state === "idle" ? 0 : frameOf(n, b.t);   // (Glen 11-12: the coiled viper lies still; it moves when it strikes)
   drawSprite(n, f, x, b.y, b.facing, k, b.alpha == null ? 1 : b.alpha, b.flash > 0 ? "brightness(2.2)" : "");
