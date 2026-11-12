@@ -46,6 +46,9 @@ const R3 = {
   // (Glen 11-11) Gath (21:10-15): at the gate the guard knows him, and he acts mad (mash, scribbling on the doors);
   //  in Achish's court, mad again before the king, then once more to get past the elite guards ("Get this crazy
   //  person out of here!"). Mash sizes: [presses to fill, seconds, drain a second] (drill.js startMash)
+  // (Glen 11-12) the court on a later visit: the two guards' beats (columns), their pace (px/s); how far a guard sees
+  //  ahead (px), and how close is caught anyway (px)
+  COURT2: { A: [13, 23], B: [22, 33], SPEED: 75, SEE: 240, NEAR: 50 },
   MAD: { GATE_AT: 14, COURT_AT: 26, GATE: [30, 7, 0.08], KING: [36, 7, 0.10], GUARDS: [40, 7, 0.10] },
   // (Glen 11-11) the Hall of the Tribes, off Nob: his twelve tablets set in the floor, out of order. Walk them in the
   //  order Jacob blessed his sons (Genesis 49:3-27): the blessing's words show at the top, find the picture. A right
@@ -675,8 +678,15 @@ function r3Build(R) {
   { const X = k => (c + k) * T;
     ground(c, c + 47);
     rKitDoor("d_courtin", "court", c + 5, "door", "d_palace", "hall_door");
-    r3Person("court", "gath_elite_idle", X(16), 1, R3.NPC_K, "elite1");
-    r3Person("court", "gath_elite_idle", X(24), 1, R3.NPC_K, "elite2");
+    // (Glen 11-12: "coming back ... everyone is standing and no one talks") after he's acted mad and got away, the king's
+    //  guard patrols the hall: get past while their backs are turned to the Truth behind the throne (Psalm 34, written
+    //  about this day). Seen: act mad again, and they throw him out into the street
+    if (!r3Has("r3_mad")) { r3Person("court", "gath_elite_idle", X(16), 1, R3.NPC_K, "elite1"); r3Person("court", "gath_elite_idle", X(24), 1, R3.NPC_K, "elite2"); }
+    else {
+      const P = R3.COURT2; r3Walker("court", "gath_elite_walk", X(P.A[0]), X(P.A[1]), P.SPEED, "elite1"); r3Walker("court", "gath_elite_walk", X(P.B[0]), X(P.B[1]), P.SPEED * 1.25, "elite2");
+      r3Who("elite2").x = X(P.B[1]); r3Who("elite2").facing = -1;
+      rRelic("r3_truth_court", "truth", c + 45, 16, "I sought the LORD, and he answered me, and delivered me from all my fears. (Psalm 34:4, by David, when he pretended to be insane before Abimelech)");
+    }
     r3.courtAt = X(R3.MAD.COURT_AT);
     r3Prop("court", "w3_throne_dais", X(37));
     r3.people.push({ room: "court", name: "achish_idle", x: X(35), facing: 1, k: R3.NPC_K, ph: 0, y: GR * T - 33, tag: "achish" });   // (standing on his dais by the throne; his sheets face left)
@@ -694,6 +704,7 @@ function r3Enter(r) {
   if (r.id === "tribes" && !r3Has("r3_tribes")) r3Tell("tribes", "The Hall of the Tribes: a tablet for each of Jacob's twelve sons. Step on them in the order Jacob blessed them.");
   if (r.id === "crack") r3Tell("crack", "Under Nob: cracked walls. A heavy sword could break them...");
   if (r.id === "streets") r3Tell("streets", "The streets of Gath. Achish's men are everywhere: keep out of sight.");
+  if (r.id === "court" && r3Has("r3_mad")) r3Tell("court2", "Achish's court again. His guards are walking their rounds: slip past while their backs are turned (crouch to keep low).");
   if (r.id === "goliath") r3Tell("goliath", "Goliath's house. Everything in it is made for a giant.");
   if (r.id === "giantyard") r3Tell("giantyard", "Goliath's yard. Something heavy has been dragged this way...");
   if (r.id === "gath") r3Tell("gath", "Gath, Goliath's own city. Achish's men are watching the road.");
@@ -739,6 +750,15 @@ function r3Update(dt) {
   // Gath: the guard knows him at the gate (21:11); Achish's court (21:14-15)
   if (r.id === "gath" && !r3Has("r3_gath") && free && d.x > r3.gateAt) { r3GateScene(); return; }
   if (r.id === "court" && !r3Has("r3_mad") && free && d.x > r3.courtAt) { r3CourtScene(); return; }
+  if (r.id === "court" && r3Has("r3_mad") && free) {   // (a later visit) the guards on their beat
+    const C = R3.COURT2, crouch = david.h === LOW_H;
+    for (const tag of ["elite1", "elite2"]) {
+      const g = r3Who(tag); if (!g) continue; const dx = d.x - g.x;
+      const sees = Math.abs(dx) < C.NEAR || (Math.sign(dx) === g.facing && Math.abs(dx) < C.SEE * (crouch ? 0.55 : 1) && Math.abs(d.y - GR * T) < 90);
+      if (sees) { r3CourtCaught(g); return; }
+    }
+    const k = r3Who("achish"); if (k && Math.abs(d.x - k.x) < 4 * T) r3Tell("achish2", "Achish: “Him again? Do I lack madmen? Guards!”");
+  }
   // Nob, empty after Gath: by the altar, what happened (22:9-23), once
   if (r.id === "nob" && r3.mourn && !r3Has("r3_mourn") && free && d.x > r3.mournAt) { r3MournScene(); return; }
   // Nob: the holy bread, the first time he walks up to Ahimelech (21:1-6)
@@ -919,6 +939,19 @@ function r3GateScene() {
         ]);
       });
     } },
+  ]);
+}
+function r3CourtCaught(g) {   // seen in the court on a later visit: act mad again, then out the door into the street
+  david.facing = Math.sign(g.x - david.x) || 1; const w = g.walk; g.walk = null; g.name = "gath_elite_block"; g.facing = david.x < g.x ? 1 : -1;   // (the block sheet faces left)
+  rPlay([
+    { say: ["A royal guard", "The madman's back! Seize him!"] },
+    { fn() { r3MadMash("Act mad! Get out of here!", R3.MAD.GUARDS, "david_mad_stagger", () => {
+      g.walk = w; g.name = "gath_elite_walk";
+      rPlay([
+        { say: ["", "The guards throw David out into the street."] },
+        { fn() { const s = roomById("streets"); moveParty((s.c0 + 97) * T, GR * T); david.facing = -1; snapCamera(); } },
+      ]);
+    }); } },
   ]);
 }
 function r3CourtScene() {
@@ -1242,6 +1275,7 @@ function r3Draw(camX) {
     if (r3.scene && (p.tag === "ahimelech" || p.tag === "doeg")) continue;   // (they're in the clip)
     if (p.room !== r.id || !SPR[p.name]) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
-    drawSprite(p.name, frameOf(p.name, r3.t + p.ph), x, p.y ?? GR * T, p.facing, p.k);
+    drawSprite(p.name, frameOf(p.name, r3.t + p.ph), x, p.y ?? GR * T, p.facing * (R3_FACE_LEFT.has(p.name) ? -1 : 1), p.k);
   }
 }
+const R3_FACE_LEFT = new Set(["gath_elite_walk"]);   // (sheets drawn facing left: a walker's facing is the way he walks)

@@ -126,5 +126,6 @@ function drawWild(b, x) {
   }
   const n = b.state === "act" ? W_.act : (b.state === "run" || b.state === "flee") ? (W_.run || W_.fleeSheet || W_.idle) : W_.idle;
   // (standing still, a walk sheet would walk on the spot: the shy ones and the viper only loop when moving or idle by design)
-  drawSprite(n, frameOf(n, b.t), x, b.y, b.facing, k, b.alpha == null ? 1 : b.alpha, b.flash > 0 ? "brightness(2.2)" : "");
+  const f = b.kind === "viper" && b.state === "idle" ? 0 : frameOf(n, b.t);   // (Glen 11-12: the coiled viper lies still; it moves when it strikes)
+  drawSprite(n, f, x, b.y, b.facing, k, b.alpha == null ? 1 : b.alpha, b.flash > 0 ? "brightness(2.2)" : "");
 }
