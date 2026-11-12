@@ -133,3 +133,16 @@ wind. (Psalm 83:13, "like tumbleweed". Rolls at you on the windy road.)
 
 **5r. Caper bush on a wall.** A caper bush growing out of the cracks of an old stone wall, round leaves, white and purple
 flowers. (Something to grab and climb.)
+
+## 6. Abiathar, the priest who got away (11-12)
+**Still.** Abiathar, a young Israelite priest about 20, Ahimelech's son: short dark beard, plain white linen robe and
+cap, dusty and torn at the hem from running, barefoot. Over his arm he carries the ephod: a short apron-vest of gold,
+blue, purple and scarlet woven linen with two onyx stones on the shoulders, held close to his chest. Scared, grieving
+face. Full body, standing. Pixar-style storybook 3D, warm painterly light, ancient Israel around 1000 BC. Orthographic
+side view, isolated on a flat pure green screen background (#00FF00), no shadow on the ground, no text.
+
+Clips, same man, same green screen, seen straight from the side, the camera not moving:
+1. **Hiding:** crouched low, hugging the ephod, peeking up and looking left and right, afraid.
+2. **Standing up:** he sees a friend, rises slowly, still holding the ephod to his chest.
+3. **Telling:** standing, talking, upset; one hand points back behind him, then covers his face.
+4. **Walking:** walking left to right with the ephod in his arms (he goes with David).
