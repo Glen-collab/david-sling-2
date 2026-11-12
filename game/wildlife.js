@@ -106,9 +106,15 @@ function updateWild(b, dt, r) {
     return;
   }
   const lo = b.hx - b.range, hi = b.hx + b.range, far = Tn.LEASH * T;
+  if (b.state === "back") {   // (blocked by the shield: away from him a moment, then on as usual)
+    wildMove(b, b.facing * (W_.walk || 60) * 2.5, dt);
+    if (b.t > 0.9) { b.state = "idle"; b.t = 0; b.cool = Math.max(b.cool, Tn.REST); }
+    return;
+  }
   const pace = () => {   // (off its patch after a charge: it walks back. Glen 11-12: up onto rocks and low walls, like David)
     if (!W_.walk) { if (b.air) wildMove(b, 0, dt); return; }
     if (b.x < lo) b.facing = 1; else if (b.x > hi) b.facing = -1;
+    if (Math.abs(dx) < 140 && Math.sign(dx) === b.facing && Math.abs(dy) < 100) b.facing *= -1;   // (never wanders into him)
     if (wildMove(b, b.facing * W_.walk * (b.x < lo || b.x > hi ? 2 : 1), dt).stop) b.facing *= -1;
   };
   if (b.state === "flee") {   // running off, fading
@@ -160,11 +166,12 @@ const wildTold = {};
 // (Glen 11-12: "I have a shield ... it should block bees or donkey or ibex") a hit from in front while he holds the shield
 //  is blocked: nothing lost, and the animal is knocked back (a charge ends, a swarm backs off)
 function wildHurt(b) {
-  const d = david;
+  const d = david, W_ = WILD[b.kind];
   if (d.shield && Math.sign(b.x - d.x) === d.facing) {
     if (b.cool > 0.2 && b.blockT > 0) return;
     sfx("stone_hit", b.x, 0.5, 0.7); b.flash = 0.15; b.blockT = 0.4; b.cool = Math.max(b.cool, WILD_TUNE.REST);
-    if (b.state === "run") { b.state = "idle"; b.t = 0; b.facing *= -1; }
+    // (Glen 11-12: "the ibex is walking right through me ... he should have to turn around") knocked back, it backs off
+    if (!W_.swarm && b.kind !== "viper") { b.state = "back"; b.t = 0; b.facing = Math.sign(b.x - d.x) || 1; }
     b.x += Math.sign(b.x - d.x) * 26;
     if (!wildTold.shield) { wildTold.shield = true; toast("Blocked with the shield!"); }
     return;

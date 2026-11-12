@@ -64,6 +64,10 @@ const R3 = {
   // (Glen 11-12, his props for the road down to Gath, cut_w3_props.py) the fallen dead tree: solid ROWS high (David jumps
   //  ~185 px, more with the flip), split by Goliath's sword; SINK: drawn this far into the ground; APART: the halves after
   LOG: { ROWS: 11, SINK: 14, APART: 30 },
+  // (Glen 11-12) his fallen logs, each with its own two halves (cut_w3_logs.py): how many rows of it are solid, how far
+  //  into the ground it sits, how far the halves fall apart (px each way)
+  //  WALL: no getting over it (its branches a tangle up to the sky): the sword's the only way
+  LOGS: { A: { ROWS: 10, SINK: 16, APART: 46, WALL: true }, B: { ROWS: 7, SINK: 10, APART: 54 } },
   THORN: { K: 0.85, HURT_W: 0.36, HURT_H: 0.7 },   // a thorn bush: its size, and the part of it that hurts (of its width, height)
   VINE: { EVERY: 3.2, SPEED: 230, BOUNCE: 330, SPIN: 4 },   // the vine balls rolling down the road at him
   LADDER: { FRAME_MS: 140, HIT: 56, OUT: 18 },   // (OUT: the knot, just off the wall it hangs on: an arrow reaches it before the stone)
@@ -142,7 +146,7 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  quiet: () => r3Mourning(), bowAim: (d, dir) => r3BowAim(d, dir),   // (region.js regionStageQuiet: no stage music or birds in an empty Nob)
+  quiet: () => r3Mourning(), bowAim: (d, dir) => r3BowAim(d, dir), slingAim: (x, y) => r3SlingAim(x, y),   // (region.js regionStageQuiet: no stage music or birds in an empty Nob)
   drawFront: camX => { r3DrawGuards(camX); r3YardFog(camX); }, holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
@@ -151,6 +155,8 @@ const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when t
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
   w3_tamarisk: { w: 374, h: 300 }, w3_broom: { w: 302, h: 150 }, w3_caper: { w: 121, h: 170 }, w3_nettle: { w: 59, h: 80 }, w3_gourd: { w: 85, h: 48 }, w3_tumbleweed: { w: 100, h: 96 },   // (Glen 11-12, tools/cut_w3_plants.py)
   w3_knot_branch: { w: 113, h: 122 },
+  w3_logA: { w: 556, h: 383 }, w3_logA_l: { w: 556, h: 383 }, w3_logA_r: { w: 556, h: 383 },
+  w3_logB: { w: 811, h: 275 }, w3_logB_l: { w: 811, h: 275 }, w3_logB_r: { w: 811, h: 275 },
   w3_trunk_bare: { w: 109, h: 1000 }, w3_trunk_d: { w: 491, h: 1000 }, w3_limb: { w: 270, h: 48 }, w3_crown: { w: 429, h: 371 }, w3_rope_hang: { w: 118, h: 527 }, w3_hive: { w: 63, h: 91 }, w3_trunk_full: { w: 614, h: 1250 },   // (tools/cut_w3_grove.py)
   w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 },
   w3_palace_door: { w: 534, h: 357 }, w3_goliath_door: { w: 764, h: 471 },
@@ -175,7 +181,7 @@ function r3StoneHits(s) {   // (region.js stoneHitsRegion) an arrow cuts a hangi
   if (r3PropsHit(s)) return true;
   for (const h of r3.hangs) {
     if (h.room !== r.id || h.state !== "hang" || r3SegDist(s, h.x, h.y - (h.img ? KIT[h.img].h / 2 : 18)) > R3.HANG.HIT) continue;
-    if (!s.bow) { r3Tell("hangstone", hasSkill("bow") ? "Too high and small for a stone. Jonathan's bow: hold Up and press X." : "Too high and small for a stone."); return false; }
+    if (s.sword) return false;   // (Glen 11-12: "I should still be able to use the slingshot since I don't run out of rocks": a stone does it too)
     h.state = "fall"; h.vy = 0; sfx("stone_hit", h.x, 0.35, 1.6); s.life = 0;
     for (let i = 0; i < 6; i++) bits.push({ x: h.x, y: h.y - 20, vx: (Math.random() - 0.5) * 160, vy: -Math.random() * 120, life: 0.7, color: i % 2 ? "#5d7a3a" : "#8a6a3c" });   // (leaves and stem)
     return true;
@@ -262,7 +268,7 @@ function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything brea
     for (let i = 0; i < 14; i++) bits.push({ x: v.x, y: v.y - 55, vx: (Math.random() - 0.5) * 380, vy: -Math.random() * 420, life: 0.9, color: i % 2 ? "#6b6a2c" : "#a7a76a" });
     return true;
   }
-  if (s.bow) for (const o of r3.ladders) if (o.room === r.id && o.state === "up" && r3SegDist(s, ...r3Knot(o)) < R3.LADDER.HIT) {
+  if (!s.sword) for (const o of r3.ladders) if (o.room === r.id && o.state === "up" && r3SegDist(s, ...r3Knot(o)) < R3.LADDER.HIT) {   // (an arrow, or a stone from the sling)
     o.state = "drop"; o.t = 0; regionAdd("taken", o.id); sfx("sling_throw_quick", o.x, 0.6, 0.6); s.life = 0; return true;
   }
   return false;
@@ -272,6 +278,13 @@ function r3Quiver(room, x, y = FOOT) { r3.quivers.push({ room, x, y, got: false 
 // (Glen 11-12: "I can't shoot the arrow straight") shooting up: an arrow goes for a rope's or a ladder's knot overhead,
 //  if one's close (ramah.js r2LooseArrow asks); null: the usual angle
 const r3Knot = o => [o.x + (o.kick ? 1 : -1) * R3.LADDER.OUT, o.top + 14];   // (where an arrow cuts a rope ladder or rope loose)
+function r3SlingAim(x, y) {   // the nearest knot or hanging fruit above him, close enough: where a stone thrown up goes
+  const r = region.room; if (!r) return null; let best = null, bd = 900;
+  const look = (tx, ty) => { const dy = y - ty, dd = Math.hypot(tx - x, dy); if (dy > 40 && dd < bd) { bd = dd; best = [tx, ty]; } };
+  for (const o of r3.ladders) if (o.room === r.id && o.state === "up") look(...r3Knot(o));
+  for (const h of r3.hangs) if (h.room === r.id && h.state === "hang") look(h.x, h.y - (h.img ? KIT[h.img].h / 2 : 18));   // (where r3StoneHits looks)
+  return best;
+}
 function r3BowAim(d, dir) {
   const r = region.room; if (!r) return null;
   for (const o of r3.ladders) {
@@ -554,7 +567,8 @@ function r3Build(R) {
   c = R("grove");
   { const X = k => (c + k) * T, G = R3.GROVE, top = Math.round((FOOT - G.TOP) / T) * T, tY = FOOT - KIT.w3_trunk_bare.h + 6;
     ground(c, c + 131);
-    campfire(c + 4, GR - 1); oliveRow(c + 8, 16, 4); r3Quiver("grove", X(12));   // (an arrow for the rope, whatever he came with)
+    campfire(c + 4, GR - 1); oliveRow(c + 8, 16, 4); r3Quiver("grove", X(12));
+    r3Wall("r3_log_grove", "grove", c + 48, 18, "log", "B");   // (Glen 11-12: his plain log, across the way: Goliath's sword splits it)   // (an arrow for the rope, whatever he came with)
     const limb = (cx, side, y = top, len = 1) => {   // a limb out of a trunk at y (its top), side -1 left / 1 right: a ledge
       const k = KIT.w3_limb, w = k.w * len, x = side > 0 ? cx - 6 : cx - w + 6;
       region.props.push({ room: "grove", n: "w3_limb", x, y: y - 10, s: len, flip: side > 0 });
@@ -1157,17 +1171,17 @@ function r3SwordScene() {
     { fn() { regionAdd("taken", "r3_sword"); learnSkill("heavySword"); const i = region.props.indexOf(r3.swordProp); if (i >= 0) region.props.splice(i, 1); } },
   ]);
 }
-function r3Wall(id, room, c, w, kind = "crack") {   // a cracked wall from column c, w wide, floor to the room's top: solid till it's broken
+function r3Wall(id, room, c, w, kind = "crack", art = "A") {   // a cracked wall from column c, w wide, floor to the room's top: solid till it's broken
   const up = roomById(room).up || 0, broken = r3Has(id);   // (kind "log", Glen 11-12: a fallen dead tree across the road, R3.LOG.ROWS high)
-  const o = { id, room, c, w, x0: c * T, x1: (c + w) * T, up, hp: R3.MIGHT.HP, hits: 0, broken, shake: 0, kind };
+  const o = { id, room, c, w, x0: c * T, x1: (c + w) * T, up, hp: R3.MIGHT.HP, hits: 0, broken, shake: 0, kind, art };
   r3.walls.push(o);
-  if (kind === "log") { ["w3_deadtree", "w3_log_l", "w3_log_r"].forEach(kitImg); block(c, GR - R3.LOG.ROWS, w, R3.LOG.ROWS, 6); for (let k = 0; k < w; k++) artSolid.add((c + k) + "," + (GR - R3.LOG.ROWS)); if (broken) r3WallOpen(o); return; }
+  if (kind === "log") { const L = R3.LOGS[art], rows = L.WALL ? GR + up : L.ROWS; ["", "_l", "_r"].forEach(s => kitImg("w3_log" + art + s)); block(c, GR - rows, w, rows, 6); for (let k = 0; k < w; k++) artSolid.add((c + k) + "," + (GR - L.ROWS)); if (broken) r3WallOpen(o); return; }
   for (let i = 1; i <= 5; i++) kitImg("w3_crackwall-" + i);
   block(c, -up, w, GR + up, 6); if (broken) r3WallOpen(o);   // (material 6: solid, but no dirt fill drawn: only his wall shows)
   for (let k = 0; k < w; k++) artSolid.add((c + k) + "," + -up);
 }
 function r3WallOpen(o) {   // the hole at the bottom: broken through, the rest stays (a log: all of it, split and fallen apart)
-  const h = o.kind === "log" ? R3.LOG.ROWS : R3.MIGHT.HOLE;
+  const L = o.kind === "log" && R3.LOGS[o.art || "A"], h = L ? (L.WALL ? GR + o.up : L.ROWS) : R3.MIGHT.HOLE;
   for (let x = o.c; x < o.c + o.w; x++) for (let y = GR - h; y < GR; y++) solid[y][x] = 0;
 }
 function r3MightStart(w) {
@@ -1379,10 +1393,13 @@ function r3DrawCarryThrow(d, x, y, K) {
 //  5 broken through (or straight to 5 with a gold swing). Whole stage 1 repeats above it on up the shaft
 function r3DrawLog(w, camX) {   // (Glen 11-12) the dead tree across the road; split, the two halves of his cracked log
   const mid = (w.x0 + w.x1) / 2 - camX, sh = w.shake > 0 ? Math.sin(r3.t * 90) * 6 * w.shake / 0.35 : 0;
-  if (!w.broken) { const k = KIT.w3_deadtree, im = kitImg("w3_deadtree"); if (im) ctx.drawImage(im, mid - k.w / 2 + sh, FOOT - k.h + R3.LOG.SINK, k.w, k.h); return; }
-  const L = KIT.w3_log_l, R = KIT.w3_log_r, il = kitImg("w3_log_l"), ir = kitImg("w3_log_r");
-  if (il) ctx.drawImage(il, mid - L.w - R3.LOG.APART, FOOT - L.h + R3.LOG.SINK, L.w, L.h);
-  if (ir) ctx.drawImage(ir, mid + R3.LOG.APART, FOOT - R.h + R3.LOG.SINK, R.w, R.h);
+  // (Glen 11-12) his logs: whole; split, its own two halves where they were in it, fallen apart (and tipped a little)
+  const a = w.art || "A", P = R3.LOGS[a], k = KIT["w3_log" + a], x = mid - k.w / 2, y = FOOT - k.h + P.SINK;
+  if (!w.broken) { const im = kitImg("w3_log" + a); if (im) ctx.drawImage(im, x + sh, y, k.w, k.h); return; }
+  for (const [s, dir] of [["_l", -1], ["_r", 1]]) {
+    const im = kitImg("w3_log" + a + s); if (!im) continue;
+    ctx.save(); ctx.translate(x + k.w / 2 + dir * P.APART, y + k.h); ctx.rotate(dir * 0.04); ctx.drawImage(im, -k.w / 2, -k.h, k.w, k.h); ctx.restore();
+  }
 }
 function r3WallStage(w) { return w.broken ? 5 : Math.min(4, 1 + w.hits); }
 function r3DrawWalls(camX) {

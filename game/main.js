@@ -2444,8 +2444,13 @@ function updateDavid(dt) {
       const aimDown = held("down") && !d.onGround;   // Down + B in the air: throw diagonally down
       let ang = aimUp ? (straightUp ? -Math.PI / 2 + 0.04 : -Math.PI / 4) : aimDown ? Math.PI / 4 : -0.12;
       if (!aimUp && !aimDown && typeof towerAim === "function") { const a = towerAim(d.x + d.facing * 30, d.y - (d.h === LOW_H ? 40 : 78), sp, full >= 1, d.facing); if (a !== null) ang = a; }   // world6.js: a flat throw at an open tower window arcs up into it
-      stones.push({ x: d.x + d.facing * (straightUp ? 6 : 30), y: d.y - (straightUp ? 100 : d.h === LOW_H ? 40 : 78), vx: Math.cos(ang) * sp * d.facing + d.vx * (straightUp ? 0 : 0.3),
-                    vy: Math.sin(ang) * sp, charged: full >= 1, life: 2.5 });
+      const st = { x: d.x + d.facing * (straightUp ? 6 : 30), y: d.y - (straightUp ? 100 : d.h === LOW_H ? 40 : 78), vx: Math.cos(ang) * sp * d.facing + d.vx * (straightUp ? 0 : 0.3),
+                    vy: Math.sin(ang) * sp, charged: full >= 1, life: 2.5 };
+      // (Part Two, Glen 11-12: "the olives I can't hit with my sling ... the ladders I should be able to hit") thrown up with
+      //  a knot or fruit hanging overhead: straight at it (nobgath.js slingAim)
+      if (aimUp && typeof REGION !== "undefined" && REGION_ON && REGION.slingAim) { const tg = REGION.slingAim(st.x, st.y);
+        if (tg) { const dx = tg[0] - st.x, dy = tg[1] - st.y, l = Math.hypot(dx, dy) || 1; st.vx = dx / l * sp; st.vy = dy / l * sp; st.grav = 0.1; } }
+      stones.push(st);
       sfx("sling_throw", undefined, full >= 1 ? 0.95 : 0.8, 0.95 + Math.random() * 0.1);   // always the whip of the throw
     }
     if (hasSkill("quick") && !d.charging && pressed("b") && !d.carrying && !d.harp && d.throwT > 0.04) d.quickQueued = true;   // tapped again during the throw
