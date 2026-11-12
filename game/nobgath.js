@@ -92,7 +92,8 @@ const R3 = {
   //  feet (HANDS); a catch this near the rope (GRAB); climbing it (CLIMB px/s); letting go: the throw (BOOST) and hop (JUMP)
   // (Glen 11-12: "it should start slow and we have to [press] left and right in the same direction to get it to swing
   //  more") A0: its sway on its own, small; CATCH: how much of his jump carries into it; PUMP: each push with the swing
-  SWING: { AY: -90, LEN: 530, A0: 0.1, CATCH: 0.25, G: 2400, PUMP: 1.9, DAMP: 0.08, HANDS: 104, GRAB: 34, CLIMB: 170, BOOST: 1.05, JUMP: 520, COOL: 0.4, MAX: 0.95 },   // (Glen 11-12: "too fast and wild": A0, PUMP, BOOST, MAX down)
+  //  (Glen 11-12 again: "way too fast ... not smooth ... way slower": G down (each swing takes longer), PUMP gentler)
+  SWING: { AY: -90, LEN: 530, A0: 0.1, CATCH: 0.2, G: 1250, PUMP: 0.9, DAMP: 0.05, HANDS: 104, GRAB: 34, CLIMB: 170, BOOST: 1.25, JUMP: 520, COOL: 0.4, MAX: 0.85 },   // (Glen 11-12: "too fast and wild": A0, PUMP, BOOST, MAX down)
   CROWN: { TOP: 110, X0: 150, X1: 340, ROPE_X: 330 },   // the climbing tree's crown: a ledge TOP px down its picture, from X0 to X1; the rope tied at ROPE_X
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
