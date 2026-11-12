@@ -110,7 +110,7 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
+  drawFront: camX => r3DrawGuards(camX), holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
 const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when the region's built: region.js loads after this file)
@@ -972,7 +972,13 @@ function r3Caught(g) {
   toast(g.name === "gath_elite" ? "One of the king's own guard saw you! Back to the gate." : "A guard saw you! Back to the gate. Hide while one looks your way.");
 }
 function r3DrawSneak(camX, idle) {
-  const r = region.room, d = david, S = R3.SNEAK; if (r.id !== "streets") return;
+  const r = region.room, d = david; if (r.id !== "streets") return;
+  r3DrawSneakBadges(camX, idle);
+}
+// (Glen 11-12: "have all the guards walk in front of the objects so it looks like I am hiding") the guards: drawn after
+//  David and the stalls and sacks he hides behind (region.js drawRegionFront: REGION.drawFront)
+function r3DrawGuards(camX) {
+  const r = region.room, S = R3.SNEAK; if (!r || r.id !== "streets") return;
   for (const g of r3.guards) {
     const x = g.x - camX; if (x < -400 || x > W + 400) continue;
     if (g.state !== "turn") {   // where he's looking: a soft wedge (a help for little players), red when he's noticed you
@@ -984,6 +990,9 @@ function r3DrawSneak(camX, idle) {
     if (SPR[n]) drawSprite(n, n.endsWith("point") ? Math.min(SPR[n].frames - 1, Math.floor(g.seen / S.SEEN_T * 6)) : frameOf(n, Math.max(0, g.t)), x, g.y, g.facing, R3.NPC_K);
     if (g.seen > 0) { ctx.save(); ctx.fillStyle = "#ffdc4a"; ctx.strokeStyle = "#3a2400"; ctx.lineWidth = 5; ctx.font = "bold 44px sans-serif"; ctx.textAlign = "center"; ctx.strokeText("!", x, g.y - 175); ctx.fillText("!", x, g.y - 175); ctx.restore(); }
   }
+}
+function r3DrawSneakBadges(camX, idle) {
+  const d = david;
   if (!idle || r3.inDoor) return;
   for (const h of r3.hides) {   // next to a real hiding place: a little badge (Down: crouch behind it; Up: step in)
     if (h.room !== "streets" || d.x < h.x0 - 20 || d.x > h.x1 + 20) continue;
