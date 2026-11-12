@@ -47,6 +47,7 @@ const RTUNE = {
   RELIC_H: { pomegranate: 44, oil: 52, stone: 34, truth: 46, key: 62 },   // how tall each find is drawn
   MAP_CELL: 78,      // the map screen: px per map cell (at most: a region with many rooms is drawn smaller, to fit)
   MAP_W: 1080,       //  (the width the rooms may take on the sheet)
+  MAP_SKETCH_X: 400, MAP_SKETCH_DOWN: 70,   // the town drawing in the sheet's corner ends here (px); a room under it: the map moves down this far
   FALL_HURT: 420,    // (Glen 11-12) a fall farther than this (px, from the top of his jump) costs a heart
   // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
   // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
@@ -2339,7 +2340,9 @@ const MAP_SHEET = { img: "gibeah/map_sheet.png", x: 35, y: 12, INK: "#3b2a18", W
 function drawRegionMap() {
   const cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + (r.mh || 1)));
   const C = Math.min(RTUNE.MAP_CELL, Math.floor(RTUNE.MAP_W / cols)), cs = C / RTUNE.MAP_CELL;   // (Glen 11-12: World 3 ran off the sheet)
-  const ox = (W - cols * C) / 2, oy = 135, M = MAP_SHEET, sheet = roomImg(M.img);
+  const ox = (W - cols * C) / 2, M = MAP_SHEET, sheet = roomImg(M.img);
+  // (Glen 11-12: Michal's House sat on the town drawing in the corner) a top-row room under the drawing: the map moves down
+  const oy = 135 + (REGION.rooms.some(r => r.my === 0 && ox + r.mx * C < RTUNE.MAP_SKETCH_X) ? RTUNE.MAP_SKETCH_DOWN : 0);
   const hand = px => typeof caveatReady !== "undefined" && caveatReady ? `${px}px Caveat, Georgia, serif` : `italic ${Math.round(px * 0.75)}px Georgia, serif`;
   ctx.fillStyle = "#1c140d"; ctx.fillRect(0, 0, W, H);
   if (sheet) ctx.drawImage(sheet, M.x, M.y);
