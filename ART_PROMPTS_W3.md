@@ -68,3 +68,68 @@ shelf, a giant bed, a doorway twice the normal height. Warm, a little funny, a l
   smash, then the follow-through. He holds it as if it's almost too heavy.
 - **David taking the bread:** he takes a round loaf in both hands, bows his head, and eats a bite.
   (Achish is covered already: achish_throne, achish_point, achish_exasperated.)
+
+## 5. Animals and plants for the roads (11-12)
+Already in the game (no new art needed): lion, bear, wolf, hyena, jackal, fox, boar, leopard, raven, eagle, vulture,
+bat, rat, snake, cobra, scorpion, hornet, bee, spider, hedgehog, tortoise, gazelle, goat, dove, donkey, ox, dog.
+
+Each animal: a still first, then (if you can) a Grok/Meta clip of the same animal doing the action, on the green screen,
+seen straight from the side, the camera not moving. Every prompt ends with:
+> *Pixar-style storybook 3D, warm painterly light, ancient Israel around 1000 BC. Orthographic side view, isolated on a
+> flat pure green screen background (#00FF00), no shadow on the ground, no text.*
+
+### Ones that hurt you
+**5a. Horned viper.** A sand-colored desert viper with two little horns over its eyes, coiled, head raised to strike.
+Clip: it sidewinds left to right in S-curves, stops, strikes forward, coils again. (Hides half-buried in sand on the Gath road.)
+
+**5b. Ostrich.** A big male ostrich, black feathers, white wing and tail plumes, long pink legs. Clip: it runs full speed
+left to right, then stops and kicks forward with one big foot. (Job 39:13-18: "she laughs at the horse and his rider".)
+
+**5c. Wild ass (onager).** A tan wild donkey with a dark stripe down its back, ears back, angry. Clip: it charges left to
+right, then rears up and kicks with both back legs. (Job 39:5-8.)
+
+**5d. Locust swarm.** One desert locust, brown and yellow, wings open, then the same as a dark swarm cloud of hundreds.
+Clip: the swarm boils across left to right like a cloud. (They strip the plants you need; a swarm you must get under.)
+
+**5e. Caracal.** A sandy wild cat with long black tufted ears, crouched on a rock. Clip: it crouches, wiggles, and leaps
+high off the rock, paws out. (Pounces from trees and walls.)
+
+**5f. Stork on a nest.** A white stork with black wing tips and a red beak, standing on a big stick nest. Clip: it clacks its
+beak, then dives forward and pecks. (Jeremiah 8:7; it guards its nest on the tower.)
+
+**5g. Fly swarm.** A buzzing black cloud of flies around a broken jar. Clip: the cloud drifts and follows. (Gath only: the
+Philistines' god Baal-zebub, "lord of the flies", 2 Kings 1:2. Smoke from a torch drives them off.)
+
+### Ones that live there (background, or something to catch)
+**5h. Partridge.** A sand partridge, round and brown with striped sides. Clip: it bursts out of a bush and runs fast.
+(1 Samuel 26:20: David says Saul hunts him "as when one hunts a partridge in the mountains". The perfect bird for him.)
+
+**5i. Rock hyrax (coney).** Small furry brown rock badgers on a boulder, sunning, one standing guard. Clip: they all dive
+into a crack in the rock. (Proverbs 30:26: "they make their houses in the rocks". A hint to David: hide in the rock.)
+
+**5j. Hoopoe.** An orange bird with a black-and-white striped crest and wings, crest fanned up. Clip: it flies up in a
+bouncy flight.
+
+**5k. Ibex herd far away.** Three Nubian ibex with long curved horns on a cliff, small, for the far hills.
+
+**5l. Owl in the ruins.** A little owl with yellow eyes on a broken wall at dusk (Psalm 102:6). Clip: it turns its head
+and blinks. (Goliath's yard.)
+
+### Plants
+**5m. Tamarisk tree.** A feathery gray-green tamarisk tree with pink flower tips, short twisted trunk. (Saul sits under one
+at Gibeah, 1 Samuel 22:6.)
+
+**5n. Broom bush.** A white-flowering broom bush in the desert, thin green whips of branches. (Elijah slept under one.
+Shade that heals.)
+
+**5o. Wild gourd vine.** A creeping vine with yellow-green striped little gourds on hot sand. (2 Kings 4:39-40: "there is
+death in the pot!" Bad food: they hurt if eaten.)
+
+**5p. Stinging nettles.** A clump of dark green nettles with jagged leaves, waist high. (Proverbs 24:31: the lazy man's
+field, "covered with nettles". Like the thorns: they sting, the sword clears them.)
+
+**5q. Tumbleweed.** A big dry round tumbleweed (the wild artichoke). Clip: it rolls and bounces left to right in the
+wind. (Psalm 83:13, "like tumbleweed". Rolls at you on the windy road.)
+
+**5r. Caper bush on a wall.** A caper bush growing out of the cracks of an old stone wall, round leaves, white and purple
+flowers. (Something to grab and climb.)
