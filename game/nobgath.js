@@ -50,7 +50,10 @@ const R3 = {
   // (Glen 11-11) the Hall of the Tribes, off Nob: his twelve tablets set in the floor, out of order. Walk them in the
   //  order Jacob blessed his sons (Genesis 49:3-27): the blessing's words show at the top, find the picture. A right
   //  one glows and stays safe; a wrong one cracks and drops him back to the door (time, not a heart)
-  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.22, PROUD: 6,   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
+  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6, PAD: 16,
+    // (Glen's Meta frames, cut_tribe_crumble.py: _c1 cracked, _c2 broken; the rest break in drawn pieces till theirs come)
+    C1: ["asher", "dan", "gad", "issachar", "joseph", "levi", "reuben", "simeon"],
+    C2: ["asher", "dan", "gad", "issachar", "joseph", "levi", "naphtali", "reuben", "simeon"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
     FLOOR: ["judah", "gad", "reuben", "joseph", "levi", "asher", "dan", "zebulun", "benjamin", "simeon", "naphtali", "issachar"] },   // (left to right)
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
@@ -198,7 +201,7 @@ function r3Build(R) {
     rKitDoor("d_tribesout", "tribes", c + 3, "door", "d_nobtribes", "hall_door");
     r3.trial = { start: (c + 6) * T, next: done ? 12 : 0, tiles: K.FLOOR.map((name, i) => {
       const tc = c + K.AT + i * K.STEP; pitFloor(tc, K.W); platAt(tc, GR * T, K.W);
-      kitImg("w3_tribe_" + name);   // (asked for now, so it's there when he walks in)
+      kitImg("w3_tribe_" + name); for (const c of ["C1", "C2"]) if (K[c].includes(name)) kitImg("w3_tribe_" + name + "_" + c.toLowerCase());   // (asked for now, so they're there when he walks in; Glen's cracked and broken frames, cut_tribe_crumble.py)
       return { name, c: tc, x0: tc * T, x1: (tc + K.W) * T, lit: done, glow: 0, crack: 0, open: false, fall: 0 };
     }) };
     rRelic("r3_truth_tribes", "truth", c + tr.w - 12, 16, "All these are the twelve tribes of Israel, and this is what their father spoke to them, and blessed them. (Genesis 49:28)", "r3_tribes");
@@ -398,7 +401,11 @@ function r3TrialDraw(camX) {
       ctx.lineTo(x + w + 8, H); ctx.closePath(); ctx.fill();
       ctx.fillStyle = "rgba(90,64,40,0.9)";   // the broken stone lips, either side
       for (const s of [-1, 1]) { const ex = s < 0 ? x - 8 : x + w + 8; ctx.beginPath(); ctx.moveTo(ex, GR * T - 2); ctx.lineTo(ex - s * 16, GR * T + 4 + t.jag[s < 0 ? 1 : 9] * 10); ctx.lineTo(ex, GR * T + 26); ctx.closePath(); ctx.fill(); }
-      if (im && t.pieces && t.fall < 1.1) {
+      const c2 = K.C2.includes(t.name) && kitImg("w3_tribe_" + t.name + "_c2");
+      if (c2 && c2.naturalWidth && t.fall < 1.0) {   // (Glen's broken frame, dropping away)
+        ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t.fall / 1.0);
+        const s = w / 216; ctx.drawImage(c2, Math.round(x - K.PAD * s), GR * T - K.PROUD - K.PAD * s + t.fall * t.fall * 1000, c2.naturalWidth * s, c2.naturalHeight * s); ctx.restore();   // (the kit is at 216 a tablet)
+      } else if (im && t.pieces && t.fall < 1.1 && !(c2 && c2.naturalWidth)) {
         const pw = im.width / 3, ph = im.height / 2, sw = (w - 12) / 3, sh = sw * ph / pw;
         for (const p of t.pieces) { const f = Math.max(0, t.fall - p.late);
           ctx.save(); ctx.globalAlpha = Math.max(0, 1 - f / 1.0);
@@ -409,7 +416,9 @@ function r3TrialDraw(camX) {
     }
     if (!im) continue;
     const j = t.crack > 0 ? (Math.random() - 0.5) * 6 : 0, h = w * im.height / im.width;
-    ctx.drawImage(im, Math.round(x + j), GR * T - K.PROUD, w, h);
+    const c1 = t.crack > 0 && K.C1.includes(t.name) && kitImg("w3_tribe_" + t.name + "_c1");
+    if (c1 && c1.naturalWidth) { const s = w / 216; ctx.drawImage(c1, Math.round(x + j - K.PAD * s), GR * T - K.PROUD - K.PAD * s, c1.naturalWidth * s, c1.naturalHeight * s); }   // (Glen's cracked frame)
+    else ctx.drawImage(im, Math.round(x + j), GR * T - K.PROUD, w, h);
     if (t.lit) {   // the blessing on it: gold
       ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = `rgba(255,190,70,${0.32 + Math.min(1, t.glow) * 0.3})`;
       ctx.beginPath(); ctx.roundRect(x + 3, GR * T - K.PROUD + 3, w - 6, h - 6, 10); ctx.fill(); ctx.restore();
