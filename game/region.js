@@ -45,7 +45,9 @@ const RTUNE = {
   CAM_TRIM: 60,      // px of each room's edge the camera keeps off screen (the rock between rooms is drawn spilling over)
   DOOR_REACH: 46,    // px from a door's middle where Up works
   RELIC_H: { pomegranate: 44, oil: 52, stone: 34, truth: 46, key: 62 },   // how tall each find is drawn
-  MAP_CELL: 78,      // the map screen: px per map cell
+  MAP_CELL: 78,      // the map screen: px per map cell (at most: a region with many rooms is drawn smaller, to fit)
+  MAP_W: 1080,       //  (the width the rooms may take on the sheet)
+  FALL_HURT: 420,    // (Glen 11-12) a fall farther than this (px, from the top of his jump) costs a heart
   // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
   // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
   HP_PER_HEART: 10,
@@ -303,6 +305,19 @@ function rHole(room, c, w, opts = {}) {
   if (opts.planks) { const k = KIT.p_planks; region.props.push({ room, n: "p_planks", x: (c + w / 2) * T - k.w / 2, y: GR * T - 8 }); platAt(c, GR * T, w); }
   if (opts.crumble) { platAt(c, GR * T, w); region.crumbles.push({ room, c, w, state: "whole", t: 0 }); }
   return h;
+}
+// (Glen 11-12: "it should be a height thing for falling ... so the player doesn't just bail off of ledges") the highest
+//  point of each time in the air; landing more than FALL_HURT below it costs a heart. Ladders, ropes, swings start it over.
+//  region.fell: this frame's landing, for a region to act on (nobgath.js: back up on the treetops)
+function regionFall(d) {
+  region.fell = null;
+  if (d.state === "climb" || d.state === "swing" || d.deadT > 0 || region.climb || region.trans) { d.fallTop = null; return; }
+  if (!d.onGround) { d.fallTop = Math.min(d.fallTop ?? d.y, d.y); return; }
+  if (d.fallTop != null && d.y - d.fallTop > RTUNE.FALL_HURT) {
+    region.fell = { from: d.fallTop, drop: d.y - d.fallTop };
+    hurtDavid(d.x, "the fall", true); if (!region.fellTold) { region.fellTold = true; toast("Ouch! That was a long way down. Climb down, don't jump."); }
+  }
+  d.fallTop = null;
 }
 // ---- creatures of the deep (Glen 11-05: his spider, bat and rat; they turn to dust when hit) ----
 const beast = (kind, room, c, o = {}) => region.beasts.push(Object.assign({ kind, room, x: c * T + T / 2, hx: c * T + T / 2, y: GR * T, hy: GR * T,
@@ -795,6 +810,7 @@ function updateRegion(dt) {
     region.drops.length = 0;
     if (REGION.enter) REGION.enter(r);
   }
+  regionFall(d);
   updateBreaks(dt); updateBeasts(dt, r); strWatch(); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r); updateRegionScript(dt); updateStory(dt, r); journalWatch();
   if (REGION.update) REGION.update(dt, r);   // (another region's own: ramah.js)
   bgWorld = r.bg || bgWorld;
@@ -2306,7 +2322,8 @@ function drawCardSpread() {
 // the rooms drawn on it in ink. MAP_SHEET: where it sits on screen (it's saved at this size)
 const MAP_SHEET = { img: "gibeah/map_sheet.png", x: 35, y: 12, INK: "#3b2a18", WASH: "rgba(150,105,55,0.20)", CAVE: "rgba(70,50,30,0.32)", PAPER: "#e2d0a8" };
 function drawRegionMap() {
-  const C = RTUNE.MAP_CELL, cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + (r.mh || 1)));
+  const cols = Math.max(...REGION.rooms.map(r => r.mx + r.mw)), rows = Math.max(...REGION.rooms.map(r => r.my + (r.mh || 1)));
+  const C = Math.min(RTUNE.MAP_CELL, Math.floor(RTUNE.MAP_W / cols)), cs = C / RTUNE.MAP_CELL;   // (Glen 11-12: World 3 ran off the sheet)
   const ox = (W - cols * C) / 2, oy = 135, M = MAP_SHEET, sheet = roomImg(M.img);
   const hand = px => typeof caveatReady !== "undefined" && caveatReady ? `${px}px Caveat, Georgia, serif` : `italic ${Math.round(px * 0.75)}px Georgia, serif`;
   ctx.fillStyle = "#1c140d"; ctx.fillRect(0, 0, W, H);
@@ -2323,7 +2340,7 @@ function drawRegionMap() {
     const x = ox + r.mx * C, y = oy + r.my * C, mh = (r.mh || 1) * C;   // (mh: a tall room)
     ctx.fillStyle = r.cave ? M.CAVE : M.WASH; ctx.fillRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
     ctx.strokeStyle = M.INK; ctx.lineWidth = 2.5; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
-    { const nm = r.name.replace(/^The /, ""), room = r.mw * C - 16; let px = 22; ctx.font = hand(px);   // (Glen 11-09: a long name in a narrow room shrinks to fit, not into its neighbor)
+    { const nm = r.name.replace(/^The /, ""), room = r.mw * C - 16; let px = Math.round(22 * Math.max(0.8, cs)); ctx.font = hand(px);   // (Glen 11-09: a long name in a narrow room shrinks to fit, not into its neighbor)
       while (px > 12 && ctx.measureText(nm).width > room) ctx.font = hand(--px);
       ctx.fillStyle = M.INK; ctx.fillText(nm, x + r.mw * C / 2, y + mh - 11); }
     // the edges you can walk through: a gap in the ink line
@@ -2332,8 +2349,8 @@ function drawRegionMap() {
     if (r.left) ctx.fillRect(x - 5, y + C / 2 - 10, 10, 20);
     const fx = cx => x + 3 + (cx / T - r.c0) / r.w * (r.mw * C - 6);   // a column in this room, on the map
     for (const o of region.doors) if (roomAt(o.x) === r && !(o.need && !hasSkill(o.need))) { ctx.fillStyle = "#2e2418"; ctx.fillRect(fx(o.x) - 4, y + 12, 8, 14); }
-    for (const f of fires) if (roomAt(f.x) === r) { ctx.fillStyle = "#6b8e23"; ctx.beginPath(); ctx.arc(fx(f.x), y + 36, 7, 0, Math.PI * 2); ctx.fill(); }
-    for (const f of region.relics) if (roomAt(f.x) === r && regionHas("seen", f.id) && !regionHas("taken", f.id)) { ctx.fillStyle = "#b03a2e"; ctx.beginPath(); ctx.arc(fx(f.x), y + 36, 5, 0, Math.PI * 2); ctx.fill(); }
+    for (const f of fires) if (roomAt(f.x) === r) { ctx.fillStyle = "#6b8e23"; ctx.beginPath(); ctx.arc(fx(f.x), y + 36 * cs, 7 * cs, 0, Math.PI * 2); ctx.fill(); }
+    for (const f of region.relics) if (roomAt(f.x) === r && regionHas("seen", f.id) && !regionHas("taken", f.id)) { ctx.fillStyle = "#b03a2e"; ctx.beginPath(); ctx.arc(fx(f.x), y + 36 * cs, 5 * cs, 0, Math.PI * 2); ctx.fill(); }
     for (const s of region.seals) if (roomAt(s.x) === r && regionHas("sealsSeen", s.id) && !sealOpen(s)) {
       ctx.strokeStyle = "#7a1f14"; ctx.lineWidth = 3; const sx = fx(s.x);
       ctx.beginPath(); ctx.moveTo(sx - 7, y + 16); ctx.lineTo(sx + 7, y + 30); ctx.moveTo(sx + 7, y + 16); ctx.lineTo(sx - 7, y + 30); ctx.stroke();

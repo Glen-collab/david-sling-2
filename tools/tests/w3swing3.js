@@ -10,7 +10,7 @@ const bot = () => {
   if (sw) { const i = r3.swings.indexOf(sw.q); if (i !== lastRope) { log("caught rope " + i + " at " + Math.round(d.x - X(0))); lastRope = i; }
     return sw.q.ang > 0.45 && sw.q.w > 0 ? ["ArrowRight", "KeyZ"] : [sw.q.w >= 0 ? "ArrowRight" : "ArrowLeft"]; }
   if (d.onGround && d.x < X(94)) {   // on the near bank
-    if (runT < 0) { if (d.x > X(92.5)) return ["ArrowLeft"]; if (r3.swings[0].ang < -0.25 && r3.swings[0].w < 0) runT = 0; else return []; }
+    if (runT < 0) { if (d.x > X(92.5)) return ["ArrowLeft"]; if (r3.swings[0].ang < -0.04 && r3.swings[0].w < 0) runT = 0; else return []; }
     runT++; return runT < 8 ? ["ArrowRight"] : ["ArrowRight", "KeyZ"];
   }
   runT = -1;

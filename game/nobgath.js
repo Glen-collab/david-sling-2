@@ -72,7 +72,11 @@ const R3 = {
   // (Glen 11-12) the Tall Trees: the trees' middles (columns), how high their top limbs are (px over the ground), the swing
   //  ropes' anchors over the gaps (px over the limbs) and length; where the climbing tree's rope hangs (px right of its
   //  middle); the bare trunk's middle in its picture; the extra limb on the climbing tree (px over the ground)
-  GROVE: { A: 18, B: 42, C: 72, D: 100, TOP: 900, ANCHOR: 330, LEN: 440, ROPE_X: 120, BARE_MID: 50, EXTRA: 360,
+  //  The swing ropes hang from out of sight: their ends HANG px under the limbs; they sway SWAY px, swing REACH px at
+  //  most, and their bottom GRAB px can be caught
+  //  (Glen 11-12: "I can double jump to the swinging rope": their ends HANG over the limbs now, out of reach from the
+  //  climbing tree's branches; TOP past a jump and a flip, 320 px, from its highest branch)
+  GROVE: { A: 18, B: 42, C: 72, D: 100, TOP: 960, HANG: -100, SWAY: 60, REACH: 380, GRAB: 300, ROPE_X: 120, BARE_MID: 50, EXTRA: 360, FALL: 420,
     BRIDGE: 1.45 },   // (BRIDGE: the rope bridge's pieces' size, about: they're sized to fit the gap exactly)
   KNOT: { X: 80, Y: -40 },   // (w3_knot_branch: its rope's middle from its left, px; its top from the rope's top, px)
   NETTLE_K: 1,   // (his nettles' size; the thorns are THORN.K)
@@ -86,7 +90,9 @@ const R3 = {
   // the swinging ropes (Glen 11-12): their tie (AY, above the top of the screen), length, how far they swing on their own
   //  (A0, radians), the pull of a swing (G), Left/Right pumping it (PUMP), its slowing (DAMP); his hands this far above his
   //  feet (HANDS); a catch this near the rope (GRAB); climbing it (CLIMB px/s); letting go: the throw (BOOST) and hop (JUMP)
-  SWING: { AY: -90, LEN: 530, A0: 0.38, G: 2400, PUMP: 2.6, DAMP: 0.08, HANDS: 104, GRAB: 34, CLIMB: 170, BOOST: 1.15, JUMP: 520, COOL: 0.4, MAX: 1.15 },
+  // (Glen 11-12: "it should start slow and we have to [press] left and right in the same direction to get it to swing
+  //  more") A0: its sway on its own, small; CATCH: how much of his jump carries into it; PUMP: each push with the swing
+  SWING: { AY: -90, LEN: 530, A0: 0.1, CATCH: 0.25, G: 2400, PUMP: 1.9, DAMP: 0.08, HANDS: 104, GRAB: 34, CLIMB: 170, BOOST: 1.05, JUMP: 520, COOL: 0.4, MAX: 0.95 },   // (Glen 11-12: "too fast and wild": A0, PUMP, BOOST, MAX down)
   CROWN: { TOP: 110, X0: 150, X1: 340, ROPE_X: 330 },   // the climbing tree's crown: a ledge TOP px down its picture, from X0 to X1; the rope tied at ROPE_X
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
@@ -97,28 +103,28 @@ const NOBGATH = {
   rooms: [
     { id: "nobroad",  name: "The Road to Nob",       w: 150, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "nob",
       far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24, near: "w3/near_nob.png" },   // (Glen's near layer, 11-10: olive bushes, boulders, a dry-stone wall)
-    { id: "nob",      name: "Nob",                   w: 110, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "nobroad", right: "gathroad",
+    { id: "nob",      name: "Nob",                   w: 110, bg: "w4_1", mx: 2, my: 1, mw: 2, left: "nobroad", right: "gathroad",
       far: "w3/nob/far", mid: "w3/nob/mid.png", midP: 0.6, near: "w3/nob/near.png", nearY: 606, floor: "w3/nob/floor.png" },   // (Glen 11-10: his far hills, his court wall on green (the tiled roofs cut off), his row of jars and baskets in front)   // (Glen's sanctuary court, the linen hangings and the bronze altar, with his tileable court either side (11-10): one copy, the room's width; the painted court from column 29)
     { id: "crack",    name: "Beneath Nob",           w: 66, up: 30, cave: true, mx: 2, my: 2, mw: 2, mh: 2,
       strip: "w3/crack_strip", floor: "w3/crack_dirt.png", band: [0.04, 0.72] },   // (his cracked wall, a storey repeating up: Castlevania)
-    { id: "tribes",   name: "The Hall of the Tribes", w: 96, bg: "w4_4", mx: 4, my: 2, mw: 3,
+    { id: "tribes",   name: "The Hall of the Tribes", w: 96, bg: "w4_4", mx: 4, my: 2, mw: 2,
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },   // (11-11: Saul's halls stand in till Glen paints Nob's own)
-    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 24, bg: "w4_1", mx: 5, my: 1, mw: 3, left: "nob", right: "grove",
+    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 24, bg: "w4_1", mx: 4, my: 1, mw: 2, left: "nob", right: "grove",
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },   // (+ his near layer: sycamore shrubs, a broken jar, a mud-brick stub)
     // (Glen 11-12) the tall trees: trunks too tall to climb, then one that can be, and the way back across their tops
-    { id: "grove",    name: "The Tall Trees",        w: 132, up: 42, bg: "w4_1", mx: 8, my: 1, mw: 2, left: "gathroad", right: "gath",
+    { id: "grove",    name: "The Tall Trees",        w: 132, up: 42, bg: "w4_1", mx: 6, my: 1, mw: 2, left: "gathroad", right: "gath",
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },
-    { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 10, my: 1, mw: 2, left: "grove",
+    { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 8, my: 1, mw: 1, left: "grove",
       far: "w3/gath/far", mid: "w3/gath/mid.png", midP: 1, midX: 170, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (Glen 11-10: his dunes and sea far off; his walls and gate fixed to the room, the gate on the door at column 22; his broken jar and bricks in front)   // (his city of Gath, one copy the room's width: its own gate is the door in, at column 22)
-    { id: "streets",  name: "The Streets of Gath",   w: 116, bg: "w4_1", mx: 12, my: 1, mw: 3, right: "giantyard",
+    { id: "streets",  name: "The Streets of Gath",   w: 116, bg: "w4_1", mx: 9, my: 1, mw: 2, right: "giantyard",
       far: "w3/street/far", mid: "w3/street/mid.png", midP: 0.6, midY: -40, near: "w3/street/near.png", nearY: 606, floor: "w3/street/floor.png" },   // (Glen 11-10: his rooftops and sea far off, his houses and awnings, his baskets, jars and sacks in front, their dirt the floor)   // (Glen's street, 11-10, two copies; the sneak: hide behind his stalls and baskets)
     // (Glen 11-12: "make Goliath's house further back ... challenges and pitfalls ... eerie fog") past the cracked wall at
     //  the end of the streets: the giant's yard, darker and foggier the further in, his house at the end
-    { id: "giantyard", name: "Goliath's Yard",       w: 96, bg: "w4_1", mx: 12, my: 2, mw: 2, left: "streets", dark: true,
+    { id: "giantyard", name: "Goliath's Yard",       w: 96, bg: "w4_1", mx: 9, my: 2, mw: 2, left: "streets", dark: true,
       far: "w3/street/far", mid: "w3/street/mid.png", midP: 0.6, midY: -40, near: "w3/street/near.png", nearY: 606, floor: "w3/street/floor.png" },
-    { id: "court",    name: "The Court of Achish",   w: 48, bg: "w4_4", mx: 15, my: 1, mw: 2,
+    { id: "court",    name: "The Court of Achish",   w: 48, bg: "w4_4", mx: 11, my: 1, mw: 1,
       strip: "w3/court_strip", floor: "w3/court_floor" },
-    { id: "goliath",  name: "Goliath's House",       w: 36, bg: "w4_4", mx: 14, my: 2, mw: 1,
+    { id: "goliath",  name: "Goliath's House",       w: 36, bg: "w4_4", mx: 11, my: 2, mw: 1,
       art: "w3/goliath_room.jpg" },   // (Glen 11-10: the giant's room, everything huge: a secret behind the cracked wall at the end of the streets)   // (Glen's hall, 11-10: his painted wall, two column-to-column bays repeating; his slabs and red rug)
   ],
   // the Journal: Glen's song, Verse 3 (SONG_PSALM57.md, his words exactly)
@@ -133,7 +139,7 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  quiet: () => r3Mourning(),   // (region.js regionStageQuiet: no stage music or birds in an empty Nob)
+  quiet: () => r3Mourning(), bowAim: (d, dir) => r3BowAim(d, dir),   // (region.js regionStageQuiet: no stage music or birds in an empty Nob)
   drawFront: camX => { r3DrawGuards(camX); r3YardFog(camX); }, holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
@@ -234,7 +240,7 @@ function r3PropsUpdate(dt) {   // the thorns, the vine balls, the ladders: in th
     if (o.room !== r.id) continue;
     if (o.kick && o.state === "up" && d.onGround && Math.abs(d.y - o.top) < 12 && Math.abs(d.x - o.x) < 3 * T) { o.state = "drop"; o.t = 0; regionAdd("taken", o.id); sfx("sling_throw_quick", o.x, 0.5, 0.7); continue; }   // (he kicks it loose)
     if (o.state === "up" && !o.kick && Math.abs(d.x - o.x) < 330 && hasSkill("bow")) r3Tell(o.kind, o.kind === "rope" ? "A rope, coiled and tied up in the tree. Shoot the knot loose: hold Up and press X." : "A rope ladder, rolled up and tied at the top. Shoot the knot loose: hold Up and press X.");
-    if (o.state === "drop" && (o.t += dt) * 1000 >= R3.LADDER.FRAME_MS * 3) { o.state = "down"; r3LadderClimb(o); if (typeof chime === "function") chime(5); toast(o.kick ? "David kicks the far ladder loose: the way down." : o.kind === "rope" ? "The rope's down! Up to climb it (or jump and grab it)." : "The ladder's down! Up to climb it."); }
+    if (o.state === "drop" && (o.t += dt) * 1000 >= R3.LADDER.FRAME_MS * 3) { o.state = "down"; r3LadderClimb(o); if (typeof chime === "function") chime(5); toast(o.kick ? (o.kind === "rope" ? "David kicks the rope loose: the way down." : "David kicks the far ladder loose: the way down.") : o.kind === "rope" ? "The rope's down! Up to climb it (or jump and grab it)." : "The ladder's down! Up to climb it."); }
   }
 }
 function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything breaks a vine ball; an arrow cuts the ladder's knot loose
@@ -259,6 +265,17 @@ function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything brea
 }
 // (Glen 11-12) a bundle of arrows on the ground: walk over it (when he isn't full); back each time he comes in
 function r3Quiver(room, x, y = FOOT) { r3.quivers.push({ room, x, y, got: false }); }   // (y: its ledge's top, up a tree)
+// (Glen 11-12: "I can't shoot the arrow straight") shooting up: an arrow goes for a rope's or a ladder's knot overhead,
+//  if one's close (ramah.js r2LooseArrow asks); null: the usual angle
+function r3BowAim(d, dir) {
+  const r = region.room; if (!r) return null;
+  for (const o of r3.ladders) {
+    if (o.room !== r.id || o.state !== "up") continue;
+    const dx = o.x - d.x, dy = d.y - R2.ARROW.UP_DY - (o.top + 14);
+    if (dy > 40 && Math.hypot(dx, dy) < 900 && (Math.abs(dx) < 60 || Math.sign(dx) === dir)) return Math.max(0.3, Math.min(1.52, Math.atan2(dy, Math.abs(dx))));
+  }
+  return null;
+}
 function r3PropsReset(room) { for (const q of r3.quivers.concat(r3.honey)) if (q.room === room) q.got = false; r3PropsReset0(room); }
 function r3PropsReset0(room) { for (const b of r3.thorns) if (b.room === room) b.cut = false; r3.vines.length = 0; r3.vineT = 1.2; }
 function r3PropsDraw(camX) {
@@ -300,7 +317,10 @@ function r3PropsDraw(camX) {
 }
 // (Glen 11-12) the swinging ropes: Donkey Kong style. Each hangs from AY and swings on its own; jump into one and he
 //  catches it; Left / Right swing him, Up / Down climb it; A lets go with the swing's speed
-function r3Swing(room, ax, ay = R3.SWING.AY, len = R3.SWING.LEN) { r3.swings.push({ room, ax, ay, len, ang: 0, w: 0, ph: Math.random() * 6, cool: 0 }); }
+// (o: a long rope from out of sight above, the Tall Trees: a0 its sway, max its farthest swing (radians), grab how much of
+//  it from the bottom up he can catch and climb, px)
+function r3Swing(room, ax, ay = R3.SWING.AY, len = R3.SWING.LEN, o = {}) { r3.swings.push(Object.assign({ room, ax, ay, len, ang: 0, w: 0, ph: Math.random() * 6, cool: 0 }, o)); }
+const r3SwingLow = q => q.grab ? q.len - q.grab : q.len * 0.45;   // (the top of the part he can hold)
 const r3SwingTip = (q, l = q.len) => [q.ax + Math.sin(q.ang) * l, q.ay + Math.cos(q.ang) * l];
 function r3SwingUpdate(dt) {
   const r = region.room, d = david, S = R3.SWING; if (!r) return;
@@ -308,15 +328,15 @@ function r3SwingUpdate(dt) {
     if (q.room !== r.id) continue;
     q.cool = Math.max(0, q.cool - dt);
     if (r3.swing && r3.swing.q === q) continue;
-    const w0 = Math.sqrt(S.G / q.len), want = S.A0 * Math.sin(r3.t * w0 + q.ph);   // (on its own: back and forth, settling back to its sway after he lets go)
-    q.ang += (want - q.ang) * Math.min(1, dt * 6); q.w = S.A0 * w0 * Math.cos(r3.t * w0 + q.ph);
+    const w0 = Math.sqrt(S.G / q.len), a0 = q.a0 ?? S.A0, want = a0 * Math.sin(r3.t * w0 + q.ph);   // (on its own: back and forth, settling back to its sway after he lets go)
+    q.ang += (want - q.ang) * Math.min(1, dt * 6); q.w = a0 * w0 * Math.cos(r3.t * w0 + q.ph);
     // a catch: in the air, his hands near the rope, below its top part
     if (r3.swing || d.onGround || q.cool > 0 || d.deadT > 0 || d.state === "climb" || region.wait > 0) continue;
     const hx = d.x, hy = d.y - S.HANDS, ux = Math.sin(q.ang), uy = Math.cos(q.ang);
     const along = (hx - q.ax) * ux + (hy - q.ay) * uy, off = Math.abs((hx - q.ax) * uy - (hy - q.ay) * ux);
-    if (along > q.len * 0.45 && along < q.len + 10 && off < S.GRAB) {
+    if (along > r3SwingLow(q) && along < q.len + 10 && off < S.GRAB) {
       r3.swing = { q, hold: Math.min(q.len - 6, along) };
-      q.w += d.vx / r3.swing.hold * 0.7;   // (his jump carries into the swing)
+      q.w += d.vx / r3.swing.hold * S.CATCH;   // (a little of his jump carries into the swing)
       d.vx = d.vy = 0; setState("swing"); sfx("jump", d.x, 0.3, 0.7);
       r3Tell("swing", "Swinging! Left and Right to swing higher, Up and Down to climb. A to let go.");
     }
@@ -327,10 +347,10 @@ function r3SwingHold(d, dt) {   // (region.js regionClimbHold) on a swinging rop
   const q = sw.q, S = R3.SWING;
   if (d.deadT > 0 || !region.room || region.room.id !== q.room) { r3.swing = null; return false; }
   const dir = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
-  if (dir) { d.facing = dir; if (Math.sign(q.w) === dir || Math.abs(q.w) < 0.3) q.w += dir * S.PUMP * dt; }   // (pump with the swing, as on a swing set)
-  sw.hold = Math.max(q.len * 0.45, Math.min(q.len - 6, sw.hold + ((held("down") ? 1 : 0) - (held("up") ? 1 : 0)) * S.CLIMB * dt));
+  if (dir) { d.facing = dir; if (Math.sign(q.w) === dir || Math.abs(q.w) < 0.08) q.w += dir * S.PUMP * dt; }   // (only pushing the way it's going adds)   // (pump with the swing, as on a swing set)
+  sw.hold = Math.max(r3SwingLow(q), Math.min(q.len - 6, sw.hold + ((held("down") ? 1 : 0) - (held("up") ? 1 : 0)) * S.CLIMB * dt));
   q.w += -(S.G / sw.hold) * Math.sin(q.ang) * dt; q.w *= 1 - S.DAMP * dt; q.ang += q.w * dt;
-  if (Math.abs(q.ang) > S.MAX) { q.ang = Math.sign(q.ang) * S.MAX; q.w *= -0.3; }
+  const mx = q.max ?? S.MAX; if (Math.abs(q.ang) > mx) { q.ang = Math.sign(q.ang) * mx; q.w *= -0.3; }
   const [hx, hy] = r3SwingTip(q, sw.hold);
   d.x = hx; d.y = hy + S.HANDS; d.vx = d.vy = 0; d.onGround = false; d.swordT = -1; d.shield = false; d.charging = false; d.throwT = -1;
   if (d.state !== "swing") setState("swing");
@@ -545,10 +565,12 @@ function r3Build(R) {
       limb(xD, -1, FOOT - G.EXTRA, 0.7); }
     const dL = limb(xD, -1); limb(xD, 1);
     rBreak("jar", "grove", Math.floor((xD + 60) / T), onTop(top)); rRelic("r3_pom_grove", "pomegranate", Math.floor((xD - 120) / T), onTop(top));
-    r3RopeLadder("r3_rope_grove", "grove", Math.round((xD + G.ROPE_X) / T) * T, top, "rope");
+    r3RopeLadder("r3_rope_grove", "grove", Math.round((xD + G.ROPE_X) / T) * T, top, "rope"); r3.ladders[r3.ladders.length - 1].kick = true;
     // the third tree (arrows), a swing over from the climbing one, hung from a long limb of its own
     const cR = limb(xC, 1), cL = limb(xC, -1); r3Quiver("grove", xC + 120, top);
-    limb(xC, 1, top - G.ANCHOR, 1.6); r3Swing("grove", (cR + dL) / 2, top - G.ANCHOR + 12, G.LEN);
+    const hang = ax => { const ay = -(roomById("grove").up + 3) * T, len = top + G.HANG - ay;   // (Glen 11-12: "the rope extending off screen")
+      r3Swing("grove", ax, ay, len, { a0: Math.asin(G.SWAY / len), max: Math.asin(G.REACH / len), grab: G.GRAB }); };
+    hang((cR + dL) / 2);
     // a rope bridge from the third tree to the second
     { // (Glen 11-12: "wider and longer ... the pieces to fit nice") its posts on the two limbs, as many plank pieces as
       //  fit between, all of it sized so it ends right at the far post
@@ -567,7 +589,7 @@ function r3Build(R) {
     const aR = limb(xA, 1), aL = limb(xA, -1); r3Quiver("grove", xA + 120, top);
     r3RopeLadder("r3_rope_grove_down", "grove", Math.round((aL + 50) / T) * T, top, "rope", true);   // (the way down)
     r3.groveTop = top; r3.groveFoot = xD - 70;
-    limb(xA, 1, top - G.ANCHOR, 1.6); r3Swing("grove", (aR + bL) / 2, top - G.ANCHOR + 12, G.LEN);
+    hang((aR + bL) / 2);
     campfire(c + 126, GR - 1);
   }
 
@@ -802,7 +824,7 @@ function r3Enter(r) {
   if (r.id === "streets") r3Tell("streets", "The streets of Gath. Achish's men are everywhere: keep out of sight.");
   if (r.id === "court" && r3Has("r3_mad")) r3Tell("court2", "Achish's court again. His guards are walking their rounds: slip past while their backs are turned (crouch to keep low).");
   if (r.id === "goliath") r3Tell("goliath", "Goliath's house. Everything in it is made for a giant.");
-  if (r.id === "grove") r3.canopy = false;
+  if (r.id === "grove") r3.canopySafe = null;
   if (r.id === "grove") r3Tell("grove", "The Tall Trees. Their branches are far out of reach... except, maybe, on the last one.");
   if (r.id === "giantyard") r3Tell("giantyard", "Goliath's yard. Something heavy has been dragged this way...");
   if (r.id === "gath") r3Tell("gath", "Gath, Goliath's own city. Achish's men are watching the road.");
@@ -861,12 +883,12 @@ function r3Update(dt) {
   }
   // (Glen 11-12: "like Mario ... when you fall you die, we have to start over") up on the treetops, a fall to the ground
   //  costs a heart and puts him back at the foot of the climbing tree. (A rope or ladder down is fine)
+  //  (Glen 11-12: "it should be a height thing", and "I end up at the fourth one": back on the last top he stood on)
   if (r.id === "grove" && r3.groveTop != null) {
-    if (d.onGround && d.y < r3.groveTop + 60) r3.canopy = true;
-    if (d.state === "climb") r3.canopy = false;
-    if (r3.canopy && d.onGround && d.y >= GR * T - 2) {
-      r3.canopy = false; hurtDavid(d.x, "", true);
-      if (d.deadT <= 0) { moveParty(r3.groveFoot, GR * T); snapCamera(); toast("You fell from the treetops! Back to the foot of the climbing tree."); }
+    if (d.onGround && Math.abs(d.y - r3.groveTop) < 4) r3.canopySafe = { x: d.x, y: d.y };
+    const f = region.fell;
+    if (f && f.from < r3.groveTop + 60 && d.y >= GR * T - 2 && r3.canopySafe && d.deadT <= 0) {
+      moveParty(r3.canopySafe.x, r3.canopySafe.y); snapCamera(); toast("You fell from the treetops! Back up where you were.");
     }
   }
   // Nob, empty after Gath: by the altar, what happened (22:9-23), once

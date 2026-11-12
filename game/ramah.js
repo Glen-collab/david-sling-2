@@ -597,7 +597,8 @@ const BOW_ARROWS = { START: 3, MAX: 3, BUNDLE: 3 };
 function arrowCount() { try { const v = localStorage.getItem(slotKey("david2Arrows")); return v === null ? BOW_ARROWS.START : Math.max(0, +v || 0); } catch (e) { return BOW_ARROWS.START; } }
 function arrowSet(n) { try { localStorage.setItem(slotKey("david2Arrows"), String(Math.max(0, Math.min(BOW_ARROWS.MAX, n)))); } catch (e) {} }
 function r2LooseArrow(d, dir, up = r2BowUp(d, dir)) {   // (up: from his raised bow hand, Glen's clip)
-  const a = up ? R2.ARROW.UP : 0.022;
+  const aim = up && typeof REGION !== "undefined" && REGION.bowAim ? REGION.bowAim(d, dir) : null;   // (a knot overhead: straight for it)
+  const a = up ? (aim ?? R2.ARROW.UP) : 0.022;
   stones.push({ x: d.x + dir * (up ? R2.ARROW.UP_DX : 34), y: d.y - (d.h === LOW_H ? 44 : up ? R2.ARROW.UP_DY : 72), vx: dir * R2.ARROW.SPEED * Math.cos(a), vy: -R2.ARROW.SPEED * Math.sin(a), grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
   sfx("sling_throw_quick", undefined, 0.6, 1.4);
 }
