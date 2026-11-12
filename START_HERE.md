@@ -111,6 +111,16 @@ It bookends Part One: Samuel anoints him in secret at the start of Part One (1 S
 - Ending: the coronation, the ark coming in, David dancing, the Journal with the whole song, the credits.
 - Kid-clean: Saul's death (1 Samuel 31) happens off-screen, told only through David's song of grief. Michal's scorn (6:16, 20-23) is left out. Bathsheba (2 Samuel 11) is past the ending.
 
+### Between worlds: crawl, then cut scene, then play (Glen, 2026-11-12)
+
+Glen: "I'm learning more about the Bible doing and building this game, and I want people who play it to learn as well." Every world opens the same way, in this order:
+
+1. **The crawl.** A Star Wars style crawl, like Part One's (`david-sling/game/world1.js`, `W1_CRAWL` / `drawW1Crawl`: gold Georgia text rising up the screen and away, A skips). Here it is a short **sermon of 2-3 paragraphs**: where David is in the story, why he is running (a fugitive from Saul, anointed but not yet king), and what the LORD is teaching him (and the player) in it. Bible references in the WEB, with "the LORD" for Yahweh. US spelling, kid-clean.
+2. **The cut scene.** The world's opening scene (video or story scene, `wNintro` / `preFilm`).
+3. **Gameplay.**
+
+Glen chose crawl first, then the cut scene ("that will flow well"). It goes in front of every world, Worlds 1-3 too (they don't have one yet). Glen writes or approves the sermon text; draft it from the world's chapters above and show him before it ships.
+
 ### The Journal: Psalm 57
 
 The heading says David wrote it "when he fled from Saul, in the cave." It's 11 verses, a good size for eight worlds. As with Psalm 23 in Part One, Glen could write his own paraphrase, make it a song, and David writes one line a world; the instrumental plays through Worlds 1-7 and the full song only at the end.
