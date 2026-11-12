@@ -69,6 +69,7 @@ const R3 = {
   LADDER: { FRAME_MS: 140, HIT: 40 },
   TOWER: { SINK: 14, RIM: 26 },   // the tall lookout (w3_towertall): into the ground; its top, where he stands, down from the picture's top
   COIL: 0.5,
+  KNOT: { X: 80, Y: -40 },   // (w3_knot_branch: its rope's middle from its left, px; its top from the rope's top, px)
   NETTLE_K: 1,   // (his nettles' size; the thorns are THORN.K)
   // (Glen 11-12) Nob after Gath, empty: how dark (0-1, as in Goliath's yard), its fog; the dark music's volume and fade (s);
   //  columns into the painted court where the story is told (by the altar)
@@ -89,7 +90,7 @@ const NOBGATH = {
   key: "nobgath", name: "Nob and Gath", start: "nobroad", carry: ["gibeah", "ramah"],
   strCap: 8,
   rooms: [
-    { id: "nobroad",  name: "The Road to Nob",       w: 126, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "nob",
+    { id: "nobroad",  name: "The Road to Nob",       w: 150, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "nob",
       far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24, near: "w3/near_nob.png" },   // (Glen's near layer, 11-10: olive bushes, boulders, a dry-stone wall)
     { id: "nob",      name: "Nob",                   w: 110, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "nobroad", right: "gathroad",
       far: "w3/nob/far", mid: "w3/nob/mid.png", midP: 0.6, near: "w3/nob/near.png", nearY: 606, floor: "w3/nob/floor.png" },   // (Glen 11-10: his far hills, his court wall on green (the tiled roofs cut off), his row of jars and baskets in front)   // (Glen's sanctuary court, the linen hangings and the bronze altar, with his tileable court either side (11-10): one copy, the room's width; the painted court from column 29)
@@ -132,6 +133,7 @@ const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when t
   w3_deadtree: { w: 562, h: 382 }, w3_log_l: { w: 189, h: 138 }, w3_log_r: { w: 215, h: 138 }, w3_palm: { w: 362, h: 564 }, w3_palm_b: { w: 343, h: 575 },
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
   w3_tamarisk: { w: 374, h: 300 }, w3_broom: { w: 302, h: 150 }, w3_caper: { w: 121, h: 170 }, w3_nettle: { w: 59, h: 80 }, w3_gourd: { w: 85, h: 48 }, w3_tumbleweed: { w: 100, h: 96 },   // (Glen 11-12, tools/cut_w3_plants.py)
+  w3_knot_branch: { w: 113, h: 122 },
   w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 },
   w3_palace_door: { w: 534, h: 357 }, w3_goliath_door: { w: 764, h: 471 },
   w3_bridge_l: { w: 88, h: 157 }, w3_bridge_m1: { w: 113, h: 126 }, w3_bridge_m2: { w: 120, h: 124 }, w3_bridge_r: { w: 91, h: 156 }, w3_climbtree_tall: { w: 466, h: 1354 },
@@ -141,7 +143,7 @@ const R3_LADDER_KNOT = [53, 53, 52, 39];   // (w3_ladder.json: each frame's knot
 const R3_CLIMBTREE = [{ side: "L", top: 1234, x0: 15, x1: 253 }, { side: "R", top: 1189, x0: 213, x1: 464 }, { side: "L", top: 1089, x0: 1, x1: 253 }, { side: "R", top: 979, x0: 213, x1: 465 }, { side: "L", top: 851, x0: 50, x1: 253 }, { side: "L", top: 720, x0: 1, x1: 253 }, { side: "R", top: 610, x0: 213, x1: 465 }, { side: "L", top: 483, x0: 50, x1: 253 }, { side: "L", top: 382, x0: 69, x1: 253 }, { side: "R", top: 323, x0: 213, x1: 406 }];   // (w3_climbtree_tall.json: its branches, low to high, tree px; Glen 11-12: "way taller so the screen has to go up")   // (w3_climbtree.json: its branches, tree px)
 const R3_DATES = [{ n: "w3_dates_1", x: 144, y: 255 }, { n: "w3_dates_2", x: 196, y: 256 }, { n: "w3_dates_3", x: 206, y: 197 }];   // (w3_palm_b.json)
 const R3_ROPE_KNOT = [72, 44, 39, 29];   // (w3_rope.json)
-const r3 = { t: 0, hangs: [], thorns: [], vines: [], vineZones: [], gourds: [], vineT: 0, ladders: [], swings: [], swing: null, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
+const r3 = { t: 0, hangs: [], thorns: [], vines: [], vineZones: [], gourds: [], quivers: [], vineT: 0, ladders: [], swings: [], swing: null, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
 const r3Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function r3Tell(k, text) { if (!r3.told[k]) { r3.told[k] = true; toast(text); } }
 // someone standing in a room: [sprite, x, facing, size]; drawn by r3Draw, looping their sheet
@@ -173,8 +175,11 @@ const r3ThornBox = b => { const k = KIT[b.art], s = b.art === "w3_thorns" ? R3.T
 // (one zone a room: each its own; art: Glen's tumbleweed on the road to Gath, 11-12, Psalm 83:13)
 function r3VineZone(room, x0, x1, art = "w3_vineball") { r3.vineZones.push({ room, x0, x1, art }); kitImg(art); }
 // the rope ladder (Glen 11-12): rolled up, tied at the top; an arrow through the knot and it unrolls, and there's a ladder
-function r3RopeLadder(id, room, x, top, kind = "ladder") {   // (kind "rope": his rope, Glen 11-12: climbed like World 2's)
-  const o = { id, room, x, top, state: r3Has(id) ? "down" : "up", t: 0, kind }; r3.ladders.push(o);
+function r3RopeLadder(id, room, x, top, kind = "ladder", tied = false) {   // (kind "rope": his rope, Glen 11-12: climbed like World 2's)
+  // (tied, Glen 11-12: "no point in shooting the rope ... I couldn't see it until I was at the top") already down, knotted
+  //  round a branch (his trunk_rope picture's knot: w3_knot_branch)
+  const o = { id, room, x, top, state: tied || r3Has(id) ? "down" : "up", t: 0, kind, tied }; r3.ladders.push(o);
+  if (tied) kitImg("w3_knot_branch");
   for (let i = 1; i <= 4; i++) kitImg(`w3_${kind}_${i}`);
   if (o.state === "down") r3LadderClimb(o);
 }
@@ -193,6 +198,8 @@ function r3PropsUpdate(dt) {   // the thorns, the vine balls, the ladders: in th
       hurtDavid(b.x, nettle ? "nettles" : "thorns"); }
   }
   const z = r3.vineZones.find(q => q.room === r.id), V = R3.VINE;
+  for (const q of r3.quivers) if (q.room === r.id && !q.got && Math.abs(d.x - q.x) < 34 && Math.abs(d.y - GR * T) < 60 && hasSkill("bow") && arrowCount() < BOW_ARROWS.MAX) {
+    q.got = true; arrowSet(arrowCount() + BOW_ARROWS.BUNDLE); if (typeof chime === "function") chime(3); toast(`Arrows! (${arrowCount()})`); }
   // (Glen 11-12) wild gourds on the road: they look like food. "There is death in the pot!" (2 Kings 4:40)
   for (const o of r3.gourds) if (o.room === r.id && Math.abs(d.x - o.x) < 40 && d.onGround) r3Tell("gourds", "Wild gourds. They look like food, but they're poison: “There is death in the pot!” (2 Kings 4:40) David leaves them be.");
   const busy = r3.might || region.script.length || region.wait > 0;   // (none while he's swinging the big sword, or in a scene)
@@ -211,8 +218,9 @@ function r3PropsUpdate(dt) {   // the thorns, the vine balls, the ladders: in th
   r3.vines = r3.vines.filter(v => !v.dead);
   for (const o of r3.ladders) {
     if (o.room !== r.id) continue;
-    if (o.state === "up" && Math.abs(d.x - o.x) < 330 && hasSkill("bow")) r3Tell(o.kind, o.kind === "rope" ? "A rope, coiled and tied up in the tree. Shoot the knot loose: hold Up and press X." : "A rope ladder, rolled up and tied at the top. Shoot the knot loose: hold Up and press X.");
-    if (o.state === "drop" && (o.t += dt) * 1000 >= R3.LADDER.FRAME_MS * 3) { o.state = "down"; r3LadderClimb(o); if (typeof chime === "function") chime(5); toast(o.kind === "rope" ? "The rope's down! Up to climb it (or jump and grab it)." : "The ladder's down! Up to climb it."); }
+    if (o.kick && o.state === "up" && d.onGround && Math.abs(d.y - o.top) < 12 && Math.abs(d.x - o.x) < 3 * T) { o.state = "drop"; o.t = 0; regionAdd("taken", o.id); sfx("sling_throw_quick", o.x, 0.5, 0.7); continue; }   // (he kicks it loose)
+    if (o.state === "up" && !o.kick && Math.abs(d.x - o.x) < 330 && hasSkill("bow")) r3Tell(o.kind, o.kind === "rope" ? "A rope, coiled and tied up in the tree. Shoot the knot loose: hold Up and press X." : "A rope ladder, rolled up and tied at the top. Shoot the knot loose: hold Up and press X.");
+    if (o.state === "drop" && (o.t += dt) * 1000 >= R3.LADDER.FRAME_MS * 3) { o.state = "down"; r3LadderClimb(o); if (typeof chime === "function") chime(5); toast(o.kick ? "David kicks the far ladder loose: the way down." : o.kind === "rope" ? "The rope's down! Up to climb it (or jump and grab it)." : "The ladder's down! Up to climb it."); }
   }
 }
 function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything breaks a vine ball; an arrow cuts the ladder's knot loose
@@ -235,9 +243,16 @@ function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything brea
   }
   return false;
 }
-function r3PropsReset(room) { for (const b of r3.thorns) if (b.room === room) b.cut = false; r3.vines.length = 0; r3.vineT = 1.2; }
+// (Glen 11-12) a bundle of arrows on the ground: walk over it (when he isn't full); back each time he comes in
+function r3Quiver(room, x) { r3.quivers.push({ room, x, got: false }); }
+function r3PropsReset(room) { for (const q of r3.quivers) if (q.room === room) q.got = false; r3PropsReset0(room); }
+function r3PropsReset0(room) { for (const b of r3.thorns) if (b.room === room) b.cut = false; r3.vines.length = 0; r3.vineT = 1.2; }
 function r3PropsDraw(camX) {
   const r = region.room; if (!r) return;
+  for (const q of r3.quivers) if (q.room === r.id && !q.got && hasSkill("bow") && ITEM.arrow && ITEM.arrow.naturalWidth) {   // three arrows, fanned
+    const im = ITEM.arrow, w = 64, h = im.naturalHeight * w / im.naturalWidth, x = q.x - camX, y = FOOT - 8 + Math.sin(r3.t * 3 + q.x) * 2;
+    for (const a of [-0.5, -0.38, -0.26]) { ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
+  }
   for (const o of r3.gourds) { const im = kitImg("w3_gourd"), k = KIT.w3_gourd; if (o.room === r.id && im) ctx.drawImage(im, o.x - camX - k.w / 2, FOOT - k.h + 2, k.w, k.h); }
   for (const b of r3.thorns) {
     const tk = KIT[b.art], ti = kitImg(b.art);
@@ -254,6 +269,12 @@ function r3PropsDraw(camX) {
   for (const o of r3.ladders) {
     if (o.room !== r.id) continue;
     const i = o.state === "up" ? 0 : o.state === "down" ? 3 : Math.min(3, 1 + Math.floor(o.t * 1000 / R3.LADDER.FRAME_MS)), n = `w3_${o.kind}_${i + 1}`, k = KIT[n], im = kitImg(n);
+    if (o.kind === "rope" && i === 3 && o.tied) {   // the rope from his knot on the branch (the rope's own knot left off)
+      const kb = KIT.w3_knot_branch, ki = kitImg("w3_knot_branch"), kx = o.x - camX - R3.KNOT.X, ky = o.top + R3.KNOT.Y;
+      r3DrawRopeLong(o.x - camX, ky + kb.h - 30, FOOT - (ky + kb.h - 30) + 14, true);
+      if (ki) ctx.drawImage(ki, kx, ky, kb.w, kb.h);
+      continue;
+    }
     if (o.kind === "rope" && i === 3) { r3DrawRopeLong(o.x - camX, o.top - 10, FOOT - o.top + 14); continue; }
     const s = o.kind === "rope" ? R3.COIL : (FOOT - o.top) / KIT[`w3_${o.kind}_4`].h, knot = o.kind === "rope" ? R3_ROPE_KNOT : R3_LADDER_KNOT; if (!im) continue;
     ctx.drawImage(im, o.x - camX - knot[i] * s, o.top - 10, k.w * s, k.h * s);
@@ -309,10 +330,10 @@ const R3_ROPE = { K: 0.9, TOP: 72, BOT: 336,
   //  and pull on each other (Verlet); the game's swing (the straight line it pivots on) leads it: FOLLOW, how hard each
   //  point is drawn toward that line (most near the top, least at the loose end); SLACK, a little give in it
   LINKS: 18, FOLLOW: 7, LOOSE: 0.25, DAMP: 0.985, ITER: 10 };   // (w3_rope_4: the top knot ends at 72, the bottom one starts at 336)
-function r3DrawRopeLong(x, y0, len) {
+function r3DrawRopeLong(x, y0, len, noKnot = false) {   // (noKnot: no knot at the top: it's tied to something drawn over it)
   const im = kitImg("w3_rope_4"), k = KIT.w3_rope_4, R = R3_ROPE, s = R.K; if (!im) return false;
-  const w = k.w * s, x0 = x - R3_ROPE_KNOT[3] * s, top = R.TOP * s, bot = (k.h - R.BOT) * s, mid = (R.BOT - R.TOP) * s;
-  ctx.drawImage(im, 0, 0, k.w, R.TOP, x0, y0, w, top);
+  const w = k.w * s, x0 = x - R3_ROPE_KNOT[3] * s, top = noKnot ? 0 : R.TOP * s, bot = (k.h - R.BOT) * s, mid = (R.BOT - R.TOP) * s;
+  if (!noKnot) ctx.drawImage(im, 0, 0, k.w, R.TOP, x0, y0, w, top);
   ctx.save(); ctx.beginPath(); ctx.rect(x0 - 2, y0 + top - 1, w + 4, Math.max(0, len - top - bot) + 2); ctx.clip();
   for (let y = y0 + top; y < y0 + len - bot; y += mid - 1) ctx.drawImage(im, 0, R.TOP, k.w, R.BOT - R.TOP, x0, y, w, mid);
   ctx.restore();
@@ -358,10 +379,10 @@ function r3DrawRopeChain(q, camX) {   // his rope picture along the chain: the t
   return true;
 }
 // (Glen 11-12: "eerie fog") Goliath's yard: the world darkens the further in (behind David), and fog drifts over everything
-const r3YardK = camX => { const r = region.room; return r && r.id === "giantyard" ? Math.max(0, Math.min(1, (camX + W / 2 - r.c0 * T) / (r.w * T))) : r && r.id === "goliath" ? 1 : r && r.id === "nob" && r3.mourn ? R3.MOURN.K : -1; };
+const r3YardK = camX => { const r = region.room; return r && r.id === "giantyard" ? Math.max(0, Math.min(1, (camX + W / 2 - r.c0 * T) / (r.w * T))) : r && r.id === "goliath" ? 1 : r3Mourning() ? R3.MOURN.K : -1; };
 function r3YardDark(camX) {
   const k = r3YardK(camX), Y = R3.YARD; if (k < 0) return;
-  ctx.fillStyle = r3.mourn && region.room.id === "nob" ? `rgba(14,16,30,${R3.MOURN.DARK})` : `rgba(16,12,28,${Y.DARK0 + (Y.DARK1 - Y.DARK0) * k})`; ctx.fillRect(0, camY, W, H);
+  ctx.fillStyle = r3Mourning() ? `rgba(14,16,30,${R3.MOURN.DARK})` : `rgba(16,12,28,${Y.DARK0 + (Y.DARK1 - Y.DARK0) * k})`; ctx.fillRect(0, camY, W, H);
 }
 function r3YardFog(camX) {
   const k = r3YardK(camX), Y = R3.YARD; if (k < 0) return;
@@ -431,12 +452,12 @@ function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces
 // ---------------------------------------------------------------------------
 function r3Build(R) {
   Object.assign(KIT, R3_KIT);
-  r3.hangs.length = 0; r3.thorns.length = 0; r3.vines.length = 0; r3.vineZones.length = 0; r3.gourds.length = 0; r3.ladders.length = 0; r3.swings.length = 0; r3.swing = null; r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
+  r3.hangs.length = 0; r3.thorns.length = 0; r3.vines.length = 0; r3.vineZones.length = 0; r3.gourds.length = 0; r3.quivers.length = 0; r3.ladders.length = 0; r3.swings.length = 0; r3.swing = null; r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
 
   // -- The Road to Nob (21:1): out of Gibeah's country, fields and hills, on to the priests' town
   let c = R("nobroad");
   { const X = k => (c + k) * T;
-    ground(c, c + 125);
+    ground(c, c + 149);
     campfire(c + 4, GR - 1);
     oliveRow(c + 10, 16, 5);
     rDeco("nobroad", "f_olive", c + 20); rDeco("nobroad", "f_rock", c + 30);
@@ -463,7 +484,8 @@ function r3Build(R) {
     // (Glen 11-12, his animals: wildlife.js) a partridge in the grass, hyraxes by the rocks, a hoopoe, a caracal on the
     //  prowl, and an ibex that charges along the open ground before the watchtower (too tough to stop: jump it)
     rWild("partridge", "nobroad", c + 14, { range: 1 }); rWild("hyrax", "nobroad", c + 32, { range: 1 }); rWild("hyrax", "nobroad", c + 33, { range: 1, facing: 1 });
-    rWild("hoopoe", "nobroad", c + 54, { range: 1 }); rWild("caracal", "nobroad", c + 27, { range: 3 });
+    rWild("hoopoe", "nobroad", c + 54, { range: 1 }); rWild("caracal", "nobroad", c + 24, { range: 3, tree: FOOT - 190, facing: -1 });   // (up in the olive tree)
+    r3Quiver("nobroad", X(12) + 10); r3Quiver("nobroad", X(61));
     rWild("ibex", "nobroad", c + 66, { range: 2 });   // (between the fig and the watchtower: a charge ends at a wall, never the ravine)
     // (Glen 11-12, his plants) a tamarisk by the road (Saul sat under one at Gibeah, 1 Samuel 22:6), a broom bush, a caper
     //  hanging down the terrace wall, nettles before the fig
@@ -474,9 +496,10 @@ function r3Build(R) {
     rRelic("r3_stone_road", "stone", c + 84, 16);
     // (Glen 11-12: "Mario and Donkey Kong style Tarzan swinging from rope to rope over a pit") a ravine before Nob, three
     //  ropes hanging from the branches overhead: jump and catch one, Left / Right to swing, A to let go
-    rHole("nobroad", c + 94, 24);
-    for (const k of [97, 104, 111]) r3Swing("nobroad", X(k) + T / 2);
-    oliveRow(c + 119, 16, 3);
+    // (Glen 11-12: "I can clear it in one rope ... make the pit twice as long") 48 wide now, five ropes
+    rHole("nobroad", c + 94, 48);
+    for (const k of [98, 107, 116, 125, 134]) r3Swing("nobroad", X(k) + T / 2);
+    oliveRow(c + 143, 16, 3);
   }
 
   // -- Nob, the sanctuary court (21:1-9): Ahimelech, the holy bread (two rows of six, Leviticus 24:5-6), Goliath's
@@ -583,10 +606,13 @@ function r3Build(R) {
       block(c + 67, r0, 5, GR - r0, 6); for (let i = 0; i < 5; i++) artSolid.add((c + 67 + i) + "," + r0);
       platAt(c + 66, top, 7); rRelic("r3_stone_gathroad", "stone", c + 69, onTop(top));
       r3RopeLadder("r3_ladder_lookout", "gathroad", X(67), top);
-      rLadder("gathroad", X(73), top, GR * T); }
+      // (Glen 11-12: the wooden ladder on the far side looked like a free way up) the far side has its own rope ladder,
+      //  rolled up: he kicks it loose when he's up on top (the way down to Gath, and back up coming home)
+      r3RopeLadder("r3_ladder_lookout_far", "gathroad", X(72), top); r3.ladders[r3.ladders.length - 1].kick = true; }
     for (const k of [78, 82, 86]) r3Thorn("gathroad", X(k));
     r3VineZone("gathroad", X(75), X(90), "w3_tumbleweed");   // (past the tower: they break on it. Glen's tumbleweeds, Psalm 83:13)
     rDeco("gathroad", "w3_broom", c + 33); rDeco("gathroad", "w3_tamarisk", c + 61);
+    r3Quiver("gathroad", X(16)); r3Quiver("gathroad", X(57)); r3Quiver("gathroad", X(112));
     r3.gourds.push({ room: "gathroad", x: X(28) + 6 }, { room: "gathroad", x: X(29) + 20 });
     r3Thorn("gathroad", X(110), "w3_nettle");
     r3Wall("r3_log_gathroad", "gathroad", c + 92, 16, "log");
@@ -600,8 +626,8 @@ function r3Build(R) {
       const C = R3.CROWN, cy = ty + C.TOP, k0 = Math.ceil((tx + C.X0) / T), k1 = Math.floor((tx + C.X1) / T);
       platAt(k0, cy, k1 - k0 + 1);
       rRelic("r3_truth_tree", "truth", k0 + 1, onTop(cy), "He makes my feet like deer's feet, and sets me on my high places. (Psalm 18:33)");
-      r3RopeLadder("r3_rope_tree", "gathroad", Math.round((tx + C.ROPE_X) / T) * T, cy, "rope");
-      bird("crow", "gathroad", tx + 200, cy); }
+      r3RopeLadder("r3_rope_tree", "gathroad", Math.round((tx + C.ROPE_X) / T) * T, cy, "rope", true);   // (tied on, already down)
+      bird("eagle", "gathroad", tx + 200, cy); }   // (Glen 11-12: the challenge is the climb: an eagle guards the crown)
     campfire(c + 125, GR - 1);
     r3Person("gathroad", "gath_guard_idle", X(128), -1);   // (the first of Achish's men, on the road in)
   }
@@ -657,6 +683,7 @@ function r3Build(R) {
     const b1 = x; x = seg("w3_bridge_m2", x); x = seg("w3_bridge_m1", x); x = seg("w3_bridge_m2", x); const pr = x; x = seg("w3_bridge_r", x); walk(b1 + 6, pr + 40);
     r3Thorn("giantyard", X(61)); r3Thorn("giantyard", X(64));
     r3VineZone("giantyard", X(57), X(72));
+    r3Quiver("giantyard", X(4));
     rWild("flies", "giantyard", c + 76, { y: FOOT - 90 }); bird("owl", "giantyard", X(15) + T / 2, FOOT - 134);   // (Glen 11-12: flies round his door; an owl on the giant's step)
     rTerrace("giantyard", c + 67, 1);
     rKitDoor("d_goliath", "giantyard", c + 85, "door", "d_goliathout", "w3_goliath_door");
@@ -712,7 +739,9 @@ function r3Enter(r) {
 // (Glen 11-12: "somber dark eerie music, quiet and no one around") Saul's dark music, low, in Nob once it's empty; the
 //  stage's music and the birds stay out (NOBGATH.quiet)
 let r3MournSong = null, r3MournVol = 0;
-const r3Mourning = () => !!r3.mourn && (region.room || {}).id === "nob";
+// (Glen 11-12: "beneath Nob and the hall of the tribes should also be dark and eerie as death is all around there now")
+const R3_MOURN_ROOMS = ["nob", "crack", "tribes"];
+const r3Mourning = () => !!r3.mourn && R3_MOURN_ROOMS.includes((region.room || {}).id);
 function r3MournMusic(dt) {
   const want = r3Mourning() && !regionHushed() && david.deadT <= 0 ? R3.MOURN.VOL : 0;
   if (!r3MournSong && want > 0) r3MournSong = Object.assign(new Audio(`../assets/audio/saul_dark.mp3?v=${window.BUILD || 0}`), { loop: true, volume: 0, _music: true });

@@ -5,6 +5,8 @@ learnSkill("bow");
 const log = m => TEST_ERRORS.push("INFO " + m);
 const h0 = () => r3.hangs[0];
 let aimX = 0, ol = 0;
+// (the road animals, wildlife.js, out of the way: this tests the bow / the climb)
+region.beasts = region.beasts.filter(b => !WILD[b.kind]);
 testRun([
   { n: 3, fn() { const h = h0(); aimX = h.x - (h.y - (GR * T - 72)) / Math.tan(0.62) * -1; moveParty(h.x - Math.round((GR * T - 72 - h.y) / Math.tan(0.62)), GR * T); david.facing = 1; snapCamera(); log("hang at x " + Math.round(h.x) + " y " + Math.round(h.y) + " david " + Math.round(david.x)); } },
   { keys: [], n: 30, snap: true },

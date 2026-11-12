@@ -5,6 +5,8 @@ kitImg("w3_towertall"); for (let i = 1; i <= 4; i++) kitImg("w3_ladder_" + i);
 const log = m => TEST_ERRORS.push("INFO " + m);
 const X = k => (roomById("gathroad").c0 + k) * T, lad = () => r3.ladders.find(l => l.kind === "ladder");
 const quiet = () => { r3.vines.length = 0; r3.vineT = 99; };
+// (the road animals, wildlife.js, out of the way: this tests the bow / the climb)
+region.beasts = region.beasts.filter(b => !WILD[b.kind]);
 testRun([
   { n: 2, fn() { quiet(); const o = lad(); o.state = "up"; for (let i = ladders.length - 1; i >= 0; i--) if (ladders[i].room === "gathroad" && Math.abs(ladders[i].x - o.x) < 40) ladders.splice(i, 1); moveParty(X(62), GR * T); david.facing = 1; snapCamera(); } },
   { keys: ["ArrowRight"], n: 40, snap: true, fn() { log("walk into it: x " + Math.round(david.x / T - roomById("gathroad").c0 * 1) + " top " + Math.round(lad().top)); } },

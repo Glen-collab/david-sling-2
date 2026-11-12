@@ -3142,7 +3142,7 @@ addEventListener("keydown", e => {
 
 let helpT = 12;
 function drawHUD() {
-  drawHearts(); drawSpecialCount(); drawLivesAndOil(); drawSheepCount(); drawChargeRing(); drawBread();
+  drawHearts(); drawSpecialCount(); drawLivesAndOil(); drawSheepCount(); drawChargeRing(); drawBread(); drawArrowsHud();
   if (!audioUnlocked) {
     ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fillRect(W / 2 - 230, H - 40, 460, 30);
     ctx.fillStyle = "#ffe08a"; ctx.font = "15px sans-serif"; ctx.textAlign = "center";
@@ -3272,6 +3272,12 @@ function eatBread() {
   sfx("heal", undefined, 0.8);
   toast(n - 1 > 0 ? `You ate a loaf of the holy bread. Strength restored! (${n - 1} left)` : "You ate the last loaf of the holy bread. Strength restored!");
   return true;
+}
+function drawArrowsHud() {   // (Glen 11-12) Jonathan's bow: arrows left, under the bread (ramah.js arrowCount)
+  if (typeof arrowCount !== "function" || typeof REGION_ON === "undefined" || !REGION_ON || !hasSkill("bow")) return;
+  const img = ITEM.arrow, n = arrowCount(), y = breadCount() > 0 ? 238 : 200;
+  if (img && img.naturalWidth) { const w = 52, h = img.naturalHeight * w / img.naturalWidth; ctx.save(); if (!n) ctx.globalAlpha = 0.45; ctx.drawImage(img, HUD_X - 6, y + 10 - h / 2, w, h); ctx.restore(); }
+  hudText(`× ${n}`, HUD_X + 50, y + 18);
 }
 function drawBread() {   // the HUD: loaves left, under the oil flask; and the loaf over his head as he eats it
   const img = ITEM.bread, n = breadCount();

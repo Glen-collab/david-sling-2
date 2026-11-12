@@ -21,5 +21,5 @@ for (let i = 0; i < 700; i++) steps.push({ n: 1, fn() { for (const k in keys) ke
   if (i % 60 === 0) log(i + " rope0 ang " + r3.swings[0].ang.toFixed(2) + " w " + r3.swings[0].w.toFixed(2) + " runT " + runT + " x " + Math.round(david.x - X(0)) + " ground " + david.onGround);
   if (david.hearts < h0) { falls++; h0 = david.hearts; log("fell at " + Math.round(david.x - X(0))); }
   if (!window.SNAPPED && r3.swing && r3.swings.indexOf(r3.swing.q) === 1) { window.SNAPPED = 1; } } });
-steps.push({ keys: [], n: 1, snap: true, fn() { log("end: x " + Math.round(david.x - X(0)) + " (far bank from " + 118 * T + ") room " + region.room.id + " falls " + falls); } });
+steps.push({ keys: [], n: 1, snap: true, fn() { log("end: x " + Math.round(david.x - X(0)) + " (far bank from " + 142 * T + ") room " + region.room.id + " falls " + falls); } });
 testRun(steps);

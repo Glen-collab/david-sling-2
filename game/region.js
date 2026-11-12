@@ -790,7 +790,7 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : WILD[b.kind] ? "idle" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: WILD[b.kind] ? WILD[b.kind].hp || 1 : PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0, gone: false, flash: 0 });   // (wildlife.js: the road animals)
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : WILD[b.kind] ? "idle" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: WILD[b.kind] ? WILD[b.kind].hp || 1 : PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0, gone: false, flash: 0, down: false });   // (wildlife.js: the road animals)
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
     if (REGION.enter) REGION.enter(r);

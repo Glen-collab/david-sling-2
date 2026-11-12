@@ -591,6 +591,11 @@ function r2StoneHits(s) {
 // ---- Jonathan's bow (Glen 11-06: the goodbye gift, 18:4 / 20): hold Up and press the sword button. Anywhere in Part
 //      Two once learned. (Glen 11-07: his drawing-the-bow frames: David draws, and the arrow goes on the release)
 const r2BowUp = (d, dir) => !held(dir > 0 ? "right" : "left") && d.h !== LOW_H;   // (Glen 11-12) Up + the sword: up high; with forward too: flat
+// (Glen 11-12: "he should only have like 3 arrows and he can do arrow pick ups here and there") arrows carried, kept per
+//  save like the bread; bundles lie along the roads (nobgath.js r3Quiver) and come back each time he comes into a room
+const BOW_ARROWS = { START: 3, MAX: 3, BUNDLE: 3 };
+function arrowCount() { try { const v = localStorage.getItem(slotKey("david2Arrows")); return v === null ? BOW_ARROWS.START : Math.max(0, +v || 0); } catch (e) { return BOW_ARROWS.START; } }
+function arrowSet(n) { try { localStorage.setItem(slotKey("david2Arrows"), String(Math.max(0, Math.min(BOW_ARROWS.MAX, n)))); } catch (e) {} }
 function r2LooseArrow(d, dir, up = r2BowUp(d, dir)) {   // (up: from his raised bow hand, Glen's clip)
   const a = up ? R2.ARROW.UP : 0.022;
   stones.push({ x: d.x + dir * (up ? R2.ARROW.UP_DX : 34), y: d.y - (d.h === LOW_H ? 44 : up ? R2.ARROW.UP_DY : 72), vx: dir * R2.ARROW.SPEED * Math.cos(a), vy: -R2.ARROW.SPEED * Math.sin(a), grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
@@ -606,6 +611,8 @@ function regionBow(d, busy, dt) {   // (main.js updateDavid, every frame)
   }
   if (typeof REGION_ON === "undefined" || !REGION_ON || !hasSkill("bow") || !held("up") || !pressed("x") || busy || now < (r2.bowAt || 0) || d.harp || d.throwT >= 0) return false;
   if (region.room && region.room.id === "feast") return false;
+  if (arrowCount() <= 0) { if (now > (r2.noArrowT || 0)) { toast("No arrows left! Look for more along the way."); r2.noArrowT = now + 3; } return true; }
+  arrowSet(arrowCount() - 1);
   r2.bowAt = now + R2.ARROW.COOL;
   if (d.onGround && d.h !== LOW_H && typeof SPR !== "undefined" && SPR.david_bow) r2.bowShot = { t0: now, dir: d.facing, fired: false, up: r2BowUp(d, d.facing) };
   else r2LooseArrow(d, d.facing);   // (in the air or crouched: straight off, no drawing)

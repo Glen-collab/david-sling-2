@@ -12,9 +12,9 @@
 const WILD = {
   viper:     { idle: "viper_coil", act: "viper_strike", k: 1.5, hp: 1, near: 230, box: [-150, 60, 40], reach: 250, actFrames: [2, 7] },
   ostrich:   { idle: "ostrich_walk", run: "ostrich_run", k: 0.85, hp: 2, walk: 55, speed: 470, near: 520, box: [-60, 70, 260], runFor: 2.4 },
-  wildass:   { idle: "wildass_walk", act: "wildass_kick", k: 0.8, hp: 2, walk: 40, near: 200, box: [-110, 110, 180], kick: [-260, -40], actFrames: [3, 7], fleeSheet: "wildass_walk" },
-  caracal:   { idle: "caracal_walk", run: "caracal_run", k: 1, hp: 1, walk: 60, speed: 380, near: 380, box: [-80, 80, 100], leap: 640, runFor: 1.6 },
-  ibex:      { idle: "ibex_walk", run: "ibex_run", k: 0.85, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3 },
+  wildass:   { idle: "wildass_walk", act: "wildass_kick", k: 1.6, hp: 2, walk: 40, near: 200, box: [-110, 110, 180], kick: [-260, -40], actFrames: [3, 7], fleeSheet: "wildass_walk" },
+  caracal:   { idle: "caracal_walk", run: "caracal_run", k: 2, hp: 1, walk: 60, speed: 380, near: 380, box: [-80, 80, 100], leap: 640, runFor: 1.6 },
+  ibex:      { idle: "ibex_walk", run: "ibex_run", k: 1.7, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3 },
   locusts:   { idle: "locusts_fly", die: "locusts_scatter", k: 1, hp: 1, swarm: true, speed: 85, box: [-160, 160, 70] },
   flies:     { idle: "flies_fly", die: "flies_scatter", k: 1.15, hp: 1, swarm: true, speed: 95, box: [-140, 140, 80] },
   partridge: { idle: "partridge_idle", run: "partridge_run", k: 1, shy: true, speed: 330, near: 210,
@@ -23,10 +23,12 @@ const WILD = {
                tell: "Rock hyraxes! “The hyraxes are but a feeble folk, yet make they their houses in the rocks.” (Proverbs 30:26)" },
   hoopoe:    { idle: "hoopoe_walk", run: "hoopoe_walk", k: 1, shy: true, walk: 18, speed: 260, near: 180 },
 };
-const WILD_TUNE = { HIT_COOL: 0.3, FLASH: 0.25, REST: 1.4, FLEE: 1.5, LEASH: 16, GRAV: 2200, SWARM_LEASH: 520, AHEAD: 40, SWARM_HURT: 0.8 };
+// TREE: a caracal up in a tree (o.tree: the branch's y), as Part One's leopard: it sees him (SEE px), watches WATCH s,
+//  picks its spot PICK s before, and drops on it (DROP s). HOP: the most a charger jumps (tiles high, tiles wide)
+const WILD_TUNE = { TREE: { SEE: 330, WATCH: 1.4, PICK: 0.5, DROP: 0.7 }, HOP: { H: 3, W: 5 }, HIT_COOL: 0.3, FLASH: 0.25, REST: 1.4, FLEE: 1.5, LEASH: 16, GRAV: 2200, SWARM_LEASH: 520, AHEAD: 40, SWARM_HURT: 0.8 };
 // a road animal: kind, room, column; o.range: tiles it paces either side of home; o.y: the floor (px) or, for a swarm,
 //  the height it hovers at
-const rWild = (kind, room, c, o = {}) => beast(kind, room, c, Object.assign({ range: (o.range || 3) * T, state: "idle", hp: WILD[kind].hp || 1, alpha: 1,
+const rWild = (kind, room, c, o = {}) => beast(kind, room, c, Object.assign({ state: "idle", hp: WILD[kind].hp || 1, alpha: 1 }, o, { range: (o.range || 3) * T,
   facing: o.facing || -1 }, o.y != null ? { y: o.y, hy: o.y } : {}, kind === "locusts" || kind === "flies" ? { y: o.y || GR * T - 70, hy: o.y || GR * T - 70 } : {}));
 const wildSc = W_ => SCALE * W_.k;
 function wildBox(b) {
@@ -43,13 +45,59 @@ function wildKickBox(b) {   // the wild ass's back legs, behind it, while they'r
   const [a, z] = W_.kick, f = b.facing;
   return { x0: b.x + (f > 0 ? a : -z) * s, x1: b.x + (f > 0 ? z : -a) * s, y0: b.y - 120 * s, y1: b.y };
 }
+// (Glen 11-12: "it has to go around and on top of objects") an animal on its feet: walls and rocks in the way are hopped
+//  up onto (up to HOP.H tiles; taller stops it), it walks along their tops and drops off the far side, and it won't walk
+//  into a pit. stop: it couldn't go on (a tall wall, a pit's edge)
+function wildMove(b, vx, dt) {
+  const Tn = WILD_TUNE, dir = Math.sign(vx), feet = Math.round(b.y / T), c = Math.floor((b.x + dir * Tn.AHEAD) / T);
+  const solid = (cc, r) => isSolid(cc, r), floor = (cc, r) => isSolid(cc, r) || isOneway(cc, r);
+  let stop = false;
+  if (dir && solid(c, feet - 1)) {   // something in the way at its feet
+    let h = 0; while (h <= Tn.HOP.H && solid(c, feet - 1 - h)) h++;
+    if (!b.air && h <= Tn.HOP.H) { b.vy = -Math.sqrt(2 * Tn.GRAV * (h * T + 34)); b.air = true; }
+    else if (!b.air || solid(c, Math.floor((b.y - 2) / T))) stop = true;
+  }
+  if (dir && !b.air && !stop && !floor(c, feet)) {   // an edge: a little drop is fine, a pit isn't
+    let k = 1; while (k <= 4 && !floor(c, feet + k)) k++;
+    if (k > 4) stop = true;
+  }
+  if (!stop) b.x += vx * dt;
+  const cc = Math.floor(b.x / T);
+  if (!b.air && !floor(cc, Math.round(b.y / T))) { b.air = true; b.vy = 0; }
+  if (b.air) {
+    b.vy += Tn.GRAV * dt; const ny = b.y + b.vy * dt;
+    if (b.vy >= 0) for (let r = Math.ceil(b.y / T - 0.01); r * T <= ny + 0.01; r++) if (floor(cc, r) && r * T >= b.y - 1) { b.y = r * T; b.vy = 0; b.air = false; break; }
+    if (b.air) b.y = ny;
+    if (b.y > (GR + 8) * T) { b.dead = true; b.gone = true; }
+  }
+  return { stop };
+}
 const wildDur = n => SPR[n] ? SPR[n].frames * SPR[n].ms / 1000 : 1;
 function updateWild(b, dt, r) {
   const W_ = WILD[b.kind], d = david, dx = d.x - b.x, dy = d.y - b.y, Tn = WILD_TUNE;
   b.flash = Math.max(0, (b.flash || 0) - dt);
   if (b.dead) return;
+  if (b.tree != null && !b.down) {   // (Glen 11-12: "like the leopard in David 1") up in the tree, then down on him
+    const Tr = Tn.TREE;
+    if (b.state === "idle") { b.state = "perch"; b.t = 0; }
+    if (b.state === "perch") { if (b.tx == null) b.tx = b.hx; b.hx = b.x = b.tx; b.y = b.tree;   // (its tree: hx moves to where it lands)
+      if (b.t > 1 && Math.abs(dx) < Tr.SEE && d.deadT <= 0) { b.state = "watch"; b.t = 0; b.mark = d.x;
+      if (!wildTold.caracal) { wildTold.caracal = true; toast("Something's watching from the branches... a wild cat! Keep moving!"); } } }
+    else if (b.state === "watch") { b.facing = Math.sign(dx) || b.facing; if (b.t < Tr.WATCH - Tr.PICK) b.mark = d.x; if (b.t > Tr.WATCH) { b.state = "drop"; b.t = 0; b.ax = b.x; b.ay = b.y; } }
+    else if (b.state === "drop") {
+      const f = Math.min(1, b.t / Tr.DROP); b.x = b.ax + (b.mark - b.ax) * f; b.y = b.ay + (b.hy - b.ay) * f - Math.sin(f * Math.PI) * 60;
+      b.facing = Math.sign(b.mark - b.ax) || b.facing;
+      if (touchesDavid(wildBox(b))) hurtDavid(b.x);
+      if (f >= 1) { b.y = b.hy; b.down = true; b.state = "idle"; b.t = 0; b.cool = 0.6; b.hx = b.x; }
+    }
+    return;
+  }
   const lo = b.hx - b.range, hi = b.hx + b.range, far = Tn.LEASH * T;
-  const pace = () => { if (!W_.walk) return; b.x += b.facing * W_.walk * (b.x < lo || b.x > hi ? 2 : 1) * dt; if (b.x < lo) b.facing = 1; else if (b.x > hi) b.facing = -1; };   // (off its patch after a charge: it walks back)
+  const pace = () => {   // (off its patch after a charge: it walks back. Glen 11-12: up onto rocks and low walls, like David)
+    if (!W_.walk) { if (b.air) wildMove(b, 0, dt); return; }
+    if (b.x < lo) b.facing = 1; else if (b.x > hi) b.facing = -1;
+    if (wildMove(b, b.facing * W_.walk * (b.x < lo || b.x > hi ? 2 : 1), dt).stop) b.facing *= -1;
+  };
   if (b.state === "flee") {   // running off, fading
     b.x += b.facing * (W_.speed || 300) * (W_.shy ? 1 : 1.2) * dt; b.alpha = Math.max(0, 1 - b.t / Tn.FLEE);
     if (b.t > Tn.FLEE) { b.dead = true; b.gone = true; }
@@ -84,24 +132,20 @@ function updateWild(b, dt, r) {
   // the chargers: ostrich, caracal, ibex
   if (b.state === "idle") {
     pace();
-    if (b.cool <= 0 && Math.abs(dx) < W_.near && Math.abs(dy) < 150) {
+    if (b.cool <= 0 && !b.air && Math.abs(dx) < W_.near && Math.abs(dy) < 150) {
       b.state = "run"; b.t = 0; b.facing = dx > 0 ? 1 : -1;
       if (W_.leap) { b.vy = -W_.leap; b.air = true; }
     }
   } else if (b.state === "run") {
-    const nx = b.x + b.facing * W_.speed * dt, ac = Math.floor((nx + b.facing * Tn.AHEAD) / T), rr = Math.floor(b.hy / T);
-    const open = Math.abs(nx - b.hx) < far && (isSolid(ac, rr) || isOneway(ac, rr)) && !isSolid(ac, rr - 1);   // (ground ahead, no wall: never into a pit or through the tower)
-    if (open || b.air) b.x = nx;
-    if (b.air) { b.vy += Tn.GRAV * dt; b.y += b.vy * dt; if (b.y >= b.hy) { b.y = b.hy; b.air = false; b.vy = 0; } }
-    const past = b.facing > 0 ? b.x - d.x : d.x - b.x;
-    if (!b.air && (b.t > W_.runFor || past > 320 || !open)) { b.state = "idle"; b.t = 0; b.cool = Tn.REST; b.facing *= -1; }
+    const m = wildMove(b, b.facing * W_.speed, dt), past = b.facing > 0 ? b.x - d.x : d.x - b.x;
+    if (!b.air && (b.t > W_.runFor || past > 320 || m.stop || Math.abs(b.x - b.hx) > far)) { b.state = "idle"; b.t = 0; b.cool = Tn.REST; b.facing *= -1; }
   }
   if (b.state === "run" && touchesDavid(wildBox(b))) hurtDavid(b.x);
 }
 const wildTold = {};
 // a stone or the sword's edge: true if it hit
 function wildHit(b, s) {
-  const W_ = WILD[b.kind]; if (b.dead || b.state === "flee" || W_.shy) return false;
+  const W_ = WILD[b.kind]; if (b.dead || b.state === "flee" || W_.shy || b.state === "perch" || b.state === "watch") return false;
   const q = wildBox(b);
   if (!(s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8)) return false;
   if (b.cool > 0 && s.sword) return true;
@@ -124,6 +168,13 @@ function drawWild(b, x) {
     if (b.state === "scatter" && W_.die && b.t < wildDur(W_.die)) drawSprite(W_.die, frameOf(W_.die, b.t), x, b.y, b.facing, k, Math.max(0, 1 - b.t / wildDur(W_.die)));
     return;
   }
+  if (b.state === "perch" || b.state === "watch") {   // in the tree: still, and (watching) a shiver and its eyes catching the light
+    const sh = b.state === "watch" ? Math.sin(b.t * 40) * 1.5 : 0;
+    drawSprite(W_.idle, 0, x + sh, b.y, b.facing, k);
+    if (b.state === "watch") { ctx.save(); ctx.fillStyle = `rgba(255,236,140,${0.5 + 0.5 * Math.sin(b.t * 9)})`; const ex = x + b.facing * 52 * SCALE * k; ctx.beginPath(); ctx.arc(ex, b.y - 92 * SCALE * k, 3, 0, 7); ctx.fill(); ctx.restore(); }
+    return;
+  }
+  if (b.state === "drop") { drawSprite(W_.run, 4, x, b.y, b.facing, k); return; }
   const n = b.state === "act" ? W_.act : (b.state === "run" || b.state === "flee") ? (W_.run || W_.fleeSheet || W_.idle) : W_.idle;
   // (standing still, a walk sheet would walk on the spot: the shy ones and the viper only loop when moving or idle by design)
   const f = b.kind === "viper" && b.state === "idle" ? 0 : frameOf(n, b.t);   // (Glen 11-12: the coiled viper lies still; it moves when it strikes)
