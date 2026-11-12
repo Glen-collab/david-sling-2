@@ -53,7 +53,7 @@ const R3 = {
   // (Glen 11-11) the Hall of the Tribes, off Nob: his twelve tablets set in the floor, out of order. Walk them in the
   //  order Jacob blessed his sons (Genesis 49:3-27): the blessing's words show at the top, find the picture. A right
   //  one glows and stays safe; a wrong one cracks and drops him back to the door (time, not a heart)
-  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6, PAD: 80,
+  TRIBES: { AT: 10, STEP: 6, W: 3, SHAKE: 0.35, PROUD: 6, PAD: 80, PIT_UP: 34,
     // (Glen's Meta frames, cut_tribe_crumble.py: _c1 cracked, _c2 broken; the rest break in drawn pieces till theirs come)
     C1: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon", "zebulun"],
     C2: ["asher", "benjamin", "dan", "gad", "issachar", "joseph", "judah", "levi", "naphtali", "reuben", "simeon", "zebulun"],   // (Glen 11-11: SHAKE, held on a wrong one this long, then down with it)
@@ -147,7 +147,8 @@ const NOBGATH = {
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
   quiet: () => r3Mourning(), bowAim: (d, dir) => r3BowAim(d, dir), slingAim: (x, y) => r3SlingAim(x, y),   // (region.js regionStageQuiet: no stage music or birds in an empty Nob)
-  drawFront: camX => { r3DrawGuards(camX); r3YardFog(camX); }, holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
+  drawFront: camX => { r3DrawGuards(camX); r3YardFog(camX);
+    if (region.room && region.room.id === "tribes" && r3.trial) for (const t of r3.trial.tiles) if (t.open) r3PitHole(t, t.x0 - camX, t.x1 - t.x0); },   /* (the holes over the fog: black) */ holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
 const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when the region's built: region.js loads after this file)
@@ -1028,27 +1029,34 @@ function r3TrialFall() {   // main.js pitFall: down through a wrong tablet, back
   toast(`Not that one: back to the door. Listen again: ${TRIBE_ORDER[tr.next][1]}.`);
   return true;
 }
+function r3PitHole(t, x, w) {
+  const K = R3.TRIBES, back = GR * T - K.PIT_UP, front = GR * T + 6, n = 10;
+  if (!t.jag) { t.jag = []; for (let k = 0; k <= 2 * n + 1; k++) t.jag.push(Math.random()); }
+  const ex = k => x - 4 + (w + 8) * k / n, J = t.jag;
+  ctx.save();
+  const g = ctx.createLinearGradient(0, front, 0, H); g.addColorStop(0, "#1c140f"); g.addColorStop(0.25, "#070504"); g.addColorStop(1, "#000");
+  ctx.fillStyle = g; ctx.fillRect(Math.round(x), front - 2, w, H - front + 2);   // the shaft
+  ctx.fillStyle = "#030202"; ctx.beginPath();   // the opening
+  for (let k = 0; k <= n; k++) ctx.lineTo(ex(k), back + J[k] * 8 + (k === 0 || k === n ? 10 : 0));
+  for (let k = n; k >= 0; k--) ctx.lineTo(ex(k), front + J[n + 1 + k] * 7);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(170,160,150,0.55)"; ctx.lineWidth = 2; ctx.beginPath();   // the broken front edge catching the light
+  for (let k = 0; k <= n; k++) ctx.lineTo(ex(k), front + J[n + 1 + k] * 7); ctx.stroke();
+  for (const sd of [-1, 1]) {   // the lips: cracked stone either side
+    const lx = sd < 0 ? x - 4 : x + w + 4; ctx.fillStyle = "rgba(110,104,100,0.95)";
+    ctx.beginPath(); ctx.moveTo(lx, back + 6); ctx.lineTo(lx + sd * 10, back + 2); ctx.lineTo(lx + sd * 14, front + 8); ctx.lineTo(lx, front + 30); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
 function r3TrialDraw(camX) {
   const tr = r3.trial, K = R3.TRIBES; if (!tr) return;
   for (const t of tr.tiles) {
     const x = t.x0 - camX, w = t.x1 - t.x0; if (x > W || x + w < 0) continue;
     const im = kitImg("w3_tribe_" + t.name);
     if (t.open) {   // the hole, and the tablet dropping away
-      const pit = kitImg("w3_tribe_pit");
-      if (pit) {   // (Glen 11-12: "this doesn't look like a pit": his rim is only the broken edge, so the dark goes in first, falling away to black)
-        const s = w / 216, pw = pit.naturalWidth * s, g = ctx.createLinearGradient(0, GR * T, 0, H);
-        g.addColorStop(0, "#1a120c"); g.addColorStop(0.3, "#050302"); g.addColorStop(1, "#000");
-        ctx.fillStyle = g; ctx.fillRect(Math.round(x + 4), GR * T - 2, w - 8, H - GR * T + 2);
-        ctx.drawImage(pit, Math.round(x + w / 2 - pw / 2), GR * T - 6, pw, pit.naturalHeight * s); }   // (Glen's pit rim, cut_tribe_pit.py: a tablet wide)
-      else {
-      if (!t.jag) { t.jag = []; for (let k = 0; k <= 10; k++) t.jag.push(Math.random()); }   // (its broken edge: fixed once)
-      const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 8, H); ctx.lineTo(x - 8, GR * T + 6);
-      t.jag.forEach((v, k) => ctx.lineTo(x - 8 + (w + 16) * k / 10, GR * T - 4 + v * 14 + (k === 0 || k === 10 ? 10 : 0)));
-      ctx.lineTo(x + w + 8, H); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "rgba(90,64,40,0.9)";   // the broken stone lips, either side
-      for (const s of [-1, 1]) { const ex = s < 0 ? x - 8 : x + w + 8; ctx.beginPath(); ctx.moveTo(ex, GR * T - 2); ctx.lineTo(ex - s * 16, GR * T + 4 + t.jag[s < 0 ? 1 : 9] * 10); ctx.lineTo(ex, GR * T + 26); ctx.closePath(); ctx.fill(); }
-      }
+      // (Glen 11-12: "I still don't see a pit") a broken hole in the floor, seen from a little above: a black opening across
+      //  the walkway (ragged back and front edges), its shaft falling away below, broken stone lips either side
+      r3PitHole(t, x, w);
       const c2 = K.C2.includes(t.name) && kitImg("w3_tribe_" + t.name + "_c2");
       if (c2 && c2.naturalWidth && t.fall < 1.0) {   // (Glen's broken frame, dropping away)
         ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t.fall / 1.0);
