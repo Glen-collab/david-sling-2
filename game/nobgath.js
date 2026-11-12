@@ -116,7 +116,7 @@ const NOBGATH = {
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },
     { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 8, my: 1, mw: 1, left: "grove",
       far: "w3/gath/far", mid: "w3/gath/mid.png", midP: 1, midX: 170, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (Glen 11-10: his dunes and sea far off; his walls and gate fixed to the room, the gate on the door at column 22; his broken jar and bricks in front)   // (his city of Gath, one copy the room's width: its own gate is the door in, at column 22)
-    { id: "streets",  name: "The Streets of Gath",   w: 116, bg: "w4_1", mx: 9, my: 1, mw: 2, right: "giantyard",
+    { id: "streets",  name: "The Streets of Gath",   w: 116, bg: "w4_1", mx: 9, my: 1, mw: 2, leftDoor: "d_streetin", right: "giantyard",
       far: "w3/street/far", mid: "w3/street/mid.png", midP: 0.6, midY: -40, near: "w3/street/near.png", nearY: 606, floor: "w3/street/floor.png" },   // (Glen 11-10: his rooftops and sea far off, his houses and awnings, his baskets, jars and sacks in front, their dirt the floor)   // (Glen's street, 11-10, two copies; the sneak: hide behind his stalls and baskets)
     // (Glen 11-12: "make Goliath's house further back ... challenges and pitfalls ... eerie fog") past the cracked wall at
     //  the end of the streets: the giant's yard, darker and foggier the further in, his house at the end

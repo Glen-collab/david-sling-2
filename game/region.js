@@ -842,6 +842,8 @@ function updateRegion(dt) {
   // off the edge of the room, into the next
   const left = r.c0 * T, right = (r.c0 + r.w) * T;
   if (r.left === "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { region.trans = { t: 0, leave: true }; return; }   // the road out (Glen 11-03)
+  if (r.leftDoor && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) {   // (Glen 11-12: "I always try to walk off screen") the edge goes where that door goes
+    const to = region.doors.find(o => o.id === (region.doors.find(q => q.id === r.leftDoor) || {}).to); if (to) { regionGo(to.x - 30, -1); return; } }
   if (r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
   if (r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
   // a door, a stair, a well: Up
