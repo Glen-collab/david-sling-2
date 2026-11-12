@@ -998,7 +998,11 @@ function r3TrialDraw(camX) {
     const im = kitImg("w3_tribe_" + t.name);
     if (t.open) {   // the hole, and the tablet dropping away
       const pit = kitImg("w3_tribe_pit");
-      if (pit) { const s = w / 216, pw = pit.naturalWidth * s; ctx.drawImage(pit, Math.round(x + w / 2 - pw / 2), GR * T - 6, pw, pit.naturalHeight * s); }   // (Glen's pit, cut_tribe_pit.py: its opening a tablet wide)
+      if (pit) {   // (Glen 11-12: "this doesn't look like a pit": his rim is only the broken edge, so the dark goes in first, falling away to black)
+        const s = w / 216, pw = pit.naturalWidth * s, g = ctx.createLinearGradient(0, GR * T, 0, H);
+        g.addColorStop(0, "#1a120c"); g.addColorStop(0.3, "#050302"); g.addColorStop(1, "#000");
+        ctx.fillStyle = g; ctx.fillRect(Math.round(x + 4), GR * T - 2, w - 8, H - GR * T + 2);
+        ctx.drawImage(pit, Math.round(x + w / 2 - pw / 2), GR * T - 6, pw, pit.naturalHeight * s); }   // (Glen's pit rim, cut_tribe_pit.py: a tablet wide)
       else {
       if (!t.jag) { t.jag = []; for (let k = 0; k <= 10; k++) t.jag.push(Math.random()); }   // (its broken edge: fixed once)
       const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
