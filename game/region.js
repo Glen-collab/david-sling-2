@@ -880,6 +880,7 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
   return false;
 }
 function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's climbing (no gravity, no walking)
+  if (REGION_ON && REGION.holdDavid && REGION.holdDavid(d, dt)) return true;   // (a region's own: nobgath.js's swinging ropes)
   const c = REGION_ON && region.climb; if (!c) return false;
   d.vx = 0; d.vy = 0; d.onGround = false; d.swordT = -1; d.shield = false; d.charging = false; d.throwT = -1;
   if (d.state !== "idle") setState("idle");

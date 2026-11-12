@@ -65,6 +65,11 @@ const R3 = {
   VINE: { EVERY: 3.2, SPEED: 230, BOUNCE: 330, SPIN: 4 },   // the vine balls rolling down the road at him
   LADDER: { FRAME_MS: 140, HIT: 40 },   // the rope ladder: each unrolling frame; how close an arrow has to pass the knot
   TREE_SINK: 6,      // the climbing tree, into the ground
+  // the swinging ropes (Glen 11-12): their tie (AY, above the top of the screen), length, how far they swing on their own
+  //  (A0, radians), the pull of a swing (G), Left/Right pumping it (PUMP), its slowing (DAMP); his hands this far above his
+  //  feet (HANDS); a catch this near the rope (GRAB); climbing it (CLIMB px/s); letting go: the throw (BOOST) and hop (JUMP)
+  SWING: { AY: -90, LEN: 530, A0: 0.38, G: 2400, PUMP: 2.6, DAMP: 0.08, HANDS: 104, GRAB: 34, CLIMB: 170, BOOST: 1.15, JUMP: 520, COOL: 0.4, MAX: 1.15 },
+  CROWN: { TOP: 110, X0: 150, X1: 340, ROPE_X: 330 },   // the climbing tree's crown: a ledge TOP px down its picture, from X0 to X1; the rope tied at ROPE_X
   TABLE_K: 0.6,      // the holy bread table (w3_holy_bread_table2 is 611 x 130 at 1)
 };
 
@@ -72,7 +77,7 @@ const NOBGATH = {
   key: "nobgath", name: "Nob and Gath", start: "nobroad", carry: ["gibeah", "ramah"],
   strCap: 8,
   rooms: [
-    { id: "nobroad",  name: "The Road to Nob",       w: 90, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "nob",
+    { id: "nobroad",  name: "The Road to Nob",       w: 126, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "nob",
       far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24, near: "w3/near_nob.png" },   // (Glen's near layer, 11-10: olive bushes, boulders, a dry-stone wall)
     { id: "nob",      name: "Nob",                   w: 110, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "nobroad", right: "gathroad",
       far: "w3/nob/far", mid: "w3/nob/mid.png", midP: 0.6, near: "w3/nob/near.png", nearY: 606, floor: "w3/nob/floor.png" },   // (Glen 11-10: his far hills, his court wall on green (the tiled roofs cut off), his row of jars and baskets in front)   // (Glen's sanctuary court, the linen hangings and the bronze altar, with his tileable court either side (11-10): one copy, the room's width; the painted court from column 29)
@@ -103,7 +108,7 @@ const NOBGATH = {
     ["I acted mad before them, and scribbled on the doors of the gate. Achish sent me away, and I escaped.", "1 Samuel 21:13-15"],
   ],
   end: ["In God I put my trust. I will not be afraid. What can man do to me?", "Psalm 56:11"],
-  stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
+  holdDavid: (d, dt) => r3SwingHold(d, dt), stoneHits: s => r3StoneHits(s), pitFall: () => r3TrialFall(), build: r3Build, enter: r3Enter, update: r3Update, draw: r3Draw, drawBack: r3DrawWalls, drawOver: r3DrawMight, drawDavid: r3DrawDavid,
 };
 
 const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when the region's built: region.js loads after this file)
@@ -116,7 +121,8 @@ const R3_LADDER_KNOT = [53, 53, 52, 39];   // (w3_ladder.json: each frame's knot
 const R3_CLIMBTREE = [{ side: "L", top: 503, x0: 0, x1: 194 }, { side: "R", top: 459, x0: 275, x1: 450 }, { side: "L", top: 370, x0: 45, x1: 194 },
   { side: "R", top: 313, x0: 275, x1: 383 }, { side: "L", top: 245, x0: 91, x1: 194 }];   // (w3_climbtree.json: its branches, tree px)
 const R3_DATES = [{ n: "w3_dates_1", x: 144, y: 255 }, { n: "w3_dates_2", x: 196, y: 256 }, { n: "w3_dates_3", x: 206, y: 197 }];   // (w3_palm_b.json)
-const r3 = { t: 0, hangs: [], thorns: [], vines: [], vineT: 0, ladders: [], people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
+const R3_ROPE_KNOT = [72, 44, 39, 29];   // (w3_rope.json)
+const r3 = { t: 0, hangs: [], thorns: [], vines: [], vineT: 0, ladders: [], swings: [], swing: null, people: [], told: {}, walls: [], might: null, chips: [], hides: [], guards: [], inDoor: null, caughtT: 0, scene: null, mad: null };
 const r3Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function r3Tell(k, text) { if (!r3.told[k]) { r3.told[k] = true; toast(text); } }
 // someone standing in a room: [sprite, x, facing, size]; drawn by r3Draw, looping their sheet
@@ -146,14 +152,14 @@ const r3ThornBox = () => { const k = KIT.w3_thorns; return { w: k.w * R3.THORN.K
 // the vine balls (tumbleweeds of old vines): roll down the road at him between x0 and x1; anything breaks them
 function r3VineZone(room, x0, x1) { r3.vineZone = { room, x0, x1 }; kitImg("w3_vineball"); }
 // the rope ladder (Glen 11-12): rolled up, tied at the top; an arrow through the knot and it unrolls, and there's a ladder
-function r3RopeLadder(id, room, x, top) {
-  const o = { id, room, x, top, state: r3Has(id) ? "down" : "up", t: 0 }; r3.ladders.push(o);
-  for (let i = 1; i <= 4; i++) kitImg("w3_ladder_" + i);
+function r3RopeLadder(id, room, x, top, kind = "ladder") {   // (kind "rope": his rope, Glen 11-12: climbed like World 2's)
+  const o = { id, room, x, top, state: r3Has(id) ? "down" : "up", t: 0, kind }; r3.ladders.push(o);
+  for (let i = 1; i <= 4; i++) kitImg(`w3_${kind}_${i}`);
   if (o.state === "down") r3LadderClimb(o);
 }
 function r3LadderClimb(o) {   // the climbable part (main.js ladders, as region.js rLadder, but drawn here: his rope ladder)
   const c = Math.round(o.x / T) - 1;
-  ladders.push({ c, r: o.top / T, bot: GR, rungs: [], top: { dir: 0, y: o.top }, room: o.room, x: (c + 1) * T, topY: o.top, botY: GR * T });
+  ladders.push({ c, r: o.top / T, bot: GR, rungs: [], top: { dir: 0, y: o.top }, room: o.room, x: (c + 1) * T, topY: o.top, botY: GR * T, rope: o.kind === "rope" });
 }
 function r3PropsUpdate(dt) {   // the thorns, the vine balls, the ladders: in the room he's in
   const r = region.room, d = david; if (!r) return;
@@ -177,8 +183,8 @@ function r3PropsUpdate(dt) {   // the thorns, the vine balls, the ladders: in th
   r3.vines = r3.vines.filter(v => !v.dead && (!z || v.x > z.x0 - 300));
   for (const o of r3.ladders) {
     if (o.room !== r.id) continue;
-    if (o.state === "up" && Math.abs(d.x - o.x) < 330 && hasSkill("bow")) r3Tell("ladder", "A rope ladder, rolled up and tied at the top. Shoot the knot loose: hold Up and press X.");
-    if (o.state === "drop" && (o.t += dt) * 1000 >= R3.LADDER.FRAME_MS * 3) { o.state = "down"; r3LadderClimb(o); if (typeof chime === "function") chime(5); toast("The ladder's down! Up to climb it."); }
+    if (o.state === "up" && Math.abs(d.x - o.x) < 330 && hasSkill("bow")) r3Tell(o.kind, o.kind === "rope" ? "A rope, coiled and tied up in the tree. Shoot the knot loose: hold Up and press X." : "A rope ladder, rolled up and tied at the top. Shoot the knot loose: hold Up and press X.");
+    if (o.state === "drop" && (o.t += dt) * 1000 >= R3.LADDER.FRAME_MS * 3) { o.state = "down"; r3LadderClimb(o); if (typeof chime === "function") chime(5); toast(o.kind === "rope" ? "The rope's down! Up to climb it (or jump and grab it)." : "The ladder's down! Up to climb it."); }
   }
 }
 function r3PropsHit(s) {   // (r3StoneHits) the sword cuts thorns; anything breaks a vine ball; an arrow cuts the ladder's knot loose
@@ -218,9 +224,77 @@ function r3PropsDraw(camX) {
   if (vi) for (const v of r3.vines) { ctx.save(); ctx.translate(v.x - camX, v.y - vk.h / 2 + 4); ctx.rotate(v.rot); ctx.drawImage(vi, -vk.w / 2, -vk.h / 2, vk.w, vk.h); ctx.restore(); }
   for (const o of r3.ladders) {
     if (o.room !== r.id) continue;
-    const i = o.state === "up" ? 0 : o.state === "down" ? 3 : Math.min(3, 1 + Math.floor(o.t * 1000 / R3.LADDER.FRAME_MS)), n = "w3_ladder_" + (i + 1), k = KIT[n], im = kitImg(n);
-    const s = (FOOT - o.top) / KIT.w3_ladder_4.h; if (!im) continue;
-    ctx.drawImage(im, o.x - camX - R3_LADDER_KNOT[i] * s, o.top - 10, k.w * s, k.h * s);
+    const i = o.state === "up" ? 0 : o.state === "down" ? 3 : Math.min(3, 1 + Math.floor(o.t * 1000 / R3.LADDER.FRAME_MS)), n = `w3_${o.kind}_${i + 1}`, k = KIT[n], im = kitImg(n);
+    if (o.kind === "rope" && i === 3) { r3DrawRopeLong(o.x - camX, o.top - 10, FOOT - o.top + 14); continue; }
+    const s = o.kind === "rope" ? Math.min(R3_ROPE.K, (FOOT - o.top) / KIT.w3_rope_2.h) : (FOOT - o.top) / KIT[`w3_${o.kind}_4`].h, knot = o.kind === "rope" ? R3_ROPE_KNOT : R3_LADDER_KNOT; if (!im) continue;
+    ctx.drawImage(im, o.x - camX - knot[i] * s, o.top - 10, k.w * s, k.h * s);
+  }
+}
+// (Glen 11-12) the swinging ropes: Donkey Kong style. Each hangs from AY and swings on its own; jump into one and he
+//  catches it; Left / Right swing him, Up / Down climb it; A lets go with the swing's speed
+function r3Swing(room, ax) { r3.swings.push({ room, ax, ay: R3.SWING.AY, len: R3.SWING.LEN, ang: 0, w: 0, ph: Math.random() * 6, cool: 0 }); }
+const r3SwingTip = (q, l = q.len) => [q.ax + Math.sin(q.ang) * l, q.ay + Math.cos(q.ang) * l];
+function r3SwingUpdate(dt) {
+  const r = region.room, d = david, S = R3.SWING; if (!r) return;
+  for (const q of r3.swings) {
+    if (q.room !== r.id) continue;
+    q.cool = Math.max(0, q.cool - dt);
+    if (r3.swing && r3.swing.q === q) continue;
+    const w0 = Math.sqrt(S.G / q.len), want = S.A0 * Math.sin(r3.t * w0 + q.ph);   // (on its own: back and forth, settling back to its sway after he lets go)
+    q.ang += (want - q.ang) * Math.min(1, dt * 6); q.w = S.A0 * w0 * Math.cos(r3.t * w0 + q.ph);
+    // a catch: in the air, his hands near the rope, below its top part
+    if (r3.swing || d.onGround || q.cool > 0 || d.deadT > 0 || d.state === "climb" || region.wait > 0) continue;
+    const hx = d.x, hy = d.y - S.HANDS, ux = Math.sin(q.ang), uy = Math.cos(q.ang);
+    const along = (hx - q.ax) * ux + (hy - q.ay) * uy, off = Math.abs((hx - q.ax) * uy - (hy - q.ay) * ux);
+    if (along > q.len * 0.45 && along < q.len + 10 && off < S.GRAB) {
+      r3.swing = { q, hold: Math.min(q.len - 6, along) };
+      q.w += d.vx / r3.swing.hold * 0.7;   // (his jump carries into the swing)
+      d.vx = d.vy = 0; setState("swing"); sfx("jump", d.x, 0.3, 0.7);
+      r3Tell("swing", "Swinging! Left and Right to swing higher, Up and Down to climb. A to let go.");
+    }
+  }
+}
+function r3SwingHold(d, dt) {   // (region.js regionClimbHold) on a swinging rope he goes where it goes
+  const sw = r3.swing; if (!sw) return false;
+  const q = sw.q, S = R3.SWING;
+  if (d.deadT > 0 || !region.room || region.room.id !== q.room) { r3.swing = null; return false; }
+  const dir = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
+  if (dir) { d.facing = dir; if (Math.sign(q.w) === dir || Math.abs(q.w) < 0.3) q.w += dir * S.PUMP * dt; }   // (pump with the swing, as on a swing set)
+  sw.hold = Math.max(q.len * 0.45, Math.min(q.len - 6, sw.hold + ((held("down") ? 1 : 0) - (held("up") ? 1 : 0)) * S.CLIMB * dt));
+  q.w += -(S.G / sw.hold) * Math.sin(q.ang) * dt; q.w *= 1 - S.DAMP * dt; q.ang += q.w * dt;
+  if (Math.abs(q.ang) > S.MAX) { q.ang = Math.sign(q.ang) * S.MAX; q.w *= -0.3; }
+  const [hx, hy] = r3SwingTip(q, sw.hold);
+  d.x = hx; d.y = hy + S.HANDS; d.vx = d.vy = 0; d.onGround = false; d.swordT = -1; d.shield = false; d.charging = false; d.throwT = -1;
+  if (d.state !== "swing") setState("swing");
+  if (pressed("a")) {   // let go: off with the rope's speed, and a hop
+    const v = q.w * sw.hold;
+    d.vx = v * Math.cos(q.ang) * S.BOOST + d.facing * 120; d.vy = Math.min(0, -v * Math.sin(q.ang)) - S.JUMP;
+    q.cool = S.COOL; r3.swing = null; d.flipUsed = false; setState("jump"); sfx("jump", d.x, 0.5, 1.1);
+  }
+  return true;
+}
+// (Glen 11-12: "the rope looks goofy so big ... longer without making it thicker") his hanging rope at its own thickness
+//  (K), its plain middle repeated for the length; the knots at either end as they are. x: the rope's line; from y0, len long
+const R3_ROPE = { K: 0.9, TOP: 72, BOT: 336 };   // (w3_rope_4: the top knot ends at 72, the bottom one starts at 336)
+function r3DrawRopeLong(x, y0, len) {
+  const im = kitImg("w3_rope_4"), k = KIT.w3_rope_4, R = R3_ROPE, s = R.K; if (!im) return false;
+  const w = k.w * s, x0 = x - R3_ROPE_KNOT[3] * s, top = R.TOP * s, bot = (k.h - R.BOT) * s, mid = (R.BOT - R.TOP) * s;
+  ctx.drawImage(im, 0, 0, k.w, R.TOP, x0, y0, w, top);
+  ctx.save(); ctx.beginPath(); ctx.rect(x0 - 2, y0 + top - 1, w + 4, Math.max(0, len - top - bot) + 2); ctx.clip();
+  for (let y = y0 + top; y < y0 + len - bot; y += mid - 1) ctx.drawImage(im, 0, R.TOP, k.w, R.BOT - R.TOP, x0, y, w, mid);
+  ctx.restore();
+  ctx.drawImage(im, 0, R.BOT, k.w, k.h - R.BOT, x0, y0 + len - bot, w, bot);
+  return true;
+}
+function r3SwingDraw(camX) {   // the ropes (his rope picture, turned with the swing)
+  const r = region.room; if (!r) return;
+  const im = kitImg("w3_rope_4"), k = KIT.w3_rope_4;
+  for (const q of r3.swings) {
+    if (q.room !== r.id) continue;
+    const x = q.ax - camX; if (x < -q.len || x > W + q.len) continue;
+    ctx.save(); ctx.translate(x, q.ay); ctx.rotate(-q.ang);
+    if (!r3DrawRopeLong(0, -20, q.len + 34)) { ctx.strokeStyle = "#a88a5a"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, q.len); ctx.stroke(); }
+    ctx.restore();
   }
 }
 function r3HangUpdate(dt) {
@@ -267,12 +341,12 @@ function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces
 // ---------------------------------------------------------------------------
 function r3Build(R) {
   Object.assign(KIT, R3_KIT);
-  r3.hangs.length = 0; r3.thorns.length = 0; r3.vines.length = 0; r3.ladders.length = 0; r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
+  r3.hangs.length = 0; r3.thorns.length = 0; r3.vines.length = 0; r3.ladders.length = 0; r3.swings.length = 0; r3.swing = null; r3.people.length = 0; r3.walls.length = 0; r3.hides.length = 0; r3.guards.length = 0; r3.inDoor = null; r3.caughtT = 0; r3.scene = null; r3.mad = null;
 
   // -- The Road to Nob (21:1): out of Gibeah's country, fields and hills, on to the priests' town
   let c = R("nobroad");
   { const X = k => (c + k) * T;
-    ground(c, c + 89);
+    ground(c, c + 125);
     campfire(c + 4, GR - 1);
     oliveRow(c + 10, 16, 5);
     rDeco("nobroad", "f_olive", c + 20); rDeco("nobroad", "f_rock", c + 30);
@@ -298,6 +372,11 @@ function r3Build(R) {
     bird("raven", "nobroad", X(75), FOOT - KIT.f_tower_low.h + 30);
     oliveRow(c + 80, 16, 4);
     rRelic("r3_stone_road", "stone", c + 84, 16);
+    // (Glen 11-12: "Mario and Donkey Kong style Tarzan swinging from rope to rope over a pit") a ravine before Nob, three
+    //  ropes hanging from the branches overhead: jump and catch one, Left / Right to swing, A to let go
+    rHole("nobroad", c + 94, 24);
+    for (const k of [97, 104, 111]) r3Swing("nobroad", X(k) + T / 2);
+    oliveRow(c + 119, 16, 3);
   }
 
   // -- Nob, the sanctuary court (21:1-9): Ahimelech, the holy bread (two rows of six, Leviticus 24:5-6), Goliath's
@@ -397,10 +476,16 @@ function r3Build(R) {
     r3Wall("r3_log_gathroad", "gathroad", c + 92, 16, "log");
     { const k = KIT.w3_climbtree, tx = X(116) + T / 2 - k.w / 2, ty = FOOT - k.h + R3.TREE_SINK;   // its branches: ledges
       region.props.push({ room: "gathroad", n: "w3_climbtree", x: tx, y: ty });
-      for (const b of R3_CLIMBTREE) { const c0 = Math.ceil((tx + b.x0) / T), c1 = Math.floor((tx + b.x1) / T); platAt(c0, ty + b.top + 4, c1 - c0); }
-      const tb = R3_CLIMBTREE[R3_CLIMBTREE.length - 1], tc = Math.floor((tx + (tb.x0 + tb.x1) / 2) / T);
+      for (const b of R3_CLIMBTREE.slice(0, 4)) { const c0 = Math.ceil((tx + b.x0) / T), c1 = Math.floor((tx + b.x1) / T); platAt(c0, ty + b.top + 4, c1 - c0); }
+      // (its top branch is only to look at: from it the crown would be a jump; the rope is the way up there)
+      const tb = R3_CLIMBTREE[3], tc = Math.floor((tx + (tb.x0 + tb.x1) / 2) / T);
       rRelic("r3_pom_tree", "pomegranate", tc, onTop(ty + tb.top + 4));
-      bird("crow", "gathroad", tx + 225, ty + 40); }
+      // (Glen 11-12) the crown: too high to jump to from the top branch; his rope's coiled up there: shoot it down, climb up
+      const C = R3.CROWN, cy = ty + C.TOP, k0 = Math.ceil((tx + C.X0) / T), k1 = Math.floor((tx + C.X1) / T);
+      platAt(k0, cy, k1 - k0 + 1);
+      rRelic("r3_truth_tree", "truth", k0 + 1, onTop(cy), "He makes my feet like deer's feet, and sets me on my high places. (Psalm 18:33)");
+      r3RopeLadder("r3_rope_tree", "gathroad", Math.round((tx + C.ROPE_X) / T) * T, cy, "rope");
+      bird("crow", "gathroad", tx + 200, cy); }
     campfire(c + 125, GR - 1);
     r3Person("gathroad", "gath_guard_idle", X(128), -1);   // (the first of Achish's men, on the road in)
   }
@@ -466,7 +551,8 @@ function r3Build(R) {
 function r3Enter(r) {
   if (r.id === "nob") r3Tell("nob", "Nob, the town of the priests. Ahimelech is at the sanctuary.");
   if (r.id === "tribes") r3TrialMend();
-  r3HangReset(r.id); r3PropsReset(r.id);   // (they grow back each time)
+  r3HangReset(r.id); r3PropsReset(r.id); r3.swing = null;   // (they grow back each time)
+  if (r.id === "nobroad") kitImg("w3_rope_4");
   if (r.id === "nobroad" && hasSkill("bow")) r3Tell("bowup", "Birds in the trees, and olives hanging high. Jonathan's bow: hold Up and press X to shoot up high.");
   if (r.id === "tribes" && !r3Has("r3_tribes")) r3Tell("tribes", "The Hall of the Tribes: a tablet for each of Jacob's twelve sons. Step on them in the order Jacob blessed them.");
   if (r.id === "crack") r3Tell("crack", "Under Nob: cracked walls. A heavy sword could break them...");
@@ -482,7 +568,7 @@ function r3Update(dt) {
   r3.chips = r3.chips.filter(q => q.t < q.life);
   for (const w of r3.walls) w.shake = Math.max(0, w.shake - dt);
   if (r.id === "tribes") r3TrialUpdate(dt);
-  r3HangUpdate(dt); r3PropsUpdate(dt);
+  r3HangUpdate(dt); r3PropsUpdate(dt); r3SwingUpdate(dt);
   for (const p of r3.people) if (p.walk && !r3.scene) {   // the walkers
     p.x += p.facing * p.walk.v * dt;
     if (p.x > p.walk.x1) { p.x = p.walk.x1; p.facing = -1; } else if (p.x < p.walk.x0) { p.x = p.walk.x0; p.facing = 1; }
@@ -749,6 +835,11 @@ function r3MightUpdate(dt) {
 // David with Goliath's sword (region.js drawDavid hook): lifted while you mash, the smash, the blade on the ground
 function r3DrawDavid(d, x, y) {
   const m = r3.might;
+  if (r3.swing && SPR.david_climb) {   // on a swinging rope: his rope climb (his back to us), turned with the rope, hands on it
+    const n = "david_climb", S = R3.SWING, sc = SCALE * (TUNE.SPRITE_SIZE[n] || 1);
+    ctx.save(); ctx.translate(x, y - S.HANDS); ctx.rotate(-r3.swing.q.ang);
+    drawSprite(n, 0, (SPR[n].ax - RTUNE.ROPE_IN_HANDS) * sc, S.HANDS, 1); ctx.restore(); return true;
+  }
   if (r3.mad && SPR[r3.mad.pose]) {   // acting mad: wilder as the bar fills
     const k = typeof mash !== "undefined" ? mash.level : 0.5, sh = (Math.random() - 0.5) * 3 * k;
     drawSprite(r3.mad.pose, frameOf(r3.mad.pose, r3.mad.t * (0.7 + k * 1.3)), x + sh, y, d.facing, R3.GSWORD_K); return true;
@@ -966,7 +1057,7 @@ function r3DrawMight() {
 function r3Draw(camX) {
   const r = region.room; if (!r) return;
   if (r.id === "tribes") r3TrialDraw(camX);
-  r3HangDraw(camX); r3PropsDraw(camX);
+  r3HangDraw(camX); r3PropsDraw(camX); r3SwingDraw(camX);
   const d = david, idle = !r3.might && !region.script.length && !(dialog && dialog.t > 0) && d.onGround;
   if (idle && r.id === "nob" && !hasSkill("heavySword") && r3Has("r3_hall_key") && Math.abs(d.x - r3.swordX) < 2.5 * T) upHint(r3.swordX - camX, GR * T - 250);   // (Up: ask for it)
   for (const w of r3.walls) if (idle && w.room === r.id && !w.broken && hasSkill("heavySword") && Math.abs(d.x - (d.facing > 0 ? w.x0 : w.x1)) < R3.MIGHT.REACH * T) upHint((w.x0 + w.x1) / 2 - camX, GR * T - 300);
