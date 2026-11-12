@@ -139,7 +139,7 @@ const KIT = {
   // (stone: the top of the stone, px up from the piece's bottom), a boulder, the olive tree with its branch to stand on,
   // the round watchtower, a field gate, a low wall, a fig tree; and the foreground plants (fg_*: drawn over David, sliding faster)
   f_wall_left: { w: 187, h: 164, stone: 141 }, f_wall_mid: { w: 177, h: 151, stone: 141 }, f_wall_right: { w: 176, h: 162, stone: 141 },
-  f_rock: { w: 179, h: 117 }, f_ezel: { w: 211, h: 519 }, f_olive: { w: 536, h: 520 }, f_tower: { w: 281, h: 376 }, f_gate: { w: 178, h: 159 },
+  f_rock: { w: 179, h: 117 }, f_ezel: { w: 211, h: 519 }, f_olive: { w: 536, h: 520 }, f_tower: { w: 281, h: 376 }, f_tower_low: { w: 281, h: 290 },   // (11-11: the bottom 86 px off, so it stands sunk in the ground: the Road to Nob) f_gate: { w: 178, h: 159 },
   f_lowwall: { w: 202, h: 83 }, f_fig: { w: 252, h: 256 }, fg_grass: { w: 313, h: 310 }, fg_branch: { w: 218, h: 457 }, fg_thorn: { w: 317, h: 191 },
   // (Glen 11-05) the Town kit, assets/rooms/gibeah/kit_town: flat roofs in three (top: the walking top, px down from the
   // piece's top), a striped awning, a stone post with a beam, a house front, the stair (steps: each 36 px column's top),
@@ -2033,7 +2033,7 @@ const storyDone = () => STORY_STEPS.filter(id => regionHas("taken", id)).length;
 // (Glen 11-06) what he's found, kept at the bottom of the left page the whole time: a line for each kind once he's found
 // the first one, more added as he finds them (written in the next time he writes); "of N" only on the gate's last page.
 // JFIRST: the kinds whose first one sits him down to write straight away
-const JFOUND = [["truth", "Truths"], ["stone", "Stones of remembrance"], ["pomegranate", "Pomegranates"], ["oil", "Oil jars"]], JFIRST = ["stone", "truth"];
+const JFOUND = [["truth", "Truths"], ["stone", "Stones of remembrance"], ["pomegranate", "Pomegranates"], ["oil", "Oil jars"]], JFIRST = ["truth"];   // (Glen 11-11: not the stones)
 const jFound = k => region.relics.filter(f => f.kind === k && regionHas("taken", f.id)).length;
 const jAll = k => region.relics.filter(f => f.kind === k).length;
 function journalWatch() {   // updateRegion: a story moment just finished? he sits down and writes

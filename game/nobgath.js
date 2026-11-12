@@ -98,6 +98,8 @@ const r3Has = id => typeof region !== "undefined" && region.save && region.save.
 function r3Tell(k, text) { if (!r3.told[k]) { r3.told[k] = true; toast(text); } }
 // someone standing in a room: [sprite, x, facing, size]; drawn by r3Draw, looping their sheet
 function r3Person(room, name, x, facing = 1, k = R3.NPC_K, tag = null) { r3.people.push({ room, name, x, facing, k, ph: Math.random() * 3, tag }); }
+// (Glen 11-11: "this guy is walking in place") someone on a walk sheet: up and down between x0 and x1, v px a second
+function r3Walker(room, name, x0, x1, v, tag = null) { r3Person(room, name, x0, 1, R3.NPC_K, tag); Object.assign(r3.people[r3.people.length - 1], { walk: { x0, x1, v } }); }
 function r3Prop(room, n, x, s = 1, y = null) {   // one of Glen's World 3 pieces standing on the ground (x: its middle)
   const k = KIT[n]; region.props.push({ room, n, x: x - k.w * s / 2, y: y ?? FOOT - k.h * s, s, back: true });
 }
@@ -119,7 +121,16 @@ function r3Build(R) {
     { const c1 = rTerrace("nobroad", c + 44, 1); oliveRow(c + 45, onTop(FOOT - 136) - 0.4, c1 - c - 46); }
     rDeco("nobroad", "f_fig", c + 58); rBreak("jar", "nobroad", c + 62, 16);
     rDeco("nobroad", "fg_grass", c + 66, true, 1.35);
-    rDeco("nobroad", "f_tower", c + 74); oliveRow(c + 78, 16, 4);
+    { // (Glen 11-11) the watchtower: in the way now, to climb or jump over, and sunk into the ground (its round base
+      //  stood on the dirt). Its top: TOWER_SINK px down from the art's; a boulder before it to jump from
+      const k = KIT.f_tower_low, y = FOOT - k.h, top = y + 8, r0 = Math.ceil(top / T);   // (f_tower_low: Glen's tower, its bottom 86 px cut off)
+      region.props.push({ room: "nobroad", n: "f_tower_low", x: (c + 74) * T + T / 2 - k.w / 2, y });
+      block(c + 71, r0, 7, GR - r0, 1); for (let i = 0; i < 7; i++) for (let r = r0; r < GR; r++) artSolid.add((c + 71 + i) + "," + r);
+      platAt(c + 71, top, 7); oliveRow(c + 72, onTop(top) - 0.4, 5);
+      region.walls.push({ room: "nobroad", x0: (c + 71) * T, x1: (c + 78) * T, top: r0 * T, need: "wallClimb" });
+      rBoulder("nobroad", c + 64);
+    }
+    oliveRow(c + 80, 16, 4);
     rRelic("r3_stone_road", "stone", c + 84, 16);
   }
 
@@ -132,7 +143,7 @@ function r3Build(R) {
     campfire(c + 3, GR - 1);
     oliveRow(c + 8, 16, 5); rBreak("jar", "nob", c + 16, 16);
 //    (the olive trees over the strip's joins: gone with the layers, 11-10)   // (olive trees over the two joins, his tileable court to his painted one: the walls are different stone)
-    r3Person("nob", "nob_priest2_walk", X(20), 1);
+    r3Walker("nob", "nob_priest2_walk", X(17), X(26), 60);
     // (the painted court: the altar about columns P+11-17, a table P+24-33, another P+35-44, crates P+45-51; Glen's pieces in front)
     r3Prop("nob", "w3_holy_bread_table2", X(P + 28), R3.TABLE_K);
     region.props[region.props.length - 1].draw = () => !!r3.scene;   // (out of the way while the clip's own table is there)
@@ -142,7 +153,7 @@ function r3Build(R) {
     r3Prop("nob", "w3_oil_lamp", X(P + 43));
     r3Person("nob", "ahimelech_idle", X(P + 34), -1, R3.NPC_K, "ahimelech");
     r3.breadX = X(P + 34); r3.breadAt = X(P + R3.BREAD.TRIGGER);
-    r3Person("nob", "nob_priest2_lamp", X(P + 20), 1);
+    r3Walker("nob", "nob_priest2_lamp", X(P + 15), X(P + 23), 45);
     r3Person("nob", "nob_priest1_talk", X(P + 43), -1);
     if (!r3Has("r3_bread")) r3Person("nob", "doeg_idle", X(P + 6), 1, R3.NPC_K, "doeg");   // (21:7: "detained before the LORD"; gone after the bread, off to tell Saul)
     rKitDoor("d_nobdown", "nob", c + P + 60, "stairs", "d_crackup", "stair_down");
@@ -284,6 +295,10 @@ function r3Update(dt) {
   r3.chips = r3.chips.filter(q => q.t < q.life);
   for (const w of r3.walls) w.shake = Math.max(0, w.shake - dt);
   if (r.id === "tribes") r3TrialUpdate(dt);
+  for (const p of r3.people) if (p.walk && !r3.scene) {   // the walkers
+    p.x += p.facing * p.walk.v * dt;
+    if (p.x > p.walk.x1) { p.x = p.walk.x1; p.facing = -1; } else if (p.x < p.walk.x0) { p.x = p.walk.x0; p.facing = 1; }
+  }
   if (r3.might) { r3MightUpdate(dt); return; }
   if (r3SneakUpdate(dt)) return;
   const free = !region.script.length && region.wait <= 0 && !region.trans && !(dialog && dialog.t > 0) && d.onGround && d.deadT <= 0;
