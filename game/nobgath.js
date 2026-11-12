@@ -63,7 +63,9 @@ const R3 = {
   LOG: { ROWS: 11, SINK: 14, APART: 30 },
   THORN: { K: 0.85, HURT_W: 0.36, HURT_H: 0.7 },   // a thorn bush: its size, and the part of it that hurts (of its width, height)
   VINE: { EVERY: 3.2, SPEED: 230, BOUNCE: 330, SPIN: 4 },   // the vine balls rolling down the road at him
-  LADDER: { FRAME_MS: 140, HIT: 40 },   // the rope ladder: each unrolling frame; how close an arrow has to pass the knot
+  LADDER: { FRAME_MS: 140, HIT: 40 },
+  TOWER: { SINK: 14, RIM: 26 },   // the tall lookout (w3_towertall): into the ground; its top, where he stands, down from the picture's top
+  COIL: 0.5,         // his rope coiled up (and dropping): its size (the hanging rope is drawn at R3_ROPE.K)   // the rope ladder: each unrolling frame; how close an arrow has to pass the knot
   TREE_SINK: 6,      // the climbing tree, into the ground
   // the swinging ropes (Glen 11-12): their tie (AY, above the top of the screen), length, how far they swing on their own
   //  (A0, radians), the pull of a swing (G), Left/Right pumping it (PUMP), its slowing (DAMP); his hands this far above his
@@ -85,7 +87,7 @@ const NOBGATH = {
       strip: "w3/crack_strip", floor: "w3/crack_dirt.png", band: [0.04, 0.72] },   // (his cracked wall, a storey repeating up: Castlevania)
     { id: "tribes",   name: "The Hall of the Tribes", w: 96, bg: "w4_4", mx: 4, my: 2, mw: 3,
       strip: "gibeah/halls_strip", floor: "gibeah/halls_floor" },   // (11-11: Saul's halls stand in till Glen paints Nob's own)
-    { id: "gathroad", name: "The Road Down to Gath", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 3, left: "nob", right: "gath",
+    { id: "gathroad", name: "The Road Down to Gath", w: 130, up: 14, bg: "w4_1", mx: 5, my: 1, mw: 3, left: "nob", right: "gath",
       far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },   // (+ his near layer: sycamore shrubs, a broken jar, a mud-brick stub)
     { id: "gath",     name: "Gath",                  w: 44, bg: "w4_1", mx: 8, my: 1, mw: 2, left: "gathroad",
       far: "w3/gath/far", mid: "w3/gath/mid.png", midP: 1, midX: 170, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (Glen 11-10: his dunes and sea far off; his walls and gate fixed to the room, the gate on the door at column 22; his broken jar and bricks in front)   // (his city of Gath, one copy the room's width: its own gate is the door in, at column 22)
@@ -114,7 +116,7 @@ const NOBGATH = {
 const R3_KIT = {   // (cut_w3_props.py prints these; into region.js's KIT when the region's built: region.js loads after this file)
   w3_deadtree: { w: 562, h: 382 }, w3_log_l: { w: 189, h: 138 }, w3_log_r: { w: 215, h: 138 }, w3_palm: { w: 362, h: 564 }, w3_palm_b: { w: 343, h: 575 },
   w3_dates_1: { w: 26, h: 35 }, w3_dates_2: { w: 27, h: 33 }, w3_dates_3: { w: 24, h: 29 }, w3_climbtree: { w: 451, h: 613 },
-  w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 },
+  w3_thorns: { w: 175, h: 174 }, w3_vineball: { w: 114, h: 114 }, w3_towertall: { w: 251, h: 555 },
   w3_ladder_1: { w: 117, h: 165 }, w3_ladder_2: { w: 117, h: 323 }, w3_ladder_3: { w: 108, h: 363 }, w3_ladder_4: { w: 80, h: 397 },
   w3_rope_1: { w: 134, h: 215 }, w3_rope_2: { w: 94, h: 363 }, w3_rope_3: { w: 67, h: 329 }, w3_rope_4: { w: 46, h: 389 } };
 const R3_LADDER_KNOT = [53, 53, 52, 39];   // (w3_ladder.json: each frame's knot, from its left)
@@ -180,7 +182,8 @@ function r3PropsUpdate(dt) {   // the thorns, the vine balls, the ladders: in th
     if (v.y >= GR * T) { v.y = GR * T; v.vy = -V.BOUNCE * (0.55 + Math.random() * 0.45); }
     if (!busy && Math.hypot(d.x - v.x, (d.y - 50) - (v.y - 50)) < 62) hurtDavid(v.x, "vines");
   }
-  r3.vines = r3.vines.filter(v => !v.dead && (!z || v.x > z.x0 - 300));
+  for (const v of r3.vines) if (z && !v.dead && v.x < z.x0 - 30) { v.dead = true; for (let i = 0; i < 10; i++) bits.push({ x: v.x, y: v.y - 55, vx: (Math.random() - 0.3) * 300, vy: -Math.random() * 360, life: 0.8, color: i % 2 ? "#6b6a2c" : "#a7a76a" }); }   // (into the tower: broken up)
+  r3.vines = r3.vines.filter(v => !v.dead);
   for (const o of r3.ladders) {
     if (o.room !== r.id) continue;
     if (o.state === "up" && Math.abs(d.x - o.x) < 330 && hasSkill("bow")) r3Tell(o.kind, o.kind === "rope" ? "A rope, coiled and tied up in the tree. Shoot the knot loose: hold Up and press X." : "A rope ladder, rolled up and tied at the top. Shoot the knot loose: hold Up and press X.");
@@ -226,7 +229,7 @@ function r3PropsDraw(camX) {
     if (o.room !== r.id) continue;
     const i = o.state === "up" ? 0 : o.state === "down" ? 3 : Math.min(3, 1 + Math.floor(o.t * 1000 / R3.LADDER.FRAME_MS)), n = `w3_${o.kind}_${i + 1}`, k = KIT[n], im = kitImg(n);
     if (o.kind === "rope" && i === 3) { r3DrawRopeLong(o.x - camX, o.top - 10, FOOT - o.top + 14); continue; }
-    const s = o.kind === "rope" ? Math.min(R3_ROPE.K, (FOOT - o.top) / KIT.w3_rope_2.h) : (FOOT - o.top) / KIT[`w3_${o.kind}_4`].h, knot = o.kind === "rope" ? R3_ROPE_KNOT : R3_LADDER_KNOT; if (!im) continue;
+    const s = o.kind === "rope" ? R3.COIL : (FOOT - o.top) / KIT[`w3_${o.kind}_4`].h, knot = o.kind === "rope" ? R3_ROPE_KNOT : R3_LADDER_KNOT; if (!im) continue;
     ctx.drawImage(im, o.x - camX - knot[i] * s, o.top - 10, k.w * s, k.h * s);
   }
 }
@@ -510,12 +513,17 @@ function r3Build(R) {
     rDeco("gathroad", "f_rock", c + 26); rBreak("jar", "gathroad", c + 30, 16);
     { const c1 = rTerrace("gathroad", c + 36, 2); oliveRow(c + 37, onTop(FOOT - 136) - 0.4, c1 - c - 38); }
     rDeco("gathroad", "f_olive", c + 50);
-    { const k = KIT.f_tower, y = FOOT - k.h + 22, top = y + 8;   // the lookout (not in the way: David walks behind it), its top a ledge
-      region.props.push({ room: "gathroad", n: "f_tower", x: X(69) + T / 2 - k.w / 2, y });
-      platAt(c + 66, top, 7); rRelic("r3_stone_gathroad", "stone", c + 70, onTop(top));
-      r3RopeLadder("r3_ladder_lookout", "gathroad", X(67), top); }   // (open ground before it to shoot from: the terrace ends at 55)
+    { // (Glen 11-12: "I can just run past this tower ... this rope is pointless") his tall lookout, across the road: solid,
+      //  too tall to jump. Going on means the rope ladder (Jonathan's bow cuts its knot loose); coming back from Gath, the
+      //  wooden ladder on its far side. The stone of remembrance on top. (open ground before it to shoot from)
+      const k = KIT.w3_towertall, y = FOOT - k.h + R3.TOWER.SINK, top = y + R3.TOWER.RIM, r0 = Math.ceil(top / T);
+      region.props.push({ room: "gathroad", n: "w3_towertall", x: X(69) + T / 2 - k.w / 2, y });
+      block(c + 67, r0, 5, GR - r0, 6); for (let i = 0; i < 5; i++) artSolid.add((c + 67 + i) + "," + r0);
+      platAt(c + 66, top, 7); rRelic("r3_stone_gathroad", "stone", c + 69, onTop(top));
+      r3RopeLadder("r3_ladder_lookout", "gathroad", X(67), top);
+      rLadder("gathroad", X(73), top, GR * T); }
     for (const k of [78, 82, 86]) r3Thorn("gathroad", X(k));
-    r3VineZone("gathroad", X(40), X(90));
+    r3VineZone("gathroad", X(75), X(90));   // (past the tower: they break on it)
     r3Wall("r3_log_gathroad", "gathroad", c + 92, 16, "log");
     { const k = KIT.w3_climbtree, tx = X(116) + T / 2 - k.w / 2, ty = FOOT - k.h + R3.TREE_SINK;   // its branches: ledges
       region.props.push({ room: "gathroad", n: "w3_climbtree", x: tx, y: ty });

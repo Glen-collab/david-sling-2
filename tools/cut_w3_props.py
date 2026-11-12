@@ -95,3 +95,9 @@ for i, box in enumerate([(115, 120, 485, 715), (650, 60, 915, 1050), (1145, 40, 
     p, _ = piece(R2_, box); im = save(p, f"w3_rope_{i + 1}", KR)
     top = np.asarray(im)[:12, :, 3] > 100; xs_ = np.where(top.any(0))[0]; knots.append(int((xs_.min() + xs_.max()) / 2))
 json.dump({"knot": knots}, open(os.path.join(OUT, "w3_rope.json"), "w")); print("rope knots", knots)
+
+# the tall lookout (Glen 11-12, his tower with a shaft that repeats): whole, at the game's size. (Its shaft from 1000 to
+#  1258 repeats, for a taller one later)
+TT = key("tower_tall.png"); p, _ = piece(TT, (0, 0, 2000 / F * 1152 / 2048, 2000)); save(p, "w3_towertall", 0.3)
+a_ = np.asarray(Image.open(os.path.join(OUT, "w3_towertall.png")))[..., 3] > 100; rows = np.where(a_.any(1))[0]
+mid = a_.shape[1] // 2; print("tower top row at middle", int(np.where(a_[:, mid])[0].min()), "body", [int(v) for v in np.where(a_[a_.shape[0] // 2])[0][[0, -1]]])
