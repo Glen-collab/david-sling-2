@@ -610,13 +610,16 @@ function regionBow(d, busy, dt) {   // (main.js updateDavid, every frame)
     if (!B.fired && now - B.t0 >= R2.BOW_DRAW) { B.fired = true; r2LooseArrow(d, B.dir, B.up); }
     return true;
   }
-  if (typeof REGION_ON === "undefined" || !REGION_ON || !hasSkill("bow") || !held("up") || !pressed("x") || busy || now < (r2.bowAt || 0) || d.harp || d.throwT >= 0) return false;
+  // (Glen 11-12) the bow on its own button, the right shoulder (B on the keyboard): straight ahead, or with Up held, high.
+  //  Up + the sword button still shoots too (up high, or flat with forward held)
+  const viaR = pressed("r"), up0 = viaR ? held("up") && d.h !== LOW_H : null;
+  if (typeof REGION_ON === "undefined" || !REGION_ON || !hasSkill("bow") || !(viaR || (held("up") && pressed("x"))) || busy || now < (r2.bowAt || 0) || d.harp || d.throwT >= 0) return false;
   if (region.room && region.room.id === "feast") return false;
   if (arrowCount() <= 0) { if (now > (r2.noArrowT || 0)) { toast("No arrows left! Look for more along the way."); r2.noArrowT = now + 3; } return true; }
   arrowSet(arrowCount() - 1);
   r2.bowAt = now + R2.ARROW.COOL;
-  if (d.onGround && d.h !== LOW_H && typeof SPR !== "undefined" && SPR.david_bow) r2.bowShot = { t0: now, dir: d.facing, fired: false, up: r2BowUp(d, d.facing) };
-  else r2LooseArrow(d, d.facing);   // (in the air or crouched: straight off, no drawing)
+  if (d.onGround && d.h !== LOW_H && typeof SPR !== "undefined" && SPR.david_bow) r2.bowShot = { t0: now, dir: d.facing, fired: false, up: up0 ?? r2BowUp(d, d.facing) };
+  else r2LooseArrow(d, d.facing, up0 ?? undefined);   // (in the air or crouched: straight off, no drawing)
   return true;
 }
 function regionBowPose(d, x, y) {   // region.js regionDrawDavid: his bow frames while he draws and lets go

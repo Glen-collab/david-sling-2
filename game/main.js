@@ -242,12 +242,13 @@ addEventListener("keyup", e => { keys[e.code] = false; });
 
 // NES: the D-pad, A, B, Select, Start. A SNES controller adds X and Y as one-button shortcuts:
 //   X = roll (same as Down + A)   Y = the harp (same as Select)
-const BUTTONS = ["up", "down", "left", "right", "a", "b", "select", "start", "x", "y"];
+const BUTTONS = ["up", "down", "left", "right", "a", "b", "select", "start", "x", "y", "r"];   // (r: the right shoulder, Part Two's bow, Glen 11-12)
 const NES_BUTTONS = 8;   // the setup can stop after Start for a controller without X and Y
 const KEYMAP = {
   up: ["ArrowUp", "KeyW"], down: ["ArrowDown", "KeyS"], left: ["ArrowLeft", "KeyA"], right: ["ArrowRight", "KeyD"],
   a: ["KeyZ", "Space", "KeyK"], b: ["KeyX", "KeyJ"], select: ["ShiftLeft", "ShiftRight", "KeyC"], start: ["Enter", "Escape"],
   x: ["KeyV", "KeyF"], y: ["KeyG"],   // (Part Two: X = the sword, Y = the shield; engedi.js)
+  r: ["KeyB"],   // (Part Two: the bow, the right shoulder: straight ahead, or with Up held, high; ramah.js regionBow)
 };
 // each controller's buttons are remembered separately (an NES and a SNES controller can both be set up)
 let padMaps = {};
@@ -288,6 +289,7 @@ function defaultPadState(p) {
     select: !!(p.buttons[8] && p.buttons[8].pressed),
     start: !!(p.buttons[9] && p.buttons[9].pressed),
     x: !!(p.buttons[3] && p.buttons[3].pressed),
+    r: !!(p.buttons[5] && p.buttons[5].pressed),   // (RB / R1)
     y: false,
   };
 }
@@ -297,7 +299,7 @@ const input2 = { now: {}, prev: {} };   // the second controller: the lamb (only
 function padState(p) { const m = mapFor(p); return m ? Object.fromEntries(BUTTONS.map(b => [b, padControl(p, m[b])])) : defaultPadState(p); }
 // (Part Two) Player 2 on the keyboard: the number pad. p2Swap (key P, player2.js): the one controller plays Player 2
 const P2_KEYMAP = { up: ["Numpad8"], down: ["Numpad5", "Numpad2"], left: ["Numpad4"], right: ["Numpad6"], a: ["Numpad0"], b: ["NumpadDecimal"],
-  select: ["NumpadAdd"], start: [], x: ["Numpad3"], y: [] };
+  select: ["NumpadAdd"], start: [], x: ["Numpad3"], y: [], r: [] };
 let p2Swap = false;
 function pollInput() {
   input2.prev = input2.now;
@@ -312,6 +314,7 @@ function pollInput() {
   padMap = mapFor(p);
   if (p && !setup.active) {
     const ps = padMap ? Object.fromEntries(BUTTONS.map(b => [b, padControl(p, padMap[b])])) : defaultPadState(p);
+    if (padMap && !padMap.r) ps.r = !!(p.buttons[5] && p.buttons[5].pressed);   // (a controller set up before the bow had a button: RB)
     for (const b of BUTTONS) s[b] = s[b] || ps[b];
   }
   input.now = s;
@@ -3170,7 +3173,7 @@ function drawHelpText() {
   ctx.font = "15px sans-serif";
   const lines = WORLD === 9 ? [   // Part Two (engedi.js)
     "Arrows: move (hold to run)   Z / Space = A: jump, again in the air = flip   Down: crouch (walk crouched to sneak)",
-    "V or F = X: sword   G = Y (hold): shield   X = B: sling (hold to charge)   Hold Down + A: roll",
+    "V or F = X: sword   G = Y (hold): shield   X = B: sling (hold to charge)   B key = RB: bow (Up: high)   Hold Down + A: roll",
     "Saul's men: never strike them. Crouch behind a rock while one looks your way.   Up by someone: hear them again",
     (REGION_ON ? "R: back to the olive press   Down + A on a ledge: drop down   M:" : "R: back to the campfire   M:") + " set up a controller   H: hide this",
     "Controller: " + (readPad() ? (padMap ? "set up ✓  (M or hold Select+Start to redo)" : "connected, not set up yet: press M") : "none (press a button on it so the browser sees it)"),
@@ -3207,7 +3210,7 @@ function drawToastAndSetup() {
     const lambPad = readPads()[1];
     ctx.fillText(lambPad && lambPad.index === setup.index ? "Controller setup: player 2, the lamb" : "Controller setup", W / 2, H / 2 - 60);
     ctx.font = "28px sans-serif"; ctx.fillStyle = "#ffe08a";
-    const names = { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", a: "A", b: "B", select: "SELECT", start: "START", x: "X (roll)", y: "Y (harp)" };
+    const names = { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", a: "A", b: "B", select: "SELECT", start: "START", x: "X (roll)", y: "Y (harp)", r: "the RIGHT SHOULDER (bow)" };
     ctx.fillText("Press " + names[BUTTONS[setup.step]] + " on the controller", W / 2, H / 2);
     ctx.font = "18px sans-serif"; ctx.fillStyle = "#ccc";
     ctx.fillText(`(${setup.step + 1} of ${BUTTONS.length})   Esc on the keyboard to cancel`, W / 2, H / 2 + 40);
