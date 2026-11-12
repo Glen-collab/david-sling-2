@@ -15,8 +15,12 @@ const WILD = {
   wildass:   { idle: "wildass_walk", act: "wildass_kick", k: 1.6, hp: 2, walk: 40, near: 200, box: [-110, 110, 180], kick: [-260, -40], actFrames: [3, 7], fleeSheet: "wildass_walk" },
   caracal:   { idle: "caracal_walk", run: "caracal_run", k: 2, hp: 1, walk: 60, speed: 380, near: 380, box: [-80, 80, 100], leap: 640, runFor: 1.6 },
   ibex:      { idle: "ibex_walk", run: "ibex_run", k: 1.7, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3 },
-  locusts:   { idle: "locusts_fly", die: "locusts_scatter", k: 1, hp: 1, swarm: true, speed: 85, box: [-160, 160, 70] },
-  flies:     { idle: "flies_fly", die: "flies_scatter", k: 1.15, hp: 1, swarm: true, speed: 95, box: [-140, 140, 80] },
+  // (Glen 11-12: "put the swarm in there and add a bunch of the single ones so it looks more natural") his swarm picture
+  //  (three frames) in the middle, single bugs darting round it; a hit and they scatter (cut_w3_swarms.py)
+  locusts:   { idle: "locusts_fly", k: 1, hp: 1, swarm: true, speed: 85, box: [-230, 230, 120],
+               bugs: { swarm: "w3_locust_swarm", single: "w3_locust_single", n: 60, r: 120, k: 0.7, s: 1, a: 0 } },   // (his swarm picture left out: as a block it read as a rectangle; singles only)
+  flies:     { idle: "flies_fly", k: 1, hp: 1, swarm: true, speed: 95, box: [-200, 200, 110],
+               bugs: { swarm: "w3_fly_swarm", single: "w3_fly_single", n: 34, r: 85, k: 1, s: 1.4 } },
   // (Glen 11-12: "the hornets ... and the honey bees from David 1") hornets chase him; bees buzz round their hive, harmless
   hornet:    { idle: "hornet_fly", k: 0.75, hp: 1, swarm: true, speed: 170, box: [-50, 50, 70] },
   bee:       { idle: "bee_fly", k: 0.5, orbit: true },
@@ -180,8 +184,25 @@ function wildHit(b, s) {
   }
   return true;
 }
+function drawSwarm(b, x) {   // his swarm (its three frames), and the single bugs round it, each on its own wobbly loop
+  const B = WILD[b.kind].bugs, sw = kitImg(B.swarm), one = kitImg(B.single), t = b.t;
+  const f = b.dead ? Math.min(1, t / 1.1) : 0; if (b.dead && f >= 1) return;
+  ctx.save();
+  if (sw && !b.dead && B.a !== 0) { const fw = sw.naturalWidth / 3, i = Math.floor(t * 9) % 3, w = fw * B.k, h = sw.naturalHeight * B.k;
+    ctx.globalAlpha = (B.a ?? 0.9) * (b.flash > 0 ? 0.6 : 1); ctx.drawImage(sw, i * fw, 0, fw, sw.naturalHeight, x - w / 2, b.y - h / 2, w, h); }
+  if (one) for (let j = 0; j < B.n; j++) {
+    const ph = j * 2.399, r = B.r * (0.35 + (j % 7) / 7 * 0.8), sp = 1.4 + (j % 5) * 0.4, a = t * sp + ph;
+    let px = Math.cos(a) * r * 1.7 + Math.sin(t * 3.1 + j) * 9, py = Math.sin(a * 1.3) * r * 0.55 + Math.cos(t * 2.7 + j) * 7;
+    if (b.dead) { px += Math.cos(ph) * 420 * f; py += Math.sin(ph) * 240 * f - 90 * f; }
+    const w = one.naturalWidth * B.s, h = one.naturalHeight * B.s, goingLeft = -Math.sin(a) < 0;
+    ctx.globalAlpha = b.dead ? 1 - f : 1;
+    ctx.save(); ctx.translate(x + px, b.y + py); if (goingLeft) ctx.scale(-1, 1); ctx.drawImage(one, -w / 2, -h / 2, w, h); ctx.restore();
+  }
+  ctx.restore();
+}
 function drawWild(b, x) {
   const W_ = WILD[b.kind], k = W_.k;
+  if (W_.bugs) { drawSwarm(b, x); return; }
   if (b.dead) {
     if (b.state === "scatter" && W_.die && b.t < wildDur(W_.die)) drawSprite(W_.die, frameOf(W_.die, b.t), x, b.y, b.facing, k, Math.max(0, 1 - b.t / wildDur(W_.die)));
     return;
