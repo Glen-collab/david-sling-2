@@ -17,6 +17,9 @@ const WILD = {
   ibex:      { idle: "ibex_walk", run: "ibex_run", k: 1.7, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3 },
   locusts:   { idle: "locusts_fly", die: "locusts_scatter", k: 1, hp: 1, swarm: true, speed: 85, box: [-160, 160, 70] },
   flies:     { idle: "flies_fly", die: "flies_scatter", k: 1.15, hp: 1, swarm: true, speed: 95, box: [-140, 140, 80] },
+  // (Glen 11-12: "the hornets ... and the honey bees from David 1") hornets chase him; bees buzz round their hive, harmless
+  hornet:    { idle: "hornet_fly", k: 0.75, hp: 1, swarm: true, speed: 170, box: [-50, 50, 70] },
+  bee:       { idle: "bee_fly", k: 0.5, orbit: true },
   partridge: { idle: "partridge_idle", run: "partridge_run", k: 1, shy: true, speed: 330, near: 210,
                tell: "A partridge! Saul hunted David “as when one hunts a partridge in the mountains.” (1 Samuel 26:20)" },
   hyrax:     { idle: "hyrax_walk", run: "hyrax_walk", k: 1, shy: true, walk: 22, speed: 280, near: 190,
@@ -29,7 +32,7 @@ const WILD_TUNE = { TREE: { SEE: 330, WATCH: 1.4, PICK: 0.5, DROP: 0.7 }, HOP: {
 // a road animal: kind, room, column; o.range: tiles it paces either side of home; o.y: the floor (px) or, for a swarm,
 //  the height it hovers at
 const rWild = (kind, room, c, o = {}) => beast(kind, room, c, Object.assign({ state: "idle", hp: WILD[kind].hp || 1, alpha: 1 }, o, { range: (o.range || 3) * T,
-  facing: o.facing || -1 }, o.y != null ? { y: o.y, hy: o.y } : {}, kind === "locusts" || kind === "flies" ? { y: o.y || GR * T - 70, hy: o.y || GR * T - 70 } : {}));
+  facing: o.facing || -1 }, o.y != null ? { y: o.y, hy: o.y } : {}, kind === "locusts" || kind === "flies" || kind === "hornet" || kind === "bee" ? { y: o.y || GR * T - 70, hy: o.y || GR * T - 70 } : {}));
 const wildSc = W_ => SCALE * W_.k;
 function wildBox(b) {
   const W_ = WILD[b.kind], s = wildSc(W_), f = b.facing;
@@ -103,6 +106,7 @@ function updateWild(b, dt, r) {
     if (b.t > Tn.FLEE) { b.dead = true; b.gone = true; }
     return;
   }
+  if (W_.orbit) { const a = b.t * 2.2 + (b.ph || 0); b.x = b.hx + Math.cos(a) * 46; b.y = b.hy + Math.sin(a * 1.7) * 18; b.facing = Math.sin(a) > 0 ? -1 : 1; return; }   // (round the hive)
   if (W_.shy) {
     pace();
     if (Math.abs(dx) < W_.near && Math.abs(dy) < 160) { b.state = "flee"; b.t = 0; b.facing = dx > 0 ? -1 : 1; if (W_.tell && typeof toast === "function" && !wildTold[b.kind]) { wildTold[b.kind] = true; toast(W_.tell); } }
@@ -145,7 +149,7 @@ function updateWild(b, dt, r) {
 const wildTold = {};
 // a stone or the sword's edge: true if it hit
 function wildHit(b, s) {
-  const W_ = WILD[b.kind]; if (b.dead || b.state === "flee" || W_.shy || b.state === "perch" || b.state === "watch") return false;
+  const W_ = WILD[b.kind]; if (b.dead || b.state === "flee" || W_.shy || W_.orbit || b.state === "perch" || b.state === "watch") return false;
   const q = wildBox(b);
   if (!(s.x > q.x0 - 8 && s.x < q.x1 + 8 && s.y > q.y0 - 8 && s.y < q.y1 + 8)) return false;
   if (b.cool > 0 && s.sword) return true;
