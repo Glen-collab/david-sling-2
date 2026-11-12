@@ -1692,6 +1692,18 @@ window.SPRITE_DATA = {
   "ay": 253,
   "align": "feet"
  },
+ "david_bow_up": {
+  "src": "../assets/sprites/david_bow_up.png",
+  "frames": 4,
+  "w": 366,
+  "h": 294,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 69,
+  "ay": 292,
+  "align": "feet"
+ },
  "david_bread_eat": {
   "src": "../assets/sprites/david_bread_eat.png",
   "frames": 10,
@@ -1834,6 +1846,30 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 130,
   "ay": 326,
+  "align": "feet"
+ },
+ "david_gsword_bow": {
+  "src": "../assets/sprites/david_gsword_bow.png",
+  "frames": 4,
+  "w": 384,
+  "h": 285,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 71,
+  "ay": 282,
+  "align": "feet"
+ },
+ "david_gsword_bow_up": {
+  "src": "../assets/sprites/david_gsword_bow_up.png",
+  "frames": 4,
+  "w": 377,
+  "h": 301,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 67,
+  "ay": 298,
   "align": "feet"
  },
  "david_gsword_flip": {

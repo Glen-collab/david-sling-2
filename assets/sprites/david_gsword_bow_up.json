@@ -1,0 +1,17 @@
+{
+  "frames": 4,
+  "frame_w": 377,
+  "frame_h": 301,
+  "ms_per_frame": 70,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 67,
+  "anchor_y": 298,
+  "source": "david_gsword_bow_clip.mp4",
+  "video_frames": [
+    172,
+    184,
+    200,
+    227
+  ]
+}

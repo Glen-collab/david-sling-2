@@ -1,0 +1,17 @@
+{
+  "frames": 4,
+  "frame_w": 366,
+  "frame_h": 294,
+  "ms_per_frame": 70,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 69,
+  "anchor_y": 292,
+  "source": "david_bow_clip_nosword.mp4",
+  "video_frames": [
+    174,
+    186,
+    198,
+    228
+  ]
+}

@@ -31,7 +31,7 @@ const R2 = {
   // (Glen's feast clip, 11-10) saul_feast_throw lets go on this frame; his hand there (sheet px in front of his feet, above them)
   SAUL_LET_GO: 15, SAUL_HAND: [191, 211],
   // David's bow (Jonathan's, 18:4; Glen 11-06): a long, straight shot
-  ARROW: { SPEED: 1350, GRAV: 0.1, LIFE: 1.7, COOL: 0.65, UP: 0.62 },   // (UP, Glen 11-12: the angle, radians, when he isn't holding forward: high, for birds and things in the trees)
+  ARROW: { SPEED: 1350, GRAV: 0.1, LIFE: 1.7, COOL: 0.65, UP: 0.62, UP_DX: 40, UP_DY: 96 },   // (UP_DX, UP_DY: where the arrow leaves his raised bow)   // (UP, Glen 11-12: the angle, radians, when he isn't holding forward: high, for birds and things in the trees)
   MICHAL_WIN_K: 0.5, MICHAL_BACK: 1.5,   // (MICHAL_BACK: how much faster she goes back in than she came)   // Michal's window sheet (330 wide) drawn at the window picture's width (165)
   DJ_GAP: 158,   // the goodbye two-shots: David stands this far right of Jonathan (the clip's anchor), in sheet px (times SCALE)
   BOY_REACH: 30, BOY_PICK: [4, 9, 16],   // the arrows: he stops this far short of the arrow; boy_stone frames: start (standing, leaning), the arrow is taken up, stands holding it
@@ -590,9 +590,10 @@ function r2StoneHits(s) {
 
 // ---- Jonathan's bow (Glen 11-06: the goodbye gift, 18:4 / 20): hold Up and press the sword button. Anywhere in Part
 //      Two once learned. (Glen 11-07: his drawing-the-bow frames: David draws, and the arrow goes on the release)
-function r2LooseArrow(d, dir) {   // (Glen 11-12) Up + the sword: up high; Up + forward + the sword: flat and far, as before
-  const fwd = held(dir > 0 ? "right" : "left"), a = fwd || d.h === LOW_H ? 0.022 : R2.ARROW.UP;
-  stones.push({ x: d.x + dir * 34, y: d.y - (d.h === LOW_H ? 44 : 72), vx: dir * R2.ARROW.SPEED * Math.cos(a), vy: -R2.ARROW.SPEED * Math.sin(a), grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
+const r2BowUp = (d, dir) => !held(dir > 0 ? "right" : "left") && d.h !== LOW_H;   // (Glen 11-12) Up + the sword: up high; with forward too: flat
+function r2LooseArrow(d, dir, up = r2BowUp(d, dir)) {   // (up: from his raised bow hand, Glen's clip)
+  const a = up ? R2.ARROW.UP : 0.022;
+  stones.push({ x: d.x + dir * (up ? R2.ARROW.UP_DX : 34), y: d.y - (d.h === LOW_H ? 44 : up ? R2.ARROW.UP_DY : 72), vx: dir * R2.ARROW.SPEED * Math.cos(a), vy: -R2.ARROW.SPEED * Math.sin(a), grav: R2.ARROW.GRAV, life: R2.ARROW.LIFE, p2: "arrow", charged: true, bow: true });
   sfx("sling_throw_quick", undefined, 0.6, 1.4);
 }
 function regionBow(d, busy, dt) {   // (main.js updateDavid, every frame)
@@ -600,20 +601,23 @@ function regionBow(d, busy, dt) {   // (main.js updateDavid, every frame)
   const B = r2.bowShot;
   if (B && now - B.t0 < R2.BOW_DRAW + R2.BOW_HOLD) {   // drawing: he stands; the arrow goes at the release
     d.vx = 0; d.facing = B.dir;
-    if (!B.fired && now - B.t0 >= R2.BOW_DRAW) { B.fired = true; r2LooseArrow(d, B.dir); }
+    if (!B.fired && now - B.t0 >= R2.BOW_DRAW) { B.fired = true; r2LooseArrow(d, B.dir, B.up); }
     return true;
   }
   if (typeof REGION_ON === "undefined" || !REGION_ON || !hasSkill("bow") || !held("up") || !pressed("x") || busy || now < (r2.bowAt || 0) || d.harp || d.throwT >= 0) return false;
   if (region.room && region.room.id === "feast") return false;
   r2.bowAt = now + R2.ARROW.COOL;
-  if (d.onGround && d.h !== LOW_H && typeof SPR !== "undefined" && SPR.david_bow) r2.bowShot = { t0: now, dir: d.facing, fired: false };
+  if (d.onGround && d.h !== LOW_H && typeof SPR !== "undefined" && SPR.david_bow) r2.bowShot = { t0: now, dir: d.facing, fired: false, up: r2BowUp(d, d.facing) };
   else r2LooseArrow(d, d.facing);   // (in the air or crouched: straight off, no drawing)
   return true;
 }
 function regionBowPose(d, x, y) {   // region.js regionDrawDavid: his bow frames while he draws and lets go
   const B = r2.bowShot; if (!B || typeof SPR === "undefined" || !SPR.david_bow) return false;
   const t = (r2.bowClock || 0) - B.t0; if (t > R2.BOW_DRAW + R2.BOW_HOLD || !d.onGround) return false;
-  drawSprite("david_bow", t < R2.BOW_DRAW ? Math.min(2, Math.floor(t / R2.BOW_DRAW * 3)) : 3, x, y, B.dir);
+  // (Glen 11-12: his clips) up or level; with Goliath's sword on his back in World 3
+  const gs = typeof R3 !== "undefined" && REGION.key === "nobgath" && hasSkill("heavySword"), n = (gs ? "david_gsword_bow" : "david_bow") + (B.up ? "_up" : "");
+  const sheet = SPR[n] ? n : "david_bow";
+  drawSprite(sheet, t < R2.BOW_DRAW ? Math.min(2, Math.floor(t / R2.BOW_DRAW * 3)) : 3, x, y, B.dir, gs && sheet !== "david_bow" ? R3.GSWORD_K : 1);
   return true;
 }
 
