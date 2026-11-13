@@ -78,9 +78,10 @@ const ADULLAM = {
     // MIDDLE: dark
     { id: "warren", name: "The Rat Warren", w: 190, cave: true, mx: 8, my: 2, mw: 5, right: "narrows", dark: 0.93,
       pic: "w4/pano_warren", fill: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "narrows", name: "The Four Tunnels", w: 120, cave: true, mx: 13, my: 2, mw: 3, left: "warren", right: "ledges", dark: 0.93,
+    { id: "narrows", name: "The Four Tunnels", w: 120, cave: true, mx: 13, my: 2, mw: 3, left: "warren", dark: 0.93,
       pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 16, my: 1, mw: 1, mh: 2, left: "narrows", dark: 0.9,
+    // (Glen 11-13: "any time I jump to the left I end up in four tunnels") no walking out at the side: in and out by its tunnel
+    { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 16, my: 1, mw: 1, mh: 2, dark: 0.9,
       pic: "w4/tall_ledges", k: 1, tall: true, rock: "dark", ground: "dark", near: "pile" },
     { id: "well", name: "The Old Well Shaft", w: 40, up: 100, cave: true, mx: 17, my: 1, mw: 1, mh: 3, right: "river", dark: 0.35,
       pic: "w4/tall_well", k: 0.6, fog: 0.4, tall: true, rock: "pale", ground: "pebbles" },

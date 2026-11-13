@@ -72,7 +72,8 @@ const RTUNE = {
   BREAK_T: [0.14, 0.9, 0.5],   // breaking: the breaking picture this long, then the pieces this long, then they fade away this fast
   DROPS: [["heart_small", 50], ["olives", 30], ["heart_big", 8], ["none", 12]],   // what falls out, and how often (out of 100)
   METER_PX: 2,       // the health meter: px per point, so it grows as the cap goes up (Glen 11-13: "too long. Let's shrink that": was 4)
-  POM_HP: 5,         // (Glen 11-13: "If he dies he dies") health every 4 pomegranates add (was a heart's worth, 10)
+  POM_HP: 5,
+  TALL_EXIT: 160,    // a tall room: px over its floor, under which its sides lead out (above: rock)         // (Glen 11-13: "If he dies he dies") health every 4 pomegranates add (was a heart's worth, 10)
 };
 const RELIC_ART = { pomegranate: "pomegranate", oil: "camp_jar_small", stone: "stone_remembrance", truth: "davids_journal" };   // (key: Glen's kit_tower/tw_key, drawn below)
 const RELIC_NAME = { pomegranate: "Pomegranates", oil: "Oil jars", stone: "Stones of remembrance", truth: "Truths" };
@@ -845,11 +846,14 @@ function updateRegion(dt) {
   }
   // off the edge of the room, into the next
   const left = r.c0 * T, right = (r.c0 + r.w) * T;
+  // (Glen 11-13: "any time I jump to the left I end up in four tunnels") up a tall room, its sides are rock: out only at the bottom
+  const low = !r.up || d.y > GR * T - RTUNE.TALL_EXIT;
+  if (!low) d.x = Math.max(left + RTUNE.EDGE + BODY_W / 2 + 1, Math.min(right - RTUNE.EDGE - BODY_W / 2 - 1, d.x));
   if (r.left === "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { region.trans = { t: 0, leave: true }; return; }   // the road out (Glen 11-03)
-  if (r.leftDoor && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) {   // (Glen 11-12: "I always try to walk off screen") the edge goes where that door goes
+  if (low && r.leftDoor && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) {   // (Glen 11-12: "I always try to walk off screen") the edge goes where that door goes
     const to = region.doors.find(o => o.id === (region.doors.find(q => q.id === r.leftDoor) || {}).to); if (to) { regionGo(to.x - 30, -1); return; } }
-  if (r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
-  if (r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
+  if (low && r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
+  if (low && r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
   // a door, a stair, a well: Up
   if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
