@@ -74,7 +74,7 @@ const ADULLAM = {
     { id: "roost", name: "The Bat Roost", w: 40, up: 44, cave: true, mx: 7, my: 0, mw: 1, mh: 2, left: "camp", right: "lamphall",
       pic: "w4/tall_roost", k: 1, tall: true, rock: "pale", ground: "limestone" },
     { id: "lamphall", name: "The Lamp Hall", w: 172, cave: true, mx: 8, my: 1, mw: 5, left: "roost", dark: 0.45,
-      pic: "w4/lamp/far", mid: "w4/lamp/mid.png", rock: "red", ground: "sandstone" },
+      pic: "w4/lamp/far", mid: "w4/lamp/mid.png", k: 0.9,   /* (Glen 11-13: "the full background", his far wall and his columns, not halved) */ rock: "red", ground: "sandstone" },
     // MIDDLE: dark
     { id: "warren", name: "The Rat Warren", w: 190, cave: true, mx: 8, my: 2, mw: 5, right: "narrows", dark: 0.93,
       pic: "w4/pano_warren", fill: true, rock: "dark", ground: "dark", near: "pile" },
@@ -128,7 +128,7 @@ const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: t
   w4_step_sm: { w: 40, h: 26 }, w4_step_l: { w: 138, h: 54 }, w4_stalactite: { w: 146, h: 170 }, w4_stalagmites: { w: 178, h: 155 }, w4_lamp: { w: 130, h: 91 },
   w4_jar_big: { w: 145, h: 190 }, w4_pitcher: { w: 84, h: 118 }, w4_basket: { w: 158, h: 110 }, w4_waterskin: { w: 111, h: 174 }, w4_pot: { w: 98, h: 66 },
   w4_bedroll: { w: 170, h: 99 }, w4_bowl: { w: 142, h: 72 }, w4_bread: { w: 116, h: 90 }, w4_bag: { w: 173, h: 107 },
-  w4_stairs_tunnel: { w: 708, h: 360 },   // (make_w4_rooms.py: Glen's stairs up into a tunnel)
+  w4_stairs_tunnel: { w: 708, h: 640 },   // (Glen 11-13 resaved it: the rock up round the tunnel)   // (make_w4_rooms.py: Glen's stairs up into a tunnel)
   w4_arch: { w: 196, h: 250 }, w4_arch_sand: { w: 196, h: 250 }, w4_tunnel_lit: { w: 261, h: 230 },
   // (tools/make_w4_rubble.py: Glen's rubble piles, "for the mouth of the cave doors")
   w4_rubble_dark: { w: 300, h: 138 }, w4_rubble_dark2: { w: 300, h: 139 }, w4_rubble_sand: { w: 300, h: 139 }, w4_rubble_pale: { w: 300, h: 139 },   // (make_w4_layers.py: tunnel mouths cut from his pictures)
@@ -677,7 +677,7 @@ function r4Backdrop(r, camX) {
       const g = ctx.createLinearGradient(0, yt + 40, 0, yt - B.FADE); g.addColorStop(0, "rgba(11,9,7,0)"); g.addColorStop(1, "rgba(11,9,7,1)");
       ctx.fillStyle = g; ctx.fillRect(0, yt - B.FADE, W, B.FADE + 40);
     }
-    const mid = roomImg(r.mid); if (mid) tiles(mid, B.MID_P, yb - mid.naturalHeight * B.K, mid.naturalWidth * B.K, mid.naturalHeight * B.K);
+    const mid = roomImg(r.mid); if (mid) { const mk = h / mid.naturalHeight; tiles(mid, B.MID_P, yb - h, mid.naturalWidth * mk, h); }   // (as tall as his picture)
     ctx.fillStyle = `rgba(8,6,4,${r.tall ? B.TALL_DIM : B.DIM})`; ctx.fillRect(0, camY, W, H);
     if (r.fog) r4Fog(r, r.fog);
   }
