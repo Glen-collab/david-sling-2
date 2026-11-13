@@ -46,6 +46,13 @@ const R4 = {
   LID: { BELOW: 95, UNDER: 30 },
   // the long rooms: his panorama scrolls at most this fast (a slower one: the whole picture from one end of the room to the other)
   FILL_P: 0.55,
+  // (Glen 11-13: "fish we can add in the water to hurt David", tools/make_w4_fish.py) K: their size next to their strips;
+  //  each kind: frame w, h, count; SPEED px/s back and forth; FPS. The biter: SEE px, it darts at him (DART px/s, for
+  //  up to DART_T s), then RESTs. A touch costs a heart (HIT: px of its body that counts, as parts of its w, h)
+  FISH: { K: 0.55, HIT: [0.36, 0.3],
+    tilapia: { w: 200, h: 93, n: 4, SPEED: 60, FPS: 5 },
+    perch:   { w: 240, h: 192, n: 4, SPEED: 90, FPS: 4 },
+    biter:   { w: 260, h: 108, n: 73, SPEED: 45, FPS: 12, swim: [0, 40], bite: [45, 73], SEE: 300, DART: 290, DART_T: 1.1, REST: 1.6 } },
 };
 
 const ADULLAM = {
@@ -91,7 +98,7 @@ const ADULLAM = {
   ],
   end: ["Bring my soul out of prison, that I may give thanks to your name.", "Psalm 142:7"],
   build: r4Build, enter: r4Enter, update: (dt, r) => r4Update(dt, r), holdDavid: (d, dt) => r4Hold(d, dt), drawDavid: (d, x, y) => r4DrawDavid(d, x, y),
-  softHoles: true, draw: camX => r4DrawLids(camX), backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
+  softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
 };
 
 const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: the rock's top edge, px down the piece)
@@ -107,7 +114,7 @@ const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: t
   w4_arch: { w: 196, h: 250 }, w4_arch_sand: { w: 196, h: 250 }, w4_tunnel_lit: { w: 261, h: 230 },   // (make_w4_layers.py: tunnel mouths cut from his pictures)
 };
 
-const r4 = { told: {}, tunnels: [], lids: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
+const r4 = { told: {}, tunnels: [], lids: [], fish: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
 function r4Tell(k, text) { if (!r4.told[k]) { r4.told[k] = true; toast(text); } }
 const r4Lamp = () => ALL_SKILLS || regionHas("taken", "r4_lamp");
 
@@ -169,11 +176,59 @@ function r4Lid(room, c, w) {
   rBlock(room, c, 0, w, Math.floor(y / T));
 }
 const r4LidAt = (r, x) => r4.lids.find(l => l.room === r.id && x > l.x0 - 14 && x < l.x1 + 14);
+// a fish (kind: tilapia, perch, biter) swimming back and forth between columns k0 and k1 of the room starting at c, dy px
+//  off the middle of the water
+function r4FishAt(room, kind, c, k0, k1, dy = 0) {
+  const r = roomById(room), y = (r.water + R4.SWIM.FLOAT + GR * T) / 2 + dy;
+  r4.fish.push({ room, kind, x: (c + (k0 + k1) / 2) * T, y, y0: y, x0: (c + k0) * T, x1: (c + k1) * T, dir: (k0 & 1) ? -1 : 1, t: k0 * 0.37, state: "swim", st: 0, turn: 0 });
+}
+const R4_FISH_IMG = {};
+const r4FishImg = k => R4_FISH_IMG[k] || (R4_FISH_IMG[k] = Object.assign(new Image(), { src: `../assets/sprites/w4_fish_${k}.png?v=${window.BUILD || 0}` }));
+function r4Fish(dt, r) {
+  const d = david, F = R4.FISH;
+  for (const f of r4.fish) {
+    if (f.room !== r.id) continue;
+    const K = F[f.kind]; f.t += dt; f.st += dt; f.turn = Math.max(0, f.turn - dt);
+    const dx = d.x - f.x, dy = (d.y - 30) - f.y, inWater = !!r4.swim;
+    if (f.kind === "biter") {
+      if (f.state === "swim" && inWater && Math.abs(dx) < K.SEE && Math.abs(dy) < 140 && (Math.sign(dx) === f.dir || Math.abs(dx) < 120) && d.deadT <= 0) { f.state = "dart"; f.st = 0; f.t = 0; }
+      else if (f.state === "dart" && f.st > K.DART_T) { f.state = "rest"; f.st = 0; }
+      else if (f.state === "rest" && f.st > K.REST) { f.state = "swim"; f.st = 0; }
+    }
+    if (f.state === "dart") {   // at him
+      const L = Math.hypot(dx, dy) || 1; f.x += dx / L * K.DART * dt; f.y += dy / L * K.DART * dt; f.dir = Math.sign(dx) || f.dir;
+    } else {
+      f.x += f.dir * K.SPEED * (f.state === "rest" ? 0.6 : 1) * dt;
+      if (f.x < f.x0 && f.dir < 0 || f.x > f.x1 && f.dir > 0) { f.dir = -f.dir; f.turn = 0.3; }
+      f.y += (f.y0 + Math.sin(f.t * 1.3) * 10 - f.y) * Math.min(1, dt * 2);
+    }
+    f.y = Math.max(r.water + R4.SWIM.FLOAT - 20, Math.min(GR * T - 20, f.y));
+    // a touch: a heart
+    const hx = K.w * F.K * F.HIT[0], hy = K.h * F.K * F.HIT[1];
+    if (Math.abs(dx) < hx + 14 && Math.abs(dy) < hy + 30 && d.deadT <= 0 && d.inv <= 0) {
+      hurtDavid(f.x, "", true); if (f.kind === "biter") { f.state = "rest"; f.st = 0; f.dir = -f.dir; }
+    }
+  }
+}
+function r4DrawFish(camX) {
+  const F = R4.FISH;
+  for (const f of r4.fish) {
+    if (f.room !== region.room.id) continue;
+    const K = F[f.kind], im = r4FishImg(f.kind), w = K.w * F.K, h = K.h * F.K, x = f.x - camX;
+    if (!im.complete || !im.naturalWidth || x < -w || x > W + w) continue;
+    let i;
+    if (f.kind === "biter") { const [a, b] = f.state === "dart" ? K.bite : K.swim; i = a + Math.floor(f.t * K.FPS) % (b - a); }
+    else if (f.kind === "perch") i = f.turn > 0 ? 2 : (Math.floor(f.t * K.FPS) & 1) ? 3 : 1;
+    else i = Math.floor(f.t * K.FPS) % K.n;
+    ctx.save(); ctx.translate(Math.round(x), Math.round(f.y)); if (f.dir < 0) ctx.scale(-1, 1);
+    ctx.drawImage(im, i * K.w, 0, K.w, K.h, -w / 2, -h / 2, w, h); ctx.restore();
+  }
+}
 const r4Olives = (l, n = 3) => oliveRow(l.c - 1, onTop(l.y) - 0.4, n);
 
 function r4Build(R) {
   Object.assign(KIT, R4_KIT);
-  r4.tunnels.length = 0; r4.lids.length = 0; r4.walk = null; r4.swim = null;
+  r4.tunnels.length = 0; r4.lids.length = 0; r4.fish.length = 0; r4.walk = null; r4.swim = null;
   for (const r of ADULLAM.rooms) { roomImg(r.pic); roomImg(r.mid); roomImg(`w4/floor_${r.ground}.png`); roomImg(`w4/near_${r.near || r.rock}.png`); roomImg(`w4/ceil_${r.rock}.png`); }
   const G = GR * T;
 
@@ -352,6 +407,8 @@ function r4Build(R) {
     r4Lid(rm, c + 124, 8);
     r4Olives(L("m", 134, 340)); L("s", 141, 310); L("m", 147, 350); L("s", 155, 330); L("m", 161, 340);
     for (const k of [20, 40, 68, 100, 130, 150]) rBat(rm, c + k, 120);
+    r4FishAt(rm, "tilapia", c, 12, 30); r4FishAt(rm, "perch", c, 58, 76, -15); r4FishAt(rm, "biter", c, 80, 95, 10);
+    r4FishAt(rm, "tilapia", c, 100, 120, -10); r4FishAt(rm, "perch", c, 138, 160); r4FishAt(rm, "biter", c, 150, 166, 10);
   }
   // -- The Flooded Tunnel: low rock over the water, three times; the tunnel's at the bottom (Up there: on to the Deep Pool)
   c = R("flooded");
@@ -365,6 +422,8 @@ function r4Build(R) {
     r4Lid(rm, c + 76, 14); oliveRow(c + 79, 15.4, 6);
     L("m", 93, 320); L("s", 100, 300); r4Olives(L("l", 107, 300)); L("s", 116, 320);
     for (const k of [10, 45, 100]) rBat(rm, c + k, 120);
+    r4FishAt(rm, "tilapia", c, 5, 18); r4FishAt(rm, "biter", c, 20, 33, 10); r4FishAt(rm, "perch", c, 36, 50, -10);
+    r4FishAt(rm, "biter", c, 76, 91, 10); r4FishAt(rm, "tilapia", c, 95, 120, -5); r4FishAt(rm, "perch", c, 100, 125, 10);
   }
   // -- The Deep Pool: long and dark; the rock down into the water four times, one of them long (watch your breath)
   c = R("deep");
@@ -379,6 +438,9 @@ function r4Build(R) {
     r4Lid(rm, c + 114, 10); r4Lid(rm, c + 128, 10);   // (air between them)
     r4Olives(L("m", 141, 360)); L("s", 148, 340); L("m", 155, 360); L("s", 162, 340);
     for (const k of [15, 50, 96, 145, 160]) rBat(rm, c + k, 120);
+    r4FishAt(rm, "perch", c, 8, 26); r4FishAt(rm, "biter", c, 28, 43, 10); r4FishAt(rm, "tilapia", c, 44, 58, -10);
+    r4FishAt(rm, "biter", c, 62, 75, 10); r4FishAt(rm, "biter", c, 77, 90, 5); r4FishAt(rm, "perch", c, 95, 112);
+    r4FishAt(rm, "tilapia", c, 120, 140, -5); r4FishAt(rm, "tilapia", c, 142, 165, 5);
   }
   // -- The Hidden Spring: the end of the cave; his jars to break, ledges up. (Next: the water from Bethlehem; Gad: on to Judah)
   c = R("spring");
@@ -408,6 +470,7 @@ function r4Enter(r) {
 // ---- the tunnels, the lamp, the oil
 function r4Update(dt, r) {
   const d = david, w = r4.walk, U = R4.TUNNEL;
+  if (r.water) r4Fish(dt, r);
   if (w) {
     w.t += dt; d.vx = 0;
     if (!w.gone && w.t >= U.TURN + U.WALK) {

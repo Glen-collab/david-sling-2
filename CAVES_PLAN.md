@@ -143,3 +143,6 @@ comes down into the water (r4Lid): swim under it on your breath. The side caves 
 Pictures: his 4:1 panoramas cut and rejoined with his middle pieces between (tools/make_w4_panos.py; set9_*), one per room,
 floor to roof, spread over the whole room (R4.FILL_P). His tall 1:2 pictures (set10_*) in the climbing rooms; the well's twice.
 Glen is making tileable middles: add them to LONG in make_w4_panos.py.
+Fish (Glen's two sheets and his clip, tools/make_w4_fish.py; R4.FISH): tilapia and perch swim back and forth, the biter
+darts at David when he's in the water near it and bites (jaws open: the end of his clip). A touch costs health. In the
+River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the Deep Pool.
