@@ -107,3 +107,7 @@ Still needed: mid/near layers for middle and lower, water surface loop, waterfal
   Upper climbing wall = set6_wall_limestone_ledges over set6_wall_far_mist. Middle = set6_wall_dark_ledges_grass,
   set6_shaft_purple_thorns (danger shaft). Maybe: set6_shaft_planks_dark (paint out the carved swirl blocks: not Israel).
   Skip: set6_shaft_blue_thornrings (fantasy thorn wreaths).
+- Kit (set7): set7_ledges_five_colors: ledges small/medium/large + rock piles in 5 rocks: dark (middle/lower),
+  red-brown (Lamp Hall, orange cracks), sand and pale (upper: Cave Mouth, Camp, limestone), mossy (by the water).
+  set7_props_sheet: stepping stones, stalactite, stalagmites, oil lamp (the lamp David carries / lamps to refill at), big storage jar,
+  pitcher, small pot, basket, waterskin, bedroll, bowl, bread, sling-bag: the Camp of the 400, the water from Bethlehem (pitcher/waterskin).
