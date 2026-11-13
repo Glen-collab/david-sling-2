@@ -20,7 +20,9 @@ const R4 = {
   // (Glen 11-13: "an up arrow to go into the cave deeper") a tunnel into the picture: Up by it, he turns his back
   //  (TURN s, Glen's david_turn_away) and walks in, smaller and fading (WALK s, SHRINK, RISE px up the picture); REACH:
   //  px from the tunnel's middle that counts as at it (and HIGH px of height)
-  TUNNEL: { TURN: 0.7, WALK: 0.9, SHRINK: 0.25, RISE: 14, REACH: 60, HIGH: 60 },
+  //  (Glen 11-13: "have him start turning for a couple frames and then it goes to the next room": TURN s, then the cut)
+  //  SIDE: a side cave not open yet stands this many px higher, rubble heaped in front (RUBBLE: its size)
+  TUNNEL: { TURN: 0.45, REACH: 60, HIGH: 60, SIDE: 40, RUBBLE: 1.25, ON_LEDGE: 26 },
   // the dark below the Lamp Hall: how black (0-1); the lamp's light (px) with olives in the flask, with none, and with no
   //  lamp at all; a tunnel's faint glow (px); seconds of light per olive (as Part One's caves)
   DARK: { LAMP: 300, DIM: 130, NONE: 60, GLOW: 70, OIL_EVERY: 5 },
@@ -157,11 +159,17 @@ function r4Zig(room, rock, y0, y1, flip = false, seed = 0) {
 function r4Thing(room, n, x, y = FOOT, k = R4.PROP_K) {
   const s = KIT[n]; region.props.push({ room, n, x: x - s.w * k / 2, y: y - s.h * k + 4, s: k });
 }
+// (Glen 11-13: "Since there is a cave here we don't need the extra cut out") a tunnel at a room's start or end can stand in
+//  his painted arch, art null: where is worked out by tools/tests/w4align.js (from his picture's px, with the game's camera)
 // a tunnel into the picture at x (px), its floor at y (px): Up there, he walks in and comes out at the tunnel `to` (its
 //  id). to null: a side cave still to be made. art: the tunnel mouth drawn there (his, cut from his pictures), or none
 function r4Tunnel(id, room, x, y, to, art = "w4_arch") {
   r4.tunnels.push({ id, room, x, y, to });
-  if (art) { const k = KIT[art]; region.props.push({ room, n: art, x: x - k.w / 2, y: y - k.h + 12 }); }
+  // (Glen 11-13: "side caves a touch higher ... rubble in front of them for not open yet"; "Cave mouth needs to go higher":
+  //  on a ledge, up off its top face so it stands on it, not sunk into it)
+  const up = (to ? 0 : R4.TUNNEL.SIDE) + (y < GR * T - 4 ? R4.TUNNEL.ON_LEDGE : 0);
+  if (art) { const k = KIT[art]; region.props.push({ room, n: art, x: x - k.w / 2, y: y - k.h + 12 - up }); }
+  if (!to) { const n = `w4_rocks_${roomById(room).rock}`, k = KIT[n], s = R4.TUNNEL.RUBBLE; region.props.push({ room, n, x: x - k.w * s / 2, y: y - k.h * s + 14, s }); }
 }
 const r4Jar = (room, c, y = GR * T) => rBreak("jar", room, c, onTop(y));   // (Glen 11-13: jars he can break, not painted ones)
 // a run of ledges from x (px), the first's surface at y, each dy px over the last (0: level; > 0: going down), gap px apart
@@ -254,14 +262,14 @@ function r4Build(R) {
     r4Thing(rm, "w4_stalagmites", X(129), FOOT, 0.8);
     r4Jar(rm, c + 132); r4Jar(rm, c + 133); r4Jar(rm, c + 134); rBat(rm, c + 131, 130); rBat(rm, c + 137, 140);
     r4Olives(L("m", 136, 500));
-    r4Tunnel("mouth_in", rm, X(145), G, "camp_in", "w4_arch_sand");
+    r4Tunnel("mouth_in", rm, X(139.4), G, "camp_in", null);   // (Glen 11-13: into his painted cave, there at the end of the room)
   }
 
   // -- The Camp (22:2): the hall of sunbeams, a safe place (no drops). The men's things; jars; ledges up to the loft
   c = R("camp");
   { const rm = "camp", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "sand", s, X(k), y);
     ground(c, c + 109);
-    r4Tunnel("camp_in", rm, X(3), G, "mouth_in", "w4_arch_sand");
+    r4Tunnel("camp_in", rm, X(20.2), G, "mouth_in", null);   // (his painted tunnel: where it stands with the camera at the room's start)
     campfire(c + 9, GR - 1);
     r4Thing(rm, "w4_bedroll", X(13)); r4Thing(rm, "w4_bag", X(16)); r4Thing(rm, "w4_basket", X(20));
     r4Thing(rm, "w4_bread", X(22)); r4Thing(rm, "w4_bowl", X(24));
@@ -322,7 +330,7 @@ function r4Build(R) {
   c = R("warren");
   { const rm = "warren", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
     ground(c, c + 189);
-    r4Tunnel("warren_up", rm, X(5), G, "lamp_down");
+    r4Tunnel("warren_up", rm, X(4.6), G, "lamp_down", null);   // (his painted arch)
     campfire(c + 10, GR - 1);
     L("m", 14, 500); r4Olives(L("l", 19, 385));
     const t = L("m", 27, 270); rRelic("r4_pom_warren", "pomegranate", t.c, onTop(t.y));
@@ -345,7 +353,7 @@ function r4Build(R) {
     rRat(rm, c + 165, 4); rRat(rm, c + 171, 3);
     L("m", 166, 500); r4Olives(L("s", 172, 390));
     r4Pit(rm, c + 177, 3);
-    r4Tunnel("warren_back", rm, X(186), G, "n1");
+    r4Tunnel("warren_back", rm, X(183.4), G, "n1", null);   // (his painted arch, with the camera at the room's end)
   }
 
   // -- The Four Tunnels: his four arches, far apart, with the cave between. The first back to the Warren, the third on to
@@ -353,7 +361,7 @@ function r4Build(R) {
   c = R("narrows");
   { const rm = "narrows", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
     ground(c, c + 119);
-    r4Tunnel("n1", rm, X(8), G, "warren_back"); r4Tunnel("n2", rm, X(38), G, null);
+    r4Tunnel("n1", rm, X(4.5), G, "warren_back", null); r4Tunnel("n2", rm, X(38), G, null);
     r4Tunnel("n3", rm, X(70), G, "ledges_in"); r4Tunnel("n4", rm, X(104), G, null);
     r4Olives(L("s", 13, 480)); const j = L("m", 18, 380); r4Jar(rm, j.c, j.y);
     rRat(rm, c + 15, 4); rRat(rm, c + 30, 3);
@@ -429,7 +437,7 @@ function r4Build(R) {
   c = R("deep");
   { const rm = "deep", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
     ground(c, c + 169);
-    r4Tunnel("deep_in", rm, X(4), G, "flood_under", "w4_tunnel_lit");
+    r4Tunnel("deep_in", rm, X(6.8), G, "flood_under", null);
     r4Olives(L("m", 10, 360)); L("s", 20, 340);
     r4Lid(rm, c + 28, 14);
     r4Olives(L("m", 46, 360)); L("s", 53, 340);
@@ -473,7 +481,7 @@ function r4Update(dt, r) {
   if (r.water) r4Fish(dt, r);
   if (w) {
     w.t += dt; d.vx = 0;
-    if (!w.gone && w.t >= U.TURN + U.WALK) {
+    if (!w.gone && w.t >= U.TURN) {
       w.gone = true; const to = r4.tunnels.find(o => o.id === w.tun.to);   // (out of the tunnel it joins)
       regionGo(to.x, 1, () => { r4.walk = null; d.y = to.y; d.vy = 0; region.camFootY = to.y; snapCamera(); });
     }
@@ -526,11 +534,7 @@ function r4Hold(d, dt) {
 function r4DrawDavid(d, x, y) {
   const w = r4.walk, U = R4.TUNNEL;
   if (w) {
-    if (w.t < U.TURN) drawSprite("david_turn_away", Math.min(7, Math.floor(w.t / U.TURN * 8)), x, y, d.facing);
-    else if (!w.gone || region.trans) {
-      const k = Math.min(1, (w.t - U.TURN) / U.WALK);
-      drawSprite("david_walk_away", frameOf("david_walk_away", w.t), x, y - k * U.RISE, 1, 1 - U.SHRINK * k, 1 - 0.7 * k);
-    }
+    drawSprite("david_turn_away", Math.min(7, Math.floor(w.t / U.TURN * 8)), x, y, d.facing);   // (his back to us, then the cut)
     return true;
   }
   if (r4.swim) { drawSprite("david_swim", frameOf("david_swim", r4.swim.t), x, y - 50, d.facing, 0.8); return true; }
@@ -635,7 +639,7 @@ function r4DrawFront(camX) {
       const wg = ctx.createRadialGradient(lx, ly + camY, 4, lx, ly + camY, R * 0.8); wg.addColorStop(0, "rgba(255,170,70,0.25)"); wg.addColorStop(1, "rgba(255,140,40,0)");
       ctx.fillStyle = wg; ctx.fillRect(lx - R, ly + camY - R, R * 2, R * 2); ctx.restore(); }
   }
-  if (!r4.walk && !region.trans) for (const o of r4.tunnels) if (o.room === r.id && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - o.y) < 160) upHint(o.x - camX, o.y - 200);
+  if (!r4.walk && !region.trans) for (const o of r4.tunnels) if (o.to && o.room === r.id && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - o.y) < 160) upHint(o.x - camX, o.y - 200);
   const L = r4.lampAt, li = kitImg("w4_lamp"); if (L && L.room === r.id && !r4Lamp() && li) ctx.drawImage(li, L.x - camX - 39, L.y - 55, 78, 55);   // (the lamp, till he takes it)
   if (r4.swim || r4.breath < R4.SWIM.BREATH - 0.05) {   // his breath, over his head
     const k = Math.max(0, r4.breath / R4.SWIM.BREATH), x = d.x - camX - 40, y = d.y - 150;

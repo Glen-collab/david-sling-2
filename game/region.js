@@ -50,6 +50,7 @@ const RTUNE = {
   MAP_W: 1080,       //  (the width the rooms may take on the sheet)
   MAP_SKETCH_X: 400, MAP_SKETCH_DOWN: 70,   // the town drawing in the sheet's corner ends here (px); a room under it: the map moves down this far
   FALL_HURT: 420,    // (Glen 11-12) a fall farther than this (px, from the top of his jump) costs a heart
+  FALL_COST: 0.5,    // (Glen 11-13: "jumping off the ledge really costs nothing. Let's make it cost half of his life") of his whole meter
   // health (Glen 11-03: Castlevania-style, a meter that keeps growing): one of Part One's hearts is this many here, so
   // David starts with 40, a pomegranate upgrade adds 10, and an enemy can bite off a few or a lot
   HP_PER_HEART: 10,
@@ -317,7 +318,7 @@ function regionFall(d) {
   if (!d.onGround) { d.fallTop = Math.min(d.fallTop ?? d.y, d.y); return; }
   if (d.fallTop != null && d.y - d.fallTop > RTUNE.FALL_HURT) {
     region.fell = { from: d.fallTop, drop: d.y - d.fallTop };
-    hurtDavid(d.x, "the fall", true); if (!region.fellTold) { region.fellTold = true; toast("Ouch! That was a long way down. Climb down, don't jump."); }
+    region.fallHit = true; hurtDavid(d.x, "the fall", true); region.fallHit = false; if (!region.fellTold) { region.fellTold = true; toast("Ouch! That was a long way down. Climb down, don't jump."); }
   }
   d.fallTop = null;
 }
@@ -1033,6 +1034,7 @@ function regionFireLit(f) {   // an olive press (a campfire, for now): save here
 
 // ---- health, and things to break (Glen 11-03: Castlevania-style) ----
 const regionHit = fromX => {   // what a hit takes off: by whatever's nearest where it came from
+  if (region.fallHit) return Math.ceil(david.maxHearts * RTUNE.FALL_COST / DIFF.hit);   // (a long fall: half his meter)
   let best = null, bd = 90;
   const near = (k, kind) => { const dd = Math.abs((k.x || 0) - fromX); if (dd < bd) { bd = dd; best = kind; } };
   if (typeof critters !== "undefined") for (const k of critters) near(k, k.kind);
