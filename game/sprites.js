@@ -2556,6 +2556,30 @@ window.SPRITE_DATA = {
   "ay": 100,
   "align": "center"
  },
+ "david_swim2": {
+  "src": "../assets/sprites/david_swim2.png",
+  "frames": 12,
+  "w": 574,
+  "h": 198,
+  "ms": 101,
+  "loop": true,
+  "pingpong": false,
+  "ax": 286,
+  "ay": 101,
+  "align": "center"
+ },
+ "david_swim_sword": {
+  "src": "../assets/sprites/david_swim_sword.png",
+  "frames": 12,
+  "w": 679,
+  "h": 304,
+  "ms": 158,
+  "loop": false,
+  "pingpong": false,
+  "ax": 287,
+  "ay": 121,
+  "align": "center"
+ },
  "david_sword_draw": {
   "src": "../assets/sprites/david_sword_draw.png",
   "frames": 10,

@@ -34,7 +34,7 @@ const R4 = {
   //  this far under the waterline (head out); a jump out of the water (A at the surface); breath (s) and what's left
   //  after running out (s, and a heart lost)
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 1050, LEAP_NEAR: 30,   /* (Glen 11-13: "be able to jump out of water": A near the surface leaps him up onto the ledges) */ BREATH: 10, AFTER: 3,
-    TREAD: 0.35, FLOAT_NEAR: 60 },   // (FLOAT_NEAR: px under the surface where, still, he floats up and treads water)   // (Glen 11-13: "a resting stroke ... when I am not moving": his stroke this much slower, till his own clip)
+    TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5 },   // (K: his swim and swim-sword sheets' size: about his size standing)   // (FLOAT_NEAR: px under the surface where, still, he floats up and treads water)   // (Glen 11-13: "a resting stroke ... when I am not moving": his stroke this much slower, till his own clip)
   // (Glen 11-13 play: "the backgrounds seem way too blown up for how big David is") his pictures far off, small: K, their
   //  size (1 = the screen's height for a wide one, 1296 wide for a tall one); P: how fast they scroll next to David;
   //  BOT: the picture's bottom (px, world, behind the floor); DIM: a shade over them (the rock he stands on stands out);
@@ -126,7 +126,7 @@ const ADULLAM = {
   ],
   end: ["Bring my soul out of prison, that I may give thanks to your name.", "Psalm 142:7"],
   build: r4Build, enter: r4Enter, update: (dt, r) => r4Update(dt, r), holdDavid: (d, dt) => r4Hold(d, dt), drawDavid: (d, x, y) => r4DrawDavid(d, x, y),
-  softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawWall(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
+  drawOver: () => r3DrawMight(), softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawWall(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
 };
 
 const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: the rock's top edge, px down the piece)
@@ -147,6 +147,10 @@ const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: t
 const r4 = { told: {}, tunnels: [], lids: [], fish: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
 function r4Tell(k, text) { if (!r4.told[k]) { r4.told[k] = true; toast(text); } }
 const r4Lamp = () => ALL_SKILLS || regionHas("taken", "r4_lamp");
+// (Glen 11-13: "It said swing Goliath's sword but I just swung my own sword. We should do the test your might again")
+//  World 3's test of might for the rubble: Up by it, mash A and B, the bar, gold breaks it in one. (c, w: the columns its
+//  break opens, the bottom rows of: none for a side cave's rubble, which only stands in front)
+const r4Might = (id, c, w, x0, x1) => ({ id, room: null, c, w, x0, x1, up: 0, hp: R3.MIGHT.HP, hits: 0, broken: regionHas("taken", id), shake: 0, kind: "crack" });
 const r4WallOpen = () => hasSkill("heavySword") && regionHas("explored", "climb");   // (the rubble into Beneath the Warren: Goliath's sword, once he's been all through)
 
 // one of Glen's ledges, its left edge at x (px), the top of its rock at y (px): drawn, and he can stand on it (and jump up
@@ -194,6 +198,7 @@ function r4Thing(room, n, x, y = FOOT, k = R4.PROP_K) {
 //  id). to null: a side cave still to be made. art: the tunnel mouth drawn there (his, cut from his pictures), or none
 function r4Tunnel(id, room, x, y, to, art = "w4_arch", secret = false, rubble = false) {
   const o = { id, room, x, y, to, secret, blocked: rubble && !regionHas("taken", "r4_open_" + id) };
+  if (rubble) o.might = Object.assign(r4Might("r4_open_" + id, 0, 0, x - 70, x + 70), { room });
   r4.tunnels.push(o);
   // (Glen 11-13: "side caves a touch higher ... rubble in front of them for not open yet"; "Cave mouth needs to go higher":
   //  on a ledge, up off its top face so it stands on it, not sunk into it)
@@ -214,7 +219,7 @@ const r4Pit = (room, c, w, crumble = false) => rHole(room, c, w, crumble ? { cru
 function r4Lid(room, c, w) {
   const r = roomById(room), y = r.water + R4.LID.BELOW;
   r4.lids.push({ room, x0: c * T, x1: (c + w) * T, y, rock: r.rock });
-  rBlock(room, c, 0, w, Math.floor(y / T));
+  block(c, 0, w, Math.floor(y / T), 6);   // (6: solid, no dirt drawn: r4DrawLids draws the rock)
 }
 const r4LidAt = (r, x) => r4.lids.find(l => l.room === r.id && x > l.x0 - 14 && x < l.x1 + 14);
 // a fish (kind: tilapia, perch, biter) swimming back and forth between columns k0 and k1 of the room starting at c, dy px
@@ -526,8 +531,8 @@ function r4Build(R) {
   { const rm = "under", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
     ground(c, c + 149);
     r4Tunnel("under_in", rm, X(145), G, "climb_secret");
-    r4.wall = { room: rm, c: c + 3, w: 4, x: X(5) };   // (rubble across the way from the shaft: Goliath's sword, once he's been through the cave)
-    if (!regionHas("taken", "r4_wall_under")) rBlock(rm, c + 3, 0, 4, GR);
+    r4.wall = Object.assign(r4Might("r4_wall_under", c + 3, 4, X(3), X(7)), { room: rm, x: X(5) });   // (rubble across the way from the shaft: Goliath's sword, once he's been through the cave)
+    if (!regionHas("taken", "r4_wall_under")) block(c + 3, 0, 4, GR, 6);   // (6: solid, no dirt drawn: his rubble shows)
     r4Jar(rm, c + 132); r4Jar(rm, c + 133); rRat(rm, c + 126, 4); r4Olives(L("m", 136, 500));
     for (const k of [14, 30, 52, 70, 96, 112]) rRat(rm, c + k, 4);
     L("m", 18, 500); r4Olives(L("l", 24, 390));
@@ -621,6 +626,13 @@ function r4Enter(r) {
 // ---- the tunnels, the lamp, the oil
 function r4Update(dt, r) {
   const d = david, w = r4.walk, U = R4.TUNNEL;
+  for (const q of r3.chips) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 1400 * dt; }
+  r3.chips = r3.chips.filter(q => q.t < q.life);
+  if (r4.wall) r4.wall.shake = Math.max(0, r4.wall.shake - dt);
+  for (const o of r4.tunnels) if (o.blocked && o.might.broken) {   // (broken: the rubble's gone, the way in open)
+    o.blocked = false; const i = region.props.indexOf(o.rubble); if (i >= 0) region.props.splice(i, 1);
+  }
+  if (r3.might) { r3MightUpdate(dt); return; }
   if (r.water) r4Fish(dt, r);
   if (w) {
     w.t += dt; d.vx = 0;
@@ -635,11 +647,7 @@ function r4Update(dt, r) {
   const Wl = r4.wall;
   if (Wl && Wl.room === r.id && !regionHas("taken", "r4_wall_under") && Math.abs(d.x - Wl.x) < R4.WALL.REACH && d.onGround) {
     if (!r4WallOpen()) r4Tell("wall_shut", "Rubble fills the way here. Too much to move... for now.");
-    else if (pressed("up") && !region.trans) {
-      regionAdd("taken", "r4_wall_under"); block(Wl.c, 0, Wl.w, GR, 0); d.swordT = 0;
-      for (let i = 0; i < 24; i++) bits.push({ x: Wl.x + (Math.random() - 0.5) * 160, y: GR * T - Math.random() * 220, vx: (Math.random() - 0.5) * 420, vy: -Math.random() * 380, life: 1.2, color: i % 2 ? "#4a3f36" : "#6b5d50" });
-      toast("David swings Goliath's sword, and the rubble breaks apart: a way through to the Camp!");
-    }
+    else { r4Tell("wall_might", "Rubble across the way. Up by it, then mash A and B to swing Goliath's sword!"); if (pressed("up") && !region.trans) { r3MightStart(Wl); return; } }
   }
   // a secret way: a breath of cool air when he's near it
   for (const o of r4.tunnels) if (o.secret && o.room === r.id && Math.abs(d.x - o.x) < 110 && Math.abs(d.y - o.y) < 80)
@@ -655,12 +663,9 @@ function r4Update(dt, r) {
   const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH && Math.abs(d.y - o.y) < U.HIGH);
   if (!tun) return;
   if (!tun.to) { r4Tell("side" + tun.x, "A side cave. Not open yet: still to explore."); return; }
-  if (tun.blocked) {   // rubble across a side cave: Goliath's sword breaks it
+  if (tun.blocked) {   // rubble across a side cave: Goliath's sword breaks it (test your might)
     if (!hasSkill("heavySword")) { r4Tell("rubble" + tun.id, "Rubble across the way in. Something heavy could break it."); return; }
-    tun.blocked = false; regionAdd("taken", "r4_open_" + tun.id); d.swordT = 0;
-    const i = region.props.indexOf(tun.rubble); if (i >= 0) region.props.splice(i, 1);
-    for (let j = 0; j < 18; j++) bits.push({ x: tun.x + (Math.random() - 0.5) * 120, y: tun.y - Math.random() * 120, vx: (Math.random() - 0.5) * 380, vy: -Math.random() * 340, life: 1.1, color: j % 2 ? "#4a3f36" : "#6b5d50" });
-    toast("David swings Goliath's sword, and the rubble breaks apart."); return;
+    r3MightStart(tun.might); return;
   }
   r4.swim = null; r4.walk = { tun, t: 0, x: d.x }; d.vx = 0; d.charging = false;   // (held still meanwhile: r4Hold)
 }
@@ -703,13 +708,17 @@ function r4Hold(d, dt) {
 
 function r4DrawDavid(d, x, y) {
   const w = r4.walk, U = R4.TUNNEL;
+  if (r3.might) return r3DrawDavid(d, x, y);
   if (w) {
     drawSprite("david_turn_away", Math.min(7, Math.floor(w.t / U.TURN * 8)), x, y, d.facing);   // (his back to us, then the cut)
     return true;
   }
-  if (r4.swim && d.swordT >= 0) return false;   // (mid-swing: the sword's own drawing)
+  if (r4.swim && d.swordT >= 0) {   // (Glen 11-13: "a good swipe with the sword" in the water: his clip, over the swing's time)
+    const n = SPR.david_swim_sword ? SPR.david_swim_sword.frames : 12;
+    drawSprite("david_swim_sword", Math.min(n - 1, Math.floor(d.swordT / W9.SWORD_TIME * n)), x, y - 50, d.facing, R4.SWIM.K); return true;
+  }
   if (r4.swim && r4.swim.tread) { drawSprite("david_tread", frameOf("david_tread", r4.swim.tt), x, y, d.facing); return true; }
-  if (r4.swim) { drawSprite("david_swim", frameOf("david_swim", r4.swim.t), x, y - 50, d.facing, 0.8); return true; }
+  if (r4.swim) { drawSprite("david_swim2", frameOf("david_swim2", r4.swim.t), x, y - 50, d.facing, R4.SWIM.K); return true; }   // (Glen 11-13: his better swim)
   return false;
 }
 
@@ -789,7 +798,7 @@ function r4Fog(r, a) {
 // the rubble across the way into Beneath the Warren: his dark pile, big, and another on top
 function r4DrawWall(camX) {
   const Wl = r4.wall; if (!Wl || Wl.room !== region.room.id || regionHas("taken", "r4_wall_under")) return;
-  const im = kitImg("w4_rubble_dark"), k = KIT.w4_rubble_dark, x = Wl.x - camX; if (!im || x < -400 || x > W + 400) return;
+  const im = kitImg("w4_rubble_dark"), k = KIT.w4_rubble_dark, x = Wl.x - camX + (Wl.shake > 0 ? (Math.random() - 0.5) * 10 : 0); if (!im || x < -400 || x > W + 400) return;
   const B = R4.WALL.BIG, U = R4.WALL.TOP;
   ctx.drawImage(im, Math.round(x - k.w * B / 2), Math.round(GR * T + 16 - k.h * B), k.w * B, k.h * B);
   ctx.save(); ctx.translate(Math.round(x + 10), 0); ctx.scale(-1, 1);

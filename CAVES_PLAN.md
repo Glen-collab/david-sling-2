@@ -175,3 +175,8 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
 - The map (Glen): the Crumbling Ledges on top of the Four Tunnels, the Old Well Shaft 2 wide, the side rooms along the top.
 - The Lamp Hall: Glen resaved lamp/mid.png (full-height columns) and kit/w4_stairs_tunnel.png (708x640; his original kept
   as david-sling-2-art/caves/set2_stairs_to_tunnel_glen_resave.png, the game's copy with its right and bottom edges softened).
+- Glen's better swim (david_swim2, from video/david_swim2.mp4, cropped off his drawn fish) and his sword stroke in the
+  water (david_swim_sword, tools/make_swim_sword.py, the same scale), R4.SWIM.K their size.
+- The rubble (into Beneath the Warren, and the Warren's two side caves): World 3's test of might (nobgath.js's
+  r3MightStart / r3MightUpdate / r3DrawDavid / r3DrawMight, called from here): Up, mash A and B, gold breaks it in one.
+  Walls behind the rubble and the rock in the water are block material 6 (solid, no dirt drawn).

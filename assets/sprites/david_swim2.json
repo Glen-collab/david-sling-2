@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 574,
+  "frame_h": 198,
+  "ms_per_frame": 101,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 286,
+  "anchor_y": 101,
+  "source": "david_swim2_crop.mp4",
+  "video_frames": [
+    16,
+    18,
+    21,
+    23,
+    26,
+    28,
+    30,
+    33,
+    35,
+    38,
+    40,
+    43
+  ]
+}
