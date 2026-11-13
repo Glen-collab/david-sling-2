@@ -13,7 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
-const REGION_KEY = location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
+const REGION_KEY = location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
 const REGION_UP = 110;   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
 const RTUNE = {
@@ -104,7 +104,7 @@ const REGION_GIBEAH = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
-const REGION = REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
+const REGION = REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -187,7 +187,7 @@ const KIT = {
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = n.startsWith("w3_") ? "../assets/rooms/w3/kit/" + n + ".png" : "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = n.startsWith("w3_") ? "../assets/rooms/w3/kit/" + n + ".png" : n.startsWith("w4_") ? "../assets/rooms/w4/kit/" + n + ".png" : "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends

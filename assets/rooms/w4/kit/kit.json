@@ -1,0 +1,158 @@
+{
+ "w4_ledge_dark_s": {
+  "w": 132,
+  "h": 46,
+  "top": 3
+ },
+ "w4_ledge_dark_m": {
+  "w": 203,
+  "h": 70,
+  "top": 3
+ },
+ "w4_ledge_dark_l": {
+  "w": 270,
+  "h": 109,
+  "top": 3
+ },
+ "w4_rocks_dark": {
+  "w": 162,
+  "h": 112,
+  "top": 15
+ },
+ "w4_ledge_red_s": {
+  "w": 139,
+  "h": 49,
+  "top": 2
+ },
+ "w4_ledge_red_m": {
+  "w": 206,
+  "h": 71,
+  "top": 2
+ },
+ "w4_ledge_red_l": {
+  "w": 271,
+  "h": 108,
+  "top": 3
+ },
+ "w4_rocks_red": {
+  "w": 164,
+  "h": 115,
+  "top": 15
+ },
+ "w4_ledge_sand_s": {
+  "w": 130,
+  "h": 46,
+  "top": 3
+ },
+ "w4_ledge_sand_m": {
+  "w": 198,
+  "h": 68,
+  "top": 3
+ },
+ "w4_ledge_sand_l": {
+  "w": 267,
+  "h": 105,
+  "top": 3
+ },
+ "w4_rocks_sand": {
+  "w": 157,
+  "h": 111,
+  "top": 14
+ },
+ "w4_ledge_pale_s": {
+  "w": 135,
+  "h": 50,
+  "top": 3
+ },
+ "w4_ledge_pale_m": {
+  "w": 196,
+  "h": 68,
+  "top": 2
+ },
+ "w4_ledge_pale_l": {
+  "w": 271,
+  "h": 109,
+  "top": 3
+ },
+ "w4_rocks_pale": {
+  "w": 158,
+  "h": 113,
+  "top": 15
+ },
+ "w4_ledge_moss_s": {
+  "w": 137,
+  "h": 52,
+  "top": 4
+ },
+ "w4_ledge_moss_m": {
+  "w": 197,
+  "h": 70,
+  "top": 2
+ },
+ "w4_ledge_moss_l": {
+  "w": 274,
+  "h": 113,
+  "top": 3
+ },
+ "w4_rocks_moss": {
+  "w": 165,
+  "h": 120,
+  "top": 16
+ },
+ "w4_step_sm": {
+  "w": 40,
+  "h": 26
+ },
+ "w4_step_l": {
+  "w": 138,
+  "h": 54
+ },
+ "w4_stalactite": {
+  "w": 146,
+  "h": 170
+ },
+ "w4_stalagmites": {
+  "w": 178,
+  "h": 155
+ },
+ "w4_lamp": {
+  "w": 130,
+  "h": 91
+ },
+ "w4_jar_big": {
+  "w": 145,
+  "h": 190
+ },
+ "w4_pitcher": {
+  "w": 84,
+  "h": 118
+ },
+ "w4_basket": {
+  "w": 158,
+  "h": 110
+ },
+ "w4_waterskin": {
+  "w": 111,
+  "h": 174
+ },
+ "w4_pot": {
+  "w": 98,
+  "h": 66
+ },
+ "w4_bedroll": {
+  "w": 170,
+  "h": 99
+ },
+ "w4_bowl": {
+  "w": 142,
+  "h": 72
+ },
+ "w4_bread": {
+  "w": 116,
+  "h": 90
+ },
+ "w4_bag": {
+  "w": 173,
+  "h": 107
+ }
+}

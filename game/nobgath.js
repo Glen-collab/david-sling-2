@@ -1180,7 +1180,7 @@ function r3CourtScene() {
           rPlay([
             { say: ["A royal guard", "Get this crazy person out of here!"] },
             { fn() { regionAdd("taken", "r3_mad"); } },
-            { say: ["", "So David departed from there, and escaped to the cave of Adullam. (1 Samuel 22:1)"] },
+            { say: ["", "David therefore departed from there and escaped to Adullam’s cave. (1 Samuel 22:1)"] },
             { fn() { regionAdd("taken", "g_exit_open"); jsceneOpen(true); } },
           ]);
         }); } },
