@@ -90,3 +90,15 @@ look's layers: ledges (short, long, sloped), stalagmite pillars, rock steps, a c
 under the ceiling, a narrow crack to squeeze through, and wet slick rock for the lower level. Placed the way the World 3 kit is
 (kitImg / platAt: the drawn top of a piece is where he stands). Prompts: generate the far/mid/near layers first, then make the
 ledges "in the same rock and light as this picture" from them, so the colors match.
+
+## Glen's cave art so far (Desktop/david-sling-2-art/caves, sorted 2026-11-13)
+Light, from the top down: daylight (limestone) -> sunbeams through the roof -> orange glowing cracks -> cold blue -> teal water.
+- Cave Mouth: set5_far_cave_mouth_hills (the hills outside, a pool, a tunnel on to the right). Road there: set5_far_outside_canyon
+  (far; the cave in the cliff), set5_near_outside_rocks_whitebg (near; white background, maybe).
+- The Camp: set5_far_limestone_hall. Bat Roost: set5_far_light_shafts.
+- Lamp Hall (darker): set1 far/mid/near (orange cracks), set2_stairs_to_tunnel (the way down, Up to go in).
+- Middle: set2_far_tunnels (tunnels into the picture), set3_far_four_arches (pick-a-tunnel maze room),
+  set3_ledge_stairs_piece (playable ledge). Maybe: set2_mid_stairs_columns, set3_mid_stacked_stairs (only as real climbable rooms).
+- Lower: set5_far_underwater_tunnel and set4_far_pool_underwater (swimming), set4_far_pool_underwater_wide (flatter style, maybe),
+  set4_far_lake_hall (Hidden Spring, the end). Skipped: set4_cutaway_lightning.
+Still needed: mid/near layers for middle and lower, water surface loop, waterfall, rats, bats, David walking toward the camera.
