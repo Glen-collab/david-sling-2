@@ -362,7 +362,7 @@ function drawRat(k, x) {   // a little brown rat: Glen's running rat (standing s
 }
 
 function updateWorld3(dt) {
-  if (trapCols.size && david.onGround && david.deadT <= 0 && inTrap(david.x, david.y)) { pitFall(); toast("Too high to climb out of there! Back up you go."); }
+  if (trapCols.size && !(typeof REGION_ON !== "undefined" && REGION_ON) && david.onGround && david.deadT <= 0 && inTrap(david.x, david.y)) { pitFall(); toast("Too high to climb out of there! Back up you go."); }
   if (typeof updateOx === "function") { updateStorm(dt); updateOx(dt); }   // 3-4 (below)
   if (ladders.length && !W3.ladderTold && david.onGround && ladderRungs.has(Math.floor(david.x / T) + "," + Math.floor(david.y / T))) onLadder(david);
   if (guides.length) {   // 3-3: Shammah runs ahead (after a fall he's back at the last spot David reached)

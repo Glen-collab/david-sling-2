@@ -71,7 +71,8 @@ const RTUNE = {
   },
   BREAK_T: [0.14, 0.9, 0.5],   // breaking: the breaking picture this long, then the pieces this long, then they fade away this fast
   DROPS: [["heart_small", 50], ["olives", 30], ["heart_big", 8], ["none", 12]],   // what falls out, and how often (out of 100)
-  METER_PX: 4,       // the health meter: px per point, so it grows as the cap goes up
+  METER_PX: 2,       // the health meter: px per point, so it grows as the cap goes up (Glen 11-13: "too long. Let's shrink that": was 4)
+  POM_HP: 5,         // (Glen 11-13: "If he dies he dies") health every 4 pomegranates add (was a heart's worth, 10)
 };
 const RELIC_ART = { pomegranate: "pomegranate", oil: "camp_jar_small", stone: "stone_remembrance", truth: "davids_journal" };   // (key: Glen's kit_tower/tw_key, drawn below)
 const RELIC_NAME = { pomegranate: "Pomegranates", oil: "Oil jars", stone: "Stones of remembrance", truth: "Truths" };
@@ -784,7 +785,7 @@ function regionInit() {
   for (const c of region.carried) region.save.str = Math.max(region.save.str || 0, c.str || 0);
   const allTaken = [region.save, ...region.carried].flatMap(c => c.taken || []);
   const poms = allTaken.filter(id => /^[a-z0-9]+_pom/.test(id)).length;
-  const extra = (Math.floor(poms / 4) + (everHas("g_jonathan") ? 1 : 0)) * RTUNE.HP_PER_HEART; david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
+  const extra = Math.floor(poms / 4) * RTUNE.POM_HP + (everHas("g_jonathan") ? RTUNE.HP_PER_HEART : 0); david.maxHearts += extra; david.hearts += extra;   // (+ Jonathan's robe)   // every 4 pomegranates: the meter grows by a heart's worth, for good
   david.specialStones += allTaken.filter(id => /^[a-z0-9]+_stone/.test(id)).length;
   { const up = (strLevel() - 1) * STR.HP; david.maxHearts += up; david.hearts += up; }   // (strength: health for each level)
 }
@@ -1010,7 +1011,7 @@ function takeRelic(f) {
   if (f.kind === "oil") { david.lampOil += 20; toast("An oil jar! Your lamp will burn longer."); return; }
   if (f.kind === "pomegranate") {
     const n = region.save.taken.filter(id => id.startsWith("g_pom")).length;
-    if (n % 4 === 0) { david.maxHearts += RTUNE.HP_PER_HEART; david.hearts = david.maxHearts; toast("A pomegranate! Four of them: your hearts go up for good."); }
+    if (n % 4 === 0) { david.maxHearts += RTUNE.POM_HP; david.hearts = david.maxHearts; toast("A pomegranate! Four of them: your hearts go up for good."); }
     else { david.hearts = Math.min(david.maxHearts, david.hearts + RTUNE.HP_PER_HEART); toast(`A pomegranate! (${n % 4} of 4 to raise your hearts)`); }
   }
 }
@@ -1987,7 +1988,7 @@ function regionMapFrame(dt) {   // true while the map (or the card, or the Journ
 //      little health. Capped per world (REGION.strCap): farming makes you comfortable, but can't carry you past the story ----
 const STR = {
   NEED: [0, 8, 20, 36, 56, 80, 110, 145, 185],   // strength to reach each level (level 1 at 0)
-  HP: 5,          // health each level adds
+  HP: 2,          // health each level adds (Glen 11-13: was 5)
   DMG: 0.25,      // each level: a stone (or a sword stroke) takes this much more off a Philistine (one is 1)
   // what driving each one off is worth (not the harmless ones: the whip snake, the hedgehog)
   XP: { scorpion: 1, viper: 2, rat: 1, rat2: 1, spider: 1, spiderw: 1, bat2: 1, crow: 1, raven: 1, eagle: 3, jackal: 2, phil: 4, wolf: 3 },
@@ -2369,8 +2370,9 @@ function drawRegionMap() {
       ctx.fillStyle = M.INK; ctx.fillText(nm, x + r.mw * C / 2, y + mh - 11); }
     // the edges you can walk through: a gap in the ink line
     ctx.fillStyle = M.PAPER;
-    if (r.right) ctx.fillRect(x + r.mw * C - 5, y + C / 2 - 10, 10, 20);
-    if (r.left) ctx.fillRect(x - 5, y + C / 2 - 10, 10, 20);
+    const gy = y + ((r.up ? (r.mh || 1) : 1) - 1) * C + C / 2;   // (a tall room is walked into at its bottom: the gap in its bottom cell; Glen 11-13)
+    if (r.right) ctx.fillRect(x + r.mw * C - 5, gy - 10, 10, 20);
+    if (r.left) ctx.fillRect(x - 5, gy - 10, 10, 20);
     const fx = cx => x + 3 + (cx / T - r.c0) / r.w * (r.mw * C - 6);   // a column in this room, on the map
     for (const o of region.doors) if (roomAt(o.x) === r && !(o.need && !hasSkill(o.need))) { ctx.fillStyle = "#2e2418"; ctx.fillRect(fx(o.x) - 4, y + 12, 8, 14); }
     for (const f of fires) if (roomAt(f.x) === r) { ctx.fillStyle = "#6b8e23"; ctx.beginPath(); ctx.arc(fx(f.x), y + 36 * cs, 7 * cs, 0, Math.PI * 2); ctx.fill(); }

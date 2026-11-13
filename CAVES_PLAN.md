@@ -161,3 +161,11 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
   to connect it to beneath the warren") The Spring is long now (220): in from the Deep Pool at the right, left along the
   shore to the Long Climb (under the Four Tunnels), up to the fourth arch. The crack partway up the Climb comes out at
   the right end of Beneath the Warren; its left end opens onto the Shaft to the Camp.
+- (later) Glen's rubble piles (set11, make_w4_rubble.py) in front of the side caves not open yet. Rubble across the way
+  from the Shaft to the Camp into Beneath the Warren: shut until he's been up the Long Climb, then Up with Goliath's sword
+  breaks it for good (r4.wall, "r4_wall_under"). The map's edge gaps on tall rooms are at their bottom cell now.
+- Water: A near the surface leaps him out (R4.SWIM.LEAP 1050, onto the ledges); the sword works in the water and gets rid
+  of a fish (back when he comes back into the room). The Truth at the far end of the Flooded Tunnel: Psalm 142:5.
+- (Glen: "David's heart health is too much ... If he dies he dies") all of Part Two: the meter 2 px a point (was 4); every
+  4 pomegranates +5 (was +10); each strength level +2 (was +5).
+- Part One's World 3 pit-trap check (world3.js) is off in the regions (it killed him beside the rubble wall).
