@@ -1597,12 +1597,13 @@ function updateBeasts(dt, r) {
         b.x += b.facing * 210 * dt;
         const want = d.y - 70 + Math.sin(b.t * 5) * 30;
         b.y += (want - b.y) * Math.min(1, dt * 1.8);
-        b.y = Math.max(60, Math.min(GR * T - 40, b.y));
+        b.y = Math.max(60, Math.min((r.water ? r.water - 90 : GR * T) - 40, b.y));   // (adullam.js: a room's water: bats keep over it)
         if ((b.facing > 0 && b.x > d.x + 320) || (b.facing < 0 && b.x < d.x - 320)) b.facing *= -1;
         b.x = Math.max(r.c0 * T + 40, Math.min((r.c0 + r.w) * T - 40, b.x));
       }
     }
-    if (b.state !== "hang" || b.kind === "spider") { const q = beastBox(b); if (touchesDavid(q)) beastHurt(b); }
+    const under = r.water && d.y > r.water + 40;   // (in the water: the bats and spiders can't reach him)
+    if ((b.state !== "hang" || b.kind === "spider") && !under) { const q = beastBox(b); if (touchesDavid(q)) beastHurt(b); }
   }
 }
 function drawBeasts(camX) {

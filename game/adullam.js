@@ -30,7 +30,8 @@ const R4 = {
   //  speed, a stroke's push up (A), Up / Down held, the slow sink, the most speed up or down; at the surface his feet
   //  this far under the waterline (head out); a jump out of the water (A at the surface); breath (s) and what's left
   //  after running out (s, and a heart lost)
-  SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 640, BREATH: 10, AFTER: 3 },
+  SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 640, BREATH: 10, AFTER: 3,
+    TREAD: 0.35 },   // (Glen 11-13: "a resting stroke ... when I am not moving": his stroke this much slower, till his own clip)
   // (Glen 11-13 play: "the backgrounds seem way too blown up for how big David is") his pictures far off, small: K, their
   //  size (1 = the screen's height for a wide one, 1296 wide for a tall one); P: how fast they scroll next to David;
   //  BOT: the picture's bottom (px, world, behind the floor); DIM: a shade over them (the rock he stands on stands out);
@@ -461,6 +462,15 @@ function r4Build(R) {
     rBat(rm, c + 40, 130); rBat(rm, c + 60, 130);
     for (const k of [70, 71, 72, 80, 81]) r4Jar(rm, c + k);
   }
+  // (Glen 11-13: "we need spiders in these caves too") Part Two's spiders: on their threads over the way (they drop when
+  //  he's under), and walking the floor
+  const S = (room, k, y) => rSpider(room, roomById(room).c0 + k, y), Cw = (room, k, n = 4) => rCrawler(room, roomById(room).c0 + k, n);
+  S("mouth", 58, 190); S("mouth", 102, 170); Cw("mouth", 88);
+  S("camp", 80, 180);
+  S("lamphall", 20, 160); S("lamphall", 82, 180); S("lamphall", 120, 170); Cw("lamphall", 105, 5); Cw("lamphall", 146, 4);
+  S("warren", 30, 170); S("warren", 68, 180); S("warren", 120, 160); S("warren", 162, 180); Cw("warren", 35, 5); Cw("warren", 110, 4); Cw("warren", 175, 3);
+  S("narrows", 22, 170); S("narrows", 60, 180); S("narrows", 95, 170); Cw("narrows", 50, 4); Cw("narrows", 100, 5);
+  S("ledges", 12, 300); S("roost", 30, 200); S("spring", 30, 180); Cw("spring", 60, 5);
   for (let i = region.props.length; i--;) if (region.props[i].n === "p_left" || region.props[i].n === "p_right") region.props.splice(i, 1);   // (r4Floor draws the drops)
 }
 
@@ -510,8 +520,9 @@ function r4Hold(d, dt) {
     if (d.y < wy + 40 || d.onGround && d.y < wy + S.FLOAT) { r4.breath = Math.min(S.BREATH, r4.breath + dt * 4); return false; }
     r4.swim = { t: 0 }; d.vy = Math.min(d.vy, 120); setState("idle");
   }
-  const sw = r4.swim; sw.t += dt;
+  const sw = r4.swim;
   const dir = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
+  sw.t += dt * (dir || held("up") || held("down") || pressed("a") ? 1 : R4.SWIM.TREAD);   // (still: a slow, resting stroke)
   d.vx = dir * S.X; if (dir) d.facing = dir;
   d.vy += S.SINK * dt;
   if (pressed("a")) { if (!lid && d.y <= top + 4) { r4.swim = null; d.vy = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
