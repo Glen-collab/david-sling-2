@@ -169,3 +169,9 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
 - (Glen: "David's heart health is too much ... If he dies he dies") all of Part Two: the meter 2 px a point (was 4); every
   4 pomegranates +5 (was +10); each strength level +2 (was +5).
 - Part One's World 3 pit-trap check (world3.js) is off in the regions (it killed him beside the rubble wall).
+- Side rooms (Glen approved): The Bats' Nook (top of the Bat Roost; Truth, Psalm 57:1), The Rats' Larder (Warren's first
+  side cave, rubble: Goliath's sword; a pomegranate), The Fallen Stones (Warren's second, rubble; a stone of remembrance),
+  The Oil Store (the Four Tunnels' second arch; an oil jar). r4Tunnel(..., rubble = true): Up with the sword breaks it.
+- The map (Glen): the Crumbling Ledges on top of the Four Tunnels, the Old Well Shaft 2 wide, the side rooms along the top.
+- The Lamp Hall: Glen resaved lamp/mid.png (full-height columns) and kit/w4_stairs_tunnel.png (708x640; his original kept
+  as david-sling-2-art/caves/set2_stairs_to_tunnel_glen_resave.png, the game's copy with its right and bottom edges softened).

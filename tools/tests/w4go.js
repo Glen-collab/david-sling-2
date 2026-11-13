@@ -3,8 +3,8 @@ startSetup = () => {}; setup.active = false;
 const log = m => TEST_ERRORS.push("INFO " + m);
 const where = () => (roomAt(david.x) || {}).id + " x " + Math.round(david.x - roomAt(david.x).c0 * T) + " y " + Math.round(david.y);
 const toTun = id => () => { const o = r4.tunnels.find(t => t.id === id); david.hearts = david.maxHearts; david.fallTop = null; moveParty(o.x, o.y); region.camFootY = o.y; snapCamera(); };
-const S = [];
-for (const id of ["mouth_in", "camp_in", "lamp_down", "warren_back", "n3", "ledges_top", "well_top", "flood_under", "deep_in", "n4", "climb_top", "climb_secret", "under_in", "cs_top", "camp_side"])
+const S = [{ n: 1, fn() { learnSkill("heavySword"); } }];
+for (const id of ["mouth_in", "camp_in", "lamp_down", "warren_back", "n3", "ledges_top", "well_top", "flood_under", "deep_in", "n4", "climb_top", "climb_secret", "under_in", "cs_top", "camp_side", "roost_side", "nook_in", "warren_side1", "larder_in", "warren_side2", "stones_in", "n2", "oil_in"])
   S.push({ n: 1, fn: toTun(id) }, { keys: [], n: 20 }, { keys: ["ArrowUp"], n: 3 }, { keys: [], n: 150, fn() { log(id + " -> " + where()); } });
 S.push({ n: 1, fn() { const r = roomById("spring"); moveParty((r.c0 + r.w) * T - 60, GR * T); snapCamera(); } }, { keys: ["ArrowRight"], n: 60, fn() { log("spring right edge -> " + where()); } });
 S.push({ n: 1, fn() { const r = roomById("spring"); moveParty(r.c0 * T + 60, GR * T); snapCamera(); } }, { keys: ["ArrowLeft"], n: 60, fn() { log("spring left edge -> " + where()); } });

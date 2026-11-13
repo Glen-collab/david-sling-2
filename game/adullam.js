@@ -81,9 +81,9 @@ const ADULLAM = {
     { id: "narrows", name: "The Four Tunnels", w: 120, cave: true, mx: 13, my: 2, mw: 3, left: "warren", dark: 0.93,
       pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
     // (Glen 11-13: "any time I jump to the left I end up in four tunnels") no walking out at the side: in and out by its tunnel
-    { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 16, my: 1, mw: 1, mh: 2, dark: 0.9,
+    { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 14, my: 0, mw: 2, mh: 2, dark: 0.9,   /* (Glen 11-13: on top of the Four Tunnels, room for its name) */
       pic: "w4/tall_ledges", k: 1, tall: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "well", name: "The Old Well Shaft", w: 40, up: 100, cave: true, mx: 17, my: 1, mw: 1, mh: 3, right: "river", dark: 0.35,
+    { id: "well", name: "The Old Well Shaft", w: 40, up: 100, cave: true, mx: 16, my: 1, mw: 2, mh: 3, right: "river", dark: 0.35,
       pic: "w4/tall_well", k: 0.6, fog: 0.4, tall: true, rock: "pale", ground: "pebbles" },
     // LOWER: water (water: the waterline, px from the screen's top)
     { id: "river", name: "The Underground River", w: 170, cave: true, mx: 18, my: 3, mw: 5, left: "well", right: "flooded", dark: 0.9, water: 430,
@@ -105,6 +105,16 @@ const ADULLAM = {
       pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
     { id: "campshaft", name: "The Shaft to the Camp", w: 40, up: 60, cave: true, mx: 7, my: 2, mw: 1, mh: 2, right: "under", dark: 0.6,
       pic: "w4/tall_roost", k: 0.6, tall: true, rock: "pale", ground: "limestone" },
+    // the side caves: small rooms off the tunnels, one thing at the back of each (a Truth, a pomegranate, a stone of
+    //  remembrance, an oil jar). The Warren's two have rubble across them: Goliath's sword (Up)
+    { id: "nook", name: "The Bats' Nook", w: 46, cave: true, mx: 5, my: 0, mw: 2, dark: 0.3,
+      pic: "w4/pano_spring", fill: true, rock: "pale", ground: "limestone" },
+    { id: "larder", name: "The Rats' Larder", w: 50, cave: true, mx: 8, my: 0, mw: 2, dark: 0.93,
+      pic: "w4/pano_warren", fill: true, rock: "dark", ground: "dark", near: "pile" },
+    { id: "stones", name: "The Fallen Stones", w: 50, cave: true, mx: 10, my: 0, mw: 2, dark: 0.93,
+      pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
+    { id: "oilstore", name: "The Oil Store", w: 46, cave: true, mx: 12, my: 0, mw: 2, dark: 0.6,
+      pic: "w4/lamp/far", mid: "w4/lamp/mid.png", k: 0.9, rock: "red", ground: "sandstone" },
   ],
   // the Journal: Glen's song, the Chorus (SONG_PSALM57.md, his words exactly)
   steps: ["r4_camp"],
@@ -182,15 +192,16 @@ function r4Thing(room, n, x, y = FOOT, k = R4.PROP_K) {
 //  his painted arch, art null: where is worked out by tools/tests/w4align.js (from his picture's px, with the game's camera)
 // a tunnel into the picture at x (px), its floor at y (px): Up there, he walks in and comes out at the tunnel `to` (its
 //  id). to null: a side cave still to be made. art: the tunnel mouth drawn there (his, cut from his pictures), or none
-function r4Tunnel(id, room, x, y, to, art = "w4_arch", secret = false) {
-  r4.tunnels.push({ id, room, x, y, to, secret });
+function r4Tunnel(id, room, x, y, to, art = "w4_arch", secret = false, rubble = false) {
+  const o = { id, room, x, y, to, secret, blocked: rubble && !regionHas("taken", "r4_open_" + id) };
+  r4.tunnels.push(o);
   // (Glen 11-13: "side caves a touch higher ... rubble in front of them for not open yet"; "Cave mouth needs to go higher":
   //  on a ledge, up off its top face so it stands on it, not sunk into it)
-  const up = (to ? 0 : R4.TUNNEL.SIDE) + (y < GR * T - 4 ? R4.TUNNEL.ON_LEDGE : 0);
+  const up = (to && !rubble ? 0 : R4.TUNNEL.SIDE) + (y < GR * T - 4 ? R4.TUNNEL.ON_LEDGE : 0);
   if (art) { const k = KIT[art]; region.props.push({ room, n: art, x: x - k.w / 2, y: y - k.h + 12 - up }); }
-  if (!to && !secret) {   // (Glen's rubble, in the room's rock)
+  if ((!to || o.blocked) && !secret) {   // (Glen's rubble, in the room's rock; a blocked one's goes when the sword breaks it)
     const n = "w4_rubble_" + ({ dark: "dark", red: "dark2", moss: "dark2", sand: "sand", pale: "pale" }[roomById(room).rock] || "dark"), k = KIT[n], s = R4.TUNNEL.RUBBLE;
-    region.props.push({ room, n, x: x - k.w * s / 2, y: y - k.h * s + 14, s });
+    region.props.push(o.rubble = { room, n, x: x - k.w * s / 2, y: y - k.h * s + 14, s });
   }
 }
 const r4Jar = (room, c, y = GR * T) => rBreak("jar", room, c, onTop(y));   // (Glen 11-13: jars he can break, not painted ones)
@@ -320,7 +331,7 @@ function r4Build(R) {
     z.forEach((l, i) => { if (i % 4 === 1) oliveRow(l.c - 1, onTop(l.y) - 0.4, 3); if (i % 4 === 3) r4Jar("roost", l.c, l.y); if (i % 3 === 2) rBat("roost", l.c, l.y + 40); });
     const top = z[z.length - 1], nt = z[z.length - 2];
     rRelic("r4_pom_roost", "pomegranate", nt.c, onTop(nt.y));
-    r4Tunnel("roost_side", "roost", (top.x + top.x1) / 2, top.y, null);
+    r4Tunnel("roost_side", "roost", (top.x + top.x1) / 2, top.y, "nook_in");
     rRat("roost", c + 20, 6);
   }
 
@@ -361,14 +372,14 @@ function r4Build(R) {
     L("m", 14, 500); r4Olives(L("l", 19, 385));
     const t = L("m", 27, 270); rRelic("r4_pom_warren", "pomegranate", t.c, onTop(t.y));
     L("s", 33, 390);
-    r4Tunnel("warren_side1", rm, X(39), G, null);
+    r4Tunnel("warren_side1", rm, X(39), G, "larder_in", "w4_arch", false, true);
     rRat(rm, c + 24, 4); rRat(rm, c + 43, 3);
     r4Pit(rm, c + 46, 4);
     for (const k of [54, 58, 62, 66]) rRat(rm, c + k, 3);   // (the nest)
     r4Run(rm, "dark", X(52), 500, ["m", "l", "m"], 0, 60).forEach(l => r4Olives(l));
     r4Jar(rm, c + 73); r4Jar(rm, c + 74);
     r4Pit(rm, c + 77, 3, true);
-    r4Tunnel("warren_side2", rm, X(85), G, null);
+    r4Tunnel("warren_side2", rm, X(85), G, "stones_in", "w4_arch", false, true);
     r4Pit(rm, c + 90, 11); r4Olives(L("s", 91, 510)); L("s", 96, 500); rBat(rm, c + 95, 130);
     campfire(c + 106, GR - 1);
     const u = r4Run(rm, "dark", X(111), 500, ["s", "m", "s"]);
@@ -387,7 +398,7 @@ function r4Build(R) {
   c = R("narrows");
   { const rm = "narrows", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
     ground(c, c + 119);
-    r4Tunnel("n1", rm, X(4.5), G, "warren_back", null); r4Tunnel("n2", rm, X(38), G, null);
+    r4Tunnel("n1", rm, X(4.5), G, "warren_back", null); r4Tunnel("n2", rm, X(38), G, "oil_in");
     r4Tunnel("n3", rm, X(70), G, "ledges_in"); r4Tunnel("n4", rm, X(104), G, "climb_top");   // (the way back up from the end: the Long Climb)
     r4Olives(L("s", 13, 480)); const j = L("m", 18, 380); r4Jar(rm, j.c, j.y);
     rRat(rm, c + 15, 4); rRat(rm, c + 30, 3);
@@ -538,6 +549,50 @@ function r4Build(R) {
     r4Tunnel("cs_top", "campshaft", (top.x + top.x1) / 2, top.y, "camp_side");
   }
 
+  // -- The Bats' Nook (the top of the Bat Roost): bats asleep on the roof; at the back, a Truth (Psalm 57, by David "when he
+  //  fled from Saul, in the cave"; WEB, ebible.org)
+  c = R("nook");
+  { const rm = "nook", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "pale", s, X(k), y);
+    ground(c, c + 45);
+    r4Tunnel("nook_in", rm, X(5), G, "roost_side");
+    for (const k of [12, 18, 24, 30, 36]) rBat(rm, c + k, 110 + (k % 12) * 4);
+    L("m", 14, 500); r4Olives(L("l", 21, 390));
+    const t = L("m", 31, 290);
+    rRelic("r4_truth_nook", "truth", t.c, onTop(t.y), "Be merciful to me, God, be merciful to me, for my soul takes refuge in you. Yes, in the shadow of your wings, I will take refuge, until disaster has passed. (Psalm 57:1, by David, when he fled from Saul, in the cave)");
+    r4Jar(rm, c + 41); r4Jar(rm, c + 42);
+  }
+  // -- The Rats' Larder (off the Warren, through the rubble): where the rats keep what they steal. A pomegranate at the back
+  c = R("larder");
+  { const rm = "larder", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
+    ground(c, c + 49);
+    r4Tunnel("larder_in", rm, X(5), G, "warren_side1");
+    for (const k of [14, 22, 30, 38]) rRat(rm, c + k, 3);
+    for (const k of [16, 17, 26, 27, 28]) r4Jar(rm, c + k);
+    r4Pit(rm, c + 33, 3);
+    const u = r4Run(rm, "dark", X(36), 500, ["s", "m"]); rRelic("r4_pom_larder", "pomegranate", u[1].c, onTop(u[1].y));
+    oliveRow(c + 44, 16, 4);
+  }
+  // -- The Fallen Stones (off the Warren, through the rubble): a roof fallen in; a stone of remembrance on top of the heap
+  c = R("stones");
+  { const rm = "stones", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
+    ground(c, c + 49);
+    r4Tunnel("stones_in", rm, X(5), G, "warren_side2");
+    for (const [k, sc] of [[16, 1.1], [27, 1.3], [38, 1.0]]) region.props.push({ room: rm, n: "w4_rubble_dark", x: X(k) - KIT.w4_rubble_dark.w * sc / 2, y: FOOT - KIT.w4_rubble_dark.h * sc + 14, s: sc });
+    const u = r4Run(rm, "dark", X(13), 500, ["s", "m", "s"]); r4Olives(u[1]);
+    rRelic("r4_stone_fallen", "stone", u[2].c, onTop(u[2].y));
+    rSpider(rm, c + 24, 180); rCrawler(rm, c + 40, 4); rBat(rm, c + 32, 120);
+  }
+  // -- The Oil Store (the Four Tunnels' second arch): old jars along the wall, glowing cracks; an oil jar for the lamp
+  c = R("oilstore");
+  { const rm = "oilstore", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "red", s, X(k), y);
+    ground(c, c + 45);
+    r4Tunnel("oil_in", rm, X(5), G, "n2");
+    for (const k of [12, 13, 14, 20, 21, 30, 31, 32]) r4Jar(rm, c + k);
+    L("m", 16, 500); const u = L("l", 24, 390); r4Olives(u);
+    const t = L("m", 34, 290); rRelic("r4_oil_store", "oil", t.c, onTop(t.y));
+    rRat(rm, c + 26, 4); rSpider(rm, c + 38, 170);
+  }
+
   // (Glen 11-13: "we need spiders in these caves too") Part Two's spiders: on their threads over the way (they drop when
   //  he's under), and walking the floor
   const S = (room, k, y) => rSpider(room, roomById(room).c0 + k, y), Cw = (room, k, n = 4) => rCrawler(room, roomById(room).c0 + k, n);
@@ -600,6 +655,13 @@ function r4Update(dt, r) {
   const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH && Math.abs(d.y - o.y) < U.HIGH);
   if (!tun) return;
   if (!tun.to) { r4Tell("side" + tun.x, "A side cave. Not open yet: still to explore."); return; }
+  if (tun.blocked) {   // rubble across a side cave: Goliath's sword breaks it
+    if (!hasSkill("heavySword")) { r4Tell("rubble" + tun.id, "Rubble across the way in. Something heavy could break it."); return; }
+    tun.blocked = false; regionAdd("taken", "r4_open_" + tun.id); d.swordT = 0;
+    const i = region.props.indexOf(tun.rubble); if (i >= 0) region.props.splice(i, 1);
+    for (let j = 0; j < 18; j++) bits.push({ x: tun.x + (Math.random() - 0.5) * 120, y: tun.y - Math.random() * 120, vx: (Math.random() - 0.5) * 380, vy: -Math.random() * 340, life: 1.1, color: j % 2 ? "#4a3f36" : "#6b5d50" });
+    toast("David swings Goliath's sword, and the rubble breaks apart."); return;
+  }
   r4.swim = null; r4.walk = { tun, t: 0, x: d.x }; d.vx = 0; d.charging = false;   // (held still meanwhile: r4Hold)
 }
 
