@@ -2371,7 +2371,13 @@ function drawRegionMap() {
     ctx.strokeStyle = M.INK; ctx.lineWidth = 2.5; ctx.strokeRect(x + 3, y + 3, r.mw * C - 6, mh - 6);
     { const nm = r.name.replace(/^The /, ""), room = r.mw * C - 16; let px = Math.round(22 * Math.max(0.8, cs)); ctx.font = hand(px);   // (Glen 11-09: a long name in a narrow room shrinks to fit, not into its neighbor)
       while (px > 12 && ctx.measureText(nm).width > room) ctx.font = hand(--px);
-      ctx.fillStyle = M.INK; ctx.fillText(nm, x + r.mw * C / 2, y + mh - 11); }
+      ctx.fillStyle = M.INK;
+      const words = nm.split(" ");
+      if (ctx.measureText(nm).width > room && words.length > 1) {   // (Glen 11-13: "maybe above each other") still too long: a word a line, from the bottom up
+        let wp = Math.round(22 * Math.max(0.8, cs)); ctx.font = hand(wp);
+        while (wp > 11 && Math.max(...words.map(w => ctx.measureText(w).width)) > room + 6) ctx.font = hand(--wp);
+        words.forEach((w, i) => ctx.fillText(w, x + r.mw * C / 2, y + mh - 11 - (words.length - 1 - i) * (wp + 2)));
+      } else ctx.fillText(nm, x + r.mw * C / 2, y + mh - 11); }
     // the edges you can walk through: a gap in the ink line
     ctx.fillStyle = M.PAPER;
     const gy = y + ((r.up ? (r.mh || 1) : 1) - 1) * C + C / 2;   // (a tall room is walked into at its bottom: the gap in its bottom cell; Glen 11-13)
