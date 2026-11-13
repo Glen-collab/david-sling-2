@@ -91,15 +91,15 @@ const ADULLAM = {
       pic: "w4/pano_deep", fill: true, rock: "moss", ground: "pebbles" },
     // (Glen 11-13: "Drop the pool down underneath the flooded tunnel ... Then connect it to the hidden spring going left. It
     //  will make more room for the words on the sheet") the Deep Pool under the Flooded Tunnel, the Spring to its left
-    { id: "spring", name: "The Hidden Spring", w: 90, cave: true, mx: 20, my: 4, mw: 3, left: "climb", right: "deep", dark: 0.8,
+    { id: "spring", name: "The Hidden Spring", w: 220, cave: true, mx: 15, my: 4, mw: 8, left: "climb", right: "deep", dark: 0.8,
       pic: "w4/pano_spring", fill: true, rock: "moss", ground: "limestone" },
     // (Glen 11-13: "start circling back to the four tunnels ... so I am not all the way at the end and no way back. Then there
     //  can be a secret in that shaft that takes me underneath the rat Warren and then up a shaft back to camp")
-    { id: "climb", name: "The Long Climb", w: 40, up: 100, cave: true, mx: 19, my: 4, mw: 1, mh: 2, right: "spring", dark: 0.9,
+    { id: "climb", name: "The Long Climb", w: 40, up: 60, cave: true, mx: 14, my: 3, mw: 1, mh: 2, right: "spring", dark: 0.9,
       pic: "w4/tall_ledges", k: 0.6, fog: 0.25, tall: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "under", name: "Beneath the Warren", w: 130, cave: true, mx: 8, my: 3, mw: 4, right: "campshaft", dark: 0.95,
+    { id: "under", name: "Beneath the Warren", w: 150, cave: true, mx: 8, my: 3, mw: 6, left: "campshaft", dark: 0.95,
       pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "campshaft", name: "The Shaft to the Camp", w: 40, up: 60, cave: true, mx: 7, my: 2, mw: 1, mh: 2, left: "under", dark: 0.6,
+    { id: "campshaft", name: "The Shaft to the Camp", w: 40, up: 60, cave: true, mx: 7, my: 2, mw: 1, mh: 2, right: "under", dark: 0.6,
       pic: "w4/tall_roost", k: 0.6, tall: true, rock: "pale", ground: "limestone" },
   ],
   // the Journal: Glen's song, the Chorus (SONG_PSALM57.md, his words exactly)
@@ -458,33 +458,46 @@ function r4Build(R) {
     r4FishAt(rm, "biter", c, 62, 80, 40); r4FishAt(rm, "perch", c, 84, 108, -40); r4FishAt(rm, "biter", c, 92, 112, 90);
     r4FishAt(rm, "tilapia", c, 116, 140, 0); r4FishAt(rm, "biter", c, 130, 150, -70); r4FishAt(rm, "tilapia", c, 150, 166, 60);
   }
-  // -- The Hidden Spring: the end of the cave; his jars to break, ledges up. (Next: the water from Bethlehem; Gad: on to Judah)
+  // -- The Hidden Spring: in from the Deep Pool at the right (its olive press there), a long way left along the spring's
+  //  shore to the foot of the Long Climb, under the Four Tunnels. (Next: the water from Bethlehem; Gad: on to Judah)
   c = R("spring");
   { const rm = "spring", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
-    ground(c, c + 89);
-    campfire(c + 84, GR - 1);   // (by the way in from the Deep Pool)
-    for (const k of [12, 13, 14, 28, 29, 38]) r4Jar(rm, c + k);
-    L("m", 18, 500); r4Olives(L("l", 23, 385));
-    const u = r4Run(rm, "moss", X(44), 500, ["m", "l", "m"]); r4Olives(u[1]); r4Jar(rm, u[2].c, u[2].y);
-    rBat(rm, c + 40, 130); rBat(rm, c + 60, 130);
-    for (const k of [70, 71, 72, 77, 78]) r4Jar(rm, c + k);
+    ground(c, c + 219);
+    campfire(c + 214, GR - 1);   // (by the way in from the Deep Pool)
+    r4Jar(rm, c + 200); r4Jar(rm, c + 201); r4Jar(rm, c + 202);
+    L("m", 186, 500); r4Olives(L("l", 178, 390));
+    r4Pit(rm, c + 168, 5); rRat(rm, c + 162, 4);
+    const u = r4Run(rm, "moss", X(144), 500, ["m", "l", "m"]); r4Olives(u[0]); rRelic("r4_pom_spring", "pomegranate", u[2].c, onTop(u[2].y));
+    r4Pit(rm, c + 136, 4, true);
+    r4Jar(rm, c + 128); r4Jar(rm, c + 129); rBat(rm, c + 126, 130); rBat(rm, c + 134, 140);
+    campfire(c + 114, GR - 1);
+    r4Pit(rm, c + 96, 10); L("s", 97, 510); r4Olives(L("s", 102, 510));
+    rRat(rm, c + 86, 4); rRat(rm, c + 78, 4);
+    const v = r4Run(rm, "moss", X(58), 500, ["s", "m", "s"]);
+    const f = r4Run(rm, "moss", v[2].x1 + 70, 280, ["m", "m"], 0, 70); f.forEach(l => r4Olives(l)); r4Jar(rm, f[1].c, f[1].y);
+    r4Pit(rm, c + 46, 3);
+    r4Jar(rm, c + 30); r4Jar(rm, c + 31); r4Jar(rm, c + 32);
+    L("m", 18, 500); r4Olives(L("l", 24, 390));
+    rBat(rm, c + 40, 130); rBat(rm, c + 70, 130); rBat(rm, c + 160, 130);
   }
-  // -- The Long Climb: from the Hidden Spring back up to the Four Tunnels (the fourth arch). Halfway up, a crack in the rock
-  //  with cool air coming out: the secret way (Beneath the Warren, then up into the Camp)
+  // -- The Long Climb: up from the far end of the Hidden Spring to the Four Tunnels (the fourth arch). Partway up, a crack in
+  //  the rock with cool air coming out: the secret way (Beneath the Warren, then up into the Camp)
   c = R("climb");
   { ground(c, c + 39);
-    const z = r4Zig("climb", "dark", 500, -3000, false, 3);
+    const z = r4Zig("climb", "dark", 500, -1550, true, 3);   // (from the right: in from the Spring)
     z.forEach((l, i) => { if (i % 4 === 1) r4Olives(l); if (i % 6 === 3) r4Jar("climb", l.c, l.y); if (i % 8 === 5) rBat("climb", l.c, l.y + 40); });
-    const top = z[z.length - 1], mid = z[Math.floor(z.length * 0.45)];
+    const top = z[z.length - 1], mid = z[Math.floor(z.length * 0.4)];
     r4Tunnel("climb_top", "climb", (top.x + top.x1) / 2, top.y, "n4");
     r4Tunnel("climb_secret", "climb", (mid.x + mid.x1) / 2, mid.y, "under_in", null, true);
     rRelic("r4_pom_climb", "pomegranate", z[z.length - 3].c, onTop(z[z.length - 3].y));
   }
-  // -- Beneath the Warren (the secret way): rats' tunnels under the Warren; drops, ledges, spiders; on at the right, the shaft
+  // -- Beneath the Warren (the secret way): in at the right end from the Long Climb's crack; rats' tunnels under the Warren,
+  //  drops, ledges, spiders; out at the left, the shaft up to the Camp
   c = R("under");
   { const rm = "under", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
-    ground(c, c + 129);
-    r4Tunnel("under_in", rm, X(5), G, "climb_secret");
+    ground(c, c + 149);
+    r4Tunnel("under_in", rm, X(145), G, "climb_secret");
+    r4Jar(rm, c + 132); r4Jar(rm, c + 133); rRat(rm, c + 126, 4); r4Olives(L("m", 136, 500));
     for (const k of [14, 30, 52, 70, 96, 112]) rRat(rm, c + k, 4);
     L("m", 18, 500); r4Olives(L("l", 24, 390));
     r4Pit(rm, c + 34, 5);
@@ -513,7 +526,7 @@ function r4Build(R) {
   S("lamphall", 20, 160); S("lamphall", 82, 180); S("lamphall", 120, 170); Cw("lamphall", 105, 5); Cw("lamphall", 146, 4);
   S("warren", 30, 170); S("warren", 68, 180); S("warren", 120, 160); S("warren", 162, 180); Cw("warren", 35, 5); Cw("warren", 110, 4); Cw("warren", 175, 3);
   S("narrows", 22, 170); S("narrows", 60, 180); S("narrows", 95, 170); Cw("narrows", 50, 4); Cw("narrows", 100, 5);
-  S("ledges", 12, 300); S("roost", 30, 200); S("spring", 30, 180); Cw("spring", 60, 5);
+  S("ledges", 12, 300); S("roost", 30, 200); S("spring", 30, 180); Cw("spring", 60, 5); S("spring", 120, 170); S("spring", 175, 180); Cw("spring", 150, 5);
   S("under", 20, 170); S("under", 48, 180); S("under", 100, 170); Cw("under", 74, 4); S("climb", 20, 300);
   for (let i = region.props.length; i--;) if (region.props[i].n === "p_left" || region.props[i].n === "p_right") region.props.splice(i, 1);   // (r4Floor draws the drops)
 }

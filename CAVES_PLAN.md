@@ -157,3 +157,7 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
 - (later, Glen: "Drop the pool down underneath the flooded tunnel ... connect it to the hidden spring going left") The map's
   bottom row: Long Climb | Hidden Spring | Deep Pool (under the Flooded Tunnel). In from the Flooded Tunnel at the Deep
   Pool's right end, swim left to the Spring, on left to the Long Climb. The map is 28 cells wide now (was 36).
+- (later, Glen: "Hidden spring should go left all the way to four tunnels and then go up from there. Then there is a secret
+  to connect it to beneath the warren") The Spring is long now (220): in from the Deep Pool at the right, left along the
+  shore to the Long Climb (under the Four Tunnels), up to the fourth arch. The crack partway up the Climb comes out at
+  the right end of Beneath the Warren; its left end opens onto the Shaft to the Camp.
