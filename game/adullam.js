@@ -22,7 +22,7 @@ const R4 = {
   //  px from the tunnel's middle that counts as at it (and HIGH px of height)
   //  (Glen 11-13: "have him start turning for a couple frames and then it goes to the next room": TURN s, then the cut)
   //  SIDE: a side cave not open yet stands this many px higher, rubble heaped in front (RUBBLE: its size)
-  TUNNEL: { TURN: 0.45, REACH: 60, HIGH: 60, SIDE: 40, RUBBLE: 0.95, ON_LEDGE: 26 },
+  TUNNEL: { TURN: 0.45, REACH: 60, HIGH: 60, SIDE: 40, RUBBLE: 0.95, ON_LEDGE: 26, SWIM_HIGH: 260 },   // (SWIM_HIGH: px over an underwater tunnel's floor that still counts, swimming)
   // (Glen 11-13: "I shouldn't be able to go to beneath the warren ... when we go through the whole thing we can unblock it
   //  with Goliath's sword") the rubble across the way from the Shaft to the Camp into Beneath the Warren: its piles' sizes
   WALL: { BIG: 1.7, TOP: 1.15, REACH: 170 },
@@ -660,13 +660,15 @@ function r4Update(dt, r) {
   // its oil: an olive from the flask every few seconds, in the dark
   if (r.dark > 0.6 && r4Lamp() && d.olives > 0) { r4.oilT += dt; if (r4.oilT >= R4.DARK.OIL_EVERY) { r4.oilT = 0; d.olives--; } }
   if (!pressed("up") || region.trans || d.deadT > 0 || (!d.onGround && !r4.swim)) return;
-  const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH && Math.abs(d.y - o.y) < U.HIGH);
+  // (Glen 11-13: "When I get to this part to hit up ... David just stays swimming") in the water, anywhere over it counts
+  const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH && (r4.swim ? d.y < o.y + 10 && o.y - d.y < U.SWIM_HIGH : Math.abs(d.y - o.y) < U.HIGH));
   if (!tun) return;
   if (!tun.to) { r4Tell("side" + tun.x, "A side cave. Not open yet: still to explore."); return; }
   if (tun.blocked) {   // rubble across a side cave: Goliath's sword breaks it (test your might)
     if (!hasSkill("heavySword")) { r4Tell("rubble" + tun.id, "Rubble across the way in. Something heavy could break it."); return; }
     r3MightStart(tun.might); return;
   }
+  if (r4.swim) { d.y = tun.y; d.vy = 0; d.onGround = true; }   // (out of the stroke: he stands on the bottom and turns to go in)
   r4.swim = null; r4.walk = { tun, t: 0, x: d.x }; d.vx = 0; d.charging = false;   // (held still meanwhile: r4Hold)
 }
 
