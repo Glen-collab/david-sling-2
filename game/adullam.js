@@ -87,13 +87,15 @@ const ADULLAM = {
     { id: "flooded", name: "The Flooded Tunnel", w: 130, cave: true, mx: 23, my: 3, mw: 4, left: "river", dark: 0.92, water: 400,
       pic: "w4/pano_flooded", fill: true, rock: "moss", ground: "pebbles" },
     // (Glen 11-13: "the deep pool should be all underwater") the water up near the roof; rock over most of it, air between
-    { id: "deep", name: "The Deep Pool", w: 170, cave: true, mx: 27, my: 3, mw: 5, left: "flooded", right: "spring", dark: 0.92, water: 170,
+    { id: "deep", name: "The Deep Pool", w: 170, cave: true, mx: 23, my: 4, mw: 5, left: "spring", dark: 0.92, water: 170,
       pic: "w4/pano_deep", fill: true, rock: "moss", ground: "pebbles" },
-    { id: "spring", name: "The Hidden Spring", w: 90, cave: true, mx: 32, my: 3, mw: 3, left: "deep", right: "climb", dark: 0.8,
+    // (Glen 11-13: "Drop the pool down underneath the flooded tunnel ... Then connect it to the hidden spring going left. It
+    //  will make more room for the words on the sheet") the Deep Pool under the Flooded Tunnel, the Spring to its left
+    { id: "spring", name: "The Hidden Spring", w: 90, cave: true, mx: 20, my: 4, mw: 3, left: "climb", right: "deep", dark: 0.8,
       pic: "w4/pano_spring", fill: true, rock: "moss", ground: "limestone" },
     // (Glen 11-13: "start circling back to the four tunnels ... so I am not all the way at the end and no way back. Then there
     //  can be a secret in that shaft that takes me underneath the rat Warren and then up a shaft back to camp")
-    { id: "climb", name: "The Long Climb", w: 40, up: 100, cave: true, mx: 35, my: 1, mw: 1, mh: 3, left: "spring", dark: 0.9,
+    { id: "climb", name: "The Long Climb", w: 40, up: 100, cave: true, mx: 19, my: 4, mw: 1, mh: 2, right: "spring", dark: 0.9,
       pic: "w4/tall_ledges", k: 0.6, fog: 0.25, tall: true, rock: "dark", ground: "dark", near: "pile" },
     { id: "under", name: "Beneath the Warren", w: 130, cave: true, mx: 8, my: 3, mw: 4, right: "campshaft", dark: 0.95,
       pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
@@ -448,7 +450,7 @@ function r4Build(R) {
   c = R("deep");
   { const rm = "deep", X = k => (c + k) * T;
     ground(c, c + 169);
-    r4Tunnel("deep_in", rm, X(6.8), G, "flood_under", null);
+    r4Tunnel("deep_in", rm, X(165), G, "flood_under", "w4_tunnel_lit");   // (in at the right end; swim left to the Spring)
     for (const [k, w] of [[10, 28], [44, 30], [80, 30], [116, 30], [152, 10]]) r4Lid(rm, c + k, w);   // (air at 0-10, 38-44, 74-80, 110-116, 146-152, 162-170)
     for (const k of [14, 50, 86, 122]) oliveRow(c + k, 15.4, 5);
     rRelic("r4_pom_deep", "pomegranate", c + 96, 15);
@@ -460,12 +462,12 @@ function r4Build(R) {
   c = R("spring");
   { const rm = "spring", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
     ground(c, c + 89);
-    campfire(c + 4, GR - 1);
+    campfire(c + 84, GR - 1);   // (by the way in from the Deep Pool)
     for (const k of [12, 13, 14, 28, 29, 38]) r4Jar(rm, c + k);
     L("m", 18, 500); r4Olives(L("l", 23, 385));
     const u = r4Run(rm, "moss", X(44), 500, ["m", "l", "m"]); r4Olives(u[1]); r4Jar(rm, u[2].c, u[2].y);
     rBat(rm, c + 40, 130); rBat(rm, c + 60, 130);
-    for (const k of [70, 71, 72, 80, 81]) r4Jar(rm, c + k);
+    for (const k of [70, 71, 72, 77, 78]) r4Jar(rm, c + k);
   }
   // -- The Long Climb: from the Hidden Spring back up to the Four Tunnels (the fourth arch). Halfway up, a crack in the rock
   //  with cool air coming out: the secret way (Beneath the Warren, then up into the Camp)

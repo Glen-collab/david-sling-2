@@ -8,6 +8,8 @@ for (const id of ["mouth_in", "camp_in", "lamp_down", "warren_back", "n3", "ledg
   S.push({ n: 1, fn: toTun(id) }, { keys: [], n: 20 }, { keys: ["ArrowUp"], n: 3 }, { keys: [], n: 150, fn() { log(id + " -> " + where()); } });
 S.push({ n: 1, fn() { const r = roomById("ledges"); moveParty(r.c0 * T + 60, GR * T); snapCamera(); } }, { keys: ["ArrowLeft"], n: 90, fn() { log("ledges left edge -> " + where()); } });
 S.push({ n: 1, fn() { const r = roomById("narrows"); moveParty((r.c0 + r.w) * T - 60, GR * T); snapCamera(); } }, { keys: ["ArrowRight"], n: 90, fn() { log("narrows right edge -> " + where()); } }, { keys: [], n: 1, snap: true });
-S.push({ n: 1, fn() { const r = roomById("spring"); moveParty((r.c0 + r.w) * T - 60, GR * T); snapCamera(); } }, { keys: ["ArrowRight"], n: 90, fn() { log("spring right edge -> " + where()); } });
+S.push({ n: 1, fn() { const r = roomById("spring"); moveParty((r.c0 + r.w) * T - 60, GR * T); snapCamera(); } }, { keys: ["ArrowRight"], n: 60, fn() { log("spring right edge -> " + where()); } });
+S.push({ n: 1, fn() { const r = roomById("spring"); moveParty(r.c0 * T + 60, GR * T); snapCamera(); } }, { keys: ["ArrowLeft"], n: 60, fn() { log("spring left edge -> " + where()); } });
+S.push({ n: 1, fn() { const r = roomById("deep"); moveParty(r.c0 * T + 60, 500); snapCamera(); } }, { keys: ["ArrowLeft"], n: 60, fn() { log("deep left edge -> " + where()); } });
 S.push({ n: 1, fn() { const r = roomById("under"); moveParty((r.c0 + r.w) * T - 60, GR * T); snapCamera(); } }, { keys: ["ArrowRight"], n: 90, fn() { log("under right edge -> " + where()); } });
 testRun(S);

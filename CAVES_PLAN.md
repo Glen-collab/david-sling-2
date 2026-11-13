@@ -154,3 +154,6 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
 - Halfway up the Long Climb, a secret crack (no arch, no Up arrow; "Cool air is blowing..." when he's near): down to
   Beneath the Warren (130, rats, drops, a pomegranate), then right into The Shaft to the Camp, up to the Camp's side cave.
 - Still rubble (not open yet): the Bat Roost's top, the Warren's two side caves, the Four Tunnels' second arch.
+- (later, Glen: "Drop the pool down underneath the flooded tunnel ... connect it to the hidden spring going left") The map's
+  bottom row: Long Climb | Hidden Spring | Deep Pool (under the Flooded Tunnel). In from the Flooded Tunnel at the Deep
+  Pool's right end, swim left to the Spring, on left to the Long Climb. The map is 28 cells wide now (was 36).
