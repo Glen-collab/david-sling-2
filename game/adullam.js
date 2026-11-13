@@ -10,6 +10,10 @@
 const R4 = {
   STAND: 0.12,       // a ledge's walking surface: this much of its height down from its top edge (the top face of the rock)
   PROP_K: 0.55,      // the camp's jars, bedrolls and baskets, next to their cut size
+  // (Glen 11-13: "an up arrow to go into the cave deeper") a tunnel into the picture: Up by it, he turns his back
+  //  (TURN s, Glen's david_turn_away) and walks in, smaller and fading (WALK s, SHRINK, RISE px up the picture); REACH:
+  //  px from the tunnel's middle that counts as at it
+  TUNNEL: { TURN: 0.7, WALK: 0.9, SHRINK: 0.25, RISE: 14, REACH: 60 },
 };
 
 const ADULLAM = {
@@ -17,10 +21,12 @@ const ADULLAM = {
   strCap: 8,
   rooms: [
     // (Glen's cave mouth: the hills outside on the left, a pool, the tunnel on in at the right)
-    { id: "mouth", name: "The Cave Mouth", w: 62, cave: true, mx: 0, my: 0, mw: 2, right: "camp",
+    //  (Glen 11-13) no walking off its right end: the tunnel there, Up to go in
+    { id: "mouth", name: "The Cave Mouth", w: 62, cave: true, mx: 0, my: 0, mw: 2,
       strip: "w4/mouth_strip", floor: "w4/mouth_floor" },
-    // (his pale limestone hall: daylight through the arch on the left, a tunnel on at the right)
-    { id: "camp",  name: "The Camp",       w: 78, cave: true, mx: 2, my: 0, mw: 2, left: "mouth",
+    // (Glen 11-13: "the exact same background ... it looks like he enters the cave twice": his hall of sunbeams through
+    //  the roof, deeper in, in place of the limestone hall with its arch. Its left end: back out the tunnel)
+    { id: "camp",  name: "The Camp",       w: 79, cave: true, mx: 2, my: 0, mw: 2, left: "mouth",
       strip: "w4/camp_strip", floor: "w4/camp_floor" },
   ],
   // the Journal: Glen's song, the Chorus (SONG_PSALM57.md, his words exactly)
@@ -32,7 +38,7 @@ const ADULLAM = {
     ["I escaped to Adullam’s cave. My brothers and all my father’s house heard it, and came down to me there.", "1 Samuel 22:1"],
   ],
   end: ["Bring my soul out of prison, that I may give thanks to your name.", "Psalm 142:7"],
-  build: r4Build, enter: r4Enter,
+  build: r4Build, enter: r4Enter, update: (dt, r) => r4Update(dt, r), holdDavid: d => { if (!r4.walk) return false; d.vx = d.vy = 0; return true; }, drawDavid: (d, x, y) => r4DrawDavid(d, x, y), draw: camX => r4Draw(camX),
 };
 
 const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: the rock's top edge, px down the piece)
@@ -46,7 +52,7 @@ const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: t
   w4_bedroll: { w: 170, h: 99 }, w4_bowl: { w: 142, h: 72 }, w4_bread: { w: 116, h: 90 }, w4_bag: { w: 173, h: 107 },
 };
 
-const r4 = { told: {} };
+const r4 = { told: {}, tunnels: [], walk: null };
 function r4Tell(k, text) { if (!r4.told[k]) { r4.told[k] = true; toast(text); } }
 
 // one of Glen's ledges, its left edge at x (px), the top of its rock at y (px): drawn, and he can stand on it (and jump up
@@ -63,8 +69,12 @@ function r4Thing(room, n, x, y = FOOT, k = R4.PROP_K) {
   const s = KIT[n]; region.props.push({ room, n, x: x - s.w * k / 2, y: y - s.h * k + 4, s: k });
 }
 
+// a tunnel into the picture at x (px) in a room: Up there, he walks in and comes out at `to` (room id, column in it)
+function r4Tunnel(room, x, to, k) { r4.tunnels.push({ room, x, to, k }); }
+
 function r4Build(R) {
   Object.assign(KIT, R4_KIT);
+  r4.tunnels.length = 0; r4.walk = null;
 
   // -- The Cave Mouth (22:1): in from the hills of Judah. A few ledges up the rock by the pool; the way on in
   let c = R("mouth");
@@ -79,13 +89,14 @@ function r4Build(R) {
     rRelic("r4_pom_mouth", "pomegranate", c + 33, onTop(b));
     r4Thing("mouth", "w4_rocks_sand", X(46));
     r4Thing("mouth", "w4_stalagmites", X(52), FOOT, 0.9);
+    r4Tunnel("mouth", X(58) + T / 2, "camp", 3);   // (the tunnel in his picture, on in: the Camp)
     void a;
   }
 
   // -- The Camp (22:2): the great pale hall. The men's things: bedrolls, jars, baskets, bread. Ledges up the wall
   c = R("camp");
   { const X = k => (c + k) * T;
-    ground(c, c + 77);
+    ground(c, c + 78);
     campfire(c + 12, GR - 1);
     r4Thing("camp", "w4_bedroll", X(6)); r4Thing("camp", "w4_bag", X(9));
     r4Thing("camp", "w4_jar_big", X(17)); r4Thing("camp", "w4_pitcher", X(19)); r4Thing("camp", "w4_pot", X(21));
@@ -104,4 +115,34 @@ function r4Build(R) {
 function r4Enter(r) {
   if (r.id === "mouth") r4Tell("mouth", "David therefore departed from there and escaped to Adullam’s cave. (1 Samuel 22:1)");
   if (r.id === "camp") r4Tell("camp", "Everyone who was in distress, everyone who was in debt, and everyone who was discontented gathered themselves to him. (1 Samuel 22:2)");
+}
+
+// (Glen 11-13) the tunnels: Up by one and he turns his back, walks in, and the screen fades to where it comes out
+function r4Update(dt, r) {
+  const d = david, w = r4.walk, U = R4.TUNNEL;
+  if (w) {
+    w.t += dt; d.vx = 0;
+    if (!w.gone && w.t >= U.TURN + U.WALK) {
+      w.gone = true; const n = roomById(w.tun.to);
+      regionGo((n.c0 + w.tun.k) * T, 1, () => { r4.walk = null; });
+    }
+    return;
+  }
+  if (!pressed("up") || !d.onGround || region.trans || d.deadT > 0) return;
+  const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH);
+  if (!tun) return;
+  r4.walk = { tun, t: 0, x: d.x }; d.vx = 0; d.charging = false;   // (held still meanwhile: holdDavid)
+}
+function r4DrawDavid(d, x, y) {
+  const w = r4.walk, U = R4.TUNNEL; if (!w) return false;
+  if (w.t < U.TURN) drawSprite("david_turn_away", Math.min(7, Math.floor(w.t / U.TURN * 8)), x, y, d.facing);
+  else if (!w.gone || region.trans) {
+    const k = Math.min(1, (w.t - U.TURN) / U.WALK);
+    drawSprite("david_walk_away", frameOf("david_walk_away", w.t), x, y - k * U.RISE, 1, 1 - U.SHRINK * k, 1 - 0.7 * k);
+  }
+  return true;
+}
+function r4Draw(camX) {   // the Up arrow over a tunnel he's by
+  const d = david, r = region.room; if (!r || r4.walk || region.trans) return;
+  for (const o of r4.tunnels) if (o.room === r.id && Math.abs(d.x - o.x) < 140) upHint(o.x - camX, GR * T - 175);
 }
