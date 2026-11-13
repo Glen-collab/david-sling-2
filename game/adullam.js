@@ -74,7 +74,8 @@ const ADULLAM = {
   rooms: [
     // UPPER: daylight
     { id: "mouth", name: "The Cave Mouth", w: 150, cave: true, mx: 0, my: 1, mw: 4, pic: "w4/pano_mouth", fill: true, rock: "sand", ground: "limestone" },
-    { id: "camp", name: "The Camp", w: 110, cave: true, mx: 4, my: 1, mw: 3, right: "roost", pic: "w4/pano_camp", fill: true, rock: "sand", ground: "limestone" },
+    { id: "camp", name: "The Camp", w: 110, cave: true, mx: 4, my: 1, mw: 3, right: "roost", pic: "w4/pano_camp_1", fill: true,
+      pics: ["w4/pano_camp_1", "w4/pano_camp_2", "w4/pano_camp_3"],   /* (Glen 11-13: the camp filling up, as the newcomers come: r4CampStage) */ rock: "sand", ground: "limestone" },
     { id: "roost", name: "The Bat Roost", w: 40, up: 44, cave: true, mx: 7, my: 0, mw: 1, mh: 2, left: "camp", right: "lamphall",
       pic: "w4/tall_roost", k: 1, tall: true, rock: "pale", ground: "limestone" },
     { id: "lamphall", name: "The Lamp Hall", w: 172, cave: true, mx: 8, my: 1, mw: 5, left: "roost", dark: 0.45,
@@ -155,6 +156,8 @@ const r4Lamp = () => ALL_SKILLS || regionHas("taken", "r4_lamp");
 //  World 3's test of might for the rubble: Up by it, mash A and B, the bar, gold breaks it in one. (c, w: the columns its
 //  break opens, the bottom rows of: none for a side cave's rubble, which only stands in front)
 const r4Might = (id, c, w, x0, x1) => ({ id, room: null, c, w, x0, x1, up: 0, hp: R3.MIGHT.HP, hits: 0, broken: regionHas("taken", id), shake: 0, kind: "crack" });
+// the camp's picture: a few men, then a crowd (4 newcomers found), then packed (all of them)
+const r4CampStage = () => { const n = r4.men.filter(m => m.id && regionHas("taken", m.id)).length; return n >= 8 ? 2 : n >= 4 ? 1 : 0; };
 const r4WallOpen = () => hasSkill("heavySword") && regionHas("explored", "climb");   // (the rubble into Beneath the Warren: Goliath's sword, once he's been all through)
 
 // one of Glen's ledges, its left edge at x (px), the top of its rock at y (px): drawn, and he can stand on it (and jump up
@@ -284,7 +287,7 @@ function r4Build(R) {
   Object.assign(KIT, R4_KIT);
   r4.tunnels.length = 0; r4.lids.length = 0; r4.fish.length = 0; r4.men.length = 0;
   Object.assign(TUNE.SPRITE_SIZE, { soldier2_fear: 0.8, soldier2_go: 0.88 });   // (as world6.js: the second man sat nearly as tall as David) r4.walk = null; r4.swim = null;
-  for (const r of ADULLAM.rooms) { roomImg(r.pic); roomImg(r.mid); roomImg(`w4/floor_${r.ground}.png`); roomImg(`w4/near_${r.near || r.rock}.png`); roomImg(`w4/ceil_${r.rock}.png`); }
+  for (const r of ADULLAM.rooms) { (r.pics || []).forEach(roomImg); roomImg(r.pic); roomImg(r.mid); roomImg(`w4/floor_${r.ground}.png`); roomImg(`w4/near_${r.near || r.rock}.png`); roomImg(`w4/ceil_${r.rock}.png`); }
   const G = GR * T;
 
   // -- The Cave Mouth (22:1): in from the hills of Judah. A level: rocks up and down, drops in the floor, a floor that gives
@@ -782,7 +785,7 @@ function r4Backdrop(r, camX) {
       else ctx.drawImage(im, x, Math.round(y), Math.ceil(w) + 1, h);
     }
   };
-  const im = roomImg(r.pic);
+  const im = roomImg(r.pics ? r.pics[r4CampStage()] : r.pic);
   if (im) {
     // fill: (Glen's 4:1 panoramas, make_w4_panos.py) floor to the top of the screen, its middle in the middle of the room
     const k = r.fill ? B.BOT / im.naturalHeight : r.k || B.K, w = im.naturalWidth * k, h = im.naturalHeight * k;

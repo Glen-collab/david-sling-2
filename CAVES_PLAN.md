@@ -185,3 +185,5 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
   the cave (Mouth, Lamp Hall, Warren, Four Tunnels, Beneath the Warren, Spring, Bats' Nook, Fallen Stones): Up, his words
   and David's (drafts, for Glen), he gets up (his fear clip) and walks off to the camp (his go clip, fading). The Camp:
   men sitting and talking, the old man, two huddled, the boy; each newcomer found stands there after ("r4_man_N").
+- The Camp's picture grows with the newcomers (Glen's set12_camp_crowd_1-3 -> pano_camp_1-3; r4CampStage): a few men,
+  then a crowd at 4 found, then packed at all 8.
