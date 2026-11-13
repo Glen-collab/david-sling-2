@@ -187,3 +187,6 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
   men sitting and talking, the old man, two huddled, the boy; each newcomer found stands there after ("r4_man_N").
 - The Camp's picture grows with the newcomers (Glen's set12_camp_crowd_1-3 -> pano_camp_1-3; r4CampStage): a few men,
   then a crowd at 4 found, then packed at all 8.
+- (later) Glen's smaller-men camp pictures: pano_camp_1 = set12_camp_crowd_2_small (a few by the fires), _2 =
+  set12_camp_crowd_2b_small (a sitting crowd), _3 = set12_camp_crowd_3_small (packed). The dark under the floors starts
+  where each floor picture is solid (R4.FLOOR_SOLID): no dark line between his picture and the floor.

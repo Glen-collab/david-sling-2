@@ -44,6 +44,7 @@ const R4 = {
   // (Glen 11-13: "Here are some cave floors") his floors, under David's feet, scrolling with him: px of each over the
   //  ground line (he walks a little way into it, not along its back edge)
   FLOOR: { limestone: 80, sandstone: 74, dark: 70, pebbles: 50 },
+  FLOOR_SOLID: { limestone: 42, sandstone: 45, dark: 2, pebbles: 104 },   // (the row each floor picture is solid from: under it, dark)
   // (Glen 11-13: "paint the exact ledges that we can jump on") a way up a tall room: his ledges zigzagging, each DY px
   //  over the last, GAP px apart sideways, kept EDGE px from the walls; their sizes in turn
   ZIG: { DY: 115, GAP: 55, EDGE: 70, SIZES: ["m", "l", "s", "m", "l"] },
@@ -811,7 +812,8 @@ function r4Floor(r, camX) {
   const fl = roomImg(`w4/floor_${r.ground}.png`); if (!fl) return false;
   const rx = r.c0 * T - camX, rw = r.w * T, y = GR * T - R4.FLOOR[r.ground], w = fl.naturalWidth, h = fl.naturalHeight;
   ctx.save(); ctx.beginPath(); ctx.rect(rx, camY, rw, H + 400); ctx.clip();
-  ctx.fillStyle = "#14100c"; ctx.fillRect(rx, y + 30, rw, H + 400);
+  // (Glen 11-13: "a black space from background to topsoil floor") the dark under his floor only from where it's solid
+  ctx.fillStyle = "#14100c"; ctx.fillRect(rx, y + (R4.FLOOR_SOLID[r.ground] ?? h), rw, H + 400);
   for (let i = 0; i * w < rw; i++) {
     const x = Math.round(rx + i * w);
     if (x > W || x + w < 0) continue;
