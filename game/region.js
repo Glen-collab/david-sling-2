@@ -1299,6 +1299,7 @@ function drawRegion(camX) {
   const d = david, now = performance.now() / 1000;
   for (const r of REGION.rooms) {   // a painted room, over the tiles and ledges drawn for it
     const rx = r.c0 * T - camX, rw = r.w * T; if (rx > W || rx + rw < 0) continue;
+    if (REGION.floor && REGION.floor(r, camX)) continue;   // (a region's own floor: adullam.js, Glen's cave floors)
     const fl = roomImg(r.floor);
     if (fl) {   // a long room's ground, repeating
       const fw = fl.naturalWidth, a = Math.max(rx, 0), b = Math.min(rx + rw, W);

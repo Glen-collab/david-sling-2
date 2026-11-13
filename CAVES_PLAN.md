@@ -120,3 +120,16 @@ Working: Up-arrow tunnels (r4Tunnel; to: null = a side cave still to make: camp,
 the dark with the lamp burning olives (R4.DARK); swimming with a breath meter (R4.SWIM, Glen's david_swim); bats, rats;
 painted ledges measured from his pictures (r4Painted) plus kit ledges where a gap was too big. On the land map after Gath.
 Not yet: the 400 / people, side caves, treading-water clip, a way back up the well, the end scene.
+
+## Rework after Glen's first play (2026-11-13)
+Glen: the pictures too blown up next to David, rooms too quick, stuck in the Crumbling Ledges, painted jars he couldn't
+break, standing on air on painted ledges, no floor. Then: "the whole cave isn't that big. We can make small areas", and
+his floors (set8_floor_limestone / sandstone / dark / pebbles, set8_near_rockpile).
+- His pictures now far off and small (R4.BG: half size, slow scroll, mirrored tiles, shaded; the roof going dark over
+  them); stalactites along the top, rubble just behind David (make_w4_layers.py), his floors under him (r4Floor).
+- Every ledge he can stand on is a kit ledge (r4L; tall rooms: r4Zig zigzags). No painted ledges are walkable now.
+- Jars: rBreak jars (r4Jar) in every room, many in the Camp and the Hidden Spring.
+- Tunnels by id (r4Tunnel id -> id), each with a mouth cut from his pictures (w4_arch, w4_arch_sand, w4_tunnel_lit);
+  every tunnel goes both ways; the Crumbling Ledges open at the left to the Four Tunnels; the well's top tunnel goes back.
+- Fixed: the dark never showed (its canvas was made before the screen was).
+Art that would help: real green-screen tunnel mouths (one per rock color), and the camp's people.
