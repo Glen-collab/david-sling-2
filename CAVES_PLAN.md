@@ -111,3 +111,12 @@ Still needed: mid/near layers for middle and lower, water surface loop, waterfal
   red-brown (Lamp Hall, orange cracks), sand and pale (upper: Cave Mouth, Camp, limestone), mossy (by the water).
   set7_props_sheet: stepping stones, stalactite, stalagmites, oil lamp (the lamp David carries / lamps to refill at), big storage jar,
   pitcher, small pot, basket, waterskin, bedroll, bowl, bread, sling-bag: the Camp of the 400, the water from Bethlehem (pitcher/waterskin).
+
+## Built 2026-11-13 (game/adullam.js, "#9-8", Play World 4, Adullam (test).bat)
+All 13 rooms: Cave Mouth -(tunnel)-> Camp (sunbeam hall) -> Bat Roost (tall) -> Lamp Hall (the lamp; stairs down) ->
+Rat Warren -> Four Tunnels -(3rd arch)-> Crumbling Ledges (tall, up) -(top tunnel)-> Old Well Shaft (down) -> Underground
+River -> Flooded Tunnel -(tunnel under the water)-> Deep Pool -> Hidden Spring (Gad, 22:5).
+Working: Up-arrow tunnels (r4Tunnel; to: null = a side cave still to make: camp, roost top, warren x3, four tunnels x2);
+the dark with the lamp burning olives (R4.DARK); swimming with a breath meter (R4.SWIM, Glen's david_swim); bats, rats;
+painted ledges measured from his pictures (r4Painted) plus kit ledges where a gap was too big. On the land map after Gath.
+Not yet: the 400 / people, side caves, treading-water clip, a way back up the well, the end scene.

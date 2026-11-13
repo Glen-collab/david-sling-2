@@ -11,7 +11,7 @@ const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself
   //  shows; choosing Gath starts on the road down to it
   { id: "nob", name: "Nob", world: "World 3", x: 684, y: 125, stage: "9-7", key: "nobgath", done: ["r3_sword", "r3_gath", "r3_mad", "g_exit_open"], room: "nobroad", after: "ramah" },   // (Glen 11-12: "the main map ... didn't have Gath": with all skills he never picks the sword up; anything past it counts)
   { id: "gath", name: "Gath", world: "World 3", x: 219, y: 356, stage: "9-7", key: "nobgath", room: "gathroad", after: "nob" },
-  { id: "adullam", name: "Adullam", world: "World 4", x: 525, y: 281, stage: null, after: "gath" },
+  { id: "adullam", name: "Adullam", world: "World 4", x: 525, y: 281, stage: "9-8", key: "adullam", room: "mouth", after: "gath" },   // (11-13: adullam.js)
   { id: "keilah", name: "Keilah", world: "World 4", x: 512, y: 350, stage: null, after: "adullam" },
   { id: "ziph", name: "Ziph", world: "World 5", x: 610, y: 565, stage: null, after: "keilah" },
   { id: "engedi", name: "En-Gedi", world: "World 5", x: 1012, y: 269, stage: null, after: "ziph" },

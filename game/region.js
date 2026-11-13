@@ -15,7 +15,8 @@
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
 const REGION_KEY = location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
-const REGION_UP = 110;   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
+const REGION_UP = 130;   // (Glen 11-13: 130 for World 4's Old Well Shaft, 124 rows up; was 110)
+//   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
 const RTUNE = {
   GAP: 6,            // columns of solid rock between rooms
   FADE: 0.22,        // seconds to fade out (and back in) when going through
@@ -1159,6 +1160,7 @@ function drawRegionHealth() {   // main.js drawHearts: the health meter instead 
 function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
   if (!REGION_ON) return false;
   const r = region.room || roomAt(david.x);
+  if (REGION.backdrop && REGION.backdrop(r, camX)) return true;   // (a region's own: adullam.js's tall pictures)
   const far = roomImg(r.far);
   if (far) {   // (Glen 11-05) outside: Super Mario World layers, the sky far off barely moving, the hills at half speed
     const rel = camX - r.c0 * T, mid = roomImg(r.mid);
