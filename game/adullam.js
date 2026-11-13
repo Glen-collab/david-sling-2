@@ -668,7 +668,11 @@ function r4Update(dt, r) {
     if (!hasSkill("heavySword")) { r4Tell("rubble" + tun.id, "Rubble across the way in. Something heavy could break it."); return; }
     r3MightStart(tun.might); return;
   }
-  if (r4.swim) { d.y = tun.y; d.vy = 0; d.onGround = true; }   // (out of the stroke: he stands on the bottom and turns to go in)
+  if (r4.swim) {   // (Glen 11-13: "up should just make him go to the next room" under the water: no standing, no turn)
+    const to = r4.tunnels.find(o => o.id === tun.to);
+    regionGo(to.x, d.facing, () => { d.y = to.y; d.vy = 0; region.camFootY = Math.min(to.y, GR * T); snapCamera(); });
+    return;
+  }
   r4.swim = null; r4.walk = { tun, t: 0, x: d.x }; d.vx = 0; d.charging = false;   // (held still meanwhile: r4Hold)
 }
 
