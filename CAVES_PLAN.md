@@ -133,3 +133,13 @@ his floors (set8_floor_limestone / sandstone / dark / pebbles, set8_near_rockpil
   every tunnel goes both ways; the Crumbling Ledges open at the left to the Four Tunnels; the well's top tunnel goes back.
 - Fixed: the dark never showed (its canvas was made before the screen was).
 Art that would help: real green-screen tunnel mouths (one per rock color), and the camp's people.
+
+## Long rooms and Glen's panoramas (2026-11-13, later)
+Glen: "Make the rooms long and fun. Each room should be like a level in a game ... not just a pass through. Those are only
+side rooms." The main rooms are now levels (Mouth 150, Camp 110, Lamp Hall 172, Warren 190, Four Tunnels 120, River 170,
+Flooded 130, Deep 170, Spring 90): drops in the floor (r4Pit, some with a floor that gives way), stepping stones, runs of
+ledges up and along (r4Run), rat nests, bats, olive presses partway, a pomegranate in each. In the water rooms the rock
+comes down into the water (r4Lid): swim under it on your breath. The side caves (to: null tunnels) will be the small rooms.
+Pictures: his 4:1 panoramas cut and rejoined with his middle pieces between (tools/make_w4_panos.py; set9_*), one per room,
+floor to roof, spread over the whole room (R4.FILL_P). His tall 1:2 pictures (set10_*) in the climbing rooms; the well's twice.
+Glen is making tileable middles: add them to LONG in make_w4_panos.py.

@@ -1328,7 +1328,7 @@ function drawRegion(camX) {
     }
     ctx.restore();
   }
-  for (const h of region.holes) {   // the dark down a hole
+  if (!REGION.softHoles) for (const h of region.holes) {   // the dark down a hole (softHoles: the region draws its own, adullam.js)
     const x = h.x0 - camX; if (x > W || x + (h.x1 - h.x0) < 0) continue;
     const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
     ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);

@@ -41,39 +41,45 @@ const R4 = {
   // (Glen 11-13: "paint the exact ledges that we can jump on") a way up a tall room: his ledges zigzagging, each DY px
   //  over the last, GAP px apart sideways, kept EDGE px from the walls; their sizes in turn
   ZIG: { DY: 115, GAP: 55, EDGE: 70, SIZES: ["m", "l", "s", "m", "l"] },
+  // (Glen 11-13: "swimming under stuff") rock down into the water: its bottom BELOW px under the waterline; under it he
+  //  stays UNDER px below that (no air there: swim through)
+  LID: { BELOW: 95, UNDER: 30 },
+  // the long rooms: his panorama scrolls at most this fast (a slower one: the whole picture from one end of the room to the other)
+  FILL_P: 0.55,
 };
 
 const ADULLAM = {
   key: "adullam", name: "The Cave of Adullam", start: "mouth", carry: ["gibeah", "ramah", "nobgath"],
   strCap: 8,
-  // (Glen 11-13: "the whole cave isn't that big. We can make small areas") each room a small place, full of things.
-  //  pic: his picture, far off; rock: the color of its ledges; floor: his floor under David
+  // (Glen 11-13: "Make the rooms long and fun. Each room should be like a level in a game ... not just a pass through.
+  //  Those are only side rooms") the main rooms long, each a level; the side caves (to: null tunnels) are the small places.
+  //  pic: his picture, far off (fill: his panoramas, make_w4_panos.py, floor to roof); rock: its ledges; ground: his floor
   rooms: [
     // UPPER: daylight
-    { id: "mouth", name: "The Cave Mouth", w: 60, cave: true, mx: 0, my: 1, mw: 2, pic: "w4/mouth_strip", rock: "sand", ground: "limestone" },
-    { id: "camp", name: "The Camp", w: 70, cave: true, mx: 2, my: 1, mw: 2, right: "roost", pic: "w4/camp_strip", rock: "sand", ground: "limestone" },
-    { id: "roost", name: "The Bat Roost", w: 40, up: 44, cave: true, mx: 4, my: 0, mw: 1, mh: 2, left: "camp", right: "lamphall",
-      pic: "w4/roost_tall", tall: true, rock: "pale", ground: "limestone" },
-    { id: "lamphall", name: "The Lamp Hall", w: 74, cave: true, mx: 5, my: 1, mw: 2, left: "roost", dark: 0.45,
+    { id: "mouth", name: "The Cave Mouth", w: 150, cave: true, mx: 0, my: 1, mw: 4, pic: "w4/pano_mouth", fill: true, rock: "sand", ground: "limestone" },
+    { id: "camp", name: "The Camp", w: 110, cave: true, mx: 4, my: 1, mw: 3, right: "roost", pic: "w4/pano_camp", fill: true, rock: "sand", ground: "limestone" },
+    { id: "roost", name: "The Bat Roost", w: 40, up: 44, cave: true, mx: 7, my: 0, mw: 1, mh: 2, left: "camp", right: "lamphall",
+      pic: "w4/tall_roost", k: 1, tall: true, rock: "pale", ground: "limestone" },
+    { id: "lamphall", name: "The Lamp Hall", w: 172, cave: true, mx: 8, my: 1, mw: 5, left: "roost", dark: 0.45,
       pic: "w4/lamp/far", mid: "w4/lamp/mid.png", rock: "red", ground: "sandstone" },
     // MIDDLE: dark
-    { id: "warren", name: "The Rat Warren", w: 66, cave: true, mx: 5, my: 2, mw: 2, right: "narrows", dark: 0.93,
-      pic: "w4/warren_strip", rock: "dark", ground: "dark", near: "pile" },
-    { id: "narrows", name: "The Four Tunnels", w: 50, cave: true, mx: 7, my: 2, mw: 2, left: "warren", right: "ledges", dark: 0.93,
-      pic: "w4/narrows_strip", rock: "dark", ground: "dark", near: "pile" },
-    { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 9, my: 1, mw: 1, mh: 2, left: "narrows", dark: 0.9,
-      pic: "w4/ledges_tall", tall: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "well", name: "The Old Well Shaft", w: 40, up: 100, cave: true, mx: 10, my: 1, mw: 1, mh: 3, right: "river", dark: 0.35,
-      pic: "w4/well_tall", tall: true, rock: "pale", ground: "pebbles" },
+    { id: "warren", name: "The Rat Warren", w: 190, cave: true, mx: 8, my: 2, mw: 5, right: "narrows", dark: 0.93,
+      pic: "w4/pano_warren", fill: true, rock: "dark", ground: "dark", near: "pile" },
+    { id: "narrows", name: "The Four Tunnels", w: 120, cave: true, mx: 13, my: 2, mw: 3, left: "warren", right: "ledges", dark: 0.93,
+      pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
+    { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 16, my: 1, mw: 1, mh: 2, left: "narrows", dark: 0.9,
+      pic: "w4/tall_ledges", k: 1, tall: true, rock: "dark", ground: "dark", near: "pile" },
+    { id: "well", name: "The Old Well Shaft", w: 40, up: 100, cave: true, mx: 17, my: 1, mw: 1, mh: 3, right: "river", dark: 0.35,
+      pic: "w4/tall_well", k: 1, tall: true, rock: "pale", ground: "pebbles" },
     // LOWER: water (water: the waterline, px from the screen's top)
-    { id: "river", name: "The Underground River", w: 56, cave: true, mx: 11, my: 3, mw: 2, left: "well", right: "flooded", dark: 0.9, water: 430,
-      pic: "w4/river_strip", rock: "moss", ground: "pebbles" },
-    { id: "flooded", name: "The Flooded Tunnel", w: 50, cave: true, mx: 13, my: 3, mw: 2, left: "river", dark: 0.92, water: 400,
-      pic: "w4/flooded_strip", rock: "moss", ground: "pebbles" },
-    { id: "deep", name: "The Deep Pool", w: 66, cave: true, mx: 15, my: 3, mw: 2, left: "flooded", right: "spring", dark: 0.92, water: 450,
-      pic: "w4/deep_strip", rock: "moss", ground: "pebbles" },
-    { id: "spring", name: "The Hidden Spring", w: 46, cave: true, mx: 17, my: 3, mw: 2, left: "deep", dark: 0.8,
-      pic: "w4/spring_strip", rock: "moss", ground: "limestone" },
+    { id: "river", name: "The Underground River", w: 170, cave: true, mx: 18, my: 3, mw: 5, left: "well", right: "flooded", dark: 0.9, water: 430,
+      pic: "w4/pano_river", fill: true, rock: "moss", ground: "pebbles" },
+    { id: "flooded", name: "The Flooded Tunnel", w: 130, cave: true, mx: 23, my: 3, mw: 4, left: "river", dark: 0.92, water: 400,
+      pic: "w4/pano_flooded", fill: true, rock: "moss", ground: "pebbles" },
+    { id: "deep", name: "The Deep Pool", w: 170, cave: true, mx: 27, my: 3, mw: 5, left: "flooded", right: "spring", dark: 0.92, water: 450,
+      pic: "w4/pano_deep", fill: true, rock: "moss", ground: "pebbles" },
+    { id: "spring", name: "The Hidden Spring", w: 90, cave: true, mx: 32, my: 3, mw: 3, left: "deep", dark: 0.8,
+      pic: "w4/pano_spring", fill: true, rock: "moss", ground: "limestone" },
   ],
   // the Journal: Glen's song, the Chorus (SONG_PSALM57.md, his words exactly)
   steps: ["r4_camp"],
@@ -85,7 +91,7 @@ const ADULLAM = {
   ],
   end: ["Bring my soul out of prison, that I may give thanks to your name.", "Psalm 142:7"],
   build: r4Build, enter: r4Enter, update: (dt, r) => r4Update(dt, r), holdDavid: (d, dt) => r4Hold(d, dt), drawDavid: (d, x, y) => r4DrawDavid(d, x, y),
-  backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
+  softHoles: true, draw: camX => r4DrawLids(camX), backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
 };
 
 const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: the rock's top edge, px down the piece)
@@ -101,7 +107,7 @@ const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: t
   w4_arch: { w: 196, h: 250 }, w4_arch_sand: { w: 196, h: 250 }, w4_tunnel_lit: { w: 261, h: 230 },   // (make_w4_layers.py: tunnel mouths cut from his pictures)
 };
 
-const r4 = { told: {}, tunnels: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
+const r4 = { told: {}, tunnels: [], lids: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
 function r4Tell(k, text) { if (!r4.told[k]) { r4.told[k] = true; toast(text); } }
 const r4Lamp = () => ALL_SKILLS || regionHas("taken", "r4_lamp");
 
@@ -151,44 +157,71 @@ function r4Tunnel(id, room, x, y, to, art = "w4_arch") {
   if (art) { const k = KIT[art]; region.props.push({ room, n: art, x: x - k.w / 2, y: y - k.h + 12 }); }
 }
 const r4Jar = (room, c, y = GR * T) => rBreak("jar", room, c, onTop(y));   // (Glen 11-13: jars he can break, not painted ones)
+// a run of ledges from x (px), the first's surface at y, each dy px over the last (0: level; > 0: going down), gap px apart
+function r4Run(room, rock, x, y, sizes, dy = -110, gap = R4.ZIG.GAP) {
+  const out = []; for (const sz of sizes) { const l = r4L(room, rock, sz, x, y); out.push(l); x = l.x1 + gap; y += dy; } return out;
+}
+const r4Pit = (room, c, w, crumble = false) => rHole(room, c, w, crumble ? { crumble: true } : {});   // (a fall costs a heart; crumble: floor over it that gives way)
+// rock coming down into the water from column c, w wide: he can't go over it, only swim under (r4Hold)
+function r4Lid(room, c, w) {
+  const r = roomById(room), y = r.water + R4.LID.BELOW;
+  r4.lids.push({ room, x0: c * T, x1: (c + w) * T, y, rock: r.rock });
+  rBlock(room, c, 0, w, Math.floor(y / T));
+}
+const r4LidAt = (r, x) => r4.lids.find(l => l.room === r.id && x > l.x0 - 14 && x < l.x1 + 14);
+const r4Olives = (l, n = 3) => oliveRow(l.c - 1, onTop(l.y) - 0.4, n);
 
 function r4Build(R) {
   Object.assign(KIT, R4_KIT);
-  r4.tunnels.length = 0; r4.walk = null; r4.swim = null;
+  r4.tunnels.length = 0; r4.lids.length = 0; r4.walk = null; r4.swim = null;
   for (const r of ADULLAM.rooms) { roomImg(r.pic); roomImg(r.mid); roomImg(`w4/floor_${r.ground}.png`); roomImg(`w4/near_${r.near || r.rock}.png`); roomImg(`w4/ceil_${r.rock}.png`); }
   const G = GR * T;
 
-  // -- The Cave Mouth (22:1): in from the hills of Judah. Up the rocks by the door; the tunnel on in
+  // -- The Cave Mouth (22:1): in from the hills of Judah. A level: rocks up and down, drops in the floor, a floor that gives
+  //  way, stepping stones over a wide drop, rats, bats; an olive press halfway; the tunnel on in at the end
   let c = R("mouth");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("mouth", "sand", s, X(k), y);
-    ground(c, c + 59);
+  { const rm = "mouth", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "sand", s, X(k), y);
+    ground(c, c + 149);
     campfire(c + 4, GR - 1);   // (the olive press: the save)
     oliveRow(c + 8, 16, 4);
-    L("m", 14, 500); const b = L("l", 19, 385); oliveRow(b.c - 1, onTop(b.y) - 0.4, 3);
+    L("m", 14, 500); r4Olives(L("l", 19, 385));
     const t = L("s", 27, 270); rRelic("r4_pom_mouth", "pomegranate", t.c, onTop(t.y));
-    const d = L("m", 32, 400); r4Jar("mouth", d.c, d.y);
-    r4Jar("mouth", c + 38); r4Jar("mouth", c + 39);
-    rRat("mouth", c + 42, 4);
-    r4Thing("mouth", "w4_stalagmites", X(47), FOOT, 0.8);
-    r4Tunnel("mouth_in", "mouth", X(54), G, "camp_in", "w4_arch_sand");
+    const d = L("m", 32, 400); r4Jar(rm, d.c, d.y);
+    r4Pit(rm, c + 40, 3); rRat(rm, c + 46, 4);
+    const u = r4Run(rm, "sand", X(50), 500, ["s", "m", "s"]); r4Olives(u[1]); r4Jar(rm, u[2].c, u[2].y);
+    r4Pit(rm, c + 64, 4, true); rBat(rm, c + 66, 130);
+    r4Jar(rm, c + 70); r4Jar(rm, c + 71); rRat(rm, c + 73, 4);
+    r4Pit(rm, c + 78, 9); r4Olives(L("s", 79, 520)); L("s", 84, 520);   // (stepping stones over the drop)
+    L("m", 92, 500); r4Olives(L("l", 97, 390), 4); const h = L("m", 105, 280); r4Jar(rm, h.c, h.y); L("s", 111, 390);
+    rRat(rm, c + 95, 6); rRat(rm, c + 107, 5); rBat(rm, c + 100, 120);
+    campfire(c + 117, GR - 1);
+    r4Pit(rm, c + 122, 4, true);
+    r4Thing(rm, "w4_stalagmites", X(129), FOOT, 0.8);
+    r4Jar(rm, c + 132); r4Jar(rm, c + 133); r4Jar(rm, c + 134); rBat(rm, c + 131, 130); rBat(rm, c + 137, 140);
+    r4Olives(L("m", 136, 500));
+    r4Tunnel("mouth_in", rm, X(145), G, "camp_in", "w4_arch_sand");
   }
 
-  // -- The Camp (22:2): the hall of sunbeams. The men's things: bedrolls, baskets, bread; jars to break; ledges up the wall
+  // -- The Camp (22:2): the hall of sunbeams, a safe place (no drops). The men's things; jars; ledges up to the loft
   c = R("camp");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("camp", "sand", s, X(k), y);
-    ground(c, c + 69);
-    r4Tunnel("camp_in", "camp", X(3), G, "mouth_in", "w4_arch_sand");
+  { const rm = "camp", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "sand", s, X(k), y);
+    ground(c, c + 109);
+    r4Tunnel("camp_in", rm, X(3), G, "mouth_in", "w4_arch_sand");
     campfire(c + 9, GR - 1);
-    r4Thing("camp", "w4_bedroll", X(13)); r4Thing("camp", "w4_bag", X(16)); r4Thing("camp", "w4_basket", X(20));
-    r4Thing("camp", "w4_bread", X(22)); r4Thing("camp", "w4_bowl", X(24));
-    r4Jar("camp", c + 26); r4Jar("camp", c + 27); r4Jar("camp", c + 28);
-    r4Tunnel("camp_side", "camp", X(33), G, null, "w4_arch_sand");
-    L("m", 38, 500); const b = L("l", 43, 385); oliveRow(b.c - 1, onTop(b.y) - 0.4, 3); r4Jar("camp", b.c + 2, b.y);
+    r4Thing(rm, "w4_bedroll", X(13)); r4Thing(rm, "w4_bag", X(16)); r4Thing(rm, "w4_basket", X(20));
+    r4Thing(rm, "w4_bread", X(22)); r4Thing(rm, "w4_bowl", X(24));
+    r4Jar(rm, c + 26); r4Jar(rm, c + 27); r4Jar(rm, c + 28);
+    r4Tunnel("camp_side", rm, X(33), G, null, "w4_arch_sand");
+    L("m", 38, 500); const b = L("l", 43, 385); r4Olives(b); r4Jar(rm, b.c + 2, b.y);
     const t = L("m", 51, 270); rRelic("r4_pom_camp", "pomegranate", t.c, onTop(t.y));
     L("s", 57, 390);
-    rBat("camp", c + 46, 130); rBat("camp", c + 60, 130);
-    r4Thing("camp", "w4_bedroll", X(62)); r4Thing("camp", "w4_waterskin", X(65));
-    r4Jar("camp", c + 66); r4Jar("camp", c + 67);
+    rBat(rm, c + 46, 130); rBat(rm, c + 60, 130);
+    r4Thing(rm, "w4_bedroll", X(62)); r4Thing(rm, "w4_waterskin", X(65));
+    r4Jar(rm, c + 66); r4Jar(rm, c + 67);
+    const u = r4Run(rm, "sand", X(72), 500, ["m", "m", "l"]); r4Olives(u[1]);   // (up to the loft)
+    const f = r4Run(rm, "sand", u[2].x1 + 70, 280, ["m", "s"], 0, 70); r4Olives(f[0], 4); r4Jar(rm, f[1].c, f[1].y);
+    r4Thing(rm, "w4_bedroll", X(92)); r4Thing(rm, "w4_basket", X(96)); rBat(rm, c + 90, 120);
+    r4Jar(rm, c + 100); r4Jar(rm, c + 101); r4Thing(rm, "w4_pitcher", X(104));
   }
 
   // -- The Bat Roost: up his pale wall, bats asleep under the ledges; a side cave at the top, a pomegranate
@@ -202,50 +235,81 @@ function r4Build(R) {
     rRat("roost", c + 20, 6);
   }
 
-  // -- The Lamp Hall: his set 1, the torches in the wall. The lamp on a high ledge (it lights the way down); the stairs
-  //  up into the tunnel at the end, down into the dark
+  // -- The Lamp Hall: his set 1, the torches in the wall. The lamp on a high ledge early on (it lights the way down); a long
+  //  drop to cross on small ledges, bats over it; an olive press; up and over; the stairs up into the tunnel at the end
   c = R("lamphall");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("lamphall", "red", s, X(k), y);
-    ground(c, c + 73);
+  { const rm = "lamphall", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "red", s, X(k), y);
+    ground(c, c + 171);
     campfire(c + 4, GR - 1);
     oliveRow(c + 7, 16, 4);
-    L("m", 12, 500); L("l", 17, 385); const t = L("m", 25, 270); r4.lampAt = { room: "lamphall", x: (t.x + t.x1) / 2, y: t.y };
+    L("m", 12, 500); L("l", 17, 385); const t = L("m", 25, 270); r4.lampAt = { room: rm, x: (t.x + t.x1) / 2, y: t.y };
     L("s", 31, 390);
-    rRat("lamphall", c + 36, 5); rBat("lamphall", c + 28, 120); rBat("lamphall", c + 44, 140);
-    r4Jar("lamphall", c + 38); r4Jar("lamphall", c + 39);
-    L("m", 40, 500); const b = L("l", 45, 390); oliveRow(b.c - 1, onTop(b.y) - 0.4, 3); r4Jar("lamphall", b.c + 2, b.y);
-    const k = KIT.w4_stairs_tunnel; region.props.push({ room: "lamphall", n: "w4_stairs_tunnel", x: X(54), y: FOOT - k.h + 8 });
-    r4Tunnel("lamp_down", "lamphall", X(54) + 270, G, "warren_up", null);   // (up the stairs into the dark)
+    rRat(rm, c + 34, 4); rBat(rm, c + 28, 120); rBat(rm, c + 44, 140);
+    r4Pit(rm, c + 38, 3);
+    r4Jar(rm, c + 44); r4Jar(rm, c + 45);
+    r4Pit(rm, c + 50, 18);   // (the long drop: over it on his small ledges)
+    const s = r4Run(rm, "red", X(50) + 20, 500, ["s", "s", "s", "s"], 0, 60); r4Olives(s[0]); r4Olives(s[2]);
+    rBat(rm, c + 56, 150); rBat(rm, c + 65, 150);
+    r4Jar(rm, c + 75); r4Jar(rm, c + 76); rRat(rm, c + 79, 5);
+    r4Pit(rm, c + 85, 4, true);
+    campfire(c + 93, GR - 1);
+    const u = r4Run(rm, "red", X(98), 500, ["m", "s", "m"]); rRelic("r4_pom_lamp", "pomegranate", u[2].c, onTop(u[2].y));
+    const dn = r4Run(rm, "red", u[2].x1 + R4.ZIG.GAP, 390, ["s", "m"], 110); r4Olives(dn[1]);
+    rRat(rm, c + 102, 6); rRat(rm, c + 113, 5);
+    r4Pit(rm, c + 132, 5, true); rBat(rm, c + 134, 140);
+    r4Jar(rm, c + 139); r4Jar(rm, c + 140); r4Jar(rm, c + 141); r4Olives(L("m", 143, 500));
+    const k = KIT.w4_stairs_tunnel; region.props.push({ room: rm, n: "w4_stairs_tunnel", x: X(150), y: FOOT - k.h + 8 });
+    r4Tunnel("lamp_down", rm, X(150) + 270, G, "warren_up", null);   // (up the stairs into the dark)
   }
 
-  // -- The Rat Warren: rats; a tunnel back up; ledges; two side caves; on the right, the tunnel to the Four Tunnels' first
+  // -- The Rat Warren: rats everywhere. The tunnel back up; a rat nest under a run of ledges; a wide drop on stepping stones;
+  //  an olive press; up the wall and along the top over more rats; two side caves; the tunnel on to the Four Tunnels
   c = R("warren");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("warren", "dark", s, X(k), y);
-    ground(c, c + 65);
-    r4Tunnel("warren_up", "warren", X(5), G, "lamp_down");
-    L("m", 12, 500); const b = L("l", 17, 385); oliveRow(b.c - 1, onTop(b.y) - 0.4, 3);
-    const t = L("m", 25, 270); rRelic("r4_pom_warren", "pomegranate", t.c, onTop(t.y));
-    L("s", 31, 390);
-    r4Tunnel("warren_side1", "warren", X(37), G, null);
-    for (const k of [10, 22, 40, 52]) rRat("warren", c + k, 4);
-    rBat("warren", c + 20, 130); rBat("warren", c + 45, 130);
-    r4Jar("warren", c + 43); r4Jar("warren", c + 44);
-    const e = L("l", 46, 490); r4Jar("warren", e.c, e.y); const f = L("m", 53, 380); oliveRow(f.c - 1, onTop(f.y) - 0.4, 3);
-    r4Tunnel("warren_side2", "warren", X(58), G, null);
-    r4Tunnel("warren_back", "warren", X(63), G, "n1");
+  { const rm = "warren", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
+    ground(c, c + 189);
+    r4Tunnel("warren_up", rm, X(5), G, "lamp_down");
+    campfire(c + 10, GR - 1);
+    L("m", 14, 500); r4Olives(L("l", 19, 385));
+    const t = L("m", 27, 270); rRelic("r4_pom_warren", "pomegranate", t.c, onTop(t.y));
+    L("s", 33, 390);
+    r4Tunnel("warren_side1", rm, X(39), G, null);
+    rRat(rm, c + 24, 4); rRat(rm, c + 43, 3);
+    r4Pit(rm, c + 46, 4);
+    for (const k of [54, 58, 62, 66]) rRat(rm, c + k, 3);   // (the nest)
+    r4Run(rm, "dark", X(52), 500, ["m", "l", "m"], 0, 60).forEach(l => r4Olives(l));
+    r4Jar(rm, c + 73); r4Jar(rm, c + 74);
+    r4Pit(rm, c + 77, 3, true);
+    r4Tunnel("warren_side2", rm, X(85), G, null);
+    r4Pit(rm, c + 90, 11); r4Olives(L("s", 91, 510)); L("s", 96, 500); rBat(rm, c + 95, 130);
+    campfire(c + 106, GR - 1);
+    const u = r4Run(rm, "dark", X(111), 500, ["s", "m", "s"]);
+    const top = r4Run(rm, "dark", u[2].x1 + 70, 280, ["m", "m", "l"], 0, 70); top.forEach(l => r4Olives(l)); r4Jar(rm, top[2].c, top[2].y);
+    for (const k of [118, 130, 142]) rRat(rm, c + k, 5);
+    r4Jar(rm, c + 152); r4Jar(rm, c + 153); rBat(rm, c + 150, 130); rBat(rm, c + 158, 140);
+    r4Pit(rm, c + 157, 4, true);
+    rRat(rm, c + 165, 4); rRat(rm, c + 171, 3);
+    L("m", 166, 500); r4Olives(L("s", 172, 390));
+    r4Pit(rm, c + 177, 3);
+    r4Tunnel("warren_back", rm, X(186), G, "n1");
   }
 
-  // -- The Four Tunnels: his four arches. Pick one: the first back to the Warren, the third on to the Crumbling Ledges,
-  //  the other two side caves (and the way on at the right, too)
+  // -- The Four Tunnels: his four arches, far apart, with the cave between. The first back to the Warren, the third on to
+  //  the Crumbling Ledges, the other two side caves (and the way on at the right, too)
   c = R("narrows");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("narrows", "dark", s, X(k), y);
-    ground(c, c + 49);
-    r4Tunnel("n1", "narrows", X(7), G, "warren_back"); r4Tunnel("n2", "narrows", X(18), G, null);
-    r4Tunnel("n3", "narrows", X(29), G, "ledges_in"); r4Tunnel("n4", "narrows", X(40), G, null);
-    const a = L("s", 11, 480); oliveRow(a.c - 1, onTop(a.y) - 0.4, 3);
-    const b = L("s", 22, 470); r4Jar("narrows", b.c, b.y);
-    const d = L("s", 33, 480); oliveRow(d.c - 1, onTop(d.y) - 0.4, 3);
-    rRat("narrows", c + 15, 4); rRat("narrows", c + 37, 4);
+  { const rm = "narrows", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "dark", s, X(k), y);
+    ground(c, c + 119);
+    r4Tunnel("n1", rm, X(8), G, "warren_back"); r4Tunnel("n2", rm, X(38), G, null);
+    r4Tunnel("n3", rm, X(70), G, "ledges_in"); r4Tunnel("n4", rm, X(104), G, null);
+    r4Olives(L("s", 13, 480)); const j = L("m", 18, 380); r4Jar(rm, j.c, j.y);
+    rRat(rm, c + 15, 4); rRat(rm, c + 30, 3);
+    r4Pit(rm, c + 25, 3);
+    const u = r4Run(rm, "dark", X(42), 500, ["s", "m"]); r4Olives(u[0]); rRelic("r4_pom_narrows", "pomegranate", u[1].c, onTop(u[1].y));
+    rBat(rm, c + 46, 130);
+    r4Pit(rm, c + 53, 4, true); rRat(rm, c + 60, 4);
+    L("m", 58, 500); const k = L("s", 64, 390); r4Jar(rm, k.c, k.y);
+    r4Pit(rm, c + 76, 8); L("s", 77, 510); r4Olives(L("s", 82, 510));
+    rRat(rm, c + 90, 4); rRat(rm, c + 97, 3); r4Olives(L("m", 92, 500));
+    r4Jar(rm, c + 110); r4Jar(rm, c + 111); rBat(rm, c + 112, 130); r4Olives(L("s", 114, 480));
   }
 
   // -- The Crumbling Ledges: up the dark wall, to the tunnel at the top: on to the top of the Old Well Shaft. (Out at the
@@ -273,38 +337,61 @@ function r4Build(R) {
     rRelic("r4_pom_well", "pomegranate", mid.c, onTop(mid.y));
   }
 
-  // -- The Underground River: stepping stones of moss over the water; under it, the riverbed
+  // -- The Underground River: moss stepping stones over the water; three places where the rock comes down into the
+  //  water (swim under: r4Lid), olives on the riverbed under the long one
   c = R("river");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("river", "moss", s, X(k), y);
-    ground(c, c + 55);
-    L("m", 3, 360); L("s", 10, 330); const a = L("m", 16, 300); oliveRow(a.c - 1, onTop(a.y) - 0.4, 3);
+  { const rm = "river", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
+    ground(c, c + 169);
+    L("m", 3, 360); L("s", 10, 330); r4Olives(L("m", 16, 300));
     const t = L("l", 24, 240); rRelic("r4_pom_river", "pomegranate", t.c, onTop(t.y));
-    L("s", 32, 320); const b = L("m", 38, 350); oliveRow(b.c - 1, onTop(b.y) - 0.4, 3); L("s", 45, 300); L("m", 50, 360);
-    rBat("river", c + 20, 120); rBat("river", c + 40, 120);
+    L("s", 32, 320); r4Olives(L("m", 38, 350));
+    r4Lid(rm, c + 46, 10);
+    L("s", 58, 340); r4Olives(L("m", 64, 310)); L("s", 71, 350);
+    r4Lid(rm, c + 78, 16); oliveRow(c + 82, 15.4, 6);
+    L("m", 97, 330); L("s", 104, 300); const j = L("l", 110, 260); r4Jar(rm, j.c, j.y); L("s", 118, 330);
+    r4Lid(rm, c + 124, 8);
+    r4Olives(L("m", 134, 340)); L("s", 141, 310); L("m", 147, 350); L("s", 155, 330); L("m", 161, 340);
+    for (const k of [20, 40, 68, 100, 130, 150]) rBat(rm, c + k, 120);
   }
-  // -- The Flooded Tunnel: no way on over the water; the tunnel's at the bottom (Up there: on through to the Deep Pool)
+  // -- The Flooded Tunnel: low rock over the water, three times; the tunnel's at the bottom (Up there: on to the Deep Pool)
   c = R("flooded");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("flooded", "moss", s, X(k), y);
-    ground(c, c + 49);
-    L("s", 4, 330); const a = L("m", 12, 310); oliveRow(a.c - 1, onTop(a.y) - 0.4, 3);
-    r4Tunnel("flood_under", "flooded", X(26), G, "deep_in", "w4_tunnel_lit");
+  { const rm = "flooded", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
+    ground(c, c + 129);
+    L("s", 4, 330); r4Olives(L("m", 12, 310));
+    r4Lid(rm, c + 20, 12); oliveRow(c + 23, 15.4, 5);
     const t = L("s", 36, 320); rRelic("r4_pom_flooded", "pomegranate", t.c, onTop(t.y)); L("m", 43, 330);
+    r4Lid(rm, c + 50, 6); L("s", 58, 320);
+    r4Tunnel("flood_under", rm, X(70), G, "deep_in", "w4_tunnel_lit");
+    r4Lid(rm, c + 76, 14); oliveRow(c + 79, 15.4, 6);
+    L("m", 93, 320); L("s", 100, 300); r4Olives(L("l", 107, 300)); L("s", 116, 320);
+    for (const k of [10, 45, 100]) rBat(rm, c + k, 120);
   }
-  // -- The Deep Pool: long and dark; rests of moss over the water
+  // -- The Deep Pool: long and dark; the rock down into the water four times, one of them long (watch your breath)
   c = R("deep");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("deep", "moss", s, X(k), y);
-    ground(c, c + 65);
-    r4Tunnel("deep_in", "deep", X(4), G, "flood_under", "w4_tunnel_lit");
-    for (const k of [10, 22, 34, 46, 56]) { const l = L(k % 4 ? "m" : "s", k, k % 3 ? 360 : 340); oliveRow(l.c - 1, onTop(l.y) - 0.4, 3); }
+  { const rm = "deep", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
+    ground(c, c + 169);
+    r4Tunnel("deep_in", rm, X(4), G, "flood_under", "w4_tunnel_lit");
+    r4Olives(L("m", 10, 360)); L("s", 20, 340);
+    r4Lid(rm, c + 28, 14);
+    r4Olives(L("m", 46, 360)); L("s", 53, 340);
+    r4Lid(rm, c + 60, 30); oliveRow(c + 66, 15.4, 8);   // (the long one)
+    L("m", 93, 360); const t = L("l", 100, 330); rRelic("r4_pom_deep", "pomegranate", t.c, onTop(t.y)); L("s", 108, 350);
+    r4Lid(rm, c + 114, 10); r4Lid(rm, c + 128, 10);   // (air between them)
+    r4Olives(L("m", 141, 360)); L("s", 148, 340); L("m", 155, 360); L("s", 162, 340);
+    for (const k of [15, 50, 96, 145, 160]) rBat(rm, c + k, 120);
   }
-  // -- The Hidden Spring: the end of the cave; his jars to break. (Next: the water from Bethlehem; Gad: on to Judah)
+  // -- The Hidden Spring: the end of the cave; his jars to break, ledges up. (Next: the water from Bethlehem; Gad: on to Judah)
   c = R("spring");
-  { const X = k => (c + k) * T, L = (s, k, y) => r4L("spring", "moss", s, X(k), y);
-    ground(c, c + 45);
+  { const rm = "spring", X = k => (c + k) * T, L = (s, k, y) => r4L(rm, "moss", s, X(k), y);
+    ground(c, c + 89);
     campfire(c + 4, GR - 1);
-    for (const k of [12, 13, 14, 28, 29, 38]) r4Jar("spring", c + k);
-    L("m", 18, 500); const b = L("l", 23, 385); oliveRow(b.c - 1, onTop(b.y) - 0.4, 3);
+    for (const k of [12, 13, 14, 28, 29, 38]) r4Jar(rm, c + k);
+    L("m", 18, 500); r4Olives(L("l", 23, 385));
+    const u = r4Run(rm, "moss", X(44), 500, ["m", "l", "m"]); r4Olives(u[1]); r4Jar(rm, u[2].c, u[2].y);
+    rBat(rm, c + 40, 130); rBat(rm, c + 60, 130);
+    for (const k of [70, 71, 72, 80, 81]) r4Jar(rm, c + k);
   }
+  for (let i = region.props.length; i--;) if (region.props[i].n === "p_left" || region.props[i].n === "p_right") region.props.splice(i, 1);   // (r4Floor draws the drops)
 }
 
 function r4Enter(r) {
@@ -347,7 +434,7 @@ function r4Update(dt, r) {
 function r4Hold(d, dt) {
   if (r4.walk) { d.vx = d.vy = 0; return true; }
   const r = roomAt(d.x); if (!r || !r.water || r !== region.room || d.deadT > 0 || region.trans) { r4.swim = null; return false; }   // (moved to another room: not this one's water)
-  const S = R4.SWIM, wy = r.water, top = wy + S.FLOAT;
+  const S = R4.SWIM, wy = r.water, lid = r4LidAt(r, d.x), top = lid ? Math.max(wy + S.FLOAT, lid.y + R4.LID.UNDER) : wy + S.FLOAT;
   if (!r4.swim) {
     if (d.y < wy + 40 || d.onGround && d.y < wy + S.FLOAT) { r4.breath = Math.min(S.BREATH, r4.breath + dt * 4); return false; }
     r4.swim = { t: 0 }; d.vy = Math.min(d.vy, 120); setState("idle");
@@ -356,17 +443,19 @@ function r4Hold(d, dt) {
   const dir = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
   d.vx = dir * S.X; if (dir) d.facing = dir;
   d.vy += S.SINK * dt;
-  if (pressed("a")) { if (d.y <= top + 4) { r4.swim = null; d.vy = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
+  if (pressed("a")) { if (!lid && d.y <= top + 4) { r4.swim = null; d.vy = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
   if (held("up")) d.vy -= S.PUSH * dt; if (held("down")) d.vy += S.PUSH * dt;
   d.vy = Math.max(-S.MAXV, Math.min(S.MAXV, d.vy));
   const x0 = r.c0 * T + 20, x1 = (r.c0 + r.w) * T - 20;
-  d.x = Math.max(x0, Math.min(x1, d.x + d.vx * dt));
+  let nx = Math.max(x0, Math.min(x1, d.x + d.vx * dt));
+  const nl = r4LidAt(r, nx); if (nl && nl !== lid && d.y < nl.y + R4.LID.UNDER - 2) nx = d.x;   // (the rock: dive to get under it)
+  d.x = nx;
   d.y += d.vy * dt;
   if (d.y < top) { d.y = top; if (d.vy < 0) d.vy = 0; }
   if (d.y > GR * T) { d.y = GR * T; d.vy = 0; }
   d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.swordT = -1; d.shield = false; d.charging = false;
   // breath: at the surface it comes back; under, it runs out
-  if (d.y <= top + 6) r4.breath = Math.min(S.BREATH, r4.breath + dt * 4);
+  if (!lid && d.y <= top + 6) r4.breath = Math.min(S.BREATH, r4.breath + dt * 4);
   else { r4.breath -= dt; if (r4.breath <= 0) { r4.breath = S.AFTER; hurtDavid(d.x, "", true); toast("Out of breath! Swim up for air."); } }
   return true;
 }
@@ -391,8 +480,8 @@ function r4DrawDavid(d, x, y) {
 function r4Backdrop(r, camX) {
   const B = R4.BG, rel = camX - r.c0 * T, camTop = -(r.up || 0) * T;
   ctx.fillStyle = "#0b0907"; ctx.fillRect(0, camY, W, H);
-  const tiles = (im, p, y, w, h) => {   // across the screen, every other one mirrored
-    const ox = -rel * p; for (let i = Math.floor(-ox / w); ox + i * w < W; i++) {
+  const tiles = (im, p, y, w, h, off = 0) => {   // across the screen, every other one mirrored
+    const ox = -rel * p + off; for (let i = Math.floor(-ox / w); ox + i * w < W; i++) {
       const x = Math.round(ox + i * w);
       if (i & 1) { ctx.save(); ctx.translate(x + w, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, Math.round(y), Math.ceil(w) + 1, h); ctx.restore(); }
       else ctx.drawImage(im, x, Math.round(y), Math.ceil(w) + 1, h);
@@ -400,12 +489,14 @@ function r4Backdrop(r, camX) {
   };
   const im = roomImg(r.pic);
   if (im) {
-    const w = im.naturalWidth * B.K, h = im.naturalHeight * B.K;
+    // fill: (Glen's 4:1 panoramas, make_w4_panos.py) floor to the top of the screen, its middle in the middle of the room
+    const k = r.fill ? B.BOT / im.naturalHeight : r.k || B.K, w = im.naturalWidth * k, h = im.naturalHeight * k;
+    const p = r.fill ? Math.min(R4.FILL_P, Math.max(0, (w - W) / (r.w * T - W))) : B.P, off = r.fill ? (W - w) / 2 + (r.w * T - W) / 2 * p : 0;
     // a tall picture climbs with the camera just fast enough to show its top at the top of the room
     const f = r.up ? Math.max(0, Math.min(1, 1 - (B.BOT - h) / camTop)) : 0, yb = B.BOT + camY * f, yt = yb - h;
-    tiles(im, B.P, yt, w, h);
+    tiles(im, p, yt, w, h, off);
     if (yt > camY) {   // over its top: its top band again, going dark
-      const bh = h * 0.35; ctx.save(); ctx.beginPath(); ctx.rect(0, yt - bh, W, bh); ctx.clip(); tiles(im, B.P, yt - bh, w, h); ctx.restore();
+      const bh = h * 0.35; ctx.save(); ctx.beginPath(); ctx.rect(0, yt - bh, W, bh); ctx.clip(); tiles(im, p, yt - bh, w, h, off); ctx.restore();
       const g = ctx.createLinearGradient(0, yt + 40, 0, yt - B.FADE); g.addColorStop(0, "rgba(11,9,7,0)"); g.addColorStop(1, "rgba(11,9,7,1)");
       ctx.fillStyle = g; ctx.fillRect(0, yt - B.FADE, W, B.FADE + 40);
     }
@@ -428,8 +519,37 @@ function r4Floor(r, camX) {
     if (i & 1) { ctx.save(); ctx.translate(x + w, 0); ctx.scale(-1, 1); ctx.drawImage(fl, 0, y, w, h); ctx.restore(); }
     else ctx.drawImage(fl, x, y, w, h);
   }
+  for (const o of region.holes) {   // a drop in the floor: dark, soft at its edges (no kit edges in the caves)
+    if (o.room !== r.id) continue;
+    const x0 = o.x0 - camX - 14, x1 = o.x1 - camX + 14; if (x1 < 0 || x0 > W) continue;
+    const g = ctx.createLinearGradient(x0, 0, x1, 0), e = Math.min(0.3, 30 / (x1 - x0));
+    g.addColorStop(0, "rgba(4,3,2,0)"); g.addColorStop(e, "rgba(4,3,2,0.97)"); g.addColorStop(1 - e, "rgba(4,3,2,0.97)"); g.addColorStop(1, "rgba(4,3,2,0)");
+    ctx.fillStyle = g; ctx.fillRect(x0, y + 50, x1 - x0, H + 400);
+    for (let i = 0; i < 8; i++) { ctx.globalAlpha = (i + 1) / 9; ctx.fillRect(x0, y + 10 + i * 5, x1 - x0, 5); }   // (its top edge soft too)
+    ctx.globalAlpha = 1;
+  }
   ctx.restore();
   return true;
+}
+// the rock down into the water (r4Lid): his rock pile, row on row, the bottom row upside down (hanging)
+function r4DrawLids(camX) {
+  for (const l of r4.lids) {
+    if (l.room !== region.room.id) continue;
+    const x0 = l.x0 - camX, x1 = l.x1 - camX; if (x1 < -60 || x0 > W + 60) continue;
+    const n = "w4_rocks_dark", k = KIT[n], im = kitImg(n);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0 - 24, camY, x1 - x0 + 48, l.y - camY + 30); ctx.clip();
+    ctx.fillStyle = "#15120e"; ctx.fillRect(x0, camY, x1 - x0, l.y - camY - 20);
+    if (im) for (let y = l.y - k.h + 30, row = 0; y > camY - k.h; y -= k.h * 0.55, row++)
+      for (let x = x0 - 30 + (row & 1) * k.w * 0.3, i = 0; x < x1 - 10; x += k.w * 0.6, i++) {
+        ctx.save(); ctx.translate(Math.round(x + k.w / 2), Math.round(y + k.h / 2));
+        if (row === 0) ctx.scale((i & 1) ? -1 : 1, -1); else if ((i + row) & 1) ctx.scale(-1, 1);
+        ctx.drawImage(im, -k.w / 2, -k.h / 2, k.w, k.h); ctx.restore();
+      }
+    const g = ctx.createLinearGradient(0, l.y - 160, 0, l.y + 30); g.addColorStop(0, "rgba(10,8,6,0.75)"); g.addColorStop(1, "rgba(10,8,6,0.25)");
+    ctx.fillStyle = "rgba(10,8,6,0.75)"; ctx.fillRect(x0 - 24, camY, x1 - x0 + 48, l.y - 160 - camY);
+    ctx.fillStyle = g; ctx.fillRect(x0 - 24, l.y - 160, x1 - x0 + 48, 190);
+    ctx.restore();
+  }
 }
 const r4DarkCanvas = document.createElement("canvas");   // (sized when first drawn: the screen isn't made when this loads)
 function r4DrawFront(camX) {
