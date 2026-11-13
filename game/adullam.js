@@ -22,7 +22,7 @@ const R4 = {
   //  px from the tunnel's middle that counts as at it (and HIGH px of height)
   //  (Glen 11-13: "have him start turning for a couple frames and then it goes to the next room": TURN s, then the cut)
   //  SIDE: a side cave not open yet stands this many px higher, rubble heaped in front (RUBBLE: its size)
-  TUNNEL: { TURN: 0.45, REACH: 60, HIGH: 60, SIDE: 40, RUBBLE: 0.95, ON_LEDGE: 26, SWIM_HIGH: 260 },   // (SWIM_HIGH: px over an underwater tunnel's floor that still counts, swimming)
+  TUNNEL: { TURN: 0.75, REACH: 60, HIGH: 60, SIDE: 40, RUBBLE: 0.95, ON_LEDGE: 26, SWIM_HIGH: 260 },   // (SWIM_HIGH: px over an underwater tunnel's floor that still counts, swimming)
   // (Glen 11-13: "I shouldn't be able to go to beneath the warren ... when we go through the whole thing we can unblock it
   //  with Goliath's sword") the rubble across the way from the Shaft to the Camp into Beneath the Warren: its piles' sizes
   WALL: { BIG: 1.7, TOP: 1.15, REACH: 170 },
@@ -716,7 +716,10 @@ function r4DrawDavid(d, x, y) {
   const w = r4.walk, U = R4.TUNNEL;
   if (r3.might) return r3DrawDavid(d, x, y);
   if (w) {
-    drawSprite("david_turn_away", Math.min(7, Math.floor(w.t / U.TURN * 8)), x, y, d.facing);   // (his back to us, then the cut)
+    // (Glen 11-13: "for effect he could turn like he is going in") his back-turn clip (david_turn_away is only his side),
+    //  held on its last frame, his back to us, till the cut
+    const n = SPR.david_back_turn ? "david_back_turn" : "david_turn_away", f = SPR[n] ? SPR[n].frames : 8;
+    drawSprite(n, Math.min(f - 1, Math.floor(w.t / U.TURN * f)), x, y, d.facing);
     return true;
   }
   if (r4.swim && d.swordT >= 0) {   // (Glen 11-13: "a good swipe with the sword" in the water: his clip, over the swing's time)
