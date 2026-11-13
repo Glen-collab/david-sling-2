@@ -31,7 +31,7 @@ const R4 = {
   //  this far under the waterline (head out); a jump out of the water (A at the surface); breath (s) and what's left
   //  after running out (s, and a heart lost)
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 640, BREATH: 10, AFTER: 3,
-    TREAD: 0.35 },   // (Glen 11-13: "a resting stroke ... when I am not moving": his stroke this much slower, till his own clip)
+    TREAD: 0.35, FLOAT_NEAR: 60 },   // (FLOAT_NEAR: px under the surface where, still, he floats up and treads water)   // (Glen 11-13: "a resting stroke ... when I am not moving": his stroke this much slower, till his own clip)
   // (Glen 11-13 play: "the backgrounds seem way too blown up for how big David is") his pictures far off, small: K, their
   //  size (1 = the screen's height for a wide one, 1296 wide for a tall one); P: how fast they scroll next to David;
   //  BOT: the picture's bottom (px, world, behind the floor); DIM: a shade over them (the rock he stands on stands out);
@@ -582,7 +582,8 @@ function r4Hold(d, dt) {
   }
   const sw = r4.swim;
   const dir = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
-  sw.t += dt * (dir || held("up") || held("down") || pressed("a") ? 1 : R4.SWIM.TREAD);   // (still: a slow, resting stroke)
+  const still = !(dir || held("up") || held("down") || pressed("a"));
+  sw.t += dt * (still ? R4.SWIM.TREAD : 1); sw.tt = (sw.tt || 0) + dt;   // (still: a slow, resting stroke under the water)
   d.vx = dir * S.X; if (dir) d.facing = dir;
   d.vy += S.SINK * dt;
   if (pressed("a")) { if (!lid && d.y <= top + 4) { r4.swim = null; d.vy = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
@@ -595,6 +596,8 @@ function r4Hold(d, dt) {
   d.y += d.vy * dt;
   if (d.y < top) { d.y = top; if (d.vy < 0) d.vy = 0; }
   if (d.y > GR * T) { d.y = GR * T; d.vy = 0; }
+  if (still && !lid && d.y < top + R4.SWIM.FLOAT_NEAR) { d.vy = 0; d.y += (top - d.y) * Math.min(1, dt * 4); }   // (still near the top: he floats up and rests there)
+  sw.tread = still && !lid && d.y <= top + 8;   // (Glen 11-13: still at the surface: his treading-water clip)
   d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.swordT = -1; d.shield = false; d.charging = false;
   // breath: at the surface it comes back; under, it runs out
   if (!lid && d.y <= top + 6) r4.breath = Math.min(S.BREATH, r4.breath + dt * 4);
@@ -608,6 +611,7 @@ function r4DrawDavid(d, x, y) {
     drawSprite("david_turn_away", Math.min(7, Math.floor(w.t / U.TURN * 8)), x, y, d.facing);   // (his back to us, then the cut)
     return true;
   }
+  if (r4.swim && r4.swim.tread) { drawSprite("david_tread", frameOf("david_tread", r4.swim.tt), x, y, d.facing); return true; }
   if (r4.swim) { drawSprite("david_swim", frameOf("david_swim", r4.swim.t), x, y - 50, d.facing, 0.8); return true; }
   return false;
 }

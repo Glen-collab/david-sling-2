@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 212,
+  "frame_h": 239,
+  "ms_per_frame": 139,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 116,
+  "anchor_y": 237,
+  "source": "david_tread_clean.mp4",
+  "video_frames": [
+    44,
+    47,
+    51,
+    54,
+    57,
+    61,
+    64,
+    67,
+    71,
+    74,
+    77,
+    81
+  ]
+}

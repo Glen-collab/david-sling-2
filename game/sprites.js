@@ -2652,6 +2652,18 @@ window.SPRITE_DATA = {
   "ay": 251,
   "align": "feet"
  },
+ "david_tread": {
+  "src": "../assets/sprites/david_tread.png",
+  "frames": 12,
+  "w": 212,
+  "h": 239,
+  "ms": 139,
+  "loop": true,
+  "pingpong": false,
+  "ax": 116,
+  "ay": 237,
+  "align": "feet"
+ },
  "david_turn_away": {
   "src": "../assets/sprites/david_turn_away.png",
   "frames": 8,

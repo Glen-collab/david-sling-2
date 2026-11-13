@@ -52,7 +52,7 @@ def strip(frames, name, length, extra=None):   # the frames on one strip, the sa
     for i, f in enumerate(frames): sheet.paste(f.resize((fw, fh), Image.LANCZOS), (i * fw, 0))
     sheet.save(os.path.join(OUT, name + ".png"))
     meta = {"w": fw, "h": fh, "n": len(frames)}; meta.update(extra or {})
-    json.dump(meta, open(os.path.join(OUT, name + ".json"), "w")); print(name, meta)
+    print(name, meta)   # (sizes: R4.FISH in adullam.js; no .json here: make_manifest.py reads every .json in sprites as a sheet)
 
 for src, name, length in [("fish_tilapia_sheet.png", "w4_fish_tilapia", 200), ("fish_perch_sheet.png", "w4_fish_perch", 240)]:
     im = key(Image.open(os.path.join(ART, src))); fr = split(im, 4)
