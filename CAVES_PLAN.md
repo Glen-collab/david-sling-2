@@ -146,3 +146,11 @@ Glen is making tileable middles: add them to LONG in make_w4_panos.py.
 Fish (Glen's two sheets and his clip, tools/make_w4_fish.py; R4.FISH): tilapia and perch swim back and forth, the biter
 darts at David when he's in the water near it and bites (jaws open: the end of his clip). A touch costs health. In the
 River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the Deep Pool.
+
+## The loop back and the secret way (2026-11-13, Glen: "so I am not all the way at the end and no way back")
+- The Deep Pool is under the water now (waterline 170): rock over it nearly all the way, air at 0-10, 38-44, 74-80, 110-116,
+  146-152, 162-170. Fish, olives on the bottom, the pomegranate under the long rock.
+- The Hidden Spring opens at the right onto The Long Climb (tall, dark), up to the Four Tunnels' fourth arch (n4).
+- Halfway up the Long Climb, a secret crack (no arch, no Up arrow; "Cool air is blowing..." when he's near): down to
+  Beneath the Warren (130, rats, drops, a pomegranate), then right into The Shaft to the Camp, up to the Camp's side cave.
+- Still rubble (not open yet): the Bat Roost's top, the Warren's two side caves, the Four Tunnels' second arch.
