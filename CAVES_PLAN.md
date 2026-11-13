@@ -180,3 +180,8 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
 - The rubble (into Beneath the Warren, and the Warren's two side caves): World 3's test of might (nobgath.js's
   r3MightStart / r3MightUpdate / r3DrawDavid / r3DrawMight, called from here): Up, mash A and B, gold breaks it in one.
   Walls behind the rubble and the rock in the water are block material 6 (solid, no dirt drawn).
+- The 400 (Glen: "the Israelites that are scared and ... running away ... idle and seated scared"): Part One's five men
+  (soldierN_fear: 0 hiding, last standing; soldierN_go), soldier_sit, soldier_talk, boy_scared. Eight newcomers hide around
+  the cave (Mouth, Lamp Hall, Warren, Four Tunnels, Beneath the Warren, Spring, Bats' Nook, Fallen Stones): Up, his words
+  and David's (drafts, for Glen), he gets up (his fear clip) and walks off to the camp (his go clip, fading). The Camp:
+  men sitting and talking, the old man, two huddled, the boy; each newcomer found stands there after ("r4_man_N").

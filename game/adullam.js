@@ -52,6 +52,10 @@ const R4 = {
   LID: { BELOW: 95, UNDER: 30 },
   // the long rooms: his panorama scrolls at most this fast (a slower one: the whole picture from one end of the room to the other)
   FILL_P: 0.55,
+  // (Glen 11-13: "the 400 ... the Israelites that are scared and the Israelites that are running away") Part One's five
+  //  men (soldierN_fear: 0 hiding ... last standing; soldierN_go: walking), soldier_sit, soldier_talk, boy_scared.
+  //  NEAR: px to greet one (Up); RISE: s getting up; GO: s walking off to the camp (fading), at WALK px/s
+  MEN: { NEAR: 90, RISE: 1.1, GO: 2.4, WALK: 110 },
   // (Glen 11-13: "fish we can add in the water to hurt David", tools/make_w4_fish.py) K: their size next to their strips;
   //  each kind: frame w, h, count; SPEED px/s back and forth; FPS. The biter: SEE px, it darts at him (DART px/s, for
   //  up to DART_T s), then RESTs. A touch costs a heart (HIT: px of its body that counts, as parts of its w, h)
@@ -126,7 +130,7 @@ const ADULLAM = {
   ],
   end: ["Bring my soul out of prison, that I may give thanks to your name.", "Psalm 142:7"],
   build: r4Build, enter: r4Enter, update: (dt, r) => r4Update(dt, r), holdDavid: (d, dt) => r4Hold(d, dt), drawDavid: (d, x, y) => r4DrawDavid(d, x, y),
-  drawOver: () => r3DrawMight(), softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawWall(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
+  drawOver: () => r3DrawMight(), softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawWall(camX); r4DrawMen(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
 };
 
 const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: the rock's top edge, px down the piece)
@@ -144,7 +148,7 @@ const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: t
   w4_rubble_dark: { w: 300, h: 138 }, w4_rubble_dark2: { w: 300, h: 139 }, w4_rubble_sand: { w: 300, h: 139 }, w4_rubble_pale: { w: 300, h: 139 },   // (make_w4_layers.py: tunnel mouths cut from his pictures)
 };
 
-const r4 = { told: {}, tunnels: [], lids: [], fish: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
+const r4 = { told: {}, tunnels: [], lids: [], fish: [], men: [], walk: null, swim: null, breath: R4.SWIM.BREATH, oilT: 0, lampAt: null };
 function r4Tell(k, text) { if (!r4.told[k]) { r4.told[k] = true; toast(text); } }
 const r4Lamp = () => ALL_SKILLS || regionHas("taken", "r4_lamp");
 // (Glen 11-13: "It said swing Goliath's sword but I just swung my own sword. We should do the test your might again")
@@ -278,7 +282,8 @@ const r4Olives = (l, n = 3) => oliveRow(l.c - 1, onTop(l.y) - 0.4, n);
 
 function r4Build(R) {
   Object.assign(KIT, R4_KIT);
-  r4.tunnels.length = 0; r4.lids.length = 0; r4.fish.length = 0; r4.walk = null; r4.swim = null;
+  r4.tunnels.length = 0; r4.lids.length = 0; r4.fish.length = 0; r4.men.length = 0;
+  Object.assign(TUNE.SPRITE_SIZE, { soldier2_fear: 0.8, soldier2_go: 0.88 });   // (as world6.js: the second man sat nearly as tall as David) r4.walk = null; r4.swim = null;
   for (const r of ADULLAM.rooms) { roomImg(r.pic); roomImg(r.mid); roomImg(`w4/floor_${r.ground}.png`); roomImg(`w4/near_${r.near || r.rock}.png`); roomImg(`w4/ceil_${r.rock}.png`); }
   const G = GR * T;
 
@@ -598,6 +603,26 @@ function r4Build(R) {
     rRat(rm, c + 26, 4); rSpider(rm, c + 38, 170);
   }
 
+  // -- The 400 (1 Samuel 22:2): newcomers hiding around the cave, scared; Up by one, he gets up and goes to the camp. In
+  //  the Camp from the start: men sitting and talking, an old man, men in distress, a frightened boy; and every newcomer
+  //  sent there, standing with them. (Their words: drafts, for Glen)
+  const NEW = [
+    ["mouth", 62, 1, -1, "I owe more than I could ever pay. They'd sell my children for it. Is there room here for a man like me?", "There's room. Go up to the camp: the others are there."],
+    ["lamphall", 70, 3, 1, "I'm too old to run any farther. Saul's men took everything I had.", "Then you don't have to run. Rest at the camp with us."],
+    ["warren", 105, 4, -1, "Are you David? The one who killed the giant?", "The LORD did that. Go on to the camp. We'll stand together."],
+    ["narrows", 47, 5, 1, "I heard men were gathering to you here. Is it true?", "Everyone in trouble is welcome. Go up to the camp."],
+    ["under", 50, 2, -1, "I hid down here when they came for my father. I didn't know where else to go.", "You're not alone anymore. Come up to the camp."],
+    ["spring", 40, 1, 1, "My lord, I'm bitter in soul. I've lost everything.", "So have we all. But God has not left us. Go to the camp."],
+    ["nook", 10, 3, 1, "The bats are better company than Saul. Are you gathering men?", "I am. Go on to the camp."],
+    ["stones", 30, 5, -1, "The roof came down behind me. I thought I'd die here.", "Not today. The way's open. Go to the camp."],
+  ];
+  NEW.forEach(([room, k, man, dir, say, reply], i) => r4.men.push({ id: "r4_man_" + i, room, x: (roomById(room).c0 + k) * T, y: FOOT, man: "soldier" + man, dir, say, reply, state: regionHas("taken", "r4_man_" + i) ? "gone" : "hide", t: 0 }));
+  { const cc = roomById("camp").c0, at = k => (cc + k) * T;
+    for (const [n, k, dir, f] of [["soldier_sit", 30, 1, 0], ["soldier_sit", 36, -1, 2], ["soldier_talk", 44, -1, 0], ["soldier2_fear", 53, 1, 0], ["boy_scared", 57, -1, 0], ["soldier_sit", 85, 1, 1], ["soldier4_fear", 92, -1, 0]])
+      r4.men.push({ id: null, room: "camp", x: at(k), y: FOOT, still: n, f, dir, state: "camp", t: Math.random() * 3 });
+    NEW.forEach((m, i) => r4.men.push({ id: null, room: "camp", x: at([40, 48, 61, 66, 72, 78, 97, 102][i]), y: FOOT, still: "soldier" + m[2] + "_fear", f: -1, dir: i % 2 ? 1 : -1, state: "camp", need: "r4_man_" + i, t: 0 }));
+  }
+
   // (Glen 11-13: "we need spiders in these caves too") Part Two's spiders: on their threads over the way (they drop when
   //  he's under), and walking the floor
   const S = (room, k, y) => rSpider(room, roomById(room).c0 + k, y), Cw = (room, k, n = 4) => rCrawler(room, roomById(room).c0 + k, n);
@@ -648,6 +673,19 @@ function r4Update(dt, r) {
   if (Wl && Wl.room === r.id && !regionHas("taken", "r4_wall_under") && Math.abs(d.x - Wl.x) < R4.WALL.REACH && d.onGround) {
     if (!r4WallOpen()) r4Tell("wall_shut", "Rubble fills the way here. Too much to move... for now.");
     else { r4Tell("wall_might", "Rubble across the way. Up by it, then mash A and B to swing Goliath's sword!"); if (pressed("up") && !region.trans) { r3MightStart(Wl); return; } }
+  }
+  // the 400: getting up and going to the camp
+  for (const m of r4.men) {
+    if (m.room !== r.id) continue; m.t += dt;
+    if (m.state === "rise" && m.t >= R4.MEN.RISE) { m.state = "go"; m.t = 0; }
+    else if (m.state === "go") { m.x += m.dir * R4.MEN.WALK * dt; if (m.t >= R4.MEN.GO) m.state = "gone"; }
+  }
+  const man = r4.men.find(m => m.room === r.id && m.state === "hide" && Math.abs(d.x - m.x) < R4.MEN.NEAR && Math.abs(d.y - m.y) < 80);
+  if (man && pressed("up") && d.onGround && !region.trans) {
+    regionAdd("taken", man.id); const n = r4.men.filter(m => m.id && regionHas("taken", m.id)).length, all = r4.men.filter(m => m.id).length;
+    rPlay([{ say: ["", man.say] }, { say: ["David", man.reply] },
+      { fn() { man.state = "rise"; man.t = 0; man.dir = Math.sign((roomById("camp").c0 * T) - man.x) || man.dir; toast(`Everyone in distress gathered to David: ${n} of ${all} found. The camp is growing.`); } }]);
+    return;
   }
   // a secret way: a breath of cool air when he's near it
   for (const o of r4.tunnels) if (o.secret && o.room === r.id && Math.abs(d.x - o.x) < 110 && Math.abs(d.y - o.y) < 80)
@@ -813,6 +851,25 @@ function r4DrawWall(camX) {
   ctx.save(); ctx.translate(Math.round(x + 10), 0); ctx.scale(-1, 1);
   ctx.drawImage(im, -k.w * U / 2, Math.round(GR * T + 16 - k.h * B * 0.8 - k.h * U), k.w * U, k.h * U); ctx.restore();
 }
+// the 400: hiding (his first frame, shivering when David's not close), getting up (his clip), walking off (fading); in
+//  the Camp: sitting, talking, huddled, and the newcomers standing (their last frame)
+function r4DrawMen(camX) {
+  const now = performance.now() / 1000;
+  for (const m of r4.men) {
+    if (m.room !== region.room.id || m.state === "gone") continue;
+    const x = m.x - camX; if (x < -200 || x > W + 200) continue;
+    if (m.state === "camp") {
+      if (m.need && !regionHas("taken", m.need)) continue;
+      const S = SPR[m.still]; if (!S) continue;
+      const f = m.f < 0 ? S.frames - 1 : m.still === "soldier_sit" || m.still === "soldier_talk" || m.still === "boy_scared" ? frameOf(m.still, now + m.t) : m.f;
+      drawSprite(m.still, f, x + (m.f === 0 && /_fear$/.test(m.still) ? Math.sin(now * 40) * 1.2 : 0), m.y, m.dir); continue;
+    }
+    const fear = m.man + "_fear", go = m.man + "_go", F = SPR[fear]; if (!F) continue;
+    if (m.state === "hide") drawSprite(fear, 0, x + (Math.abs(david.x - m.x) > 3 * T ? Math.sin(now * 40) * 1.2 : 0), m.y, m.dir);
+    else if (m.state === "rise") drawSprite(fear, Math.min(F.frames - 1, Math.floor(m.t / R4.MEN.RISE * F.frames)), x, m.y, m.dir);
+    else if (m.state === "go" && SPR[go]) drawSprite(go, frameOf(go, m.t), x, m.y, m.dir, 1, Math.max(0, 1 - m.t / R4.MEN.GO));
+  }
+}
 // the rock down into the water (r4Lid): his rock pile, row on row, the bottom row upside down (hanging)
 function r4DrawLids(camX) {
   for (const l of r4.lids) {
@@ -855,6 +912,7 @@ function r4DrawFront(camX) {
       ctx.fillStyle = wg; ctx.fillRect(lx - R, ly + camY - R, R * 2, R * 2); ctx.restore(); }
   }
   if (!r4.walk && !region.trans) for (const o of r4.tunnels) if (o.to && !o.secret && o.room === r.id && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - o.y) < 160) upHint(o.x - camX, o.y - 200);
+  for (const m of r4.men) if (m.room === r.id && m.state === "hide" && !r4.walk && Math.abs(d.x - m.x) < R4.MEN.NEAR * 1.5) upHint(m.x - camX, m.y - 230);
   const Wl = r4.wall;
   if (Wl && Wl.room === r.id && !r4.walk && r4WallOpen() && !regionHas("taken", "r4_wall_under") && Math.abs(d.x - Wl.x) < R4.WALL.REACH) upHint(Wl.x - camX, GR * T - 300);
   const L = r4.lampAt, li = kitImg("w4_lamp"); if (L && L.room === r.id && !r4Lamp() && li) ctx.drawImage(li, L.x - camX - 39, L.y - 55, 78, 55);   // (the lamp, till he takes it)
