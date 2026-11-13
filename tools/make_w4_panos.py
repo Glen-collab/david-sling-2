@@ -56,6 +56,11 @@ Image.open(os.path.join(ART, "set5_far_cave_mouth_hills.png")).convert("RGB").sa
 # (Glen 11-13) his tall pictures for the climbing rooms (1:2); the well's twice, one over the other (water at both ends)
 for src, n in [("set10_tall_limestone_columns.png", "roost"), ("set10_tall_dark_moss.png", "ledges")]:
     Image.open(os.path.join(ART, src)).convert("RGB").save(os.path.join(OUT, f"tall_{n}.jpg"), quality=88)
-w = Image.open(os.path.join(ART, "set10_tall_wet_terraces.png")).convert("RGB")
-ww = Image.new("RGB", (w.width, w.height * 2)); ww.paste(w, (0, 0)); ww.paste(w, (0, w.height)); ww.save(os.path.join(OUT, "tall_well.jpg"), quality=88)
+# (Glen 11-13: "there is water half way down. Can you snip that at a different part") his rock between the two waters
+#  (rows 200-2040), twice, then down to the water at the bottom; cross-faded where they join
+w = np.asarray(Image.open(os.path.join(ART, "set10_tall_wet_terraces.png")).convert("RGB")).astype(float)
+F = 120; t = np.linspace(0, 1, F)[:, None, None]
+def vjoin(a, b): return np.concatenate([a[:-F], a[-F:] * (1 - t) + b[:F] * t, b[F:]], axis=0)
+rock, last = w[200:2040], w[200:]
+Image.fromarray(vjoin(vjoin(rock, rock), last).clip(0, 255).astype(np.uint8)).save(os.path.join(OUT, "tall_well.jpg"), quality=88)
 print("mouth, tall")

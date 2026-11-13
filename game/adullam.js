@@ -79,7 +79,7 @@ const ADULLAM = {
     { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 16, my: 1, mw: 1, mh: 2, left: "narrows", dark: 0.9,
       pic: "w4/tall_ledges", k: 1, tall: true, rock: "dark", ground: "dark", near: "pile" },
     { id: "well", name: "The Old Well Shaft", w: 40, up: 100, cave: true, mx: 17, my: 1, mw: 1, mh: 3, right: "river", dark: 0.35,
-      pic: "w4/tall_well", k: 1, tall: true, rock: "pale", ground: "pebbles" },
+      pic: "w4/tall_well", k: 0.6, fog: 0.4, tall: true, rock: "pale", ground: "pebbles" },
     // LOWER: water (water: the waterline, px from the screen's top)
     { id: "river", name: "The Underground River", w: 170, cave: true, mx: 18, my: 3, mw: 5, left: "well", right: "flooded", dark: 0.9, water: 430,
       pic: "w4/pano_river", fill: true, rock: "moss", ground: "pebbles" },
@@ -569,6 +569,7 @@ function r4Backdrop(r, camX) {
     }
     const mid = roomImg(r.mid); if (mid) tiles(mid, B.MID_P, yb - mid.naturalHeight * B.K, mid.naturalWidth * B.K, mid.naturalHeight * B.K);
     ctx.fillStyle = `rgba(8,6,4,${r.tall ? B.TALL_DIM : B.DIM})`; ctx.fillRect(0, camY, W, H);
+    if (r.fog) r4Fog(r, r.fog);
   }
   const ce = roomImg(`w4/ceil_${r.rock}.png`); if (ce && camTop > camY - 300) tiles(ce, B.NEAR_P, camTop, ce.naturalWidth, ce.naturalHeight);
   const ne = roomImg(`w4/near_${r.near || r.rock}.png`); if (ne && B.NEAR_BOT > camY) { ctx.globalAlpha = B.NEAR_A; tiles(ne, B.NEAR_P, B.NEAR_BOT - ne.naturalHeight, ne.naturalWidth, ne.naturalHeight); ctx.globalAlpha = 1; }
@@ -597,6 +598,21 @@ function r4Floor(r, camX) {
   }
   ctx.restore();
   return true;
+}
+// (Glen 11-13: "We can also put fog in here too") mist drifting slowly across the room, in bands down its height, behind
+//  the ledges (a: how thick)
+function r4Fog(r, a) {
+  const t = performance.now() / 1000, top = -(r.up || 0) * T - 200;
+  for (let i = 0, y = top; y < GR * T + 100; i++, y += 230) {
+    if (y < camY - 200 || y > camY + H + 200) continue;
+    const sp = 14 + (i * 7) % 18, span = W + 900;
+    for (let j = 0; j < 3; j++) {
+      const x = (((i * 397 + j * span / 3 + t * sp * (i & 1 ? 1 : -1)) % span) + span) % span - 450;
+      ctx.save(); ctx.translate(x, y + Math.sin(t * 0.3 + i + j) * 20); ctx.scale(2.6, 1);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 150); g.addColorStop(0, `rgba(205,215,220,${a})`); g.addColorStop(1, "rgba(205,215,220,0)");
+      ctx.fillStyle = g; ctx.fillRect(-150, -150, 300, 300); ctx.restore();
+    }
+  }
 }
 // the rock down into the water (r4Lid): his rock pile, row on row, the bottom row upside down (hanging)
 function r4DrawLids(camX) {
