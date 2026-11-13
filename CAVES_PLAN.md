@@ -102,3 +102,8 @@ Light, from the top down: daylight (limestone) -> sunbeams through the roof -> o
 - Lower: set5_far_underwater_tunnel and set4_far_pool_underwater (swimming), set4_far_pool_underwater_wide (flatter style, maybe),
   set4_far_lake_hall (Hidden Spring, the end). Skipped: set4_cutaway_lightning.
 Still needed: mid/near layers for middle and lower, water surface loop, waterfall, rats, bats, David walking toward the camera.
+- Tall rooms (set6, 800x3200 shafts, 1120x2240 walls; painted ledges become platforms, measured from the art like w3_trunk_full):
+  Old Well Shaft = set6_shaft_sunlit_ropes (sky at the top, pool at the bottom) over set6_shaft_sunlit_far_mist.
+  Upper climbing wall = set6_wall_limestone_ledges over set6_wall_far_mist. Middle = set6_wall_dark_ledges_grass,
+  set6_shaft_purple_thorns (danger shaft). Maybe: set6_shaft_planks_dark (paint out the carved swirl blocks: not Israel).
+  Skip: set6_shaft_blue_thornrings (fantasy thorn wreaths).
