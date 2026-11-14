@@ -1575,6 +1575,8 @@ function updateBeasts(dt, r) {
       else {
         b.x += b.facing * (b.kind === "rat2" ? 150 : 90) * dt;
         if (b.x < b.hx - b.range) { b.x = b.hx - b.range; b.facing = 1; } else if (b.x > b.hx + b.range) { b.x = b.hx + b.range; b.facing = -1; }
+        // (Glen 11-14: "The spider is walking on the pit") they turn at the edge of a hole
+        for (const h of region.holes) if (h.room === b.room && b.x > h.x0 - 22 && b.x < h.x1 + 22) { b.facing = b.x < (h.x0 + h.x1) / 2 ? -1 : 1; b.x = b.facing < 0 ? h.x0 - 22 : h.x1 + 22; }
         if (b.kind === "rat2" && b.t > 2.5 + (b.hx % 3)) { b.state = "sniff"; b.t = 0; }
       }
     } else if (BIRD[b.kind]) {

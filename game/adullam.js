@@ -44,6 +44,11 @@ const R4 = {
   // (Glen 11-13: "Here are some cave floors") his floors, under David's feet, scrolling with him: px of each over the
   //  ground line (he walks a little way into it, not along its back edge)
   FLOOR: { limestone: 80, sandstone: 74, dark: 70, pebbles: 50 },
+  // (Glen 11-14: "here is a pit asset to use for the pits") his sandstone pit (tools/make_w4_pit.py: w4/pit.png) for the
+  //  drops in the light floors (GROUNDS): its back wall stretched to the hole's width, its stone lips either side. KX, KY:
+  //  its size across and down (down less, so its shaft goes dark on screen); DARK: px under its rim to all dark; RIM: its
+  //  back wall's top below the floor picture's top; L, R, TOP: its slices (the png's px)
+  PIT: { GROUNDS: ["limestone", "sandstone"], KX: 0.42, KY: 0.3, DARK: 150, RIM: 34, L: 160, R: 480, TOP: 30 },
   FLOOR_SOLID: { limestone: 42, sandstone: 45, dark: 2, pebbles: 104 },   // (the row each floor picture is solid from: under it, dark)
   // (Glen 11-13: "paint the exact ledges that we can jump on") a way up a tall room: his ledges zigzagging, each DY px
   //  over the last, GAP px apart sideways, kept EDGE px from the walls; their sizes in turn
@@ -638,6 +643,7 @@ function r4Build(R) {
   S("ledges", 12, 300); S("roost", 30, 200); S("spring", 30, 180); Cw("spring", 60, 5); S("spring", 120, 170); S("spring", 175, 180); Cw("spring", 150, 5);
   S("under", 20, 170); S("under", 48, 180); S("under", 100, 170); Cw("under", 74, 4); S("climb", 20, 300);
   for (let i = region.props.length; i--;) if (region.props[i].n === "p_left" || region.props[i].n === "p_right") region.props.splice(i, 1);   // (r4Floor draws the drops)
+  roomImg("w4/pit.png");   // (his pit picture: loading before he comes to one)
 }
 
 function r4Enter(r) {
@@ -822,7 +828,9 @@ function r4Floor(r, camX) {
   }
   for (const o of region.holes) {   // a drop in the floor: dark, soft at its edges (no kit edges in the caves)
     if (o.room !== r.id) continue;
-    const x0 = o.x0 - camX - 14, x1 = o.x1 - camX + 14; if (x1 < 0 || x0 > W) continue;
+    const x0 = o.x0 - camX - 14, x1 = o.x1 - camX + 14; if (x1 < 0 - 200 || x0 > W + 200) continue;
+    const pit = R4.PIT.GROUNDS.includes(r.ground) && roomImg("w4/pit.png");
+    if (pit) { r4Pit2(pit, o.x0 - camX, o.x1 - camX, y); continue; }
     const g = ctx.createLinearGradient(x0, 0, x1, 0), e = Math.min(0.3, 30 / (x1 - x0));
     g.addColorStop(0, "rgba(4,3,2,0)"); g.addColorStop(e, "rgba(4,3,2,0.97)"); g.addColorStop(1 - e, "rgba(4,3,2,0.97)"); g.addColorStop(1, "rgba(4,3,2,0)");
     ctx.fillStyle = g; ctx.fillRect(x0, y + 50, x1 - x0, H + 400);
@@ -831,6 +839,18 @@ function r4Floor(r, camX) {
   }
   ctx.restore();
   return true;
+}
+// his pit picture down a hole from a0 to a1 (screen x), the floor picture's top at y: dark behind it first (it narrows
+//  at the bottom), then his back wall across the hole and a stone lip each side
+function r4Pit2(im, a0, a1, y) {
+  const P = R4.PIT, k = P.KX, iw = im.naturalWidth, ih = im.naturalHeight, rim = y + P.RIM, top = rim - P.TOP * P.KY, h = ih * P.KY;
+  ctx.fillStyle = "#050302"; ctx.fillRect(a0, rim, a1 - a0, H + 400);
+  ctx.drawImage(im, P.L, 0, P.R - P.L, ih, a0, top, a1 - a0, h);
+  ctx.drawImage(im, 0, 0, P.L, ih, a0 - P.L * k, top, P.L * k, h);
+  ctx.drawImage(im, P.R, 0, iw - P.R, ih, a1, top, (iw - P.R) * k, h);
+  const g = ctx.createLinearGradient(0, rim + 10, 0, rim + P.DARK);   // (darker the deeper)
+  g.addColorStop(0, "rgba(5,3,2,0)"); g.addColorStop(1, "rgba(5,3,2,0.95)");
+  ctx.fillStyle = g; ctx.fillRect(a0, rim + 10, a1 - a0, H + 400);
 }
 // (Glen 11-13: "We can also put fog in here too") mist drifting slowly across the room, in bands down its height, behind
 //  the ledges (a: how thick)
