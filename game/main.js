@@ -319,7 +319,7 @@ function pollInput() {
   }
   input.now = s;
 }
-const held = b => !!input.now[b] || (b === "right" && typeof autoRun8 === "function" && autoRun8());   // (8-3 runs itself, world8.js)
+const held = b => !!input.now[b] || (b === "right" && typeof autoRun8 === "function" && autoRun8()) || (b === "right" && typeof regionAutoRun === "function" && regionAutoRun());   // (and Part Two's Out of Keilah: keilah.js)   // (8-3 runs itself, world8.js)
 const pressed = b => !!input.now[b] && !input.prev[b];
 const released = b => !input.now[b] && !!input.prev[b];
 const held2 = b => !!input2.now[b];
@@ -470,7 +470,8 @@ const STAGE_INFO = {
   "9-4": { cols: 60, bg: "w4_4", ter: "w4p", name: "The Window" },                      // Part Two test: the D-pad drills (drill.js); Glen's palace at night
   "9-5": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Gibeah" },
   "9-7": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Nob and Gath" },
-  "9-8": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Cave of Adullam" },          // Part Two: World 4 (adullam.js on region.js)          // Part Two: World 3 (nobgath.js on region.js)
+  "9-8": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Cave of Adullam" },
+  "9-9": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Keilah" },          // Part Two: World 4, part two (keilah.js on region.js)          // Part Two: World 4 (adullam.js on region.js)          // Part Two: World 3 (nobgath.js on region.js)
   "9-6": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Window" },           // Part Two: World 2, the second region (ramah.js on region.js)              // Part Two test: the first region, Castlevania-style (region.js)
   "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
   "1-1": { cols: 228, bg: "w1", name: "The Hills of Bethlehem" },
@@ -642,6 +643,7 @@ const SKILL_NAMES = { aimUp: "Aim up: hold Up as you throw", harpCall: "The harp
   leap: "The scout's leap: press A again in the air to jump again",
   rope: "Michal's rope: climb ropes, and go down wells (Up at one)",   // (Part Two, World 2)
   heavySword: "Goliath's sword: Up by a cracked wall, then mash A and B",   // (Part Two, World 3)
+  ask: "Ask the LORD: kneel at a prayer stone (Up)",   // (Part Two, Keilah: Abiathar's ephod, 1 Samuel 23:9)
   bow: "Jonathan's bow: hold Up and press {sword} to shoot up high (hold forward too: straight and far)" };   // leap: Tobi, 5-2   // quick: Gera, 4-2
 const skills = new Set();
 try { for (const k of JSON.parse(localStorage.getItem(slotKey("david2Progress")) || "{}").skills || []) skills.add(k); } catch (e) {}
@@ -1160,7 +1162,7 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
-} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" || LEVEL_NAME === "9-8") {
+} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" || LEVEL_NAME === "9-8" || LEVEL_NAME === "9-9") {
   buildRegion();   // Gibeah, the first region: rooms, doors, seals and finds (region.js)
 } else if (LEVEL_NAME === "9-4") {
   // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets

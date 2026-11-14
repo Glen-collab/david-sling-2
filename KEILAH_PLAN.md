@@ -104,6 +104,24 @@ Kit pieces and clips: the same green screen as World 4 (pure #00FF00 background,
   New: the backgrounds, and a few others.
 - **Items:** he uses every tool (shield, sword, bow); plan where each comes from and what it reopens: ITEMS_PLAN.md.
 
+## Built: the first pass (11-14, game/keilah.js, stage #9-9; "Play World 4, Keilah (test).bat")
+Glen: "use your discernment for which items we have and backgrounds and then when we get the structure, kind of laid out,
+we can develop more for backgrounds and stuff." All stand-in art from the two games:
+- **The Forest of Hereth** (World 3's road hills): the 400 sitting about, a runner (messenger_talk) with 23:1. The rock
+  (Gibeah's f_rock): Up, David kneels (david_kneel), 23:2; his men afraid, 23:3; Up again, 23:4. The way on is shut till then.
+  Then woods: olive trees, terraces, ledges, a pomegranate, a caracal, hornets, a gap.
+- **The Road Down to Keilah** (Gibeah's fields): Philistine scouts on the terraces and the road, gaps, a stone of remembrance.
+- **The Threshing Floors**: a tall room, 7 floors on 5 levels (ground, terraces, the hilltop). 3 waves of raiders (5, 7, 9)
+  walk in from a ledge's end, grab a sack (1.6 s), run back; hit one and he drops it. 5 sacks lost = that wave again.
+  Then 23:5, the livestock in the gate. A Truth (23:4) on the hilltop.
+- **Keilah** (Gibeah's town): people about; Abiathar comes (23:6; David's words, 22:23); the news of Saul (23:7-8); Up by
+  Abiathar: the ephod, the two questions (23:9-12). New skill "Ask the LORD". Night falls; the people go in.
+- **Out of Keilah**: the run (Part One's Rout: held right). Carts and gaps to jump, beams to roll under (knock back, no
+  harm), men who step out and grab (1 s), pots from the roofs (a heart). The gate's clock at the top: a clean run is
+  about 17 s; it shuts at about 26 s. Too slow: back to the start of the street.
+- **The Wilderness**: 23:13-14, then the Journal (Keilah's page; the song's Bridge), then the land map.
+Tests: tools/tests/k4tour.js, k4play.js, k4run.js (a bot runs the street), k4end.js.
+
 ## Questions for Glen (answered above)
 1. The battle: three threshing floors to defend at once (a little tower-defense), or a straight fight down the floors?
 2. The escape: a real chase (the camera pushing, the gate closing), or the D-pad drill (drill.js, as with Michal's rope)?
