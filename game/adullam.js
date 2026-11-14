@@ -49,7 +49,7 @@ const R4 = {
   //  floor -> which pit; pebbles: none, the soft dark): its back wall stretched to the hole's width, its stone lips either side. KX, KY:
   //  its size across and down (down less, so its shaft goes dark on screen); DARK: px under its rim to all dark; RIM: its
   //  back wall's top over David's feet (Glen 11-14: "moved down to the walking level of David"); L, R, TOP: its slices (the png's px)
-  PIT: { GROUNDS: { limestone: "sandstone", sandstone: "orange", dark: "dark" }, KX: 0.42, KY: 0.3, DARK: 150, RIM: 4, L: 160, R: 480, TOP: 34 },
+  PIT: { GROUNDS: { limestone: "sandstone", sandstone: "orange", dark: "dark" }, KX: 0.42, KY: 0.3, DARK: 150, RIM: -28, L: 160, R: 480, TOP: 34 },
   FLOOR_SOLID: { limestone: 42, sandstone: 45, dark: 2, pebbles: 104 },   // (the row each floor picture is solid from: under it, dark)
   // (Glen 11-13: "paint the exact ledges that we can jump on") a way up a tall room: his ledges zigzagging, each DY px
   //  over the last, GAP px apart sideways, kept EDGE px from the walls; their sizes in turn
