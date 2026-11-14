@@ -94,7 +94,17 @@ boys, girls: stand and run). Soldier1-5 and the camp men from Adullam. A messeng
 Kit pieces and clips: the same green screen as World 4 (pure #00FF00 background, the object alone, side view, the same
 3D look). The clips: 2-3 seconds, side view, feet on a flat line.
 
-## Questions for Glen
+## Glen's answers (11-14)
+- **The threshing floors:** "multiple floors to defend like the caves. That was fun." Floors on several levels (ledges,
+  rooftops, terraces) in a tall room, raiders coming at all of them.
+- **The escape:** "a runner like we did in David 1 but challenging too": Part One's Rout (8-3, world8.js autoRun8: it runs
+  itself, you jump). Here harder: roll under carts, slide under the gate, jump gaps, dodge grabbing hands and thrown pots.
+- **The ending:** a Journal page, then the next place on the map.
+- **Art:** "We have grain sacks and carts and houses we can use. Most of the art is in the game between the two games."
+  New: the backgrounds, and a few others.
+- **Items:** he uses every tool (shield, sword, bow); plan where each comes from and what it reopens: ITEMS_PLAN.md.
+
+## Questions for Glen (answered above)
 1. The battle: three threshing floors to defend at once (a little tower-defense), or a straight fight down the floors?
 2. The escape: a real chase (the camera pushing, the gate closing), or the D-pad drill (drill.js, as with Michal's rope)?
 3. Ziph next, as on the land map, or does Keilah end World 4 with a Journal page first?
