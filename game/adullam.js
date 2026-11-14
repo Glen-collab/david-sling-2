@@ -49,7 +49,7 @@ const R4 = {
   //  floor -> which pit; pebbles: none, the soft dark): its back wall stretched to the hole's width, its stone lips either side. KX, KY:
   //  its size across and down (down less, so its shaft goes dark on screen); DARK: px under its rim to all dark; RIM: its
   //  back wall's top over David's feet (Glen 11-14: "moved down to the walking level of David"); L, R, TOP: its slices (the png's px)
-  PIT: { GROUNDS: { limestone: "sandstone", sandstone: "orange", dark: "dark" }, KX: 0.42, KY: 0.3, DARK: 150, RIM: 1, L: 160, R: 480, TOP: 34 },
+  PIT: { GROUNDS: { limestone: "sandstone", sandstone: "orange", dark: "dark" }, KX: 0.42, KY: 0.3, DARK: 150, RIM: 4, SOLID: 45, L: 160, R: 480, TOP: 34 },
   FLOOR_SOLID: { limestone: 42, sandstone: 45, dark: 2, pebbles: 104 },   // (the row each floor picture is solid from: under it, dark)
   // (Glen 11-13: "paint the exact ledges that we can jump on") a way up a tall room: his ledges zigzagging, each DY px
   //  over the last, GAP px apart sideways, kept EDGE px from the walls; their sizes in turn
@@ -857,7 +857,8 @@ function r4Floor(r, camX) {
 //  at the bottom), then his back wall across the hole and a stone lip each side
 function r4Pit2(im, a0, a1, y) {
   const P = R4.PIT, k = P.KX, iw = im.naturalWidth, ih = im.naturalHeight, rim = GR * T - P.RIM, top = rim - P.TOP * P.KY, h = ih * P.KY;
-  ctx.fillStyle = "#050302"; ctx.fillRect(a0, rim, a1 - a0, H + 400);
+  // (Glen 11-14: "a black line of space there": his picture's top rows are faded, so the dark starts under where it's solid)
+  ctx.fillStyle = "#050302"; ctx.fillRect(a0, top + P.SOLID * P.KY, a1 - a0, H + 400);
   ctx.drawImage(im, P.L, 0, P.R - P.L, ih, a0, top, a1 - a0, h);
   ctx.drawImage(im, 0, 0, P.L, ih, a0 - P.L * k, top, P.L * k, h);
   ctx.drawImage(im, P.R, 0, iw - P.R, ih, a1, top, (iw - P.R) * k, h);
