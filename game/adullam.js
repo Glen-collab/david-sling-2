@@ -138,7 +138,7 @@ const ADULLAM = {
   ],
   end: ["Bring my soul out of prison, that I may give thanks to your name.", "Psalm 142:7"],
   build: r4Build, enter: r4Enter, update: (dt, r) => r4Update(dt, r), holdDavid: (d, dt) => r4Hold(d, dt), drawDavid: (d, x, y) => r4DrawDavid(d, x, y),
-  drawOver: () => r3DrawMight(), crumbleDY: 3 /* (Glen 11-14: the crumbling stone down 3px, on his pits) */, softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawWall(camX); r4DrawMen(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
+  drawOver: () => r3DrawMight(), crumbleDY: 5 /* (Glen 11-14: the crumbling stone down 3px, then 2 more, on his pits) */, softHoles: true, draw: camX => { r4DrawLids(camX); r4DrawWall(camX); r4DrawMen(camX); r4DrawFish(camX); }, backdrop: (r, camX) => r4Backdrop(r, camX), floor: (r, camX) => r4Floor(r, camX), drawFront: camX => r4DrawFront(camX),
 };
 
 const R4_KIT = {   // (tools/cut_w4_kit.py: assets/rooms/w4/kit/kit.json; top: the rock's top edge, px down the piece)
