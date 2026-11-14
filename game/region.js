@@ -1599,12 +1599,12 @@ function updateBeasts(dt, r) {
       if (b.state !== "perch") { const q = beastBox(b); if (touchesDavid(q)) beastHurt(b); }
       continue;
     } else if (b.kind === "bat2") {   // asleep upside down until he comes near; then swoops at him, out past him, and back
-      if (b.state === "hang") { if (Math.abs(dx) < 260 && d.y > b.y) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
+      if (b.state === "hang") { if (Math.abs(dx) < 260 && d.y > b.y && d.y - b.y < 400) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
       else {
         b.x += b.facing * 210 * dt;
         const want = d.y - 70 + Math.sin(b.t * 5) * 30;
         b.y += (want - b.y) * Math.min(1, dt * 1.8);
-        b.y = Math.max(60, Math.min((r.water ? r.water - 90 : GR * T) - 40, b.y));   // (adullam.js: a room's water: bats keep over it)
+        b.y = Math.max(-(r.up || 0) * T + 60, Math.min((r.water ? r.water - 90 : GR * T) - 40, b.y));   // (adullam.js: a room's water: bats keep over it; Glen 11-14: a tall room's top, not the ground floor's: they jumped down out of sight)
         if ((b.facing > 0 && b.x > d.x + 320) || (b.facing < 0 && b.x < d.x - 320)) b.facing *= -1;
         b.x = Math.max(r.c0 * T + 40, Math.min((r.c0 + r.w) * T - 40, b.x));
       }
