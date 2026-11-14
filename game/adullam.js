@@ -710,16 +710,19 @@ function r4Update(dt, r) {
   }
   // its oil: an olive from the flask every few seconds, in the dark
   if (r.dark > 0.6 && r4Lamp() && d.olives > 0) { r4.oilT += dt; if (r4.oilT >= R4.DARK.OIL_EVERY) { r4.oilT = 0; d.olives--; } }
-  if (!pressed("up") || region.trans || d.deadT > 0 || (!d.onGround && !r4.swim)) return;
+  // (Glen 11-14: "David still stands for a second before he goes up into the cave ... under the water": standing on the
+  //  bottom counts as in the water too, no turn)
+  const wet = r4.swim || (r.water && d.y > r.water + 40);
+  if (!pressed("up") || region.trans || d.deadT > 0 || (!d.onGround && !wet)) return;
   // (Glen 11-13: "When I get to this part to hit up ... David just stays swimming") in the water, anywhere over it counts
-  const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH && (r4.swim ? d.y < o.y + 10 && o.y - d.y < U.SWIM_HIGH : Math.abs(d.y - o.y) < U.HIGH));
+  const tun = r4.tunnels.find(o => o.room === r.id && Math.abs(d.x - o.x) < U.REACH && (wet ? d.y < o.y + 10 && o.y - d.y < U.SWIM_HIGH : Math.abs(d.y - o.y) < U.HIGH));
   if (!tun) return;
   if (!tun.to) { r4Tell("side" + tun.x, "A side cave. Not open yet: still to explore."); return; }
   if (tun.blocked) {   // rubble across a side cave: Goliath's sword breaks it (test your might)
     if (!hasSkill("heavySword")) { r4Tell("rubble" + tun.id, "Rubble across the way in. Something heavy could break it."); return; }
     r3MightStart(tun.might); return;
   }
-  if (r4.swim) {   // (Glen 11-13: "up should just make him go to the next room" under the water: no standing, no turn)
+  if (wet) {   // (Glen 11-13: "up should just make him go to the next room" under the water: no standing, no turn)
     const to = r4.tunnels.find(o => o.id === tun.to);
     regionGo(to.x, d.facing, () => { d.y = to.y; d.vy = 0; region.camFootY = Math.min(to.y, GR * T); snapCamera(); });
     return;
@@ -730,6 +733,9 @@ function r4Update(dt, r) {
 // ---- swimming (Glen's david_swim): below the waterline he swims; A a stroke up, Up / Down; breath while he's under
 function r4Hold(d, dt) {
   if (r4.walk) { d.vx = d.vy = 0; return true; }
+  // (Glen 11-14: "David still stands for a second before he goes up into the cave ... under the water") through a tunnel
+  //  under the water: still swimming while it fades, not stood up for it
+  if (region.trans) { const w = roomAt(d.x); if (r4.swim || (w && w.water && d.y > w.water + 40)) { r4.swim = r4.swim || { t: 0 }; d.vx = d.vy = 0; r4.swim.t += dt; return true; } }
   const r = roomAt(d.x); if (!r || !r.water || r !== region.room || d.deadT > 0 || region.trans) { r4.swim = null; return false; }   // (moved to another room: not this one's water)
   const S = R4.SWIM, wy = r.water, lid = r4LidAt(r, d.x), top = lid ? Math.max(wy + S.FLOAT, lid.y + R4.LID.UNDER) : wy + S.FLOAT;
   if (r4.leapT > 0) { r4.leapT -= dt; if (d.vy < 0) return false; }   // (leaping out: not back into the water on the way up)
