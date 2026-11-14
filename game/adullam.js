@@ -216,8 +216,9 @@ function r4Tunnel(id, room, x, y, to, art = "w4_arch", secret = false, rubble = 
   r4.tunnels.push(o);
   // (Glen 11-13: "side caves a touch higher ... rubble in front of them for not open yet"; "Cave mouth needs to go higher":
   //  on a ledge, up off its top face so it stands on it, not sunk into it)
-  const up = (to && !rubble ? 0 : R4.TUNNEL.SIDE) + (y < GR * T - 4 ? R4.TUNNEL.ON_LEDGE : 0);
-  if (art) { const k = KIT[art]; region.props.push({ room, n: art, x: x - k.w / 2, y: y - k.h + 12 - up }); }
+  //  (Glen 11-14: the Warren's side caves, once their rubble's broken, stood up on a block: open, it's down on the floor)
+  const up = (to && !o.blocked ? 0 : R4.TUNNEL.SIDE) + (y < GR * T - 4 ? R4.TUNNEL.ON_LEDGE : 0);
+  if (art) { const k = KIT[art]; region.props.push(o.arch = { room, n: art, x: x - k.w / 2, y: y - k.h + 12 - up }); }
   if ((!to || o.blocked) && !secret) {   // (Glen's rubble, in the room's rock; a blocked one's goes when the sword breaks it)
     const n = "w4_rubble_" + ({ dark: "dark", red: "dark2", moss: "dark2", sand: "sand", pale: "pale" }[roomById(room).rock] || "dark"), k = KIT[n], s = R4.TUNNEL.RUBBLE;
     region.props.push(o.rubble = { room, n, x: x - k.w * s / 2, y: y - k.h * s + 14, s });
@@ -667,6 +668,7 @@ function r4Update(dt, r) {
   if (r4.wall) r4.wall.shake = Math.max(0, r4.wall.shake - dt);
   for (const o of r4.tunnels) if (o.blocked && o.might.broken) {   // (broken: the rubble's gone, the way in open)
     o.blocked = false; const i = region.props.indexOf(o.rubble); if (i >= 0) region.props.splice(i, 1);
+    if (o.arch && o.to) o.arch.y += R4.TUNNEL.SIDE;   // (down on the floor, open)
   }
   if (r3.might) { r3MightUpdate(dt); return; }
   if (r.water) r4Fish(dt, r);
