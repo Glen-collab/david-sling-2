@@ -49,7 +49,7 @@ const R4 = {
   //  floor -> which pit; pebbles: none, the soft dark): its back wall stretched to the hole's width, its stone lips either side. KX, KY:
   //  its size across and down (down less, so its shaft goes dark on screen); DARK: px under its rim to all dark; RIM: its
   //  back wall's top over David's feet (Glen 11-14: "moved down to the walking level of David"); L, R, TOP: its slices (the png's px)
-  PIT: { GROUNDS: { limestone: "sandstone", sandstone: "orange", dark: "dark" }, KX: 0.42, KY: 0.3, DARK: 150, RIM: -28, L: 160, R: 480, TOP: 34 },
+  PIT: { GROUNDS: { limestone: "sandstone", sandstone: "orange", dark: "dark" }, KX: 0.42, KY: 0.3, DARK: 150, RIM: -12, L: 160, R: 480, TOP: 34 },
   FLOOR_SOLID: { limestone: 42, sandstone: 45, dark: 2, pebbles: 104 },   // (the row each floor picture is solid from: under it, dark)
   // (Glen 11-13: "paint the exact ledges that we can jump on") a way up a tall room: his ledges zigzagging, each DY px
   //  over the last, GAP px apart sideways, kept EDGE px from the walls; their sizes in turn
@@ -652,6 +652,7 @@ function r4Enter(r) {
   r4.swim = null; r4.breath = R4.SWIM.BREATH;
   for (const f of r4.fish) if (f.room === r.id) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });   // (back again when he comes back)
   if (r.id === "mouth") r4Tell("mouth", "David therefore departed from there and escaped to Adullam’s cave. (1 Samuel 22:1)");
+  if (r.id === "camp" && r4AllMen() && !regionHas("taken", "g_exit_open")) r4Tell("gad", "An old man waits among the men: Gad, the prophet. Go to him and press Up.");
   if (r.id === "camp") r4Tell("camp", "Everyone who was in distress, everyone who was in debt, and everyone who was discontented gathered themselves to him. (1 Samuel 22:2)");
   if (r.id === "lamphall" && !r4Lamp()) r4Tell("lamphall", "It gets dark from here on down. An oil lamp would light the way.");
   if (r.dark > 0.6 && !r4Lamp()) r4Tell("nolamp", "Too dark to see. Go back up to the Lamp Hall and find a lamp.");
@@ -693,11 +694,14 @@ function r4Update(dt, r) {
     if (m.state === "rise" && m.t >= R4.MEN.RISE) { m.state = "go"; m.t = 0; }
     else if (m.state === "go") { m.x += m.dir * R4.MEN.WALK * dt; if (m.t >= R4.MEN.GO) m.state = "gone"; }
   }
+  // (Glen 11-14: "When I get the last person it can say ... head back to camp ... something there waiting for David or him
+  //  speaking to everyone") the end of the world: Gad the prophet at the Camp once all eight have come; Up by him
+  if (r.id === "camp" && r4AllMen() && Math.abs(d.x - r4GadX()) < R4.MEN.NEAR && pressed("up") && d.onGround && !region.trans && !region.script.length) { r4GadScene(); return; }
   const man = r4.men.find(m => m.room === r.id && m.state === "hide" && Math.abs(d.x - m.x) < R4.MEN.NEAR && Math.abs(d.y - m.y) < 80);
   if (man && pressed("up") && d.onGround && !region.trans) {
     regionAdd("taken", man.id); const n = r4.men.filter(m => m.id && regionHas("taken", m.id)).length, all = r4.men.filter(m => m.id).length;
     rPlay([{ say: ["", man.say] }, { say: ["David", man.reply] },
-      { fn() { man.state = "rise"; man.t = 0; man.dir = Math.sign((roomById("camp").c0 * T) - man.x) || man.dir; toast(`Everyone in distress gathered to David: ${n} of ${all} found. The camp is growing.`); } }]);
+      { fn() { man.state = "rise"; man.t = 0; man.dir = Math.sign((roomById("camp").c0 * T) - man.x) || man.dir; toast(n >= all ? "All eight have come to David! Head back to the Camp: someone is waiting there for him." : `Everyone in distress gathered to David: ${n} of ${all} found. The camp is growing.`); } }]);
     return;
   }
   // a secret way: a breath of cool air when he's near it
@@ -885,10 +889,29 @@ function r4DrawWall(camX) {
   ctx.save(); ctx.translate(Math.round(x + 10), 0); ctx.scale(-1, 1);
   ctx.drawImage(im, -k.w * U / 2, Math.round(GR * T + 16 - k.h * B * 0.8 - k.h * U), k.w * U, k.h * U); ctx.restore();
 }
+// the end (1 Samuel 22:2-5): Gad waiting at the Camp once every newcomer's come; David speaks to his men, takes his father
+//  and mother to Moab, and Gad sends him on into Judah. Then the land map (g_exit_open: Adullam done, Keilah next).
+//  (David's words: drafts, for Glen; the Scripture is the WEB, verified on ebible.org)
+const r4AllMen = () => r4.men.filter(m => m.id).every(m => regionHas("taken", m.id));
+const r4GadX = () => (roomById("camp").c0 + 25) * T;
+function r4GadScene() {
+  david.facing = 1;
+  rPlay([
+    { say: ["", "Everyone who was in distress, everyone who was in debt, and everyone who was discontented gathered themselves to him; and he became captain over them. There were with him about four hundred men. (1 Samuel 22:2)"] },
+    { say: ["David", "Listen, all of you. We came here with nothing, running from Saul. But the LORD has not forgotten us. He brought every one of you here."] },
+    { say: ["David", "My father and mother can't live in a cave. I'll take them somewhere safe."] },
+    { say: ["", "David went from there to Mizpeh of Moab; and he said to the king of Moab, “Please let my father and my mother come out to you, until I know what God will do for me.” (1 Samuel 22:3)"] },
+    { say: ["", "He brought them before the king of Moab; and they lived with him all the time that David was in the stronghold. (1 Samuel 22:4)"] },
+    { say: ["Gad", "Don’t stay in the stronghold. Depart, and go into the land of Judah. (1 Samuel 22:5)"] },
+    { say: ["", "Then David departed, and came into the forest of Hereth. (1 Samuel 22:5)"] },
+    { fn() { regionAdd("taken", "g_exit_open"); region.trans = { t: 0, leave: true }; } },
+  ]);
+}
 // the 400: hiding (his first frame, shivering when David's not close), getting up (his clip), walking off (fading); in
 //  the Camp: sitting, talking, huddled, and the newcomers standing (their last frame)
 function r4DrawMen(camX) {
   const now = performance.now() / 1000;
+  if (region.room.id === "camp" && r4AllMen() && SPR.prophet_old) drawSprite("prophet_old", frameOf("prophet_old", now), r4GadX() - camX, FOOT, -1);   // (Gad: Ramah's old prophet, for now)
   for (const m of r4.men) {
     if (m.room !== region.room.id || m.state === "gone") continue;
     const x = m.x - camX; if (x < -200 || x > W + 200) continue;
@@ -946,6 +969,7 @@ function r4DrawFront(camX) {
       ctx.fillStyle = wg; ctx.fillRect(lx - R, ly + camY - R, R * 2, R * 2); ctx.restore(); }
   }
   if (!r4.walk && !region.trans) for (const o of r4.tunnels) if (o.to && !o.secret && o.room === r.id && Math.abs(d.x - o.x) < 140 && Math.abs(d.y - o.y) < 160) upHint(o.x - camX, o.y - 200);
+  if (r.id === "camp" && r4AllMen() && !r4.walk && !region.script.length && Math.abs(d.x - r4GadX()) < R4.MEN.NEAR * 1.5) upHint(r4GadX() - camX, FOOT - 260);
   for (const m of r4.men) if (m.room === r.id && m.state === "hide" && !r4.walk && Math.abs(d.x - m.x) < R4.MEN.NEAR * 1.5) upHint(m.x - camX, m.y - 230);
   const Wl = r4.wall;
   if (Wl && Wl.room === r.id && !r4.walk && r4WallOpen() && !regionHas("taken", "r4_wall_under") && Math.abs(d.x - Wl.x) < R4.WALL.REACH) upHint(Wl.x - camX, GR * T - 300);

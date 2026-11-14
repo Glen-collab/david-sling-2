@@ -190,3 +190,8 @@ River, the Flooded Tunnel and the Deep Pool, two biters by the long rock in the 
 - (later) Glen's smaller-men camp pictures: pano_camp_1 = set12_camp_crowd_2_small (a few by the fires), _2 =
   set12_camp_crowd_2b_small (a sitting crowd), _3 = set12_camp_crowd_3_small (packed). The dark under the floors starts
   where each floor picture is solid (R4.FLOOR_SOLID): no dark line between his picture and the floor.
+
+## The end (11-14)
+- When the 8th newcomer is found: "All eight have come to David! Head back to the Camp."
+- Gad (prophet_old for now) waits at the Camp (k25). Up by him: 1 Sam 22:2, David speaks to the men (drafts), 22:3, 22:4, Gad 22:5, Hereth (22:5, WEB verified). Then g_exit_open and the land map (Keilah next).
+- Test: tools/tests/w4gad.js
