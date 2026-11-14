@@ -1660,7 +1660,7 @@ function drawFloorCrumbles(camX) {
     if (k.state === "gone") { if (k.t < 0.6) { const kk = KIT.p_broken, im = kitImg("p_broken"); if (im) { ctx.save(); ctx.globalAlpha = 1 - k.t / 0.6; ctx.drawImage(im, Math.round(x - kk.w / 2), GR * T - 12 + k.t * 300, kk.w, kk.h); ctx.restore(); } } continue; }
     const kk = KIT.p_crumble, im = kitImg("p_crumble"); if (!im) continue;
     const j = k.state === "shake" ? (Math.random() - 0.5) * 5 : 0;
-    ctx.drawImage(im, Math.round(x - kk.w / 2 + j), GR * T - 8, kk.w, kk.h);
+    ctx.drawImage(im, Math.round(x - kk.w / 2 + j), GR * T - 8 + (REGION.crumbleDY || 0), kk.w, kk.h);   // (crumbleDY: a region's own nudge, adullam.js)
   }
 }
 // ---- the Harp Room (1 Samuel 18:10-11) ----
