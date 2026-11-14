@@ -88,9 +88,9 @@ const ADULLAM = {
     { id: "lamphall", name: "The Lamp Hall", w: 172, cave: true, mx: 8, my: 1, mw: 5, left: "roost", dark: 0.45,
       pic: "w4/lamp/far", mid: "w4/lamp/mid.png", k: 0.9,   /* (Glen 11-13: "the full background", his far wall and his columns, not halved) */ rock: "red", ground: "sandstone" },
     // MIDDLE: dark
-    { id: "warren", name: "The Rat Warren", w: 190, cave: true, mx: 8, my: 2, mw: 5, right: "narrows", dark: 0.93,
+    { id: "warren", name: "The Rat Warren", w: 190, cave: true, mx: 8, my: 2, mw: 5, dark: 0.93,   /* (Glen 11-14: in and out by Up only, not walking off the end too) */
       pic: "w4/pano_warren", fill: true, rock: "dark", ground: "dark", near: "pile" },
-    { id: "narrows", name: "The Four Tunnels", w: 120, cave: true, mx: 13, my: 2, mw: 3, left: "warren", dark: 0.93,
+    { id: "narrows", name: "The Four Tunnels", w: 120, cave: true, mx: 13, my: 2, mw: 3, dark: 0.93,
       pic: "w4/pano_narrows", fill: true, rock: "dark", ground: "dark", near: "pile" },
     // (Glen 11-13: "any time I jump to the left I end up in four tunnels") no walking out at the side: in and out by its tunnel
     { id: "ledges", name: "The Crumbling Ledges", w: 40, up: 44, cave: true, mx: 14, my: 0, mw: 2, mh: 2, dark: 0.9,   /* (Glen 11-13: on top of the Four Tunnels, room for its name) */
