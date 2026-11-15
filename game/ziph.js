@@ -1,8 +1,8 @@
 // World 5, part one: Ziph (1 Samuel 23:15-29; ZIPH_PLAN.md). Part Two's sixth region, on region.js's engine like
 // keilah.js: loaded before region.js, which takes ZIPH as its REGION when the address is "#9-10".
 //
-// First pass (11-15): all five rooms in Glen's own layers (ART_PROMPTS_ZIPH.md); the kit and people from the two games. Erem stands in on the sick Egyptian's clips (egyptian_*) till Glen's own: the stranger is
-// NOT that man (1 Samuel 30), only his poses borrowed.
+// First pass (11-15): all five rooms in Glen's own layers (ART_PROMPTS_ZIPH.md), his kit, his Erem (erem_*: lying hurt,
+// waking, sitting, drinking, talking, getting up, standing in the wind) and his Ziphite lookout (ziphite_point, _run).
 //
 //   The Hills of Ziph (Saul seeks him every day: sneak past his men, rock to rock) -> The Woods of Horesh (Jonathan's
 //   last visit, 23:16-18; the stranger with no name) -> The Hill of Hachilah (the Ziphites' lookouts and signal fires,
@@ -15,7 +15,7 @@ const Z5 = {
   SNEAK: { WALK: 62, LOOK: 2.0, TURN: 0.45, SIGHT: 8, SIGHT_LOW: 2.2, SEEN_T: 0.6, NEAR: 30, CAUGHT_FADE: 1.4, K: 0.95 },
   // the Ziphites' lookouts: how far they see (tiles), the "!" before they run, their run to the fire (px/s); a fire lit
   //  brings Saul's men (back to the press)
-  LOOK: { SIGHT: 9, SIGHT_LOW: 2.2, SPOT_T: 0.8, RUN: 230, K: 0.82, FIRE_K: 0.55, HIT: 60, FADE: 1.0 },
+  LOOK: { SIGHT: 9, SIGHT_LOW: 2.2, SPOT_T: 0.9, RUN: 230, K: 0.95, FIRE_K: 0.55, HIT: 60, FADE: 1.0 },
   // the mountain: END s till the messenger; the two fronts close from the room's ends to GAP tiles either side of the
   //  middle; a scout comes through a cleft every SCOUT s and walks SCOUT_FOR s; a front pushes him back PUSH px (a heart)
   SIEGE: { END: 55, GAP: 9, SCOUT: 6.5, SCOUT_FOR: 7, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 0.95 },
@@ -109,10 +109,10 @@ function z5Build(R) {
     rLedge(rm, c + 54, 470, 4); rRelic("z5_truth_horesh", "truth", c + 56, onTop(470),
       "Jonathan, Saul’s son, arose and went to David into the woods, and strengthened his hand in God. (1 Samuel 23:16)");
     // the stranger (Glen's Erem: stand-in clips till his own)
-    z5.erem = z5Person(rm, "egyptian_sit", X(80), -1, () => !z5Has("z5_erem"));
+    z5.erem = z5Person(rm, "erem_lie", X(80), 1, () => !z5Has("z5_erem"));   // (Glen's clips face right; lying, his head to the left)
     z5.erem.k = 1.05;   // (sitting: a little bigger, to be seen among the roots)
     campfire(c + 100, GR - 1);
-    z5Person(rm, "egyptian_sit", X(98), 1, () => z5Has("z5_erem")).k = 1.0;   // (with the men now)
+    z5Person(rm, "erem_sit", X(97), 1, () => z5Has("z5_erem"));   // (with the men now, a little apart)
     z5Person(rm, "soldier_sit", X(104), -1); z5Person(rm, "soldier_talk", X(107), -1);
     rHyrax(rm, c + 112);
   }
@@ -144,7 +144,7 @@ function z5Build(R) {
     rRelic("z5_truth_maon", "truth", c + 56, onTop(360), "Behold, God is my helper. The Lord is the one who sustains my soul. (Psalm 54:4)");
     rWild("wildass", rm, c + 66);
     rBoulder(rm, c + 74);
-    z5Person(rm, "egyptian_sit", X(88), -1, () => z5Has("z5_erem")).k = 1.0;
+    z5Person(rm, "erem_idle", X(88), 1, () => z5Has("z5_erem"));   // (looking out at the hills, the wind in his cloak)
     rBreak("jar", rm, c + 94, 16);
   }
 
@@ -292,19 +292,24 @@ function z5Courage(fill) {   // Jonathan's last gift: one more heart (main.js ke
 }
 function z5EremScene() {
   const d = david, E = z5.erem;
-  d.facing = Math.sign(E.x - d.x) || 1; d.vx = 0;
+  d.vx = 0;
+  // (Glen's clips, 11-15: he takes the water from his right and talks to his right, so David kneels on that side)
+  const pose = (n, once) => ({ fn() { E.spr = n; E.t = 0; E.once = once; } });
+  const len = n => SPR[n] ? SPR[n].frames * SPR[n].ms / 1000 : 0.5;
   // (Glen's brief, his words: Desktop\EREM_THE_WANDERER.md; David's "the LORD")
-  rPlay([{ fn() { z5.pose = { hold: true, t: 0 }; d.x = E.x - 130; d.facing = 1; } },
-    { say: ["", "A man lies under the trees, hurt and worn out. David kneels and gives him water."] },
-    { fn() { z5.pose = { hold: true, t: 0, kneel: true }; if (SPR.egyptian_drink) { E.spr = "egyptian_drink"; E.t = 0; E.once = true; } } },
-    { wait: 1.4 },
-    { fn() { E.spr = "egyptian_sit"; E.once = false; } },
+  rPlay([{ fn() { z5.pose = { hold: true, t: 0 }; d.x = E.x + 190; d.facing = -1; } },
+    { say: ["", "A man lies under the trees, hurt and worn out."] },
+    pose("erem_wake", true), { wait: len("erem_wake") },
+    { say: ["", "David kneels and gives him water."] },
+    { fn() { z5.pose = { hold: true, t: 0, kneel: true }; } }, pose("erem_drink", true), { wait: len("erem_drink") },
+    pose("erem_talk", false),
     { say: ["David", "What is your name?"] },
     { say: ["Stranger", "I don't know."] },
     { say: ["David", "You don't know your own name?"] },
     { say: ["Stranger", "I remember places. I remember faces. I remember things that happened long ago. But I cannot remember who I am."] },
     { say: ["David", "Then perhaps the LORD will reveal it to you in time."] },
     { say: ["Stranger", "Until then, I am at your service."] },
+    { fn() { z5.pose = { hold: true, t: 0 }; } }, pose("erem_rise", true), { wait: len("erem_rise") }, pose("erem_idle", false), { wait: 0.8 },
     { fn() { z5.pose = null; regionAdd("taken", "z5_erem"); toast("The man with no name walks with David's men now."); } }]);
 }
 
@@ -475,8 +480,12 @@ function z5DrawFront(camX) {
   if (r.id === "hills") for (const g of z5.guards) if (g.room === "hills") z5DrawMan(g, camX);
   if (r.id === "hachilah") for (const l of z5.lookouts) {
     const x = l.x - camX; if (x < -400 || x > W + 400) continue;
-    const n = l.state === "run" || l.state === "down" ? "lookout_run" : l.state === "spot" ? "lookout_spot" : "lookout_watch";
-    if (SPR[n]) drawSprite(n, frameOf(n, l.t), x, FOOT, l.facing, Z5.LOOK.K, l.alpha);
+    // (Glen's Ziphite, 11-15) hunched, watching; pointing when he spots David; then off to his fire
+    if (SPR.ziphite_point && SPR.ziphite_run) {
+      const run = l.state === "run" || l.state === "down", n = run ? "ziphite_run" : "ziphite_point";
+      const i = run ? frameOf(n, l.t) : l.state === "spot" ? 0 : SPR.ziphite_point.frames - 1;
+      drawSprite(n, i, x, FOOT, l.facing, Z5.LOOK.K, l.alpha);
+    }
     if (l.state === "watch") {   // where he's looking
       const reach = Z5.LOOK.SIGHT * T, col = l.seen > 0 ? "255,70,40" : "255,214,90", gr = ctx.createLinearGradient(x, 0, x + l.facing * reach, 0);
       gr.addColorStop(0, `rgba(${col},0.3)`); gr.addColorStop(1, `rgba(${col},0.03)`);

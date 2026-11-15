@@ -17,6 +17,7 @@ usage:
   --thin W  measure the body without anything thinner than W video pixels (a spear or bow sticking up above the head),
             so the size and the head line-up come from the man, not the spear tip.
   --headroom H  add H pixels of empty space above the top of the sheet (room to paint in a spear tip cut off by the video).
+  --char-h H  his standing height in video pixels, given (a clip where he only lies or sits: no frame to measure).
   --pad P   add P pixels of empty space on the left, right and top of every frame (room in Photoshop to paint back a
             spear, bow or sling the video cut off). The feet stay on the bottom line; the anchors move to match.
   --fixed X a scene with two characters (one moving): keep the camera still, anchored at video x = X (the still one).
@@ -44,6 +45,7 @@ ap.add_argument("--ref", default="4:0", help="frames used to measure full standi
 ap.add_argument("--min-loop", type=float, default=0.5, help="shortest loop in seconds (raise it if it finds half a stride)")
 ap.add_argument("--thin", type=int, default=0); ap.add_argument("--headroom", type=int, default=0)
 ap.add_argument("--pad", type=int, default=0)
+ap.add_argument("--char-h", type=int, default=0, help="the character's full standing height in video px (when no frame shows him standing: lying, sitting)")
 ap.add_argument("--fixed", type=int, default=-1, help="a scene with two characters: one still camera box for every frame, anchored at this video x (the still one's head) instead of following the head")
 args = ap.parse_args()
 
@@ -168,6 +170,7 @@ def height_of(path):
     return (ys.max() - ys.min()) if len(ys) else 0
 r0, r1 = (int(v) for v in args.ref.split(":"))
 char_h = max(height_of(f) for f in all_files[r0 - 1:(r1 or len(all_files))][::6] if on_green(f))
+if args.char_h: char_h = args.char_h   # (11-15, Erem lying and sitting: his standing height in video px, given, not measured)
 sc = args.height / char_h
 cw, ch = round(crops[0].width * sc), round(crops[0].height * sc)
 frames = [c.resize((cw, ch), Image.LANCZOS) for c in crops]

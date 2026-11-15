@@ -158,3 +158,8 @@ kit come from the two games.
   the end the messenger rides to Saul (23:27), Saul turns back (23:28), and the rock of escape appears. Then 23:29, the
   Journal (the Final Chorus, first half; Psalm 54:4) and the land map.
 Tests: tools/tests/z5tour.js, z5erem.js.
+- (11-15, later) **Glen's Erem**, from six clips in david-sling-2-art/ziph/erem. The ground under him was painted green by
+  tools/floor_to_green.py (ground-coloured pixels joined to the frame's edges or bottom), and vid2sprite --char-h kept the
+  lying and sitting clips at his standing size. Sprites: erem_lie, erem_wake, erem_drink, erem_talk, erem_rise,
+  erem_sit, erem_idle. David kneels on his right (he takes the water from that side). **Glen's Ziphite**
+  (ziphites/ziphite_point_run.mp4): ziphite_point (hunched, watching; frame 0 is the point) and ziphite_run.

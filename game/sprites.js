@@ -3384,6 +3384,90 @@ window.SPRITE_DATA = {
   "ay": 226,
   "align": "feet"
  },
+ "erem_drink": {
+  "src": "../assets/sprites/erem_drink.png",
+  "frames": 14,
+  "w": 296,
+  "h": 167,
+  "ms": 240,
+  "loop": false,
+  "pingpong": false,
+  "ax": 93,
+  "ay": 165,
+  "align": "feet"
+ },
+ "erem_idle": {
+  "src": "../assets/sprites/erem_idle.png",
+  "frames": 12,
+  "w": 201,
+  "h": 246,
+  "ms": 118,
+  "loop": true,
+  "pingpong": false,
+  "ax": 39,
+  "ay": 243,
+  "align": "feet"
+ },
+ "erem_lie": {
+  "src": "../assets/sprites/erem_lie.png",
+  "frames": 6,
+  "w": 296,
+  "h": 106,
+  "ms": 417,
+  "loop": true,
+  "pingpong": true,
+  "ax": 116,
+  "ay": 104,
+  "align": "feet"
+ },
+ "erem_rise": {
+  "src": "../assets/sprites/erem_rise.png",
+  "frames": 14,
+  "w": 491,
+  "h": 324,
+  "ms": 230,
+  "loop": false,
+  "pingpong": false,
+  "ax": 204,
+  "ay": 321,
+  "align": "feet"
+ },
+ "erem_sit": {
+  "src": "../assets/sprites/erem_sit.png",
+  "frames": 6,
+  "w": 296,
+  "h": 159,
+  "ms": 220,
+  "loop": true,
+  "pingpong": true,
+  "ax": 93,
+  "ay": 157,
+  "align": "feet"
+ },
+ "erem_talk": {
+  "src": "../assets/sprites/erem_talk.png",
+  "frames": 16,
+  "w": 286,
+  "h": 167,
+  "ms": 150,
+  "loop": true,
+  "pingpong": true,
+  "ax": 93,
+  "ay": 165,
+  "align": "feet"
+ },
+ "erem_wake": {
+  "src": "../assets/sprites/erem_wake.png",
+  "frames": 14,
+  "w": 296,
+  "h": 158,
+  "ms": 200,
+  "loop": false,
+  "pingpong": false,
+  "ax": 116,
+  "ay": 157,
+  "align": "feet"
+ },
  "father_flee": {
   "src": "../assets/sprites/father_flee.png",
   "frames": 6,
@@ -7846,6 +7930,30 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 196,
   "ay": 146,
+  "align": "feet"
+ },
+ "ziphite_point": {
+  "src": "../assets/sprites/ziphite_point.png",
+  "frames": 12,
+  "w": 198,
+  "h": 246,
+  "ms": 110,
+  "loop": false,
+  "pingpong": false,
+  "ax": 87,
+  "ay": 244,
+  "align": "feet"
+ },
+ "ziphite_run": {
+  "src": "../assets/sprites/ziphite_run.png",
+  "frames": 10,
+  "w": 281,
+  "h": 225,
+  "ms": 67,
+  "loop": true,
+  "pingpong": false,
+  "ax": 180,
+  "ay": 223,
   "align": "feet"
  }
 };
