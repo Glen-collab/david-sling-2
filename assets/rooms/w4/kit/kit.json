@@ -194,5 +194,15 @@
  "w4_pillar_column": {
   "w": 232,
   "h": 248
+ },
+ "w4_gstage_day": {
+  "w": 276,
+  "h": 483,
+  "frames": 4
+ },
+ "w4_gstage_night": {
+  "w": 404,
+  "h": 359,
+  "frames": 4
  }
 }

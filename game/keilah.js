@@ -83,7 +83,7 @@ function k4Build(R) {
   k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
-  ["w3_cart", "w3_hide_sacks", "c_beam", "t_house", "t_stall", "w4_pillar_brick", "w4_lintel_brick"].forEach(kitImg);
+  ["w3_cart", "w3_hide_sacks", "c_beam", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
   const G = GR * T;
 
   // -- The Forest of Hereth (22:5; 23:1-4): the 400 camped under the trees; a runner with the news; the rock where David
@@ -423,7 +423,7 @@ function k4RunUpdate(dt) {
   if (d.x > k4.runGate - 30) {
     if (shut >= 1 || (shut > P.GATE_LOW && d.state !== "roll")) {
       if (shut >= 1) { R_.fail = 0.001; toast("The gate's shut! Back to the street: faster this time."); }
-      else { d.x = k4.runGate - 80; d.vx = 0; k4Tell("gate", "The gate's half shut! Roll under it: Down + A."); }
+      else { d.x = k4.runGate - 80; d.vx = 0; k4Tell("gate", "The gate's nearly shut! Dive through the gap: Down + A."); }
     } else { R_.done = true; regionAdd("taken", "k4_escaped"); toast("Out of Keilah, into the night!"); }
   }
   R_.shut = shut;
@@ -473,41 +473,17 @@ function k4Draw(camX) {
     { const sh = k4.run ? (k4.run.done ? 0 : k4.run.shut || 0) : 0; k4DrawGate(k4.runGate - camX, sh); }
   }
 }
-// (Glen's gate kit, 11-14) a town gate: two brick pillars (his pillar, its middle repeated to stand tall), his brick
-//  lintel across the top (its two ends, with their end blocks), and two wooden leaves; shut 0 (open) to 1 (shut)
-const K4_GATE = { GAP: 170, PW: 120, PH: 430, DOOR: 330, LINTEL: 110 };
+// (Glen's gate, 11-14: his gate in four stages, day and night, cut by tools/cut_stages.py: 0 shut and barred, 1 swinging
+//  shut with a gap left, 2 half open, 3 open) x is the doorway's middle; shut 0 (open) to 1 (shut)
+const K4_GATE = { H: { day: 560, night: 520 },   // how tall the gate stands (px)
+  day: { w: 276, h: 483 }, night: { w: 404, h: 359 } };
 function k4DrawGate(x, shut) {
-  if (x < -500 || x > W + 500) return;
-  const G = K4_GATE, pil = kitImg("w4_pillar_brick"), lin = kitImg("w4_lintel_brick"), y0 = FOOT - G.PH;
-  const r = region.room, night = r && (typeof r.nightArt === "function" ? r.nightArt() : r.nightArt);
-  ctx.save(); if (night) ctx.filter = "brightness(0.72) saturate(0.85)";   // (his stone is sunlit: dimmed to sit in his night street)
-  const pillar = px => {
-    if (!pil) { ctx.fillStyle = "#b8a383"; ctx.fillRect(px, y0, G.PW, G.PH); return; }
-    const k = G.PW / pil.naturalWidth, cap = 62, base = 52, band = pil.naturalHeight - cap - base;
-    const capH = cap * k, baseH = base * k, bandH = band * k;
-    ctx.drawImage(pil, 0, pil.naturalHeight - base, pil.naturalWidth, base, px, FOOT - baseH, G.PW, baseH);
-    let y = FOOT - baseH;
-    while (y > y0 + capH) { const h = Math.min(bandH, y - (y0 + capH)), sh = h / k;
-      ctx.drawImage(pil, 0, cap + band - sh, pil.naturalWidth, sh, px, y - h, G.PW, h); y -= h; }
-    ctx.drawImage(pil, 0, 0, pil.naturalWidth, cap, px, y0, G.PW, capH);
-  };
-  // the leaves: planks and two iron bands, swung in to the middle as it shuts
-  const leaf = (G.GAP / 2) * shut, dy = FOOT - G.DOOR;
-  for (const lx of [x - G.GAP / 2, x + G.GAP / 2 - leaf]) if (leaf > 1) {
-    ctx.fillStyle = "#5a3b22"; ctx.fillRect(lx, dy, leaf, G.DOOR);
-    ctx.strokeStyle = "rgba(30,18,8,0.7)"; ctx.lineWidth = 2;
-    for (let px = lx + 14; px < lx + leaf; px += 14) { ctx.beginPath(); ctx.moveTo(px, dy); ctx.lineTo(px, FOOT); ctx.stroke(); }
-    ctx.fillStyle = "#2e2a26"; ctx.fillRect(lx, dy + 50, leaf, 10); ctx.fillRect(lx, FOOT - 80, leaf, 10);
-  }
-  if (shut >= 0.99) { ctx.fillStyle = "#3d2614"; ctx.fillRect(x - G.GAP / 2 - 10, dy + 140, G.GAP + 20, 18); }   // the bar across (23:7, "gates and bars")
-  ctx.fillStyle = "rgba(20,14,8,0.35)"; ctx.fillRect(x - G.GAP / 2, y0 + G.LINTEL - 10, G.GAP, G.PH - G.DOOR - G.LINTEL + 10);   // the shadow under the lintel
-  pillar(x - G.GAP / 2 - G.PW); pillar(x + G.GAP / 2);
-  const span = G.GAP + G.PW * 2 + 40, lx0 = x - span / 2;
-  if (lin) { const half = 380, sw = span / 2;
-    ctx.drawImage(lin, 0, 0, half, lin.naturalHeight, lx0, y0 - G.LINTEL + 20, sw, G.LINTEL);
-    ctx.drawImage(lin, lin.naturalWidth - half, 0, half, lin.naturalHeight, lx0 + sw, y0 - G.LINTEL + 20, sw, G.LINTEL); }
-  else { ctx.fillStyle = "#c9b48f"; ctx.fillRect(lx0, y0 - G.LINTEL + 20, span, G.LINTEL); }
-  ctx.restore();
+  if (x < -600 || x > W + 600) return;
+  const r = region.room, night = r && (typeof r.nightArt === "function" ? r.nightArt() : r.nightArt), v = night ? "night" : "day";
+  const f = shut >= 0.97 ? 0 : shut > K4.RUN.GATE_LOW ? 1 : shut > 0.2 ? 2 : 3;   // (1: the gap to dive through on the run)
+  const im = kitImg("w4_gstage_" + v + "_" + f); if (!im) return;
+  const G = K4_GATE[v], h = K4_GATE.H[v], w = G.w * h / G.h;
+  ctx.drawImage(im, x - w / 2, FOOT - h, w, h);
 }
 function k4DrawFront(camX) {
   const r = region.room; if (!r) return;
