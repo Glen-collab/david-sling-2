@@ -24,6 +24,7 @@ const K4 = {
   //  he runs through, past it he has to roll; RUN: his speed (px/s) for the clock
   RUN: { GRAB: 1.0, GRAB_NEAR: 46, STEP_IN: 190, POT: 3.2, POT_V: 480, SLACK: 7, GATE_LOW: 0.55, BEAM_Y: 130, RUN: 380, FAIL_FADE: 1.2 },
   NIGHT: [38, 48, 92],   // the night wash (as ramah.js)
+  NIGHT_ART: [120, 130, 175],   // (11-14) lighter over Glen's own night pictures: they're dark already, the wash only tints the people
 };
 
 const KEILAH = {
@@ -36,13 +37,16 @@ const KEILAH = {
     { id: "road", name: "The Road Down to Keilah", w: 150, bg: "w4_1", mx: 3, my: 1, mw: 3, left: "hereth", right: "floors",
       far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },   // (Glen's, 11-14)
     { id: "floors", name: "The Threshing Floors", w: 110, up: 26, bg: "w4_1", mx: 6, my: 0, mw: 3, mh: 2, left: "road", right: "town",
-      far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24 },
-    { id: "town", name: "Keilah", w: 110, bg: "w4_3", mx: 9, my: 1, mw: 3, left: "floors", right: "escape", night: () => k4Has("k4_ephod"),
-      far: "gibeah/fields_far", mid: "gibeah/town_mid.png", midY: 12 },
-    { id: "escape", name: "Out of Keilah", w: 230, bg: "w4_3", mx: 12, my: 1, mw: 5, left: "town", right: "hills", night: () => true,
-      far: "gibeah/fields_far", mid: "gibeah/town_mid.png", midY: 12 },
-    { id: "hills", name: "The Wilderness", w: 60, bg: "w4_1", mx: 17, my: 1, mw: 2, left: "escape", night: () => true,
-      far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, floor: "w3/road/ground.png" },
+      far: "keilah/floors/far", mid: "keilah/floors/mid.png", midY: 0, near: "keilah/floors/near.png" },   // (Glen's, 11-14)
+    { id: "town", name: "Keilah", w: 110, bg: "w4_3", mx: 9, my: 1, mw: 3, left: "floors", right: "escape", night: () => k4Has("k4_ephod"), nightArt: () => k4Has("k4_ephod"),
+      // (Glen's, 11-14) by day his market street; after the ephod, his street at night
+      get far() { return k4Has("k4_ephod") ? "keilah/night/far" : "keilah/town/far"; },
+      get mid() { return k4Has("k4_ephod") ? "keilah/night/mid.png" : "keilah/town/mid.png"; },
+      get near() { return k4Has("k4_ephod") ? "keilah/night/near.png" : "keilah/town/near.png"; }, midY: 0 },
+    { id: "escape", name: "Out of Keilah", w: 230, bg: "w4_3", mx: 12, my: 1, mw: 5, left: "town", right: "hills", night: () => true, nightArt: true,
+      far: "keilah/night/far", mid: "keilah/night/mid.png", midY: 0, near: "keilah/night/near.png" },   // (Glen's, 11-14)
+    { id: "hills", name: "The Wilderness", w: 60, bg: "w4_1", mx: 17, my: 1, mw: 2, left: "escape", night: () => true, nightArt: true,
+      far: "keilah/hills/far", mid: "keilah/hills/mid.png", midY: 0, near: "keilah/hills/near.png" },   // (Glen's, 11-14)
   ],
   // the Journal: Glen's song, the Bridge (SONG_PSALM57.md, his words exactly): out of Keilah by night, toward the dawn
   steps: ["k4_asked", "k4_floors", "k4_ephod", "k4_escaped"],
@@ -74,6 +78,8 @@ function regionAutoRun() {
 // ---------------------------------------------------------------------------------------------------------------------
 // building
 function k4Build(R) {
+  // (11-14) Glen's layers, asked for now so none pops in late (Keilah by day and by night both)
+  for (const pl of ["hereth", "road", "floors", "town", "night", "hills"]) for (const f of ["far", "mid.png", "near.png"]) roomImg("keilah/" + pl + "/" + f);
   k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
@@ -496,7 +502,8 @@ function k4DrawOver() {
   if (K4_DARK.width !== W) { K4_DARK.width = W; K4_DARK.height = H; }
   const g = K4_DARK.getContext("2d");
   g.globalCompositeOperation = "source-over"; g.clearRect(0, 0, W, H);
-  g.fillStyle = `rgb(${K4.NIGHT})`; g.fillRect(0, 0, W, H);
+  const na = typeof r.nightArt === "function" ? r.nightArt() : r.nightArt;
+  g.fillStyle = `rgb(${na ? K4.NIGHT_ART : K4.NIGHT})`; g.fillRect(0, 0, W, H);
   const lamps = k4.lights.filter(l => l.room === r.id).map(l => [l.x, l.y, l.r]);
   lamps.push([david.x, david.y - 60, 140]);
   g.globalCompositeOperation = "destination-out";
