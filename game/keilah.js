@@ -32,9 +32,9 @@ const KEILAH = {
   rooms: [
     // (stand-ins till Glen's: the hills of World 3's road for the forest, his Fields for the floors, Gibeah's town)
     { id: "hereth", name: "The Forest of Hereth", w: 130, bg: "w4_1", mx: 0, my: 1, mw: 3, right: "road",
-      far: "w3/road/far", mid: "w3/road/mid.png", midY: 0, near: "w3/near_gath.png", floor: "w3/road/ground.png" },
+      far: "keilah/hereth/far", mid: "keilah/hereth/mid.png", midY: 0, near: "keilah/hereth/near.png", floor: "w3/road/ground.png" },   // (Glen's, 11-14)
     { id: "road", name: "The Road Down to Keilah", w: 150, bg: "w4_1", mx: 3, my: 1, mw: 3, left: "hereth", right: "floors",
-      far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24, near: "w3/near_nob.png" },
+      far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },   // (Glen's, 11-14)
     { id: "floors", name: "The Threshing Floors", w: 110, up: 26, bg: "w4_1", mx: 6, my: 0, mw: 3, mh: 2, left: "road", right: "town",
       far: "gibeah/fields_far", mid: "gibeah/fields_mid.png", midY: 24 },
     { id: "town", name: "Keilah", w: 110, bg: "w4_3", mx: 9, my: 1, mw: 3, left: "floors", right: "escape", night: () => k4Has("k4_ephod"),
