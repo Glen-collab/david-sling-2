@@ -82,19 +82,16 @@ hard to hear.
 
 ## Not built yet (ready for when each place is)
 
-### World 5: Ziph (1 Samuel 23:14-28; 26; Psalm 54)
+### World 5: Ziph (1 Samuel 23:14-29; Psalm 54)
 David hides in the wilderness of Ziph, in the dry hills and the strongholds. "Saul sought him every day, but God
-didn't deliver him into his hand." (1 Samuel 23:14) The people of Ziph tell Saul where David is, and Saul comes
-hunting.
+didn't deliver him into his hand." (1 Samuel 23:14)
 
-In the woods, Jonathan finds him, and "strengthened his hand in God." (1 Samuel 23:16) "Don't be afraid," he says,
-"you will be king over Israel, and I will be next to you." (1 Samuel 23:17) It is the last time the two friends
-meet.
+In the woods, his friend Jonathan finds him, and "strengthened his hand in God." "Don't be afraid," he says, "you
+will be king over Israel, and I will be next to you." (1 Samuel 23:16-17) It is the last time the two friends meet.
 
-Later, by night, David creeps into Saul's camp. The king lies asleep, his spear stuck in the ground at his head.
-David could end it with one blow. Instead: "The LORD forbid that I should stretch out my hand against the LORD's
-anointed." (1 Samuel 26:11) He takes only the spear and the jar of water, and goes. "Behold, God is my helper."
-(Psalm 54:4)
+Then the people of Ziph go to Saul and offer to hand David over. Saul comes hunting, and in the wilderness of Maon he
+surrounds David on a mountain. There is nowhere left to run. "Behold, God is my helper. The Lord is the one who
+sustains my soul." (Psalm 54:4)
 
 ### World 5: En-Gedi (1 Samuel 24)
 Saul takes three thousand chosen men "to seek David and his men on the rocks of the wild goats." (1 Samuel 24:2)
@@ -121,13 +118,17 @@ at his feet. And David listens. "Blessed is your discretion, and blessed are you
 guiltiness, and from avenging myself with my own hand." (1 Samuel 25:33) Even a good man needs someone to stop him.
 Thank God for the Abigails.
 
-### World 7: Ziklag (1 Samuel 27; 30; 31)
+### World 7: Ziph again, and Ziklag (1 Samuel 26; 27; 30; 31)
+The Ziphites tell Saul where David is hiding a second time, and the king comes with three thousand men. By night,
+David and Abishai creep into Saul's camp. The king lies asleep, his spear stuck in the ground at his head. David
+could end it with one blow. Instead: "The LORD forbid that I should stretch out my hand against the LORD's anointed."
+(1 Samuel 26:11) He takes only the spear and the jar of water, and goes.
+
 Tired of running, David goes to live among the Philistines, in the town of Ziklag. One day he and his men come home
 to find it burned, and their wives and children carried away by Amalekite raiders. His own men talk of stoning him.
-"But David strengthened himself in the LORD his God." (1 Samuel 30:6)
-
-He asks the LORD, "If I pursue after this troop, will I overtake them?" "Pursue, for you will surely overtake them,
-and will without fail recover all." (1 Samuel 30:8) And they do. "David brought them all back." (1 Samuel 30:19)
+"But David strengthened himself in the LORD his God." (1 Samuel 30:6) He asks the LORD, and the answer comes:
+"Pursue, for you will surely overtake them, and will without fail recover all." (1 Samuel 30:8) "David brought them
+all back." (1 Samuel 30:19)
 
 Then sad news comes from the north. Saul and Jonathan have fallen in battle on Mount Gilboa. David doesn't
 celebrate. He weeps for them both, and sings, "How the mighty have fallen!" (2 Samuel 1:19)
@@ -160,7 +161,6 @@ heart is steadfast.
 - World 3 is honest that David lied at Nob (21:2), gently. Say if you'd rather leave it out.
 - Left out on purpose (kid-clean): the priests of Nob killed (22:18-19); how Saul died (31:4); the "great
   slaughter" at Keilah (23:5).
-- Ziph comes before En-Gedi here, as on your land map, though chapter 24 (En-Gedi) comes before chapter 26 in the
-  Bible. Ziph's crawl uses 23:14-28 and the spear-and-jar night of 26 (also in the wilderness of Ziph, 26:1-2).
-  Moving the spear-and-jar night to the end of En-Gedi's world would follow the Bible's order exactly.
+- (Glen, 11-15) Bible order kept: Ziph is chapter 23 only. The spear-and-jar night (26, also in the wilderness of
+  Ziph, 26:1-2) comes in World 7, after En-Gedi (24) and Carmel (25), as DESIGN.md has it.
 - Psalm 54's heading names the Ziphites. Psalms 57 and 142 say "in the cave", which could be Adullam or En-Gedi.

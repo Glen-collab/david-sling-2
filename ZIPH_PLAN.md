@@ -87,7 +87,7 @@ going until He does.
 - **Clips (green screen):** Ziphite men (wilderness herdsmen in plain robes) pointing and whispering to a soldier; maybe
   Saul turning his army back; David leading his men at a hurry. Only if Glen wants the cameo: Erem, the wounded stranger
   (lying hurt, sitting up, talking, standing).
-- These prompts go into `ART_PROMPTS_ZIPH.md` once the questions below are answered.
+- The prompts are in `ART_PROMPTS_ZIPH.md`.
 
 ## The Journal page (draft words, for Glen)
 Four entries, each after a story moment, saying what David learned or had to bear:
@@ -98,7 +98,7 @@ Four entries, each after a story moment, saying what David learned or had to bea
 - The closing line: "Behold, God is my helper. The Lord is the one who sustains my soul." (Psalm 54:4)
 - The song: the first half of the Final Chorus ("Be exalted, O God, above the heavens..."), as proposed in SONG_PSALM57.md.
 
-## The crawl (redraft for 23:14-29 only; the spear-and-jar night moves later, see question 3)
+## The crawl (23:14-29 only; the spear-and-jar night is in World 7. Also in SERMONS_DRAFT.md)
 > David hides in the wilderness of Ziph, in the dry hills and the strongholds. "Saul sought him every day, but God
 > didn't deliver him into his hand." (1 Samuel 23:14)
 >
@@ -118,3 +118,25 @@ Four entries, each after a story moment, saying what David learned or had to bea
    the Bible's order, with En-Gedi (24) and Carmel (25) first. If so, Ziph's crawl becomes the one above and the
    spear night moves to World 7's crawl. That also settles the order question from the crawl notes.
 4. **The Ziphites:** shown (lookouts who run to signal fires, men whispering to Saul) or only told in the crawl?
+
+## Glen's answers (11-15)
+1. **The boss:** survive until rescued. Around the Mountain, and the messenger ends it.
+2. **Erem:** yes, in the woods of Horesh, after Jonathan leaves. Keep it short (Glen's brief, Desktop\EREM_THE_WANDERER.md):
+   David finds the wounded man, they talk, and he travels with David's men for a while. Erem is fictional: never a
+   person from the Bible, and there's no explanation yet. His prompts are in ART_PROMPTS_ZIPH.md.
+3. **The spear-and-jar night:** World 7, in the Bible's order. The Ziph crawl is chapter 23 only (SERMONS_DRAFT.md updated).
+4. **The Ziphites:** shown. Lookouts on the hill of Hachilah run to light signal fires.
+
+## Erem's scene (draft words, from Glen's brief; after Jonathan goes home)
+David finds a man lying hurt under a terebinth, a short way off the path. Up by him: David kneels and gives him water.
+> **David:** "What is your name?"
+> **Stranger:** "I don't know."
+> **David:** "You don't know your own name?"
+> **Stranger:** "I remember places. I remember faces. I remember things that happened long ago. But I cannot remember
+> who I am."
+> **David:** "Then perhaps the LORD will reveal it to you in time."
+> **Stranger:** "Until then, I am at your service."
+
+He joins the camp men. From then on he sits apart at the campfires in Ziph and later worlds, always looking at the
+hills. The Journal says one line in the margin, not an entry: "We found a man in the woods who doesn't know his own
+name. He walks with us now." Nothing more until the Solomon game.
