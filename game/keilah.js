@@ -22,7 +22,7 @@ const K4 = {
   // (Glen 11-14: "a runner like we did in David 1 but challenging too") the escape: a grab holds him GRAB s; pots fall
   //  every POT s (px/s down: POT_V); the gate shuts SLACK s after the time a clean run takes; under GATE_LOW of it closed
   //  he runs through, past it he has to roll; RUN: his speed (px/s) for the clock
-  RUN: { GRAB: 1.0, GRAB_NEAR: 46, STEP_IN: 190, POT: 3.2, POT_V: 480, SLACK: 7, GATE_LOW: 0.55, BEAM_Y: 130, RUN: 380, FAIL_FADE: 1.2 },
+  RUN: { GRAB: 1.0, GRAB_NEAR: 46, STEP_IN: 190, POT: 3.2, POT_V: 480, THROW_AT: 8, POT_FLY: 1.1, POT_G: 900, POT_MISS: 160, SLACK: 7, GATE_LOW: 0.55, BEAM_Y: 130, RUN: 380, FAIL_FADE: 1.2 },
   NIGHT: [38, 48, 92],   // the night wash (as ramah.js)
   NIGHT_ART: [120, 130, 175],   // (11-14) lighter over Glen's own night pictures: they're dark already, the wash only tints the people
 };
@@ -65,7 +65,7 @@ const KEILAH = {
   drawOver: () => k4DrawOver(), stoneHits: s => k4StoneHits(s),
 };
 
-const k4 = { told: {}, people: [], rocks: [], floors: [], raiders: [], raid: null, kneel: null, run: null, beams: [], grabbers: [], pots: [], lights: [], herd: [] };
+const k4 = { told: {}, people: [], rocks: [], floors: [], raiders: [], raid: null, kneel: null, run: null, beams: [], grabbers: [], pots: [], throwers: [], lights: [], herd: [] };
 const k4Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function k4Tell(k, text) { if (!k4.told[k]) { k4.told[k] = true; toast(text); } }
 // someone standing about: their sprite (looped), x, the ground they stand on, facing; show: only when this is true
@@ -83,7 +83,7 @@ function k4Build(R) {
   Object.assign(KIT, K4_KIT);
   // (11-14) Glen's layers, asked for now so none pops in late (Keilah by day and by night both)
   for (const pl of ["hereth", "road", "floors", "town", "night", "hills"]) for (const f of ["far", "mid.png", "near.png"]) roomImg("keilah/" + pl + "/" + f);
-  k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.lights.length = k4.herd.length = 0;
+  k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.throwers.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
   ["w3_cart", "w3_hide_sacks", "w4_hanging_log", "w4_threshing_floor", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
@@ -153,7 +153,7 @@ function k4Build(R) {
       "David inquired of the LORD yet again. The LORD answered him, and said, “Arise, go down to Keilah; for I will deliver the Philistines into your hand.” (1 Samuel 23:4)");
     oliveRow(c + 55, onTop(300) - 0.4, 4); oliveRow(c + 85, onTop(300) - 0.4, 4);
     // the town's gate at the right: once the floors are safe, the livestock in the gate (23:5)
-    for (const [n, k] of [["sheep2_graze", 104], ["goat_stand", 106], ["sheep_graze", 102]]) k4.herd.push({ room: rm, spr: n, x: X(k), y: FOOT, dir: -1 });
+    for (const [n, k] of [["ox_stand", 101], ["sheep2_graze", 104], ["goat_stand", 106], ["sheep_graze", 102]]) k4.herd.push({ room: rm, spr: n, x: X(k), y: FOOT, dir: -1 });   // (Glen's ox, 11-15)
   }
 
   // -- Keilah (23:6-12): the town saved. The people, Abiathar with the ephod (after the floors), the runner, and the
@@ -380,6 +380,7 @@ function k4StoneHits(s) {
 function k4RunStart() {
   const d = david, R_ = K4.RUN;
   k4.run = { on: true, done: false, fail: 0, grabT: 0, potT: 1.5, t: 0, close: (k4.runGate - k4.runStart) / R_.RUN + R_.SLACK, bumps: 0 };
+  k4.throwers.length = 0;
   for (const g of k4.grabbers) Object.assign(g, { state: "wait", t: 0, x: g.x0 });
   k4.pots.length = 0;
   k4Tell("run", "Run! David runs by himself: A to jump the carts and gaps, Down + A to roll under the beams, and get past the men before the gate shuts.");
@@ -402,7 +403,8 @@ function k4RunUpdate(dt) {
     if (g.state === "step") { g.x -= 60 * dt; if (Math.abs(g.x - d.x) < P.GRAB_NEAR && d.y > FOOT - 90 && d.state !== "roll" && R_.grabT <= 0) {
       g.state = "held"; g.t = 0; R_.grabT = P.GRAB; R_.bumps++; d.vx = 0;
       k4Tell("grab", "A man of Keilah grabs David! Jump over them, or roll past."); } }
-    if (g.state === "held" && R_.grabT <= 0) g.state = "done";
+    if (g.state === "step" && d.x > g.x + 30) { g.state = "miss"; g.t = 0; }   // (he jumped or rolled past: the man grabs air)
+    if (g.state === "held" && R_.grabT <= 0) { g.state = "miss"; g.t = 0; }
   }
   // the beams across the street: roll under (Down + A)
   for (const b of k4.beams) {
@@ -412,12 +414,21 @@ function k4RunUpdate(dt) {
       k4Tell("beam", "A beam across the street! Roll under it: Down + A while running.");
     }
   }
-  // pots thrown down from the roofs, ahead of him
+  // (Glen's townswoman, 11-15) a woman steps out ahead and throws a pot at him: aimed at where he'll be, give or take
   R_.potT -= dt;
-  if (R_.potT <= 0) { R_.potT = P.POT * (0.7 + Math.random() * 0.6); k4.pots.push({ x: d.x + 260 + Math.random() * 260, y: -40, broken: false, t: 0 }); }
+  if (R_.potT <= 0) { R_.potT = P.POT * (0.7 + Math.random() * 0.6); k4.throwers.push({ x: d.x + 820 + Math.random() * 200, t: 0, thrown: false }); }
+  for (const w of k4.throwers) {
+    w.t += dt;
+    if (!w.thrown && frameOf("townswoman_throw", w.t) >= P.THROW_AT) {
+      w.thrown = true; const px = w.x - 40, py = FOOT - 150, T_ = P.POT_FLY;
+      const aim = d.x + P.RUN * T_ + (Math.random() * 2 - 1) * P.POT_MISS;
+      k4.pots.push({ x: px, y: py, vx: (aim - px) / T_, vy: ((FOOT - 10 - py) - 0.5 * P.POT_G * T_ * T_) / T_, broken: false, t: 0 });
+    }
+  }
+  k4.throwers = k4.throwers.filter(w => w.x > d.x - 900);
   for (const p of k4.pots) {
     if (p.broken) { p.t += dt; continue; }
-    p.y += P.POT_V * dt;
+    if (p.vx != null) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += P.POT_G * dt; } else p.y += P.POT_V * dt;
     if (Math.abs(p.x - d.x) < 34 && p.y > d.y - 150 && p.y < d.y) { p.broken = true; hurtDavid(p.x); }
     if (p.y >= FOOT - 10) { p.broken = true; for (let i = 0; i < 6; i++) bits.push({ x: p.x, y: FOOT - 10, vx: (Math.random() - 0.5) * 300, vy: -Math.random() * 260, life: 0.6, color: i % 2 ? "#a0623a" : "#6e4024" }); }
   }
@@ -450,7 +461,7 @@ function k4Draw(camX) {
     drawSprite(p.spr, p.still ? S.frames - 1 : frameOf(p.spr, p.t), x, p.y, p.dir, p.k);
   }
   // the livestock in the gate, once the floors are safe
-  if (k4Has("k4_floors")) for (const h of k4.herd) if (h.room === r.id && SPR[h.spr]) drawSprite(h.spr, frameOf(h.spr, now), h.x - camX, h.y, h.dir, 0.9);
+  if (k4Has("k4_floors")) for (const h of k4.herd) if (h.room === r.id && SPR[h.spr]) drawSprite(h.spr, frameOf(h.spr, now), h.x - camX, h.y, h.dir, h.spr.startsWith("ox_") ? 1.3 : 0.9);
   // the town gate from outside (shut till the floors are safe), and the inner gate (shut till the ephod's question)
   if (r.id === "floors") k4DrawGate((r.c0 + r.w - 9) * T + 100 - camX, k4Has("k4_floors") ? 0 : 1);
   if (r.id === "town") k4DrawGate(k4.gateX + 100 - camX, k4Has("k4_ephod") ? 0 : 1);
@@ -500,10 +511,18 @@ function k4DrawFront(camX) {
   }
   if (r.id === "escape") {
     for (const g of k4.grabbers) {
-      const x = g.x - camX; if (x < -300 || x > W + 300 || g.state === "done") continue;
+      const x = g.x - camX; if (x < -300 || x > W + 300) continue;
+      // (Glen's townsman, 11-15: standing in his doorway, lunging with both arms out, then stumbling and catching himself)
+      if (SPR.townsman_grab && SPR.townsman_stumble) {
+        const n = g.state === "wait" ? "townsman_stumble" : g.state === "miss" ? "townsman_stumble" : "townsman_grab";
+        const i = g.state === "wait" ? SPR.townsman_stumble.frames - 1 : g.state === "miss" ? frameOf(n, g.t) : Math.min(7, frameOf(n, g.t));
+        drawSprite(n, i, x, FOOT, -1, K4.NPC_K); continue;
+      }
+      if (g.state === "miss") continue;
       const n = g.spr + (g.state === "wait" ? "_stand" : "_run"), S = SPR[n] || SPR[g.spr + "_run"]; if (!S) continue;
       drawSprite(SPR[n] ? n : g.spr + "_run", g.state === "wait" ? 0 : frameOf(SPR[n] ? n : g.spr + "_run", g.t), x, FOOT, -1, K4.NPC_K);
     }
+    for (const w of k4.throwers) if (SPR.townswoman_throw) drawSprite("townswoman_throw", frameOf("townswoman_throw", w.t), w.x - camX, FOOT, -1, K4.NPC_K);
     for (const p of k4.pots) if (!p.broken) drawItem("camp_jar_small", p.x - camX, p.y, 0.4);
   }
 }
@@ -518,16 +537,17 @@ function k4DrawOver() {
   const na = typeof r.nightArt === "function" ? r.nightArt() : r.nightArt;
   g.fillStyle = `rgb(${na ? K4.NIGHT_ART : K4.NIGHT})`; g.fillRect(0, 0, W, H);
   const lamps = k4.lights.filter(l => l.room === r.id).map(l => [l.x, l.y, l.r]);
-  lamps.push([david.x, david.y - 60, 140]);
+  // (no torch glow) round David, and round the men of Keilah on the run so you can see them coming (11-15)
+  const seen = [[david.x, david.y - 60, 140], ...(r.id === "escape" ? [...k4.grabbers, ...k4.throwers].map(m => [m.x, FOOT - 90, 120]) : [])];
   g.globalCompositeOperation = "destination-out";
-  for (const [x, y, rad] of lamps) {
+  for (const [x, y, rad] of [...lamps, ...seen]) {
     const sx = x - camX, sy = y - camY; if (sx < -rad || sx > W + rad || sy < -rad || sy > H + rad) continue;
     const rg = g.createRadialGradient(sx, sy, 4, sx, sy, rad); rg.addColorStop(0, "rgba(0,0,0,0.95)"); rg.addColorStop(0.5, "rgba(0,0,0,0.6)"); rg.addColorStop(1, "rgba(0,0,0,0)");
     g.fillStyle = rg; g.fillRect(sx - rad, sy - rad, rad * 2, rad * 2);
   }
   ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.drawImage(K4_DARK, 0, 0);
   ctx.globalCompositeOperation = "lighter";
-  for (const [x, y, rad] of lamps.slice(0, -1)) {
+  for (const [x, y, rad] of lamps) {
     const sx = x - camX, sy = y - camY; if (sx < -rad || sx > W + rad || sy < -rad || sy > H + rad) continue;
     const rg = ctx.createRadialGradient(sx, sy, 2, sx, sy, rad * 0.6); rg.addColorStop(0, "rgba(255,170,80,0.22)"); rg.addColorStop(1, "rgba(255,150,60,0)");
     ctx.fillStyle = rg; ctx.fillRect(sx - rad, sy - rad, rad * 2, rad * 2);

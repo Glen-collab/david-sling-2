@@ -1,0 +1,24 @@
+{
+  "frames": 11,
+  "frame_w": 232,
+  "frame_h": 237,
+  "ms_per_frame": 90,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 140,
+  "anchor_y": 235,
+  "source": "townswoman throw.mp4",
+  "video_frames": [
+    1,
+    7,
+    14,
+    21,
+    27,
+    33,
+    40,
+    47,
+    53,
+    59,
+    66
+  ]
+}

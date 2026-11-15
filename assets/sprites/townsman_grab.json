@@ -1,0 +1,24 @@
+{
+  "frames": 10,
+  "frame_w": 305,
+  "frame_h": 213,
+  "ms_per_frame": 100,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 204,
+  "anchor_y": 211,
+  "source": "townsman grab.mp4",
+  "video_frames": [
+    1,
+    9,
+    17,
+    25,
+    33,
+    40,
+    48,
+    56,
+    64,
+    72
+  ],
+  "pingpong": false
+}

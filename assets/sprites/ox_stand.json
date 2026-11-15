@@ -1,0 +1,30 @@
+{
+  "frames": 16,
+  "frame_w": 439,
+  "frame_h": 246,
+  "ms_per_frame": 150,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 279,
+  "anchor_y": 244,
+  "source": "ox.mp4",
+  "video_frames": [
+    130,
+    137,
+    145,
+    152,
+    159,
+    167,
+    174,
+    181,
+    189,
+    196,
+    203,
+    211,
+    218,
+    225,
+    233,
+    240
+  ],
+  "pingpong": true
+}

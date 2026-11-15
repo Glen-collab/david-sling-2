@@ -5712,6 +5712,30 @@ window.SPRITE_DATA = {
   "ay": 306,
   "align": "feet"
  },
+ "ox_stand": {
+  "src": "../assets/sprites/ox_stand.png",
+  "frames": 16,
+  "w": 439,
+  "h": 246,
+  "ms": 150,
+  "loop": true,
+  "pingpong": true,
+  "ax": 279,
+  "ay": 244,
+  "align": "feet"
+ },
+ "ox_walk": {
+  "src": "../assets/sprites/ox_walk.png",
+  "frames": 12,
+  "w": 460,
+  "h": 228,
+  "ms": 160,
+  "loop": true,
+  "pingpong": false,
+  "ax": 261,
+  "ay": 226,
+  "align": "feet"
+ },
  "ox_windup": {
   "src": "../assets/sprites/ox_windup.png",
   "frames": 6,
@@ -7318,6 +7342,42 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 148,
   "ay": 159,
+  "align": "feet"
+ },
+ "townsman_grab": {
+  "src": "../assets/sprites/townsman_grab.png",
+  "frames": 10,
+  "w": 305,
+  "h": 213,
+  "ms": 100,
+  "loop": false,
+  "pingpong": false,
+  "ax": 204,
+  "ay": 211,
+  "align": "feet"
+ },
+ "townsman_stumble": {
+  "src": "../assets/sprites/townsman_stumble.png",
+  "frames": 14,
+  "w": 229,
+  "h": 246,
+  "ms": 90,
+  "loop": false,
+  "pingpong": false,
+  "ax": 134,
+  "ay": 244,
+  "align": "feet"
+ },
+ "townswoman_throw": {
+  "src": "../assets/sprites/townswoman_throw.png",
+  "frames": 11,
+  "w": 232,
+  "h": 237,
+  "ms": 90,
+  "loop": false,
+  "pingpong": false,
+  "ax": 140,
+  "ay": 235,
   "align": "feet"
  },
  "trader_idle": {

@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 460,
+  "frame_h": 228,
+  "ms_per_frame": 160,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 261,
+  "anchor_y": 226,
+  "source": "ox.mp4",
+  "video_frames": [
+    3,
+    7,
+    11,
+    15,
+    18,
+    22,
+    26,
+    30,
+    34,
+    37,
+    41,
+    45
+  ]
+}
