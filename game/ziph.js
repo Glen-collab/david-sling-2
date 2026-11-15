@@ -66,12 +66,17 @@ function z5Guard(room, c0, c1, facing) {   // one of Saul's men walking his beat
 
 // ---------------------------------------------------------------------------------------------------------------------
 // building
+// (Glen's, 11-15: tools/cut_piece.py) the stronghold, his hiding rock, the rock of escape, the signal fire (lit, and its
+//  cold heap: the flames taken out)
+const Z5_KIT = { w4_z_stronghold: { w: 460, h: 252 }, w4_z_hide_rock: { w: 150, h: 151 }, w4_z_escape_rock: { w: 300, h: 245 },
+  w4_z_fire: { w: 210, h: 229 }, w4_z_fire_out: { w: 210, h: 229 } };
 function z5Build(R) {
   if (typeof R4_KIT !== "undefined") Object.assign(KIT, R4_KIT);   // (adullam.js's rocks and rubble: hiding places)
+  Object.assign(KIT, Z5_KIT);
   for (const pl of ["hills", "horesh", "hachilah", "maon", "mountain"]) for (const f of ["far", "mid.png", "near.png"]) roomImg("ziph/" + pl + "/" + f);
   for (const k of ["people", "guards", "hides", "lookouts", "clefts", "scouts"]) z5[k].length = 0;
   z5.siege = null; z5.pose = null; z5.caughtT = 0; z5.back = {};
-  ["w4_rocks_sand", "w4_rubble_sand", "w4_rocks_pale", "f_rock"].forEach(kitImg);
+  [...Object.keys(Z5_KIT), "w4_rubble_sand"].forEach(kitImg);
   const G = GR * T;
 
   // -- The Hills of Ziph (23:14): Saul seeks him every day. His men walk the hills: rock to rock, crouch when one looks
@@ -80,14 +85,16 @@ function z5Build(R) {
     ground(c, c + 159);
     campfire(c + 4, GR - 1);
     z5.back.hills = X(5);
-    z5Person(rm, "soldier_sit", X(8), 1); z5Person(rm, "soldier_talk", X(11), -1);
-    z5Hide(rm, "w4_rocks_sand", X(22)); z5Guard(rm, 28, 44, -1); z5Hide(rm, "w4_rubble_sand", X(38));
+    const hold = k => region.props.push({ room: rm, n: "w4_z_stronghold", x: X(k) - KIT.w4_z_stronghold.w / 2, y: FOOT - KIT.w4_z_stronghold.h + 10 });
+    hold(10); hold(108);   // (23:14: "in the strongholds")
+    z5Person(rm, "soldier_sit", X(8), 1); z5Person(rm, "soldier_talk", X(13), -1);
+    z5Hide(rm, "w4_z_hide_rock", X(22)); z5Guard(rm, 28, 44, -1); z5Hide(rm, "w4_rubble_sand", X(38));
     rLedge(rm, c + 48, 470, 4); rLedge(rm, c + 54, 380, 4); rRelic("z5_pom_hills", "pomegranate", c + 56, onTop(380));
     rHole(rm, c + 60, 3);
-    z5Hide(rm, "w4_rocks_pale", X(68)); z5Guard(rm, 72, 92, 1); z5Hide(rm, "w4_rocks_sand", X(82)); z5Hide(rm, "w4_rubble_sand", X(96));
+    z5Hide(rm, "w4_z_hide_rock", X(68)); z5Guard(rm, 72, 92, 1); z5Hide(rm, "w4_z_hide_rock", X(82)); z5Hide(rm, "w4_rubble_sand", X(96));
     rWild("viper", rm, c + 100);
     campfire(c + 104, GR - 1); z5.back.hills2 = X(105);
-    z5Hide(rm, "w4_rocks_sand", X(112)); z5Guard(rm, 116, 136, -1); z5Guard(rm, 124, 146, 1); z5Hide(rm, "w4_rubble_sand", X(128)); z5Hide(rm, "w4_rocks_pale", X(142));
+    z5Hide(rm, "w4_z_hide_rock", X(112)); z5Guard(rm, 116, 136, -1); z5Guard(rm, 124, 146, 1); z5Hide(rm, "w4_rubble_sand", X(128)); z5Hide(rm, "w4_z_hide_rock", X(142));
     rWild("partridge", rm, c + 150);
     rBreak("jar", rm, c + 154, 16);
   }
@@ -116,12 +123,12 @@ function z5Build(R) {
     ground(c, c + 149);
     campfire(c + 4, GR - 1); z5.back.hachilah = X(5);
     const look = (k, fire, facing) => z5.lookouts.push({ room: rm, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
-    z5Hide(rm, "w4_rocks_sand", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
+    z5Hide(rm, "w4_z_hide_rock", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
     rLedge(rm, c + 40, 470, 4); rLedge(rm, c + 46, 370, 5); rRelic("z5_stone_hach", "stone", c + 48, onTop(370));
     rHole(rm, c + 52, 3);
-    z5Hide(rm, "w4_rocks_pale", X(62)); look(76, 66, 1); look(80, 90, -1); z5Hide(rm, "w4_rocks_sand", X(70));
+    z5Hide(rm, "w4_z_hide_rock", X(62)); look(76, 66, 1); look(80, 90, -1); z5Hide(rm, "w4_z_hide_rock", X(70));
     campfire(c + 96, GR - 1); z5.back.hachilah2 = X(97);
-    z5Hide(rm, "w4_rubble_sand", X(108)); look(120, 128, -1); z5Hide(rm, "w4_rocks_sand", X(114));
+    z5Hide(rm, "w4_rubble_sand", X(108)); look(120, 128, -1); z5Hide(rm, "w4_z_hide_rock", X(114));
     rLedge(rm, c + 124, 460, 5); look(134, 142, -1);
     rBreak("basket", rm, c + 146, 16);
   }
@@ -148,7 +155,7 @@ function z5Build(R) {
     campfire(c + 4, GR - 1); z5.back.mountain = X(5);
     z5.siegeAt = X(14); z5.siegeL = X(8); z5.siegeR = X(150); z5.siegeMid = X(80);
     for (const k of [34, 58, 102, 126]) z5.clefts.push({ room: rm, x: X(k) });
-    for (const k of [26, 44, 66, 80, 94, 114, 134]) z5Hide(rm, ["w4_rocks_sand", "w4_rubble_sand", "w4_rocks_pale"][k % 3], X(k));
+    for (const k of [26, 44, 66, 80, 94, 114, 134]) z5Hide(rm, k % 3 === 1 ? "w4_rubble_sand" : "w4_z_hide_rock", X(k));
     rLedge(rm, c + 50, 470, 4); rLedge(rm, c + 74, 430, 5); rLedge(rm, c + 108, 470, 4);
     z5.rockX = X(80);   // Sela Hammahlekoth: the rock of escape, after
     z5.endX = X(146);
@@ -424,12 +431,13 @@ function z5Draw(camX) {
   // the signal fires: a heap of brush, burning once lit
   if (r.id === "hachilah") for (const l of z5.lookouts) {
     const x = l.fire - camX; if (x < -400 || x > W + 400) continue;
-    if (SPR.signal_fire) drawSprite("signal_fire", l.lit ? frameOf("signal_fire", now) : 0, x, FOOT, 1, Z5.LOOK.FIRE_K, l.lit ? 1 : 0.0);
-    if (!l.lit && kitImg("w4_rubble_dark")) { const k = KIT.w4_rubble_dark; ctx.drawImage(kitImg("w4_rubble_dark"), x - k.w * 0.25, FOOT - k.h * 0.5, k.w * 0.5, k.h * 0.5); }
+    const im = kitImg(l.lit ? "w4_z_fire" : "w4_z_fire_out"), k = Z5_KIT.w4_z_fire; if (!im) continue;
+    const fl = l.lit ? 1 + Math.sin(now * 17 + l.x0) * 0.03 + Math.sin(now * 29) * 0.02 : 1;   // (lit: the flames flicker)
+    ctx.drawImage(im, x - k.w / 2, FOOT + 6 - k.h * fl, k.w, k.h * fl);
   }
   // the rock of escape, after
   if (r.id === "mountain" && z5Has("z5_rescued")) {
-    const im = kitImg("w4_prayer_rock") || kitImg("f_rock"), k = KIT.w4_prayer_rock || KIT.f_rock;
+    const im = kitImg("w4_z_escape_rock"), k = Z5_KIT.w4_z_escape_rock;   // (Glen's: split down the middle, its stone pile)
     if (im) { const x = z5.rockX - camX; ctx.drawImage(im, x - k.w / 2, FOOT - k.h + 14, k.w, k.h); }
   }
 }
