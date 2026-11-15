@@ -77,13 +77,16 @@ function regionAutoRun() {
 
 // ---------------------------------------------------------------------------------------------------------------------
 // building
+// (11-15, tools/cut_piece.py) Glen's prayer rock, threshing floor and the log hung across the night street
+const K4_KIT = { w4_prayer_rock: { w: 240, h: 158 }, w4_threshing_floor: { w: 320, h: 151 }, w4_hanging_log: { w: 150, h: 160 } };
 function k4Build(R) {
+  Object.assign(KIT, K4_KIT);
   // (11-14) Glen's layers, asked for now so none pops in late (Keilah by day and by night both)
   for (const pl of ["hereth", "road", "floors", "town", "night", "hills"]) for (const f of ["far", "mid.png", "near.png"]) roomImg("keilah/" + pl + "/" + f);
   k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
-  ["w3_cart", "w3_hide_sacks", "c_beam", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
+  ["w3_cart", "w3_hide_sacks", "w4_hanging_log", "w4_threshing_floor", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
   const G = GR * T;
 
   // -- The Forest of Hereth (22:5; 23:1-4): the 400 camped under the trees; a runner with the news; the rock where David
@@ -98,7 +101,7 @@ function k4Build(R) {
     oliveRow(c + 8, 16, 5);
     // the rock (Ask the LORD): Up by it, David kneels
     k4.rocks.push({ id: "hereth", room: rm, x: X(42) });
-    region.props.push({ room: rm, n: "f_rock", x: X(42) - KIT.f_rock.w / 2, y: FOOT - KIT.f_rock.h + 10 });
+    region.props.push({ room: rm, n: "w4_prayer_rock", x: X(42) - KIT.w4_prayer_rock.w / 2, y: FOOT - KIT.w4_prayer_rock.h + 14 });
     // past the rock: the woods, up and down (the way's shut till he's asked: k4Update)
     rOliveTree(rm, c + 52); oliveRow(c + 63, onTop(FOOT - KIT.f_olive.h + 328) - 0.4, 3);
     rBoulder(rm, c + 70);
@@ -454,20 +457,19 @@ function k4Draw(camX) {
   // the threshing floors: a round floor of beaten stone, its grain heaped on it
   if (r.id === "floors") for (const f of k4.floors) {
     const x = f.x - camX; if (x < -300 || x > W + 300) continue;
-    ctx.save(); ctx.fillStyle = "rgba(120,98,70,0.85)"; ctx.beginPath(); ctx.ellipse(x, f.y - 6, 120, 16, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "rgba(70,55,38,0.9)"; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
-    for (let i = 0; i < f.sacks; i++) drawItem(i === 1 ? "grain_sacks" : "grain_sack", x + (i - 1) * 62, f.y - 4, i === 1 ? 0.15 : 0.42);
-    if (f.sacks === 0) drawItem("grain_sacks_broken", x, f.y - 4, 0.15);
+    // (Glen's floor, 11-15: its stone curb sunk a little, the sacks on its beaten earth, 25 px up)
+    const fl = kitImg("w4_threshing_floor"), K = K4_KIT.w4_threshing_floor;
+    if (fl) ctx.drawImage(fl, x - K.w / 2, f.y + 8 - K.h, K.w, K.h);
+    for (let i = 0; i < f.sacks; i++) drawItem(i === 1 ? "grain_sacks" : "grain_sack", x + (i - 1) * 78, f.y - 22, i === 1 ? 0.15 : 0.42);
+    if (f.sacks === 0) drawItem("grain_sacks_broken", x, f.y - 22, 0.15);
   }
   // the beams and carts' men (Out of Keilah)
   if (r.id === "escape") {
     for (const b of k4.beams) {
       const x = b.x - camX; if (x < -300 || x > W + 300) continue;
-      // (a timber hung across the street on ropes from the roofs: Gibeah's cellar beam)
-      const k = KIT.c_beam, im = kitImg("c_beam"), bot = FOOT - K4.RUN.BEAM_Y;
-      ctx.save(); ctx.strokeStyle = "#3b2a1c"; ctx.lineWidth = 4; ctx.beginPath();
-      ctx.moveTo(x - 70, bot - k.h * 0.6); ctx.lineTo(x - 90, bot - 700); ctx.moveTo(x + 70, bot - k.h * 0.6); ctx.lineTo(x + 90, bot - 700); ctx.stroke(); ctx.restore();
-      if (im) ctx.drawImage(im, x - k.w / 2, bot - k.h, k.w, k.h);
+      // (Glen's log, 11-15: hung across the street on ropes from the roofs, seen end on; its ropes' top rows drawn on up)
+      const k = K4_KIT.w4_hanging_log, im = kitImg("w4_hanging_log"), bot = FOOT - K4.RUN.BEAM_Y, top = bot - k.h;
+      if (im) { ctx.drawImage(im, 0, 0, k.w, 4, x - k.w / 2, top - 700, k.w, 701); ctx.drawImage(im, x - k.w / 2, top, k.w, k.h); }
     }
     // the gate (Glen's stone kit): swinging shut as he runs
     { const sh = k4.run ? (k4.run.done ? 0 : k4.run.shut || 0) : 0; k4DrawGate(k4.runGate - camX, sh); }

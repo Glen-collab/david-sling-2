@@ -204,5 +204,17 @@
   "w": 404,
   "h": 359,
   "frames": 4
+ },
+ "w4_prayer_rock": {
+  "w": 240,
+  "h": 158
+ },
+ "w4_threshing_floor": {
+  "w": 320,
+  "h": 151
+ },
+ "w4_hanging_log": {
+  "w": 150,
+  "h": 160
  }
 }
