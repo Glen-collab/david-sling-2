@@ -154,5 +154,45 @@
  "w4_bag": {
   "w": 173,
   "h": 107
+ },
+ "w4_lintel_brick": {
+  "w": 1730,
+  "h": 164
+ },
+ "w4_wall_rubble": {
+  "w": 1714,
+  "h": 118
+ },
+ "w4_wall_course": {
+  "w": 1728,
+  "h": 168
+ },
+ "w4_wall_slab": {
+  "w": 1736,
+  "h": 150
+ },
+ "w4_wall_boulder": {
+  "w": 1758,
+  "h": 162
+ },
+ "w4_wall_low": {
+  "w": 1766,
+  "h": 108
+ },
+ "w4_pillar_brick": {
+  "w": 236,
+  "h": 242
+ },
+ "w4_pillar_round": {
+  "w": 198,
+  "h": 216
+ },
+ "w4_post": {
+  "w": 252,
+  "h": 254
+ },
+ "w4_pillar_column": {
+  "w": 232,
+  "h": 248
  }
 }

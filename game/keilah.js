@@ -83,7 +83,7 @@ function k4Build(R) {
   k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
-  ["w3_cart", "w3_hide_sacks", "c_beam", "t_house", "t_stall"].forEach(kitImg);
+  ["w3_cart", "w3_hide_sacks", "c_beam", "t_house", "t_stall", "w4_pillar_brick", "w4_lintel_brick"].forEach(kitImg);
   const G = GR * T;
 
   // -- The Forest of Hereth (22:5; 23:1-4): the 400 camped under the trees; a runner with the news; the rock where David
@@ -174,7 +174,7 @@ function k4Build(R) {
     k4Person(rm, "villager_staffman_stand", X(92), FOOT, -1, () => !k4Has("k4_ephod"));
     k4.lights.push({ room: rm, x: X(22), y: G - 40, r: 300 }, { room: rm, x: X(66), y: G - 120, r: 260 });
     rBreak("basket", rm, c + 100, 16); rBreak("jar", rm, c + 102, 16);
-    k4.gateX = X(107);   // (shut till the ephod's question: k4Update)
+    k4.gateX = X(100);   // (shut till the ephod's question: k4Update)
   }
 
   // -- Out of Keilah (23:13): the run. Carts to jump, beams to roll under, men to get past, pots from the roofs, gaps; the
@@ -278,7 +278,7 @@ function k4Update(dt, r) {
   // the way on is shut till he's asked (Hereth), till the floors are safe (to the town), till the question (the gate)
   const wall = (x, ok, say) => { if (!ok && d.x > x) { d.x = x; d.vx = Math.min(0, d.vx); k4Tell("wall" + x, say); } };
   if (r.id === "hereth") wall((r.c0 + r.w - 3) * T, k4Has("k4_asked"), "David won't go down to Keilah before he asks the LORD. The rock: Up.");
-  if (r.id === "floors") wall((r.c0 + r.w - 3) * T, k4Has("k4_floors"), "The raiders are still at the floors. Save the grain first!");
+  if (r.id === "floors") wall((r.c0 + r.w - 9) * T, k4Has("k4_floors"), "The raiders are still at the floors. Save the grain first!");
   if (r.id === "town") wall(k4.gateX, k4Has("k4_ephod"), k4Has("k4_saul") ? "Ask the LORD first: Abiathar has the ephod (Up by him)." : "Keilah is safe, and glad of it. Stay a while.");
   if (r.id === "floors") k4RaidUpdate(dt);
   if (r.id === "escape") k4RunUpdate(dt);
@@ -448,6 +448,9 @@ function k4Draw(camX) {
   }
   // the livestock in the gate, once the floors are safe
   if (k4Has("k4_floors")) for (const h of k4.herd) if (h.room === r.id && SPR[h.spr]) drawSprite(h.spr, frameOf(h.spr, now), h.x - camX, h.y, h.dir, 0.9);
+  // the town gate from outside (shut till the floors are safe), and the inner gate (shut till the ephod's question)
+  if (r.id === "floors") k4DrawGate((r.c0 + r.w - 9) * T + 100 - camX, k4Has("k4_floors") ? 0 : 1);
+  if (r.id === "town") k4DrawGate(k4.gateX + 100 - camX, k4Has("k4_ephod") ? 0 : 1);
   // the threshing floors: a round floor of beaten stone, its grain heaped on it
   if (r.id === "floors") for (const f of k4.floors) {
     const x = f.x - camX; if (x < -300 || x > W + 300) continue;
@@ -466,13 +469,45 @@ function k4Draw(camX) {
       ctx.moveTo(x - 70, bot - k.h * 0.6); ctx.lineTo(x - 90, bot - 700); ctx.moveTo(x + 70, bot - k.h * 0.6); ctx.lineTo(x + 90, bot - 700); ctx.stroke(); ctx.restore();
       if (im) ctx.drawImage(im, x - k.w / 2, bot - k.h, k.w, k.h);
     }
-    // the gate: two leaves swinging shut
-    { const x = k4.runGate - camX, sh = k4.run ? (k4.run.done ? 0 : k4.run.shut || 0) : 0;
-      if (x > -400 && x < W + 400) {
-        ctx.save(); ctx.fillStyle = "#5c5246"; ctx.fillRect(x - 120, FOOT - 420, 40, 420); ctx.fillRect(x + 80, FOOT - 420, 40, 420); ctx.fillRect(x - 120, FOOT - 460, 240, 50);
-        const leaf = 80 * sh; ctx.fillStyle = "#4a3221"; ctx.fillRect(x - 80, FOOT - 300 + (1 - sh) * 0, leaf, 300); ctx.fillRect(x + 80 - leaf, FOOT - 300, leaf, 300);
-        ctx.restore(); } }
+    // the gate (Glen's stone kit): swinging shut as he runs
+    { const sh = k4.run ? (k4.run.done ? 0 : k4.run.shut || 0) : 0; k4DrawGate(k4.runGate - camX, sh); }
   }
+}
+// (Glen's gate kit, 11-14) a town gate: two brick pillars (his pillar, its middle repeated to stand tall), his brick
+//  lintel across the top (its two ends, with their end blocks), and two wooden leaves; shut 0 (open) to 1 (shut)
+const K4_GATE = { GAP: 170, PW: 120, PH: 430, DOOR: 330, LINTEL: 110 };
+function k4DrawGate(x, shut) {
+  if (x < -500 || x > W + 500) return;
+  const G = K4_GATE, pil = kitImg("w4_pillar_brick"), lin = kitImg("w4_lintel_brick"), y0 = FOOT - G.PH;
+  const r = region.room, night = r && (typeof r.nightArt === "function" ? r.nightArt() : r.nightArt);
+  ctx.save(); if (night) ctx.filter = "brightness(0.72) saturate(0.85)";   // (his stone is sunlit: dimmed to sit in his night street)
+  const pillar = px => {
+    if (!pil) { ctx.fillStyle = "#b8a383"; ctx.fillRect(px, y0, G.PW, G.PH); return; }
+    const k = G.PW / pil.naturalWidth, cap = 62, base = 52, band = pil.naturalHeight - cap - base;
+    const capH = cap * k, baseH = base * k, bandH = band * k;
+    ctx.drawImage(pil, 0, pil.naturalHeight - base, pil.naturalWidth, base, px, FOOT - baseH, G.PW, baseH);
+    let y = FOOT - baseH;
+    while (y > y0 + capH) { const h = Math.min(bandH, y - (y0 + capH)), sh = h / k;
+      ctx.drawImage(pil, 0, cap + band - sh, pil.naturalWidth, sh, px, y - h, G.PW, h); y -= h; }
+    ctx.drawImage(pil, 0, 0, pil.naturalWidth, cap, px, y0, G.PW, capH);
+  };
+  // the leaves: planks and two iron bands, swung in to the middle as it shuts
+  const leaf = (G.GAP / 2) * shut, dy = FOOT - G.DOOR;
+  for (const lx of [x - G.GAP / 2, x + G.GAP / 2 - leaf]) if (leaf > 1) {
+    ctx.fillStyle = "#5a3b22"; ctx.fillRect(lx, dy, leaf, G.DOOR);
+    ctx.strokeStyle = "rgba(30,18,8,0.7)"; ctx.lineWidth = 2;
+    for (let px = lx + 14; px < lx + leaf; px += 14) { ctx.beginPath(); ctx.moveTo(px, dy); ctx.lineTo(px, FOOT); ctx.stroke(); }
+    ctx.fillStyle = "#2e2a26"; ctx.fillRect(lx, dy + 50, leaf, 10); ctx.fillRect(lx, FOOT - 80, leaf, 10);
+  }
+  if (shut >= 0.99) { ctx.fillStyle = "#3d2614"; ctx.fillRect(x - G.GAP / 2 - 10, dy + 140, G.GAP + 20, 18); }   // the bar across (23:7, "gates and bars")
+  ctx.fillStyle = "rgba(20,14,8,0.35)"; ctx.fillRect(x - G.GAP / 2, y0 + G.LINTEL - 10, G.GAP, G.PH - G.DOOR - G.LINTEL + 10);   // the shadow under the lintel
+  pillar(x - G.GAP / 2 - G.PW); pillar(x + G.GAP / 2);
+  const span = G.GAP + G.PW * 2 + 40, lx0 = x - span / 2;
+  if (lin) { const half = 380, sw = span / 2;
+    ctx.drawImage(lin, 0, 0, half, lin.naturalHeight, lx0, y0 - G.LINTEL + 20, sw, G.LINTEL);
+    ctx.drawImage(lin, lin.naturalWidth - half, 0, half, lin.naturalHeight, lx0 + sw, y0 - G.LINTEL + 20, sw, G.LINTEL); }
+  else { ctx.fillStyle = "#c9b48f"; ctx.fillRect(lx0, y0 - G.LINTEL + 20, span, G.LINTEL); }
+  ctx.restore();
 }
 function k4DrawFront(camX) {
   const r = region.room; if (!r) return;
