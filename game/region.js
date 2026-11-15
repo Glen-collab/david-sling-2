@@ -1971,10 +1971,84 @@ function drawRegionOver() {
   if (region.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${region.fade})`; ctx.fillRect(0, 0, W, H); }
 }
 
+// ---- the crawl (Glen 11-12 and 11-15: "telling David's story for each part of the game so the player who doesn't
+//      know is informed"): before each region's first play, a short sermon rising up the screen and away, like Part
+//      One's (world1.js W1_CRAWL). Once per save (the "crawl" flag); A skips. Words: SERMONS_DRAFT.md (WEB, checked on
+//      ebible.org 11-15, "the LORD" for Yahweh). "#" a heading line; "(" a reference, smaller and paler ----
+const CRAWL = { SPEED: 46, SPACE: 42, TAIL: 4, PX: 32, REF_PX: 22, GOLD: "#ffe08a", REF: "#c9b27a" };
+const CRAWLS = {
+  gibeah: ["# World 1: Gibeah", "",
+    "Years ago, the prophet Samuel anointed", "a shepherd boy named David", "to be the next king of Israel.",
+    "But Saul is still the king.", "",
+    "David killed the giant Goliath", "with a sling and a stone.", "Now he lives in King Saul's house.",
+    "Saul's son Jonathan loves him like a brother,", "and gives him his own robe, sword and bow.", "",
+    "When the army comes home, the women sing,", "\u201cSaul has slain his thousands,", "and David his ten thousands.\u201d", "(1 Samuel 18:7)",
+    "That song turns the king's heart green.", "\u201cSaul was afraid of David, because the LORD", "was with him, and had departed from Saul.\u201d", "(1 Samuel 18:12)", "",
+    "Jealousy is a fire. It starts small,", "and then it burns everything it touches.", "But David will not fight the king.",
+    "God chose Saul first, and David will wait", "for God to make things right.", "",
+    "So when the spear comes, David does", "the hardest thing a brave man can do:", "he gets out of the way, and trusts the LORD."],
+  ramah: ["# World 2: The Window", "",
+    "King Saul has thrown his spear at David.", "Now he sends soldiers to David's house", "to kill him in the morning.",
+    "David's wife Michal, the king's daughter,", "lets him down through a window in the dark.", "From this night on, David is a man on the run.", "",
+    "He runs to old Samuel the prophet at Ramah.", "Three times Saul sends men to take him,", "and each time God's Spirit comes on them,", "and they cannot lay a hand on him.", "",
+    "Then David goes to his best friend, Jonathan.", "\u201cThere is but a step between me and death,\u201d", "he tells him.", "(1 Samuel 20:3)",
+    "Jonathan will shoot arrows in a field.", "If they fly past the boy, David must flee.", "",
+    "The arrows fly past. The two friends weep and part.", "David has lost his home and his place at court,", "but not his God. He sang,",
+    "\u201cYou have been my high tower,", "a refuge in the day of my distress.\u201d", "(Psalm 59:16)"],
+  nobgath: ["# World 3: Nob and Gath", "",
+    "Alone, hungry, and with no sword,", "David comes to the priests at Nob.", "He is afraid, and he doesn't tell them", "the whole truth about why he is alone.", "Even heroes get afraid.",
+    "Still Ahimelech the priest gives him the holy bread,", "and the sword of Goliath,", "wrapped in a cloth behind the ephod.", "",
+    "Then David runs to Gath, Goliath's own city,", "to hide among his enemies. But they know him:", "\u201cIsn't this David the king of the land?\u201d", "(1 Samuel 21:11)",
+    "Trapped, he pretends to be mad,", "scribbling on the doors of the gate,", "and the king of Gath sends him away.", "",
+    "David wrote songs about these days.", "\u201cWhen I am afraid, I will put my trust in you.\u201d", "(Psalm 56:3)",
+    "\u201cI sought the LORD, and he answered me,", "and delivered me from all my fears.\u201d", "(Psalm 34:4)",
+    "Being afraid is not the end of faith.", "It is where faith begins."],
+  adullam: ["# World 4: The Cave of Adullam", "",
+    "Out of Gath, David runs to a great cave", "in the hills of Judah: the cave of Adullam.", "There, alone in the dark, he prays:",
+    "\u201cYou are my refuge,", "my portion in the land of the living.\u201d", "(Psalm 142:5)", "",
+    "And God sends him people.", "His brothers and all his father's house", "come down to him there. Then others come:",
+    "\u201cEveryone who was in distress, everyone", "who was in debt, and everyone who was discontented", "gathered themselves to him;", "and he became captain over them.\u201d", "(1 Samuel 22:2)",
+    "About four hundred men.", "",
+    "A king in a cave, with an army of the broken.", "This is how God builds His kingdom:", "not with the strong and the proud,", "but with the ones who come to Him in trouble.",
+    "David wrote Psalm 57 \u201cin the cave,\u201d fleeing from Saul:", "\u201cIn the shadow of your wings, I will take refuge,", "until disaster has passed.\u201d", "(Psalm 57:1)"],
+  keilah: ["# World 4: Keilah", "",
+    "The prophet Gad tells David,", "\u201cDon't stay in the stronghold.\u201d", "So David and his men go out", "into the forest of Hereth.", "(1 Samuel 22:5)",
+    "Then news comes: the Philistines are robbing", "the threshing floors of Keilah,", "a little town of Judah.", "",
+    "David is a hunted man.", "Saving Keilah could get him caught.", "So before he moves, he asks the LORD.",
+    "\u201cGo strike the Philistines, and save Keilah.\u201d", "(1 Samuel 23:2)",
+    "His men are afraid, so he asks again.", "\u201cArise, go down to Keilah;", "for I will deliver the Philistines into your hand.\u201d", "(1 Samuel 23:4)", "",
+    "David saves the town. But Saul hears where he is,", "and the people David saved would hand him over.", "The LORD tells him the truth in time,", "and David slips away in the night.", "",
+    "Ask the LORD first, every time,", "even when the answer is hard to hear."],
+};
+const regionCrawlStart = () => { region.crawl = { t: 0 }; };
+function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has the screen
+  const C = region.crawl, L = CRAWLS[REGION.key] || [];
+  C.t += dt;
+  const end = L.length * CRAWL.SPACE / CRAWL.SPEED + CRAWL.TAIL;
+  if (C.t > end || (C.t > 1.5 && (pressed("a") || pressed("start")))) { region.crawl = null; regionAdd("taken", "crawl"); return; }
+  ctx.fillStyle = `rgba(8,5,2,${Math.min(0.94, 0.75 + C.t * 0.2)})`; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.textAlign = "center";
+  const top = H * 0.1;
+  L.forEach((l, i) => {
+    const y = H + 30 + i * CRAWL.SPACE - C.t * CRAWL.SPEED; if (!l || y > H + 40 || y < top - 20) return;
+    const k = Math.max(0.45, Math.min(1, (y - top) / (H - top) * 0.7 + 0.45));   // smaller as it goes up and away
+    ctx.globalAlpha = Math.max(0, Math.min(1, (y - top) / 120, (H + 40 - y) / 60));
+    const head = l[0] === "#", ref = l[0] === "(", text = head ? l.slice(2) : l;
+    ctx.fillStyle = ref ? CRAWL.REF : CRAWL.GOLD;
+    ctx.font = `${head ? "bold " : ref ? "italic " : ""}${Math.round((head ? CRAWL.PX * 1.25 : ref ? CRAWL.REF_PX : CRAWL.PX) * k)}px Georgia, serif`;
+    ctx.save(); ctx.translate(W / 2, y); ctx.scale(1, 0.92); ctx.fillText(text, 0, 0); ctx.restore();
+  });
+  ctx.restore();
+  if (C.t > 1.5 && typeof caption === "function") caption("A: skip", 0.6, true);
+}
+
 // ---- the map screen (Select): the rooms you've been in, where you are, the seals you've seen, the finds you've
 //      seen but not picked up, and the olive presses ----
 function regionMapFrame(dt) {   // true while the map (or the card, or the Journal) has the screen
   if (!REGION_ON) return false;
+  // (11-15) the crawl, once, before the region's first play (not in the tests' copy, simgame/: a test can start one)
+  if (!region.crawlChecked && region.save && !setup.active) { region.crawlChecked = true; if (CRAWLS[REGION.key] && !regionHas("taken", "crawl") && !/simgame/.test(location.pathname)) regionCrawlStart(); }
+  if (region.crawl) { regionCrawlFrame(dt); return true; }
   if (region.jscene) { jsceneFrame(dt); return true; }
   if (!region.mapOpen) {
     if (pressed("select") && !region.trans && david.deadT <= 0) bookOpen(0);

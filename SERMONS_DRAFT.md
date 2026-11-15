@@ -1,48 +1,166 @@
-# The crawls: a short sermon before each world (DRAFT for Glen, 11-12)
+# The crawls: David's story, before each part of the game (DRAFT for Glen, 11-12; all of it 11-15)
 
-Order in the game: crawl, then cut scene, then play (START_HERE.md section 4, "Between worlds").
-Bible words are the WEB with "the LORD" for Yahweh. Every quote checked word for word against ebible.org/eng-web on 11-12.
+Glen (11-15): "let's come up with telling David's story for each part of the game so the player who doesn't know
+is informed." Each crawl is a short sermon rising up the screen like Part One's: where David is, why he's running,
+and what the LORD is teaching him (and the player) there.
 
-## World 1: The Palace (1 Samuel 18; 19:9-10)
+**In the game (11-15):** the five built places have theirs (`CRAWLS` in `game/region.js`). Each plays once, the first
+time the place starts (a fresh save, or "start over" on the land map), and A skips it. The test
+`tools/tests/crawl.js` shows one. The places not built yet (Ziph to Jerusalem) are written below, ready to go in.
 
-David killed the giant with a sling and one stone. Now the shepherd boy lives in King Saul's house. Jonathan, the
-king's son, loves him like a brother and gives him his own robe, sword and bow. The women dance in the streets and
-sing, "Saul has slain his thousands, and David his ten thousands."
+Bible words are the WEB with "the LORD" for Yahweh, every quote checked word for word on ebible.org/eng-web (11-12
+and 11-15). US spelling, kid-clean. About 25-30 lines each: 25-35 seconds at Part One's speed.
 
-But that song made the king's heart turn green. Saul was afraid of David, because the LORD was with David and had
-left Saul (1 Samuel 18:12). Jealousy is a fire. It starts small, and then it burns everything it touches.
+---
 
-David will not fight the king. God chose Saul first, and David will wait for God to make things right. So when the
-spear comes, he does the hardest thing a brave man can do. He gets out of the way and trusts the LORD.
+## Built (in the game)
 
-## World 2: The Window (1 Samuel 19:11-17; 20; Psalm 59)
+### World 1: Gibeah (1 Samuel 16:13; 18; 19:9-10)
+Years ago, the prophet Samuel anointed a shepherd boy named David to be the next king of Israel. But Saul is still
+the king. David killed the giant Goliath with a sling and a stone. Now he lives in King Saul's house. Saul's son
+Jonathan loves him like a brother, and gives him his own robe, sword and bow.
 
-Saul's soldiers are waiting outside David's house to kill him in the morning. His wife Michal lets him down through a
-window in the dark and puts a statue in his bed so the soldiers find nothing. From this night on, David is a man on
+When the army comes home, the women sing, "Saul has slain his thousands, and David his ten thousands." (1 Samuel
+18:7) That song turns the king's heart green. "Saul was afraid of David, because the LORD was with him, and had
+departed from Saul." (1 Samuel 18:12)
+
+Jealousy is a fire. It starts small, and then it burns everything it touches. But David will not fight the king.
+God chose Saul first, and David will wait for God to make things right. So when the spear comes, David does the
+hardest thing a brave man can do: he gets out of the way, and trusts the LORD.
+
+### World 2: The Window (1 Samuel 19:11-24; 20; Psalm 59)
+King Saul has thrown his spear at David. Now he sends soldiers to David's house to kill him in the morning. David's
+wife Michal, the king's daughter, lets him down through a window in the dark. From this night on, David is a man on
 the run.
 
-He goes to his best friend. Jonathan doesn't want to believe his father would do it, but David knows: "There is but a
-step between me and death" (1 Samuel 20:3). The two friends make a plan with arrows in a field. If the arrows land
-past the boy, David must run.
+He runs to old Samuel the prophet at Ramah. Three times Saul sends men to take him, and each time God's Spirit comes
+on them, and they cannot lay a hand on him. Then David goes to his best friend, Jonathan. "There is but a step
+between me and death," he tells him. (1 Samuel 20:3) Jonathan will shoot arrows in a field. If they fly past the
+boy, David must flee.
 
-The arrows fly past. A true friend tells you the truth even when it breaks his heart. That night David sang to God,
-"You have been my high tower, a refuge in the day of my distress" (Psalm 59:16). He has lost his home, but not his God.
+The arrows fly past. The two friends weep and part. David has lost his home and his place at court, but not his
+God. He sang, "You have been my high tower, a refuge in the day of my distress." (Psalm 59:16)
 
-## World 3: Nob and Gath (1 Samuel 21; Psalms 34 and 56)
+### World 3: Nob and Gath (1 Samuel 21; Psalms 34 and 56)
+Alone, hungry, and with no sword, David comes to the priests at Nob. He is afraid, and he doesn't tell them the
+whole truth about why he is alone. Even heroes get afraid. Still Ahimelech the priest gives him the holy bread, and
+the sword of Goliath, wrapped in a cloth behind the ephod.
 
-Now David is a fugitive with no food and no sword. He comes to the priests at Nob, scared and hungry, and he doesn't
-tell them the whole truth about why he's alone. Even heroes get afraid. Still the priest gives him the holy bread,
-and Goliath's own sword, wrapped in a cloth behind the ephod.
+Then David runs to Gath, Goliath's own city, to hide among his enemies. But they know him: "Isn't this David the
+king of the land?" (1 Samuel 21:11) Trapped, he pretends to be mad, scribbling on the doors of the gate, and the
+king of Gath sends him away.
 
-Then David does something strange. He runs to Gath, Goliath's hometown, the city of his enemies. The Philistines
-remember him: "Isn't this David the king of the land?" (1 Samuel 21:11). Trapped, he pretends to be mad, scribbling on the gate,
-and the king sends him away.
-
-David wrote two songs about these days. "When I am afraid, I will put my trust in you" (Psalm 56:3). "I sought the
-LORD, and he answered me, and delivered me from all my fears" (Psalm 34:4). Being afraid is not the end of faith.
+David wrote songs about these days. "When I am afraid, I will put my trust in you." (Psalm 56:3) "I sought the
+LORD, and he answered me, and delivered me from all my fears." (Psalm 34:4) Being afraid is not the end of faith.
 It is where faith begins.
 
+### World 4: The Cave of Adullam (1 Samuel 22:1-2; Psalms 57 and 142)
+Out of Gath, David runs to a great cave in the hills of Judah: the cave of Adullam. There, alone in the dark, he
+prays: "You are my refuge, my portion in the land of the living." (Psalm 142:5)
+
+And God sends him people. His brothers and all his father's house come down to him there. Then others come:
+"Everyone who was in distress, everyone who was in debt, and everyone who was discontented gathered themselves to
+him; and he became captain over them." (1 Samuel 22:2) About four hundred men.
+
+A king in a cave, with an army of the broken. This is how God builds His kingdom: not with the strong and the
+proud, but with the ones who come to Him in trouble. David wrote Psalm 57 "in the cave," fleeing from Saul: "In the
+shadow of your wings, I will take refuge, until disaster has passed." (Psalm 57:1)
+
+### World 4: Keilah (1 Samuel 22:5; 23:1-14)
+The prophet Gad tells David, "Don't stay in the stronghold." So David and his men go out into the forest of Hereth.
+(1 Samuel 22:5) Then news comes: the Philistines are robbing the threshing floors of Keilah, a little town of Judah.
+
+David is a hunted man. Saving Keilah could get him caught. So before he moves, he asks the LORD. "Go strike the
+Philistines, and save Keilah." (1 Samuel 23:2) His men are afraid, so he asks again. "Arise, go down to Keilah; for
+I will deliver the Philistines into your hand." (1 Samuel 23:4)
+
+David saves the town. But Saul hears where he is, and the people David saved would hand him over. The LORD tells
+him the truth in time, and David slips away in the night. Ask the LORD first, every time, even when the answer is
+hard to hear.
+
+---
+
+## Not built yet (ready for when each place is)
+
+### World 5: Ziph (1 Samuel 23:14-28; 26; Psalm 54)
+David hides in the wilderness of Ziph, in the dry hills and the strongholds. "Saul sought him every day, but God
+didn't deliver him into his hand." (1 Samuel 23:14) The people of Ziph tell Saul where David is, and Saul comes
+hunting.
+
+In the woods, Jonathan finds him, and "strengthened his hand in God." (1 Samuel 23:16) "Don't be afraid," he says,
+"you will be king over Israel, and I will be next to you." (1 Samuel 23:17) It is the last time the two friends
+meet.
+
+Later, by night, David creeps into Saul's camp. The king lies asleep, his spear stuck in the ground at his head.
+David could end it with one blow. Instead: "The LORD forbid that I should stretch out my hand against the LORD's
+anointed." (1 Samuel 26:11) He takes only the spear and the jar of water, and goes. "Behold, God is my helper."
+(Psalm 54:4)
+
+### World 5: En-Gedi (1 Samuel 24)
+Saul takes three thousand chosen men "to seek David and his men on the rocks of the wild goats." (1 Samuel 24:2)
+David and his men hide deep in a cave. And the king walks into that very cave, alone.
+
+David's men whisper: this is the day the LORD gave your enemy into your hand. David creeps close and cuts off a
+corner of Saul's robe. And even that troubles his heart. "The LORD forbid that I should do this thing to my lord,
+the LORD's anointed." (1 Samuel 24:6)
+
+Outside, David calls after the king and holds up the corner of the robe. "May the LORD judge between me and you ...
+but my hand will not be on you." (1 Samuel 24:12) Saul weeps. "You are more righteous than I; for you have done
+good to me, whereas I have done evil to you." (1 Samuel 24:17) Mercy is stronger than a sword.
+
+### World 6: Carmel (1 Samuel 25)
+David and his men have guarded the shepherds of a rich man named Nabal out in the wilderness. Now it is
+sheep-shearing time, a feast day, and David asks Nabal for a little food. Nabal sneers: "Who is David? Who is the
+son of Jesse?" (1 Samuel 25:10)
+
+David is furious. "Every man put on his sword!" (1 Samuel 25:13) Four hundred men ride out to pay Nabal back. The
+man who would not strike the king is about to strike a fool.
+
+But Nabal's wife Abigail is wise. She loads donkeys with bread, raisins and figs, rides out to meet David, and bows
+at his feet. And David listens. "Blessed is your discretion, and blessed are you, who have kept me today from blood
+guiltiness, and from avenging myself with my own hand." (1 Samuel 25:33) Even a good man needs someone to stop him.
+Thank God for the Abigails.
+
+### World 7: Ziklag (1 Samuel 27; 30; 31)
+Tired of running, David goes to live among the Philistines, in the town of Ziklag. One day he and his men come home
+to find it burned, and their wives and children carried away by Amalekite raiders. His own men talk of stoning him.
+"But David strengthened himself in the LORD his God." (1 Samuel 30:6)
+
+He asks the LORD, "If I pursue after this troop, will I overtake them?" "Pursue, for you will surely overtake them,
+and will without fail recover all." (1 Samuel 30:8) And they do. "David brought them all back." (1 Samuel 30:19)
+
+Then sad news comes from the north. Saul and Jonathan have fallen in battle on Mount Gilboa. David doesn't
+celebrate. He weeps for them both, and sings, "How the mighty have fallen!" (2 Samuel 1:19)
+
+### World 8: Hebron (2 Samuel 2:1-11; 5:1-5)
+After all the years of running, David still asks first. "Shall I go up into any of the cities of Judah?" The LORD
+says, "Go up." "Where shall I go up?" "To Hebron." (2 Samuel 2:1) There the men of Judah anoint David king over the house of
+Judah.
+
+But the rest of Israel follows Saul's family, and there is a long war. David waits, and does not grab. He is king
+in Hebron seven years and six months.
+
+At last all the elders of Israel come to him in Hebron, "and they anointed David king over Israel." (2 Samuel 5:3)
+The shepherd boy Samuel anointed long ago is king. God's promise came true in God's time, not David's.
+
+### World 8: Jerusalem (2 Samuel 5:6-10; 6)
+David's last battle in this story is for a city on a hill, a fortress everyone says can't be taken. "Nevertheless
+David took the stronghold of Zion. This is David's city." (2 Samuel 5:7) Jerusalem.
+
+"David grew greater and greater, for the LORD, the God of Armies, was with him." (2 Samuel 5:10) And the first thing
+the new king wants in his city is not a throne. It's the ark of God, the sign that the LORD is with His people.
+
+So they bring it up the road with shouting and trumpets, and the king doesn't stand on his dignity. "David danced
+before the LORD with all his might." (2 Samuel 6:14) The boy who sang to God over his sheep is still singing. His
+heart is steadfast.
+
+---
+
 ## Notes for Glen
-- World 3 is honest that David lied at Nob (21:2), gently. Leave it out if you'd rather.
-- The priests of Nob are killed later (22:18-19). That is left out of the crawl (kid-clean).
-- Each crawl runs about 60-75 seconds at Part One's speed. A skips.
+- World 3 is honest that David lied at Nob (21:2), gently. Say if you'd rather leave it out.
+- Left out on purpose (kid-clean): the priests of Nob killed (22:18-19); how Saul died (31:4); the "great
+  slaughter" at Keilah (23:5).
+- Ziph comes before En-Gedi here, as on your land map, though chapter 24 (En-Gedi) comes before chapter 26 in the
+  Bible. Ziph's crawl uses 23:14-28 and the spear-and-jar night of 26 (also in the wilderness of Ziph, 26:1-2).
+  Moving the spear-and-jar night to the end of En-Gedi's world would follow the Bible's order exactly.
+- Psalm 54's heading names the Ziphites. Psalms 57 and 142 say "in the cave", which could be Adullam or En-Gedi.

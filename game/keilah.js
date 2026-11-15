@@ -52,14 +52,15 @@ const KEILAH = {
   steps: ["k4_asked", "k4_floors", "k4_ephod", "k4_escaped"],
   verse: ["Awake, my glory, awake", "Awake, my harp, awake", "I will awaken the dawn", "I will praise You, Lord",
     "Among the nations I will sing", "Among the people praise Your name", "Your loving kindness reaches heaven", "Your truth will never change"],
-  // (draft words, for Glen) what David writes
+  // (draft words, for Glen, 11-15) what David writes after each story moment: what happened, and what he learned or
+  //  bore in it; at the end, a line from his own psalms (WEB, checked on ebible.org 11-15)
   entries: [
-    ["The Philistines were robbing Keilah's threshing floors. I asked the LORD, and my men were afraid, so I asked again. \"Arise, go down to Keilah.\"", "1 Samuel 23:1-4"],
-    ["We went down and fought the Philistines, and brought away their livestock. The LORD saved Keilah.", "1 Samuel 23:5"],
-    ["Abiathar came with the ephod. Saul was coming. I asked the LORD, and He told me the truth: they would hand me over.", "1 Samuel 23:6-12"],
-    ["Six hundred of us went out of Keilah, wherever we could go. God didn't deliver me into Saul's hand.", "1 Samuel 23:13-14"],
+    ["Keilah was being robbed. Before I moved, I asked the LORD. My men were afraid, so I asked again. I will not go where He doesn't send me.", "1 Samuel 23:1–4"],
+    ["We went down and saved Keilah, and brought away the Philistines' livestock. The battle was the LORD's. He gave them into our hand.", "1 Samuel 23:5"],
+    ["I saved Keilah, and Keilah would hand me over to Saul. That is hard to bear. But the LORD told me the truth in time.", "1 Samuel 23:9–12"],
+    ["Six hundred of us went out by night, wherever we could go. Saul looks for me every day, but God doesn't give me into his hand.", "1 Samuel 23:13–14"],
   ],
-  end: ["Saul sought him every day, but God didn't deliver him into his hand.", "1 Samuel 23:14"],
+  end: ["My times are in your hand. Deliver me from the hand of my enemies, and from those who persecute me.", "Psalm 31:15"],
   build: R => k4Build(R), enter: r => k4Enter(r), update: (dt, r) => k4Update(dt, r), holdDavid: (d, dt) => k4Hold(d, dt),
   drawDavid: (d, x, y) => k4DrawDavid(d, x, y), draw: camX => k4Draw(camX), drawFront: camX => k4DrawFront(camX),
   drawOver: () => k4DrawOver(), stoneHits: s => k4StoneHits(s),

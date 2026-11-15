@@ -98,13 +98,15 @@ Let Your glory fill the earth
 [One final harp note, fading into silence]
 ```
 
-## How it could map onto the eight worlds (a first idea, to settle with Glen)
-One part per world's Journal page, following the story:
-1. Gibeah: Verse 1 ("Be merciful to me... beneath the shadow of Your wings")
-2. Gibeah by night, Ramah: Verse 2 ("I cry out to God Most High")
-3. Nob, Gath: "Though lions gather all around / And sharpened words are aimed at me"
-4. Adullam: Verse 3 ("Though I am hiding in this cave", the cave of Psalm 57's heading)
-5. En-Gedi: the Chorus ("My heart is steadfast")
-6. Carmel and Maon: the Bridge ("Awake, my glory... I will awaken the dawn")
-7. Ziklag and the Negev: "Among the nations I will sing"
-8. Hebron, Jerusalem: the Final Chorus and the Outro
+## Where each part is in the game (11-15)
+Each place's Journal page writes the next part of the song, in order:
+1. Gibeah (World 1): Verse 1
+2. Ramah, The Window (World 2): Verse 2
+3. Nob and Gath (World 3): Verse 3 ("Though I am hiding in this cave")
+4. Adullam (World 4): the Chorus
+5. Keilah (World 4): the Bridge ("Awake, my glory... I will awaken the dawn"), out of Keilah by night toward the dawn
+
+Still to come, six places and two parts of the song left (a first idea, for Glen):
+- Ziph and En-Gedi (World 5): the Final Chorus, its two halves ("Be exalted..." / "My heart is steadfast...")
+- Carmel (World 6) and Ziklag (World 7): a new verse from Glen, if he'd like to write one (or the Chorus again)
+- Hebron and Jerusalem (World 8): the Outro, then the whole song plays at the very end
