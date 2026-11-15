@@ -140,3 +140,21 @@ David finds a man lying hurt under a terebinth, a short way off the path. Up by 
 He joins the camp men. From then on he sits apart at the campfires in Ziph and later worlds, always looking at the
 hills. The Journal says one line in the margin, not an entry: "We found a man in the woods who doesn't know his own
 name. He walks with us now." Nothing more until the Solomon game.
+
+## Built: the first pass (11-15, game/ziph.js, stage #9-10; "Play World 5, Ziph (test).bat")
+All five rooms use Glen's own layers (david-sling-2-art/ziph, cut by tools/make_layers.py with --seam). The people and
+kit come from the two games.
+- **The Hills of Ziph:** four of Saul's men walk their beats (saul_soldier_*). Crouch behind the rocks (w4_rocks/rubble).
+  If one sees David, it's back to the last olive press. They are never struck.
+- **The Woods of Horesh:** Jonathan's scene (23:15-18, dj_embrace) gives the new skill **courage**: one more heart for
+  good (main.js counts it). Then the stranger (Erem), using the sick Egyptian's clips as stand-ins (egyptian_sit,
+  egyptian_drink) until Glen's own. Glen's brief lines are used word for word. Afterward he sits with the men at the
+  fires in Horesh and Maon.
+- **The Hill of Hachilah:** the Ziphite scene (23:19, 22). Five lookouts (lookout_*). One who sees David shouts "!", then
+  runs to his fire. A sling or the sword stops him, and he runs off unhurt. If the fire is lit, it's back to the press.
+- **The Wilderness of Maon:** 23:24-25 and a runner. A Truth (Psalm 54:4). Ostrich, wild donkey.
+- **The Mountain:** 23:26, then the siege. Saul's lines close from both ends (Z5.SIEGE.END 55 s, the "Hold on" bar).
+  Scouts come through the rocks with sight wedges: crouch behind a rock. Touching a line or being seen costs a heart. At
+  the end the messenger rides to Saul (23:27), Saul turns back (23:28), and the rock of escape appears. Then 23:29, the
+  Journal (the Final Chorus, first half; Psalm 54:4) and the land map.
+Tests: tools/tests/z5tour.js, z5erem.js.

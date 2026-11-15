@@ -454,7 +454,7 @@ for (const C of [CanvasRenderingContext2D.prototype]) {
 // Built from simple commands (columns/rows are tiles). Screen is 20 tiles tall; ground surface is row 17.
 // ============================================================================
 const STORY_HASH = location.hash === "#3-A" ? "3-A" : null;   // a story stop from the map (the Anointing): 3-3's ground, then the scene
-const STAGE_HASH = (location.hash.match(/^#(\d-\d)$/) || [])[1] || (STORY_HASH && "3-3");
+const STAGE_HASH = (location.hash.match(/^#(\d-\d\d?)$/) || [])[1] || (STORY_HASH && "3-3");
 const LEVEL_NAME = location.hash === "#test" ? "test" : location.hash === "#range" ? "range" : STAGE_HASH || "1-1";   // #range: Gera's sling range (range.js), off the World 7 map
 // the game opens on the World 1 map; a stage in the address ("#1-2") goes straight into it (key 1 = 1-1)
 function backToMap() { history.replaceState(null, "", location.pathname + location.search); location.reload(); }
@@ -471,6 +471,7 @@ const STAGE_INFO = {
   "9-5": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Gibeah" },
   "9-7": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Nob and Gath" },
   "9-8": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Cave of Adullam" },
+  "9-10": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Ziph" },            // Part Two: World 5, part one (ziph.js on region.js)
   "9-9": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Keilah" },          // Part Two: World 4, part two (keilah.js on region.js)          // Part Two: World 4 (adullam.js on region.js)          // Part Two: World 3 (nobgath.js on region.js)
   "9-6": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Window" },           // Part Two: World 2, the second region (ramah.js on region.js)              // Part Two test: the first region, Castlevania-style (region.js)
   "9-3": { cols: 200, bg: "w4_2", ter: "w2s", name: "The Training Ground" },          // Part Two test: Player 2 (player2.js); Glen's fortress set
@@ -643,6 +644,7 @@ const SKILL_NAMES = { aimUp: "Aim up: hold Up as you throw", harpCall: "The harp
   leap: "The scout's leap: press A again in the air to jump again",
   rope: "Michal's rope: climb ropes, and go down wells (Up at one)",   // (Part Two, World 2)
   heavySword: "Goliath's sword: Up by a cracked wall, then mash A and B",   // (Part Two, World 3)
+  courage: "Courage: Jonathan strengthened your hand in God (one more heart)",   // (Part Two, Ziph: 1 Samuel 23:16)
   ask: "Ask the LORD: kneel at a prayer stone (Up)",   // (Part Two, Keilah: Abiathar's ephod, 1 Samuel 23:9)
   bow: "Jonathan's bow: hold Up and press {sword} to shoot up high (hold forward too: straight and far)" };   // leap: Tobi, 5-2   // quick: Gera, 4-2
 const skills = new Set();
@@ -1162,7 +1164,7 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
-} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" || LEVEL_NAME === "9-8" || LEVEL_NAME === "9-9") {
+} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" || LEVEL_NAME === "9-8" || LEVEL_NAME === "9-9" || LEVEL_NAME === "9-10") {
   buildRegion();   // Gibeah, the first region: rooms, doors, seals and finds (region.js)
 } else if (LEVEL_NAME === "9-4") {
   // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets
@@ -3256,7 +3258,8 @@ const FOOD_TEXT = {
 
 // hearts
 const HPU = REGION_ON ? RTUNE.HP_PER_HEART : 1;   // in a region (region.js) health is a meter: one heart is this many points
-david.maxHearts = (TUNE.HEARTS + DIFF.hearts) * HPU; david.hearts = david.maxHearts; david.inv = 0; david.deadT = 0; david.specialStones = 0;
+david.maxHearts = (TUNE.HEARTS + DIFF.hearts + (hasSkill("courage") ? 1 : 0)) * HPU;   // (courage: Jonathan's last gift, ziph.js)
+ david.hearts = david.maxHearts; david.inv = 0; david.deadT = 0; david.specialStones = 0;
 david.lives = DIFF.lives; david.olives = 0; david.lampOil = 0; david.gathered = 0;   // gathered: every olive picked up this stage (for the tithe, home.js)
 // olives, lamp oil and a fig cake bought at the market carry over from the home base (map.js progress)
 try {

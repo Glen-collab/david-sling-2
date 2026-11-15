@@ -13,7 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
-const REGION_KEY = location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
+const REGION_KEY = location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
 const REGION_UP = 130;   // (Glen 11-13: 130 for World 4's Old Well Shaft, 124 rows up; was 110)
 //   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
@@ -108,7 +108,7 @@ const REGION_GIBEAH = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
-const REGION = REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
+const REGION = REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -2019,6 +2019,15 @@ const CRAWLS = {
     "His men are afraid, so he asks again.", "\u201cArise, go down to Keilah;", "for I will deliver the Philistines into your hand.\u201d", "(1 Samuel 23:4)", "",
     "David saves the town. But Saul hears where he is,", "and the people David saved would hand him over.", "The LORD tells him the truth in time,", "and David slips away in the night.", "",
     "Ask the LORD first, every time,", "even when the answer is hard to hear."],
+  ziph: ["# World 5: Ziph", "",
+    "David hides in the wilderness of Ziph,", "in the dry hills and the strongholds.",
+    "“Saul sought him every day, but God", "didn't deliver him into his hand.”", "(1 Samuel 23:14)", "",
+    "In the woods, his friend Jonathan finds him,", "and “strengthened his hand in God.”",
+    "“Don't be afraid,” he says,", "“you will be king over Israel,", "and I will be next to you.”", "(1 Samuel 23:16-17)",
+    "It is the last time the two friends meet.", "",
+    "Then the people of Ziph go to Saul", "and offer to hand David over.", "Saul comes hunting, and in the wilderness of Maon", "he surrounds David on a mountain.",
+    "There is nowhere left to run.", "",
+    "“Behold, God is my helper.", "The Lord is the one who sustains my soul.”", "(Psalm 54:4)"],
 };
 const regionCrawlStart = () => { region.crawl = { t: 0 }; };
 function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has the screen
