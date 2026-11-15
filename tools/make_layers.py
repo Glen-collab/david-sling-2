@@ -17,6 +17,7 @@ ap = argparse.ArgumentParser(); ap.add_argument("far"); ap.add_argument("mid"); 
 ap.add_argument("--key", default="magenta"); ap.add_argument("--mid-h", type=int, default=560)
 ap.add_argument("--near-h", type=int, default=220); ap.add_argument("--near-bottom", type=float, default=1.0)
 ap.add_argument("--overlap", type=int, default=140)
+ap.add_argument("--roll", action="store_true")   # (11-15) start the mid at its emptiest middle column; no join at the repeat
 ap.add_argument("--seam", action="store_true")   # (11-15) cut the mid's ends at its emptiest columns
 ap.add_argument("--despill-all", action="store_true")   # (11-15, Ziph's Horesh) the key color taken out everywhere, not only at the rim
 ap.add_argument("--key-range", type=float, nargs=2, default=[80, 150])   # (11-15) key distance kept fully / gone fully (lower: less haze at the rim)
@@ -47,7 +48,7 @@ def blend(im, ov):   # the ends faded into each other: it repeats with no seam
     if x.shape[2] == 4:   # keyed: weight the colors by alpha, and keep the stronger alpha (no half-see-through ghost)
         wa, wb = A[..., 3:] / 255 * k, B[..., 3:] / 255 * (1 - k); ws = np.maximum(wa + wb, 1e-6)
         out[:, :ov, :3] = (A[..., :3] * wa + B[..., :3] * wb) / ws
-        out[:, :ov, 3] = np.maximum(A[..., 3] * np.sqrt(k[..., 0]), B[..., 3] * np.sqrt(1 - k[..., 0]))
+        out[:, :ov, 3] = np.maximum(A[..., 3], B[..., 3])   # (11-15: solid where either end is: no see-through band at the join)
     else:
         out[:, :ov] = A * k + B * (1 - k)
     return Image.fromarray(out.clip(0, 255).astype(np.uint8), im.mode)
@@ -57,13 +58,24 @@ blend(far, a.overlap).save(os.path.join(a.out, "far.jpg"), quality=90)
 
 mid = key(Image.open(a.mid)); bb = mid.getchannel("A").point(lambda v: 255 if v > 20 else 0).getbbox()
 mid = mid.crop((0, bb[1], mid.width, mid.height))
-if a.seam:   # (11-15, Ziph) the ends cut where the least is painted (between trees), so the repeat's blend has no ghost
+mid_ov = a.overlap
+if a.roll:   # (11-15, Maon) start at the emptiest column in the middle: its two ends are neighbours, so it repeats with no
+    #  join; the picture's own left and right edges meet inside it instead, blended over --overlap px
+    col = np.asarray(mid.getchannel("A")).astype(float)[: int(mid.height * 0.8)].sum(0); w = mid.width
+    x0 = int(w * 0.3) + int(np.argmin(col[int(w * 0.3): int(w * 0.7)]))
+    A_, B_ = np.asarray(mid.crop((x0, 0, w, mid.height))).astype(float), np.asarray(mid.crop((0, 0, x0, mid.height))).astype(float)
+    ov = a.overlap; k = np.linspace(0, 1, ov)[None, :, None]
+    L, R = A_[:, -ov:], B_[:, :ov]; wa, wb = L[..., 3:] / 255 * (1 - k), R[..., 3:] / 255 * k; ws = np.maximum(wa + wb, 1e-6)
+    J = np.zeros_like(L); J[..., :3] = (L[..., :3] * wa + R[..., :3] * wb) / ws; J[..., 3] = np.maximum(L[..., 3], R[..., 3])
+    mid = Image.fromarray(np.concatenate([A_[:, :-ov], J, B_[:, ov:]], 1).clip(0, 255).astype(np.uint8), "RGBA"); print("  mid rolled at", x0)
+    mid_ov = 0
+elif a.seam:   # (11-15, Ziph) the ends cut where the least is painted (between trees), so the repeat's blend has no ghost
     col = np.asarray(mid.getchannel("A")).astype(float)[: int(mid.height * 0.8)].sum(0); w = mid.width; q = int(w * 0.22)
     x0 = int(np.argmin(col[:q])); x1 = w - q + int(np.argmin(col[w - q:]))
     mid = mid.crop((x0, 0, x1, mid.height)); print("  mid seam cut at", x0, x1)
 mid = mid.resize((round(mid.width * a.mid_h / mid.height), a.mid_h), Image.LANCZOS)
 can = Image.new("RGBA", (mid.width, 640)); can.paste(mid, (0, 640 - mid.height))
-blend(can, a.overlap).save(os.path.join(a.out, "mid.png"))
+blend(can, mid_ov).save(os.path.join(a.out, "mid.png"))
 
 nr = key(Image.open(a.near)); bot = round(nr.height * a.near_bottom)
 bb = nr.getchannel("A").point(lambda v: 255 if v > 20 else 0).getbbox()

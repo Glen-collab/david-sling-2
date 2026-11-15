@@ -122,6 +122,11 @@ function z5Build(R) {
   { const rm = "hachilah", X = k => (c + k) * T;
     ground(c, c + 149);
     campfire(c + 4, GR - 1); z5.back.hachilah = X(5);
+    // (Glen 11-15: "the ziphites hunched whispering to Saul's men for now, since it is the wording that matters") a
+    //  Ziphite and one of Saul's men, there only while the words of 23:19-22 are up
+    z5.whisper = false;
+    z5Person(rm, "ziphite_point", X(11), 1, () => z5.whisper, Z5.LOOK.K).once = true;
+    z5Person(rm, "saul_soldier_look", X(13) + 20, -1, () => z5.whisper, Z5.SNEAK.K).once = true;
     const look = (k, fire, facing) => z5.lookouts.push({ room: rm, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
     z5Hide(rm, "w4_z_hide_rock", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
     rLedge(rm, c + 40, 470, 4); rLedge(rm, c + 46, 370, 5); rRelic("z5_stone_hach", "stone", c + 48, onTop(370));
@@ -168,10 +173,11 @@ function z5Enter(r) {
   if (r.id === "hills" && !z5Has("z5_jonathan")) z5Tell("hills", "David stayed in the wilderness in the strongholds. Saul sought him every day, but God didn’t deliver him into his hand. (1 Samuel 23:14)");
   if (r.id === "hachilah" && !z5Has("z5_ziph_told")) {
     regionAdd("taken", "z5_ziph_told");
-    rPlay([{ wait: 0.5 },
-      { say: ["", "Then the Ziphites came up to Saul to Gibeah, saying, “Doesn’t David hide himself with us in the strongholds in the woods, in the hill of Hachilah?” (1 Samuel 23:19)"] },
+    rPlay([{ fn() { z5.whisper = true; for (const p of z5.people) if (p.room === "hachilah") p.t = 0; } }, { wait: 0.8 },
+      { say: ["", "Then the Ziphites came up to Saul to Gibeah, saying, “Doesn’t David hide himself with us in the strongholds in the woods, in the hill of Hachilah, which is on the south of the desert? (1 Samuel 23:19)"] },
+      { say: ["The Ziphites", "Now therefore, O king, come down. According to all the desire of your soul to come down; and our part will be to deliver him up into the king’s hand. (1 Samuel 23:20)"] },
       { say: ["Saul", "Please go make yet more sure, and know and see his place where his haunt is, and who has seen him there; for I have been told that he is very cunning. (1 Samuel 23:22)"] },
-      { fn() { toast("The Ziphites are watching for Saul. If a lookout sees David, he'll run to light his signal fire. Stay hidden, or stop him first: sling or sword."); } }]);
+      { fn() { z5.whisper = false; toast("The Ziphites are watching for Saul. If a lookout sees David, he'll run to light his signal fire. Stay hidden, or stop him first: sling or sword."); } }]);
   }
   if (r.id === "maon" && !z5Has("z5_ziphites")) {
     regionAdd("taken", "z5_ziphites");
