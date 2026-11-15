@@ -241,12 +241,16 @@ function k4AskScene(rock) {
   if (rock.id === "ephod") {
     if (!k4Has("k4_saul")) return;
     k4.kneel = { t: 0 }; d.facing = Math.sign(rock.x - d.x) || 1;
-    rPlay([{ say: ["David", "Bring the ephod here. (1 Samuel 23:9)"] }, { wait: 1.0 },
+    // (Glen's clip, 11-15) Abiathar holds out the ephod, then lifts his hands while David asks; himself again after
+    const ab = k4.abiathar, pose = n => ({ fn() { if (SPR[n]) { ab.spr = n; ab.t = 0; } } });
+    d.x = ab.x - 130; d.vx = 0; d.facing = 1;   // (a step back, so both are seen: David kneeling, Abiathar with the ephod)
+    rPlay([{ say: ["David", "Bring the ephod here. (1 Samuel 23:9)"] }, pose("abiathar_ephod"), { wait: 2.4 }, pose("abiathar_pray"),
       { say: ["David", "O LORD, the God of Israel, your servant has surely heard that Saul seeks to come to Keilah to destroy the city for my sake. (1 Samuel 23:10)"] },
       { say: ["David", "Will the men of Keilah deliver me up into his hand? Will Saul come down, as your servant has heard? (1 Samuel 23:11)"] },
       { say: ["", "The LORD said, “He will come down.” (1 Samuel 23:11)"] },
       { say: ["David", "Will the men of Keilah deliver me and my men into the hand of Saul? (1 Samuel 23:12)"] },
       { say: ["", "The LORD said, “They will deliver you up.” (1 Samuel 23:12)"] },
+      pose("abiathar_talk"),
       { fn() { k4.kneel = null; regionAdd("taken", "k4_ephod"); learnSkill("ask");
         toast("Night falls on Keilah. The doors are shutting. Get out before they shut the gate: run!"); } }]);
   }

@@ -1,0 +1,26 @@
+{
+  "frames": 12,
+  "frame_w": 109,
+  "frame_h": 246,
+  "ms_per_frame": 120,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 61,
+  "anchor_y": 244,
+  "source": "abiathar ephod.mp4",
+  "video_frames": [
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138
+  ],
+  "pingpong": true
+}
