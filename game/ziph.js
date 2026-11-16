@@ -125,8 +125,10 @@ function z5Build(R) {
     // (Glen 11-15: "the ziphites hunched whispering to Saul's men for now, since it is the wording that matters") a
     //  Ziphite and one of Saul's men, there only while the words of 23:19-22 are up
     z5.whisper = false;
-    z5Person(rm, "ziphite_point", X(11), 1, () => z5.whisper, Z5.LOOK.K).once = true;
-    z5Person(rm, "saul_soldier_look", X(13) + 20, -1, () => z5.whisper, Z5.SNEAK.K).once = true;
+    //  (Glen's sheet 11-15: ziphite_whisper, bending to the soldier's ear and holding there; the soldier is the same
+    //  saul_soldier_look as on the hills, sized alike)
+    z5Person(rm, "ziphite_whisper", X(11), 1, () => z5.whisper, Z5.SNEAK.K).once = true;
+    z5Person(rm, "saul_soldier_look", X(11) + 72 * Z5.SNEAK.K, -1, () => z5.whisper, Z5.SNEAK.K).hold = 0;   // (standing still, listening)
     const look = (k, fire, facing) => z5.lookouts.push({ room: rm, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
     z5Hide(rm, "w4_z_hide_rock", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
     rLedge(rm, c + 40, 470, 4); rLedge(rm, c + 46, 370, 5); rRelic("z5_stone_hach", "stone", c + 48, onTop(370));
@@ -463,7 +465,7 @@ function z5DrawPeople(camX) {
     }
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     const S = SPR[p.spr]; if (!S) continue;
-    const i = p.once ? Math.min(S.frames - 1, Math.floor(p.t * 1000 / S.ms)) : frameOf(p.spr, p.t);
+    const i = p.hold != null ? p.hold : p.once ? Math.min(S.frames - 1, Math.floor(p.t * 1000 / S.ms)) : frameOf(p.spr, p.t);
     drawSprite(p.spr, i, x, p.y, p.dir, p.k, p.leaving ? Math.max(0, 1 - (p.fade || 0)) : 1, p.filter || "");
   }
 }

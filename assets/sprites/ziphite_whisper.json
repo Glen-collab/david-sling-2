@@ -1,0 +1,11 @@
+{
+  "frames": 6,
+  "frame_w": 100,
+  "frame_h": 245,
+  "ms_per_frame": 170,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 50,
+  "anchor_y": 244,
+  "source": "ziphite_whisper_sheet.png"
+}
