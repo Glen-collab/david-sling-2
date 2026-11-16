@@ -489,9 +489,9 @@ function z5DrawFront(camX) {
   if (r.id === "hachilah") for (const l of z5.lookouts) {
     const x = l.x - camX; if (x < -400 || x > W + 400) continue;
     // (Glen's Ziphites, 11-15) watching the hills (ziphite_watch: looking, shading his eyes, arms crossed); pointing
-    //  when he knows David (ziphite_spot, once, through SPOT_T); then off to his fire (ziphite_run)
+    //  when he knows David (ziphite_spot, once, through SPOT_T); then off to his fire (ziphite_dash: the same man, 11-16)
     {
-      const run = l.state === "run" || l.state === "down", n = run ? "ziphite_run" : l.state === "spot" ? "ziphite_spot" : "ziphite_watch";
+      const run = l.state === "run" || l.state === "down", n = run ? "ziphite_dash" : l.state === "spot" ? "ziphite_spot" : "ziphite_watch";
       if (SPR[n]) {
         const i = l.state === "spot" ? Math.min(SPR[n].frames - 1, Math.floor(l.t * 1000 / SPR[n].ms)) : frameOf(n, run ? l.t : now + l.x0 * 0.003);
         drawSprite(n, i, x, FOOT, l.facing, Z5.LOOK.K, l.alpha);

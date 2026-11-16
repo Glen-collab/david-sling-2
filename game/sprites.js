@@ -7944,6 +7944,18 @@ window.SPRITE_DATA = {
   "ay": 146,
   "align": "feet"
  },
+ "ziphite_dash": {
+  "src": "../assets/sprites/ziphite_dash.png",
+  "frames": 10,
+  "w": 223,
+  "h": 257,
+  "ms": 58,
+  "loop": true,
+  "pingpong": false,
+  "ax": 139,
+  "ay": 251,
+  "align": "feet"
+ },
  "ziphite_point": {
   "src": "../assets/sprites/ziphite_point.png",
   "frames": 12,

@@ -7,6 +7,6 @@ testRun([
   { n: 1, fn() { ["z5_ziph_told", "z5_ziphites", "z5_warned", "z5_erem", "z5_jonathan", "z5_jonathan_gone"].forEach(k => regionAdd("taken", k)); at("hachilah", 22); } }, { keys: [], n: 30 },
   { n: 1, fn() { L().facing = -1; L().t = 0; log("x " + Math.round(L().x - camX)); } }, { keys: [], n: 5, snap: true },
   { n: 1, fn() { L().state = "spot"; L().t = 0; } }, { keys: [], n: 12, snap: true },
-  { keys: [], n: 30, snap: true },
+  { keys: [], n: 14, snap: true },
   { n: 1, fn() { log("lookout " + L().state); } },
 ]);
