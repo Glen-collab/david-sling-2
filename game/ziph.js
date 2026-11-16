@@ -47,6 +47,8 @@ const ZIPH = {
     ["Saul on one side of the mountain, and we on the other. There was nowhere left to run.", "1 Samuel 23:26"],
     ["A messenger came, and Saul turned back. I didn't win that day. I was rescued.", "1 Samuel 23:27–28"],
   ],
+  // (Glen's brief, 11-15; in, 11-16) Erem: a line in the margin once David has found him, not an entry
+  aside: { when: "z5_erem", text: "We found a man in the woods who doesn't know his own name. He walks with us now." },
   end: ["Behold, God is my helper. The Lord is the one who sustains my soul.", "Psalm 54:4"],
   build: R => z5Build(R), enter: r => z5Enter(r), update: (dt, r) => z5Update(dt, r), holdDavid: (d, dt) => z5Hold(d, dt),
   drawDavid: (d, x, y) => z5DrawDavid(d, x, y), draw: camX => z5Draw(camX), drawFront: camX => z5DrawFront(camX),

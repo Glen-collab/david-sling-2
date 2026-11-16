@@ -163,3 +163,11 @@ Tests: tools/tests/z5tour.js, z5erem.js.
   lying and sitting clips at his standing size. Sprites: erem_lie, erem_wake, erem_drink, erem_talk, erem_rise,
   erem_sit, erem_idle. David kneels on his right (he takes the water from that side). **Glen's Ziphite**
   (ziphites/ziphite_point_run.mp4): ziphite_point (hunched, watching; frame 0 is the point) and ziphite_run.
+
+## 11-16 (Glen)
+- Erem's line is in the Journal's margin (REGION.aside, region.js jsceneLayout), once z5_erem is taken.
+- The mountain's clefts: w4_arch_sand with a sandstone rock heap either side, from the art we have.
+- Hachilah's lookouts each stay one man: the watcher (ziphite_watch, ziphite_watch_run) and the pointer (ziphite_spot,
+  ziphite_dash).
+- Courage's shield turning arrows back: Glen has the shield (all skills). It's built in the later worlds that have
+  archers (nothing in Part Two shoots yet), and Ziph's courage is what turns them back.

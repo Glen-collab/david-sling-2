@@ -2194,6 +2194,7 @@ function jsceneOpen(final) {
   region.jscene = { t: 0, prev: final ? Math.min(prev, n) : prev, n, final, wasFinal: final && regionHas("taken", "g_jfinal"), snap, out: 0, jW: Object.assign({}, region.save.jW || {}) };
   region.save.jW = Object.fromEntries(JFOUND.map(([k]) => [k, jFound(k)])); regionWrite();   // (what's written now: next time only what's new is)
   if (final) regionAdd("taken", "g_jfinal");
+  const A = REGION.aside; if (A && regionHas("taken", A.when)) { region.jscene.aside = A.text; region.jscene.asideNew = !region.save.jAside; region.save.jAside = true; regionWrite(); }
   hushStage();
   if (final && SONG_ON) songToggle(true);
   else if (typeof journalMusic !== "undefined") { journalMusic.currentTime = 0; journalMusic.volume = typeof JTUNE !== "undefined" ? JTUNE.MUSIC_VOLUME : 0.5; journalMusic.play().catch(() => {}); }
@@ -2223,6 +2224,8 @@ function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, c
       y += 19 * k; items.push({ text: "— " + ref, x: 30, y, px: 17 * k, color: JSCENE.INK_REF, isNew });
       y += 8 * k;
     }
+    // (Glen 11-16) a line in the margin, not an entry (REGION.aside: Ziph's stranger): smaller, in the paler ink
+    if (J.aside) { y += 6 * k; for (const l of wrap(J.aside, 19 * k, LW - 44)) { y += 21 * k; items.push({ text: l, x: 28, y, px: 19 * k, color: JSCENE.INK_REF, isNew: J.asideNew }); } y += 6 * k; }
     // what he's found: at the bottom of the page, a line for each kind found so far (new ones, or new counts, written now)
     const list = [];
     for (const [kind, name] of JFOUND) {
