@@ -18,6 +18,7 @@ const Z5 = {
   LOOK: { SIGHT: 9, SIGHT_LOW: 2.2, SPOT_T: 0.9, RUN: 230, K: 0.95, FIRE_K: 0.55, HIT: 60, FADE: 1.0 },
   // the mountain: END s till the messenger; the two fronts close from the room's ends to GAP tiles either side of the
   //  middle; a scout comes through a cleft every SCOUT s and walks SCOUT_FOR s; a front pushes him back PUSH px (a heart)
+  CLEFT_K: 1.3,   // the clefts on the mountain (w4_arch_sand), how big
   SIEGE: { END: 55, GAP: 9, SCOUT: 6.5, SCOUT_FOR: 7, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 0.95 },
 };
 
@@ -76,7 +77,7 @@ function z5Build(R) {
   for (const pl of ["hills", "horesh", "hachilah", "maon", "mountain"]) for (const f of ["far", "mid.png", "near.png"]) roomImg("ziph/" + pl + "/" + f);
   for (const k of ["people", "guards", "hides", "lookouts", "clefts", "scouts"]) z5[k].length = 0;
   z5.siege = null; z5.pose = null; z5.caughtT = 0; z5.back = {};
-  [...Object.keys(Z5_KIT), "w4_rubble_sand"].forEach(kitImg);
+  [...Object.keys(Z5_KIT), "w4_rubble_sand", "w4_arch_sand", "w4_rocks_sand"].forEach(kitImg);
   const G = GR * T;
 
   // -- The Hills of Ziph (23:14): Saul seeks him every day. His men walk the hills: rock to rock, crouch when one looks
@@ -161,7 +162,12 @@ function z5Build(R) {
     ground(c, c + 159);
     campfire(c + 4, GR - 1); z5.back.mountain = X(5);
     z5.siegeAt = X(14); z5.siegeL = X(8); z5.siegeR = X(150); z5.siegeMid = X(80);
-    for (const k of [34, 58, 102, 126]) z5.clefts.push({ room: rm, x: X(k) });
+    // (Glen 11-16: "try the art we have") a cleft: Adullam's dark sandstone opening, a rock heap either side; the
+    //  scouts step out of the dark
+    const cleft = x => { const a = KIT.w4_arch_sand, r = KIT.w4_rocks_sand, s = Z5.CLEFT_K;
+      region.props.push({ room: rm, n: "w4_arch_sand", x: x - a.w * s / 2, y: FOOT - a.h * s + 12, s });
+      for (const side of [-1, 1]) region.props.push({ room: rm, n: "w4_rocks_sand", x: x + side * (a.w * s / 2 + 10) - r.w * 0.8 / 2, y: FOOT - r.h * 0.8 + 8, s: 0.8 }); };
+    for (const k of [34, 58, 102, 126]) { z5.clefts.push({ room: rm, x: X(k) }); cleft(X(k)); }
     for (const k of [26, 44, 66, 80, 94, 114, 134]) z5Hide(rm, k % 3 === 1 ? "w4_rubble_sand" : "w4_z_hide_rock", X(k));
     rLedge(rm, c + 50, 470, 4); rLedge(rm, c + 74, 430, 5); rLedge(rm, c + 108, 470, 4);
     z5.rockX = X(80);   // Sela Hammahlekoth: the rock of escape, after
