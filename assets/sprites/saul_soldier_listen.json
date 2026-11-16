@@ -1,0 +1,11 @@
+{
+  "frames": 6,
+  "frame_w": 103,
+  "frame_h": 291,
+  "ms_per_frame": 200,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 51,
+  "anchor_y": 290,
+  "source": "soldier_listen_sheet.png"
+}

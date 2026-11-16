@@ -126,9 +126,9 @@ function z5Build(R) {
     //  Ziphite and one of Saul's men, there only while the words of 23:19-22 are up
     z5.whisper = false;
     //  (Glen's sheet 11-15: ziphite_whisper, bending to the soldier's ear and holding there; the soldier is the same
-    //  saul_soldier_look as on the hills, sized alike)
+    //  listener, saul_soldier_listen)
     z5Person(rm, "ziphite_whisper", X(11), 1, () => z5.whisper, Z5.SNEAK.K).once = true;
-    z5Person(rm, "saul_soldier_look", X(11) + 72 * Z5.SNEAK.K, -1, () => z5.whisper, Z5.SNEAK.K).hold = 0;   // (standing still, listening)
+    z5Person(rm, "saul_soldier_listen", X(11) + 62 * Z5.SNEAK.K, 1, () => z5.whisper, Z5.SNEAK.K).once = true;   // (Glen's, 11-15: bows his head to listen; drawn facing left)
     const look = (k, fire, facing) => z5.lookouts.push({ room: rm, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
     z5Hide(rm, "w4_z_hide_rock", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
     rLedge(rm, c + 40, 470, 4); rLedge(rm, c + 46, 370, 5); rRelic("z5_stone_hach", "stone", c + 48, onTop(370));

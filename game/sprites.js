@@ -6588,6 +6588,18 @@ window.SPRITE_DATA = {
   "ay": 256,
   "align": "feet"
  },
+ "saul_soldier_listen": {
+  "src": "../assets/sprites/saul_soldier_listen.png",
+  "frames": 6,
+  "w": 103,
+  "h": 291,
+  "ms": 200,
+  "loop": false,
+  "pingpong": false,
+  "ax": 51,
+  "ay": 290,
+  "align": "feet"
+ },
  "saul_soldier_look": {
   "src": "../assets/sprites/saul_soldier_look.png",
   "frames": 10,
