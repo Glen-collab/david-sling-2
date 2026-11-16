@@ -28,7 +28,6 @@ Bible references are where each thing comes from in the story. Quotes get checke
 | World | Item | Bible | What it does | Why you go back |
 |---|---|---|---|---|
 | 4b Keilah | **The ephod: Ask the LORD** (Abiathar brings it) | 1 Sam 23:6, 9 | Kneel at a prayer stone (Up): it shows the way, lights up a hidden path or ledge for a while | Prayer stones placed now, quietly, in Gibeah, Ramah, Nob, Adullam: each shows a hidden way to a Truth |
-| 4b Keilah | **Asahel's slide** (run + Down) | 2 Sam 2:18, "light of foot" | Slide under low gaps at full speed: the escape needs it | Low gaps already in the cisterns, Beneath Nob, Adullam's Narrows |
 | 5 Ziph | **Jonathan's last gift: courage** | 1 Sam 23:16-17 ("strengthened his hand in God") | More health and a stronger shield: the shield can turn arrows back at archers | Archer nests on the walls of Gibeah and Gath, too strong to pass without it |
 | 5 En-Gedi | **The wall climb** (with the wild goats) | 1 Sam 24:2 | Climb sheer rock | Gibeah's watchtower (sealed already); the top of Adullam's Bat Roost |
 | 6 Carmel | **Abigail's donkey** | 1 Sam 25:20 | Ride: fast, and jumps wide gaps | Long gaps on the Nob road and the Gath road; a race for a gold time |
@@ -36,6 +35,9 @@ Bible references are where each thing comes from in the story. Quotes get checke
 | 7 | **Saul's water jar** | 1 Sam 26:12 | Fill it at a spring, pour it on fire | Burning thornbushes blocking ways in Gibeah's fields, Gath, Ziklag |
 | 7 Ziklag | **Benaiah joins** (the mighty man) | 2 Sam 23:20 | Push and lift big blocks (Player 2, or a call) | Blocked doorways and fallen columns from World 1 on |
 | 8 Jerusalem | everything, for the water shaft climb | 2 Sam 5:8 | | |
+
+(Glen, 11-16: no slide for David. His roll (run + Down + A) and crawl already take him under every low gap, and
+Player 2 is optional, so the slide stays Asahel's own, as Player 2.)
 
 The bow has nothing sealed by it yet. Easy ones: a rope or a bucket hanging out of reach (shoot it down), a far-off
 target that opens a gate, a hornet nest blocking a ledge. Those can go into Gibeah, Ramah and Adullam right away.
