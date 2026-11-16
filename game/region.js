@@ -338,7 +338,7 @@ const rPhil = (room, c, y = GR * T, range = 6) => beast("phil", room, c, { y, hy
 const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9, BACK_SPEED: 230, REST: 0.5, FLEE_SPEED: 320, FADE: 2.5, DROP_MS: 150,
   // (Glen 11-06) walls, rocks and the tower stop him: up to HOP tiles high he jumps up onto it (and drops off the far side);
   // taller (the watchtower) he holds there, pacing behind it with his shield up, until there's a way to David again
-  HOP: 3, GRAV: 2200, HOLD_PACE: 1.2 };
+  HOP: 4, GRAV: 2200, HOLD_PACE: 1.2 };   // (Glen 11-16: 3 got him only to the block under a terrace's stones; its stones are 131 px up)
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
@@ -1463,7 +1463,11 @@ function philSurf(b, x) {
   const c = Math.floor(x / T), rr = Math.floor(b.hy / T);
   if (!philFloor(b, x)) return null;
   let k = 0; while (k < 12 && isSolid(c, rr - 1 - k)) k++;
-  return k ? (rr - k) * T : b.hy;   // (Glen 11-06: his own floor at its real height, a walkway's planks, not the tile row's top: he stood on the railing)
+  if (!k) return b.hy;
+  // (Glen 11-16: "jump all the way up on the wall") a terrace's or low wall's block stops a little under its stones: he
+  //  stands on the stones, as David does (region.tops), not on the block's top
+  const y = (rr - k) * T, t = (region.tops || []).find(t => x >= t.x0 && x < t.x1 && Math.abs(t.low - y) < 2);
+  return t ? t.top : y;   // (Glen 11-06: his own floor at its real height, a walkway's planks, not the tile row's top: he stood on the railing)
 }
 function philHit(b, s) {
   if (!(b.state === "wait" || b.state === "run" || b.state === "back" || b.state === "hold")) return false;

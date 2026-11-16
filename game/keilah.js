@@ -108,7 +108,8 @@ function k4Build(R) {
     rBoulder(rm, c + 70);
     rWild("caracal", rm, c + 78, { range: 6 * T });
     { const c1 = rTerrace(rm, c + 82, 2); oliveRow(c + 84, onTop(FOOT - 136) - 0.4, c1 - c - 85); }
-    rLedge(rm, c + 92, 470, 4); rLedge(rm, c + 97, 360, 4); rRelic("k4_pom_hereth", "pomegranate", c + 99, onTop(360));
+    // (Glen 11-16: a ledge was on the wall's top stones) the terrace (to col 101) is the step: one ledge above it
+    rLedge(rm, c + 95, 370, 4); rRelic("k4_pom_hereth", "pomegranate", c + 97, onTop(370));
     rWild("hornet", rm, c + 100, { y: 330, hy: 330 });
     rHole(rm, c + 104, 3);
     rOliveTree(rm, c + 110);
@@ -121,16 +122,17 @@ function k4Build(R) {
     ground(c, c + 149);
     oliveRow(c + 5, 16, 4);
     { const c1 = rTerrace(rm, c + 12, 3); rPhil(rm, Math.round((c + 12 + c1) / 2), FOOT - 136, 3); }
-    rLowWall(rm, c + 30); rPhil(rm, c + 40, G, 5);
+    rLowWall(rm, c + 36); rPhil(rm, c + 43, G, 5);   // (Glen 11-16: the low wall was half inside the terrace, which runs to col 35)
     rHole(rm, c + 46, 3);
     rLedge(rm, c + 50, 470, 5); rLedge(rm, c + 57, 350, 4); rRelic("k4_stone_road", "stone", c + 59, onTop(350));
     rBoulder(rm, c + 64); rPhil(rm, c + 74, G, 6);
     campfire(c + 82, GR - 1);
     { const c1 = rTerrace(rm, c + 88, 4); rPhil(rm, Math.round((c + 88 + c1) / 2), FOOT - 136, 4); oliveRow(c + 90, onTop(FOOT - 136) - 0.4, 6); }
-    rHole(rm, c + 106, 4); rLedge(rm, c + 106, 480, 4);
-    rOliveTree(rm, c + 114); rPhil(rm, c + 128, G, 5);
-    rWild("viper", rm, c + 136);
-    rBreak("jar", rm, c + 142, 16); oliveRow(c + 140, 16, 5);
+    // (Glen 11-16: "the wall is over a ledge and the pit") the terrace runs to col 116: the pit and its ledge after it
+    rHole(rm, c + 119, 4); rLedge(rm, c + 119, 480, 4);
+    rOliveTree(rm, c + 125); rPhil(rm, c + 133, G, 4);
+    rWild("viper", rm, c + 141);
+    rBreak("jar", rm, c + 146, 16); oliveRow(c + 143, 16, 4);
   }
 
   // -- The Threshing Floors (23:5): outside the walls, floors on every level of the hillside. The raiders come for the
