@@ -488,11 +488,14 @@ function z5DrawFront(camX) {
   if (r.id === "hills") for (const g of z5.guards) if (g.room === "hills") z5DrawMan(g, camX);
   if (r.id === "hachilah") for (const l of z5.lookouts) {
     const x = l.x - camX; if (x < -400 || x > W + 400) continue;
-    // (Glen's Ziphite, 11-15) hunched, watching; pointing when he spots David; then off to his fire
-    if (SPR.ziphite_point && SPR.ziphite_run) {
-      const run = l.state === "run" || l.state === "down", n = run ? "ziphite_run" : "ziphite_point";
-      const i = run ? frameOf(n, l.t) : l.state === "spot" ? 0 : SPR.ziphite_point.frames - 1;
-      drawSprite(n, i, x, FOOT, l.facing, Z5.LOOK.K, l.alpha);
+    // (Glen's Ziphites, 11-15) watching the hills (ziphite_watch: looking, shading his eyes, arms crossed); pointing
+    //  when he knows David (ziphite_spot, once, through SPOT_T); then off to his fire (ziphite_run)
+    {
+      const run = l.state === "run" || l.state === "down", n = run ? "ziphite_run" : l.state === "spot" ? "ziphite_spot" : "ziphite_watch";
+      if (SPR[n]) {
+        const i = l.state === "spot" ? Math.min(SPR[n].frames - 1, Math.floor(l.t * 1000 / SPR[n].ms)) : frameOf(n, run ? l.t : now + l.x0 * 0.003);
+        drawSprite(n, i, x, FOOT, l.facing, Z5.LOOK.K, l.alpha);
+      }
     }
     if (l.state === "watch") {   // where he's looking
       const reach = Z5.LOOK.SIGHT * T, col = l.seen > 0 ? "255,70,40" : "255,214,90", gr = ctx.createLinearGradient(x, 0, x + l.facing * reach, 0);

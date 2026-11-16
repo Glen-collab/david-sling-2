@@ -1,0 +1,12 @@
+{
+  "frames": 7,
+  "frame_w": 83,
+  "frame_h": 244,
+  "ms_per_frame": 750,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 41,
+  "anchor_y": 243,
+  "source": "ziphite_watch_sheet.png",
+  "pingpong": true
+}

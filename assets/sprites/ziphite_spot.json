@@ -1,0 +1,11 @@
+{
+  "frames": 6,
+  "frame_w": 191,
+  "frame_h": 244,
+  "ms_per_frame": 140,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 95,
+  "anchor_y": 243,
+  "source": "ziphite_spot_sheet.png"
+}

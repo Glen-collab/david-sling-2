@@ -7968,6 +7968,30 @@ window.SPRITE_DATA = {
   "ay": 223,
   "align": "feet"
  },
+ "ziphite_spot": {
+  "src": "../assets/sprites/ziphite_spot.png",
+  "frames": 6,
+  "w": 191,
+  "h": 244,
+  "ms": 140,
+  "loop": false,
+  "pingpong": false,
+  "ax": 95,
+  "ay": 243,
+  "align": "feet"
+ },
+ "ziphite_watch": {
+  "src": "../assets/sprites/ziphite_watch.png",
+  "frames": 7,
+  "w": 83,
+  "h": 244,
+  "ms": 750,
+  "loop": true,
+  "pingpong": true,
+  "ax": 41,
+  "ay": 243,
+  "align": "feet"
+ },
  "ziphite_whisper": {
   "src": "../assets/sprites/ziphite_whisper.png",
   "frames": 6,
