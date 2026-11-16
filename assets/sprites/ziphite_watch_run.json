@@ -1,0 +1,29 @@
+{
+  "frames": 16,
+  "frame_w": 179,
+  "frame_h": 246,
+  "ms_per_frame": 86,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 117,
+  "anchor_y": 243,
+  "source": "ziphite_watch_run.mp4",
+  "video_frames": [
+    107,
+    109,
+    111,
+    113,
+    115,
+    117,
+    119,
+    121,
+    123,
+    126,
+    128,
+    130,
+    132,
+    134,
+    136,
+    138
+  ]
+}

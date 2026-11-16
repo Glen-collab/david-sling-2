@@ -130,11 +130,11 @@ function z5Build(R) {
     //  listener, saul_soldier_listen)
     z5Person(rm, "ziphite_whisper", X(11), 1, () => z5.whisper, Z5.SNEAK.K).once = true;
     z5Person(rm, "saul_soldier_listen", X(11) + 62 * Z5.SNEAK.K, 1, () => z5.whisper, Z5.SNEAK.K).once = true;   // (Glen's, 11-15: bows his head to listen; drawn facing left)
-    const look = (k, fire, facing) => z5.lookouts.push({ room: rm, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
+    const look = (k, fire, facing, who = "watcher") => z5.lookouts.push({ room: rm, who, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
     z5Hide(rm, "w4_z_hide_rock", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
     rLedge(rm, c + 40, 470, 4); rLedge(rm, c + 46, 370, 5); rRelic("z5_stone_hach", "stone", c + 48, onTop(370));
     rHole(rm, c + 52, 3);
-    z5Hide(rm, "w4_z_hide_rock", X(62)); look(76, 66, 1); look(80, 90, -1); z5Hide(rm, "w4_z_hide_rock", X(70));
+    z5Hide(rm, "w4_z_hide_rock", X(62)); look(76, 66, 1, "pointer"); look(80, 90, -1); z5Hide(rm, "w4_z_hide_rock", X(70));
     campfire(c + 96, GR - 1); z5.back.hachilah2 = X(97);
     z5Hide(rm, "w4_rubble_sand", X(108)); look(120, 128, -1); z5Hide(rm, "w4_z_hide_rock", X(114));
     rLedge(rm, c + 124, 460, 5); look(134, 142, -1);
@@ -494,12 +494,16 @@ function z5DrawFront(camX) {
   if (r.id === "hills") for (const g of z5.guards) if (g.room === "hills") z5DrawMan(g, camX);
   if (r.id === "hachilah") for (const l of z5.lookouts) {
     const x = l.x - camX; if (x < -400 || x > W + 400) continue;
-    // (Glen's Ziphites, 11-15) watching the hills (ziphite_watch: looking, shading his eyes, arms crossed); pointing
-    //  when he knows David (ziphite_spot, once, through SPOT_T); then off to his fire (ziphite_dash: the same man, 11-16)
+    // (Glen's Ziphites, 11-15/16) each lookout one man all through. The watcher: looking about (ziphite_watch: shading his
+    //  eyes, arms crossed), his hand to his brow when he sees David, then his run (ziphite_watch_run). The pointer:
+    //  standing, pointing at David (ziphite_spot, once, through SPOT_T), then his run (ziphite_dash)
     {
-      const run = l.state === "run" || l.state === "down", n = run ? "ziphite_dash" : l.state === "spot" ? "ziphite_spot" : "ziphite_watch";
+      const run = l.state === "run" || l.state === "down", pt = l.who === "pointer";
+      const n = run ? (pt ? "ziphite_dash" : "ziphite_watch_run") : pt ? "ziphite_spot" : "ziphite_watch";
       if (SPR[n]) {
-        const i = l.state === "spot" ? Math.min(SPR[n].frames - 1, Math.floor(l.t * 1000 / SPR[n].ms)) : frameOf(n, run ? l.t : now + l.x0 * 0.003);
+        const i = run ? frameOf(n, l.t)
+          : pt ? (l.state === "spot" ? Math.min(SPR[n].frames - 1, Math.floor(l.t * 1000 / SPR[n].ms)) : 0)
+          : l.state === "spot" ? 4 : frameOf(n, now + l.x0 * 0.003);
         drawSprite(n, i, x, FOOT, l.facing, Z5.LOOK.K, l.alpha);
       }
     }

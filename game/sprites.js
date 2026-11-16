@@ -8004,6 +8004,18 @@ window.SPRITE_DATA = {
   "ay": 243,
   "align": "feet"
  },
+ "ziphite_watch_run": {
+  "src": "../assets/sprites/ziphite_watch_run.png",
+  "frames": 16,
+  "w": 179,
+  "h": 246,
+  "ms": 86,
+  "loop": true,
+  "pingpong": false,
+  "ax": 117,
+  "ay": 243,
+  "align": "feet"
+ },
  "ziphite_whisper": {
   "src": "../assets/sprites/ziphite_whisper.png",
   "frames": 6,
