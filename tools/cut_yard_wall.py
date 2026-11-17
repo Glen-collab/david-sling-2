@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 SRC, OUT, H = "../david-sling-2-art/w3/source/yard_wall_", "assets/rooms/w3/kit/w3_ywall_", 143
-LIFT = 1.45
+LIFT = 1.0   # (11-16: his second set, evenly lit; 1.45 for the first, dusk-lit set, kept as *_dusk.png)
 for part in ("left", "mid", "right"):
     x = np.asarray(Image.open(SRC + part + ".png").convert("RGB")).astype(int)
     r, g, b = x[..., 0], x[..., 1], x[..., 2]
@@ -19,7 +19,7 @@ for part in ("left", "mid", "right"):
     bx0, bx1 = row.min(), row.max() + 1
     x0 = xs.min() if part == "left" else bx0 + 3
     x1 = xs.max() + 1 if part == "right" else bx1 - 3
-    rgb = x.copy(); spill = green | ((g > r + 10) & (g > b + 10)); rgb[..., 1] = np.where(~green & (g > np.maximum(r, b)), np.maximum(r, b), g)
+    rgb = x.copy(); rim = a & ~ndimage.binary_erosion(a, iterations=4); rgb[..., 1] = np.where(rim & (g > np.maximum(r, b)), np.maximum(r, b), g)   # (green spill only at the edge: his moss stays)
     # (the pieces are lit from one side: each column's light evened out so they repeat without seams, then lifted to
     #  read in the game's dusk)
     lum = rgb[..., :3].mean(-1); cm = np.array([lum[y0:y1, i][a[y0:y1, i]].mean() if a[y0:y1, i].sum() > 50 else np.nan for i in range(x.shape[1])])
