@@ -1,0 +1,25 @@
+{
+ "frames": 12,
+ "frame_w": 300,
+ "frame_h": 268,
+ "ms_per_frame": 153,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 153,
+ "anchor_y": 265,
+ "source": "raider_grab_sack.mp4 (Glen 11-17)",
+ "video_frames": [
+  100,
+  104,
+  108,
+  112,
+  116,
+  120,
+  123,
+  127,
+  131,
+  135,
+  139,
+  143
+ ]
+}

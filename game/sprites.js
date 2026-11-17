@@ -6216,6 +6216,18 @@ window.SPRITE_DATA = {
   "ay": 237,
   "align": "feet"
  },
+ "raider_pickup": {
+  "src": "../assets/sprites/raider_pickup.png",
+  "frames": 12,
+  "w": 300,
+  "h": 268,
+  "ms": 153,
+  "loop": false,
+  "pingpong": false,
+  "ax": 153,
+  "ay": 265,
+  "align": "feet"
+ },
  "raider_run": {
   "src": "../assets/sprites/raider_run.png",
   "frames": 18,
@@ -6226,6 +6238,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 176,
   "ay": 246,
+  "align": "feet"
+ },
+ "raider_sack_run": {
+  "src": "../assets/sprites/raider_sack_run.png",
+  "frames": 14,
+  "w": 306,
+  "h": 270,
+  "ms": 104,
+  "loop": true,
+  "pingpong": false,
+  "ax": 135,
+  "ay": 268,
   "align": "feet"
  },
  "raider_walk": {

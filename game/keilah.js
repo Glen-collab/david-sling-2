@@ -482,7 +482,8 @@ function k4Draw(camX) {
     // (Glen's floor, 11-15: its stone curb sunk a little, the sacks on its beaten earth, 25 px up)
     const fl = kitImg("w4_threshing_floor"), K = K4_KIT.w4_threshing_floor;
     if (fl) ctx.drawImage(fl, x - K.w / 2, f.y + 8 - K.h, K.w, K.h);
-    for (let i = 0; i < f.sacks; i++) drawItem(i === 1 ? "grain_sacks" : "grain_sack", x + (i - 1) * 78, f.y - 22, i === 1 ? 0.15 : 0.42);
+    const taking = k4.raiders.some(q => q.f === f && q.state === "grab" && SPR.raider_pickup) ? 1 : 0;   // (his clip has the sack he picks up: one less on the floor)
+    for (let i = 0; i < f.sacks - taking; i++) drawItem(i === 1 ? "grain_sacks" : "grain_sack", x + (i - 1) * 78, f.y - 22, i === 1 ? 0.15 : 0.42);
     if (f.sacks === 0) drawItem("grain_sacks_broken", x, f.y - 22, 0.15);
   }
   // the beams and carts' men (Out of Keilah)
@@ -514,11 +515,14 @@ function k4DrawFront(camX) {
   if (r.id === "floors") for (const q of k4.raiders) {
     const x = q.x - camX; if (x < -300 || x > W + 300) continue;
     let n = "raider_run", i = frameOf(n, q.t);
-    if (q.state === "grab") { n = "raider_grab"; i = Math.min(2, Math.floor(q.t / K4.RAID.GRAB * 3)); }
+    // (Glen's clip, 11-17: he stops, picks up the sack, swings it onto his shoulder, and runs off with it on his back)
+    if (q.state === "grab" && SPR.raider_pickup) { n = "raider_pickup"; i = Math.min(SPR.raider_pickup.frames - 1, Math.floor(q.t / K4.RAID.GRAB * SPR.raider_pickup.frames)); }
+    else if (q.state === "run" && q.carry && SPR.raider_sack_run) { n = "raider_sack_run"; i = frameOf(n, q.t); }
+    else if (q.state === "grab") { n = "raider_grab"; i = Math.min(2, Math.floor(q.t / K4.RAID.GRAB * 3)); }
     else if (q.state === "hit") { n = "raider_hit"; i = 0; }
     else if (q.state === "flee" || q.state === "run") { n = "raider_flee"; i = frameOf(n, q.t); }
     drawSprite(n, i, x, q.y, q.dir, 1, q.alpha);
-    if (q.carry) drawItem("grain_sack", x + q.dir * 10, q.y - 120, 0.35, q.alpha);
+    if (q.carry && n !== "raider_sack_run") drawItem("grain_sack", x + q.dir * 10, q.y - 120, 0.35, q.alpha);
   }
   if (r.id === "escape") {
     for (const g of k4.grabbers) {
