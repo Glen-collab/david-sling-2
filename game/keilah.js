@@ -16,7 +16,8 @@ const K4 = {
   NPC_K: 0.9,
   // (Glen 11-17: "way disproportionate") each one's size beside David (240 px), on top of NPC_K: the villager sheets are
   //  drawn 1.44x David (the girl and woman already smaller by TUNE.SPRITE_SIZE), Abiathar's a little under him. ABIATHAR_HOLD: the frame of his talk clip he stands on (it walks)
-  SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17 }, ABIATHAR_HOLD: 6,
+  SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17,
+    townsman: 1.2, townswoman: 1.15 },   // (11-17: "these people are small in Keilah": the night street's men and women, 216 and 208 px to David's 240) ABIATHAR_HOLD: 6,
   ASK: { NEAR: 90, KNEEL_MS: 161 },   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
   // (Glen 11-14: "We can build multiple floors to defend like the caves. That was fun.") the raiders: each wave's count,
   //  one every EVERY s; their walk and their run with a sack (px/s); a grab takes GRAB s; each floor's sacks; the wave's
@@ -532,13 +533,13 @@ function k4DrawFront(camX) {
       if (SPR.townsman_grab && SPR.townsman_stumble) {
         const n = g.state === "wait" ? "townsman_stumble" : g.state === "miss" ? "townsman_stumble" : "townsman_grab";
         const i = g.state === "wait" ? SPR.townsman_stumble.frames - 1 : g.state === "miss" ? frameOf(n, g.t) : Math.min(7, frameOf(n, g.t));
-        drawSprite(n, i, x, FOOT, -1, K4.NPC_K); continue;
+        drawSprite(n, i, x, FOOT, -1, K4.NPC_K * K4.SIZE.townsman); continue;
       }
       if (g.state === "miss") continue;
       const n = g.spr + (g.state === "wait" ? "_stand" : "_run"), S = SPR[n] || SPR[g.spr + "_run"]; if (!S) continue;
       drawSprite(SPR[n] ? n : g.spr + "_run", g.state === "wait" ? 0 : frameOf(SPR[n] ? n : g.spr + "_run", g.t), x, FOOT, -1, K4.NPC_K);
     }
-    for (const w of k4.throwers) if (SPR.townswoman_throw) drawSprite("townswoman_throw", frameOf("townswoman_throw", w.t), w.x - camX, FOOT, -1, K4.NPC_K);
+    for (const w of k4.throwers) if (SPR.townswoman_throw) drawSprite("townswoman_throw", frameOf("townswoman_throw", w.t), w.x - camX, FOOT, -1, K4.NPC_K * K4.SIZE.townswoman);
     for (const p of k4.pots) if (!p.broken) drawItem("camp_jar_small", p.x - camX, p.y, 0.4);
   }
 }
