@@ -1,0 +1,25 @@
+{
+ "frames": 12,
+ "frame_w": 589,
+ "frame_h": 386,
+ "ms_per_frame": 60,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 235,
+ "anchor_y": 383,
+ "source": "david_gsword_runsling2.mp4 (Glen 11-17): the throw from a run, the whirl to the fling (frames 9-10 let go)",
+ "video_frames": [
+  104,
+  106,
+  108,
+  110,
+  112,
+  114,
+  116,
+  118,
+  120,
+  122,
+  126,
+  130
+ ]
+}

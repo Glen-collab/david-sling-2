@@ -1,23 +1,19 @@
 {
-  "frames": 10,
-  "frame_w": 400,
-  "frame_h": 325,
-  "ms_per_frame": 92,
-  "loop": true,
-  "align": "feet",
-  "anchor_x": 191,
-  "anchor_y": 323,
-  "source": "david_gsword_runsling_clip.mp4",
-  "video_frames": [
-    57,
-    59,
-    61,
-    64,
-    66,
-    68,
-    70,
-    72,
-    75,
-    77
-  ]
+ "frames": 6,
+ "frame_w": 589,
+ "frame_h": 386,
+ "ms_per_frame": 92,
+ "loop": true,
+ "align": "feet",
+ "anchor_x": 235,
+ "anchor_y": 383,
+ "source": "david_gsword_runsling2.mp4 (Glen 11-17): running, the sling whirling overhead (one stride)",
+ "video_frames": [
+  94,
+  96,
+  98,
+  100,
+  102,
+  104
+ ]
 }

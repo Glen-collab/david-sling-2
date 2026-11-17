@@ -39,7 +39,7 @@ const R3 = {
     CAUGHT_FADE: 1.2,  // seconds of the fade back to the gate
   },
   CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45,
-    WHIRL: [4, 6], FLING: 9, LAST: 13, WHIRL_MS: 80 },   // the sling with the sword on his back (Glen's sheet): frames 4-6 whirl, the sling overhead (11-12: Glen redrew 3-6 with his feet together), 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
+    WHIRL: [4, 7], FLING: 10, LAST: 13, WHIRL_MS: 80 },   // (Glen's new clip, 11-17: 4-7 the whirl, 10 lets go)   // the sling with the sword on his back (Glen's sheet): frames 4-6 whirl, the sling overhead (11-12: Glen redrew 3-6 with his feet together), 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
   // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
   //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
   BREAD: { K: 1.0, TRIGGER: 22, DAVID_DX: 131, DOEG_STEP: 1.1, DOEG_V: 55, TABLE: [222, 178], TABLE_AT: [168, 100] },   // (TABLE: where w3_bread_table was cut from the clip's frame; TABLE_AT: Glen's loaf tables' corner, the same frame: cut in 11-12 to fit it)   // (DOEG_STEP: seconds Doeg walks each line, at DOEG_V px/s)   // size (David's own); columns into the painted court that start it; David in the clip, left of Ahimelech (sheet px)
@@ -1410,15 +1410,16 @@ function r3DrawCarry(d, x, y) {
 }
 // (Glen 11-11) the sling with the sword on his back: charging on the run (his legs keep going, the sling whirling), or
 //  standing (and in the air, and the throw from a run): the whirl, then the fling on the frame the stone leaves
-const R3_RUN_SLING_STONE = [[-6, 231], [132, 195], [-51, 203], [115, 206], [-78, 213], [96, 214], [-84, 196], [108, 208], [-36, 216], [130, 200]];
 function r3DrawCarryThrow(d, x, y, K) {
   const C = R3.CARRY, run = "david_gsword_run_sling", st = "david_gsword_sling_throw";
   let gx, gy;
   if (d.charging && d.onGround && Math.abs(d.vx) > TUNE.RUN_THROW_SPEED && SPR[run]) {
     const i = frameOf(run, d.t * Math.max(0.7, Math.abs(d.vx) / TUNE.RUN_SPEED));
     drawSprite(run, i, x, y, d.facing, K);
-    const p = R3_RUN_SLING_STONE[i] || R3_RUN_SLING_STONE[0], sc = SCALE * K;
-    gx = x + d.facing * p[0] * sc; gy = y - p[1] * sc;
+    gx = x + d.facing * 10 * SCALE * K; gy = y - 250 * SCALE * K;   // (Glen's new clip, 11-17: the sling whirls high over his head)
+  } else if (!d.charging && d.runThrow && SPR.david_gsword_run_throw) {   // (11-17) the throw from a run: his own lunge, the sling to the front
+    drawSprite("david_gsword_run_throw", Math.min(11, Math.floor(d.throwT / TUNE.RUN_THROW_TIME * 12)), x, y, d.facing, K);
+    gx = x + d.facing * 10 * SCALE * K; gy = y - 250 * SCALE * K;
   } else {
     if (!SPR[st]) return false;
     let i;
