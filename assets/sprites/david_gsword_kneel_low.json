@@ -1,0 +1,20 @@
+{
+ "frames": 7,
+ "frame_w": 186,
+ "frame_h": 209,
+ "ms_per_frame": 75,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 101,
+ "anchor_y": 207,
+ "source": "david_gsword_kneel_new.mp4: Goliath's sword on his back, down low to hide (Glen 11-17)",
+ "video_frames": [
+  92,
+  98,
+  103,
+  109,
+  115,
+  120,
+  126
+ ]
+}

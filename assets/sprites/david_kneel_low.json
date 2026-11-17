@@ -1,20 +1,20 @@
 {
  "frames": 7,
- "frame_w": 207,
- "frame_h": 185,
+ "frame_w": 155,
+ "frame_h": 188,
  "ms_per_frame": 75,
  "loop": false,
  "align": "feet",
- "anchor_x": 119,
- "anchor_y": 184,
- "source": "david_kneel_a.mp4: one knee, down low to hide (Glen 11-17)",
+ "anchor_x": 86,
+ "anchor_y": 185,
+ "source": "david_kneel_new.mp4: one knee, down low to hide (Glen 11-17, his winner)",
  "video_frames": [
-  60,
-  69,
-  77,
-  86,
-  95,
-  103,
-  112
+  94,
+  99,
+  104,
+  109,
+  114,
+  119,
+  124
  ]
 }

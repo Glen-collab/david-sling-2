@@ -1,20 +1,20 @@
 {
  "frames": 7,
- "frame_w": 193,
- "frame_h": 234,
+ "frame_w": 139,
+ "frame_h": 243,
  "ms_per_frame": 60,
  "loop": false,
  "align": "feet",
- "anchor_x": 127,
- "anchor_y": 232,
- "source": "david_kneel_b.mp4: standing, down on one knee (Glen 11-17)",
+ "anchor_x": 92,
+ "anchor_y": 241,
+ "source": "david_kneel_new.mp4: standing, down on one knee (Glen 11-17, his winner)",
  "video_frames": [
-  22,
-  27,
-  33,
+  14,
+  20,
+  26,
+  32,
   38,
-  43,
-  49,
-  54
+  44,
+  50
  ]
 }

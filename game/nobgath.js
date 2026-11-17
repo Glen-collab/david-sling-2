@@ -1397,6 +1397,12 @@ function r3DrawCarry(d, x, y) {
       drawSprite("david_gsword_jump", 1 + Math.round(k * (R3.CARRY.JUMP_LAST - 1)), x, mid, d.facing, K); return true; }
     case "flip": if (!has("david_gsword_flip")) return false;
       drawSprite("david_gsword_flip", one("david_gsword_flip", 60), x, mid, d.facing, K); return true;   // (60 ms: his own flip's length)
+    case "crouch": { if (!has("david_gsword_kneel_down") || !has("david_gsword_kneel_low")) return false;   // (Glen 11-17: down on one knee, then low to hide, the sword on his back)
+      const kd = SPR.david_gsword_kneel_down, kdT = kd.frames * kd.ms / 1000;
+      if (d.kneelAfterThrow) drawSprite("david_gsword_kneel_down", kd.frames - 1, x, y, d.facing, K);
+      else if (t < kdT) drawSprite("david_gsword_kneel_down", frameOf("david_gsword_kneel_down", t), x, y, d.facing, K);
+      else drawSprite("david_gsword_kneel_low", frameOf("david_gsword_kneel_low", t - kdT), x, y, d.facing, K);
+      return true; }
     case "land": if (!has("david_gsword_land")) return false;
       drawSprite("david_gsword_land", one("david_gsword_land", R3.CARRY.LAND_MS), x, y, d.facing, K); return true;
   }

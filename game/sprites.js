@@ -2028,6 +2028,30 @@ window.SPRITE_DATA = {
   "ay": 211,
   "align": "center"
  },
+ "david_gsword_kneel_down": {
+  "src": "../assets/sprites/david_gsword_kneel_down.png",
+  "frames": 7,
+  "w": 124,
+  "h": 254,
+  "ms": 60,
+  "loop": false,
+  "pingpong": false,
+  "ax": 82,
+  "ay": 252,
+  "align": "feet"
+ },
+ "david_gsword_kneel_low": {
+  "src": "../assets/sprites/david_gsword_kneel_low.png",
+  "frames": 7,
+  "w": 186,
+  "h": 209,
+  "ms": 75,
+  "loop": false,
+  "pingpong": false,
+  "ax": 101,
+  "ay": 207,
+  "align": "feet"
+ },
  "david_gsword_land": {
   "src": "../assets/sprites/david_gsword_land.png",
   "frames": 8,
@@ -2247,13 +2271,13 @@ window.SPRITE_DATA = {
  "david_kneel_down": {
   "src": "../assets/sprites/david_kneel_down.png",
   "frames": 7,
-  "w": 193,
-  "h": 234,
+  "w": 139,
+  "h": 243,
   "ms": 60,
   "loop": false,
   "pingpong": false,
-  "ax": 127,
-  "ay": 232,
+  "ax": 92,
+  "ay": 241,
   "align": "feet"
  },
  "david_kneel_hold": {
@@ -2283,13 +2307,13 @@ window.SPRITE_DATA = {
  "david_kneel_low": {
   "src": "../assets/sprites/david_kneel_low.png",
   "frames": 7,
-  "w": 207,
-  "h": 185,
+  "w": 155,
+  "h": 188,
   "ms": 75,
   "loop": false,
   "pingpong": false,
-  "ax": 119,
-  "ay": 184,
+  "ax": 86,
+  "ay": 185,
   "align": "feet"
  },
  "david_ladder": {

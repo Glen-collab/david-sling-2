@@ -1,0 +1,20 @@
+{
+ "frames": 7,
+ "frame_w": 124,
+ "frame_h": 254,
+ "ms_per_frame": 60,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 82,
+ "anchor_y": 252,
+ "source": "david_gsword_kneel_new.mp4: Goliath's sword on his back, down on one knee (Glen 11-17)",
+ "video_frames": [
+  32,
+  37,
+  43,
+  48,
+  53,
+  59,
+  64
+ ]
+}
