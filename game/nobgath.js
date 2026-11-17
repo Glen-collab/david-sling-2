@@ -38,7 +38,7 @@ const R3 = {
     NEAR: 14,          // px past a hiding piece's edge that still counts as behind it
     CAUGHT_FADE: 1.2,  // seconds of the fade back to the gate
   },
-  CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45,
+  CARRY: { RUN_MS: 70, JUMP_LAST: 9, LAND_MS: 45, FACE: 6,   /* (Glen 11-17) standing still this many seconds, he turns to face us */
     WHIRL: [4, 7], FLING: 10, LAST: 13, WHIRL_MS: 80 },   // (Glen's new clip, 11-17: 4-7 the whirl, 10 lets go)   // the sling with the sword on his back (Glen's sheet): frames 4-6 whirl, the sling overhead (11-12: Glen redrew 3-6 with his feet together), 9 lets go   // the sword on his back: run frame time, the last jump frame used, landing frame time
   // (Glen 11-11) the holy bread (21:1-7): his Grok clip of the three of them, cut in two (nob_bread_give, nob_bread_eat),
   //  played in Nob's court in place of Ahimelech, David and Doeg, mirrored so Doeg slips off left, back toward Saul (22:9)
@@ -1387,6 +1387,9 @@ function r3DrawCarry(d, x, y) {
   const has = n => !!SPR[n], one = (n, ms) => Math.min(SPR[n].frames - 1, Math.floor(t * 1000 / ms));
   switch (d.state) {
     case "idle": if (!has("david_gsword_idle")) return false;
+      if (t > R3.CARRY.FACE && has("david_gsword_idle_turn")) {
+        const S = SPR.david_gsword_idle_turn;
+        drawSprite("david_gsword_idle_turn", Math.min(S.frames - 1, Math.floor((t - R3.CARRY.FACE) * 1000 / S.ms)), x, y, d.facing, K); return true; }
       drawSprite("david_gsword_idle", frameOf("david_gsword_idle", t), x, y, d.facing, K); return true;
     case "walk": if (!has("david_gsword_walk")) return false;
       drawSprite("david_gsword_walk", frameOf("david_gsword_walk", t * Math.max(0.6, Math.abs(d.vx) / TUNE.WALK_SPEED)), x, y, d.facing, K); return true;

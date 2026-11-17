@@ -1,0 +1,24 @@
+{
+ "frames": 11,
+ "frame_w": 115,
+ "frame_h": 254,
+ "ms_per_frame": 90,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 75,
+ "anchor_y": 251,
+ "source": "david_idle2.mp4 (Glen 11-17: 'he turns to face us after a time'): standing still a while, he turns to us, then holds",
+ "video_frames": [
+  92,
+  97,
+  102,
+  107,
+  113,
+  118,
+  123,
+  128,
+  134,
+  139,
+  144
+ ]
+}

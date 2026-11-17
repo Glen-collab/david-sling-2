@@ -2006,14 +2006,26 @@ window.SPRITE_DATA = {
  },
  "david_gsword_idle": {
   "src": "../assets/sprites/david_gsword_idle.png",
-  "frames": 10,
-  "w": 248,
-  "h": 326,
-  "ms": 117,
+  "frames": 12,
+  "w": 115,
+  "h": 255,
+  "ms": 120,
   "loop": true,
+  "pingpong": true,
+  "ax": 75,
+  "ay": 252,
+  "align": "feet"
+ },
+ "david_gsword_idle_turn": {
+  "src": "../assets/sprites/david_gsword_idle_turn.png",
+  "frames": 11,
+  "w": 115,
+  "h": 254,
+  "ms": 90,
+  "loop": false,
   "pingpong": false,
-  "ax": 132,
-  "ay": 324,
+  "ax": 75,
+  "ay": 251,
   "align": "feet"
  },
  "david_gsword_jump": {
