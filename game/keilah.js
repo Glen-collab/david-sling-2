@@ -92,7 +92,7 @@ function k4Build(R) {
   k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.throwers.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
-  ["w3_cart", "w3_hide_sacks", "w4_hanging_log", "w4_threshing_floor", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
+  ["w4_town_wall", "w3_cart", "w3_hide_sacks", "w4_hanging_log", "w4_threshing_floor", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
   const G = GR * T;
 
   // -- The Forest of Hereth (22:5; 23:1-4): the 400 camped under the trees; a runner with the news; the rock where David
@@ -476,7 +476,14 @@ function k4Draw(camX) {
   // the livestock in the gate, once the floors are safe
   if (k4Has("k4_floors")) for (const h of k4.herd) if (h.room === r.id && SPR[h.spr]) drawSprite(h.spr, frameOf(h.spr, now), h.x - camX, h.y, h.dir, h.spr.startsWith("ox_") ? 1.3 : 0.9);
   // the town gate from outside (shut till the floors are safe), and the inner gate (shut till the ephod's question)
-  if (r.id === "floors") k4DrawGate((r.c0 + r.w - 9) * T + 100 - camX, k4Has("k4_floors") ? 0 : 1);
+  if (r.id === "floors") {
+    const gx = (r.c0 + r.w - 9) * T + 100 - camX;
+    k4DrawGate(gx, k4Has("k4_floors") ? 0 : 1);
+    // (Glen 11-17: "a stone wall on the right of the gate so we don't see the oxen's butt, like it is an actual gated
+    //  wall") Keilah's town wall, his coursed stone stacked (tools: w4_town_wall), from the gate's right post on
+    const im = kitImg("w4_town_wall"), G = K4_GATE, gw = G.day.w * G.H.day / G.day.h;
+    if (im) ctx.drawImage(im, gx + gw / 2 - 26, FOOT + 4 - 480, 460, 480);
+  }
   if (r.id === "town") k4DrawGate(k4.gateX + 100 - camX, k4Has("k4_ephod") ? 0 : 1);
   // the threshing floors: a round floor of beaten stone, its grain heaped on it
   if (r.id === "floors") for (const f of k4.floors) {
