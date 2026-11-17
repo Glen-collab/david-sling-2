@@ -8,5 +8,5 @@ testRun([
   { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !k.startsWith("z5_")); ["z5_jonathan", "z5_jonathan_gone", "z5_ziph_told"].forEach(k => regionAdd("taken", k)); } },
   { n: 1, fn() { at("horesh", 68); } }, { keys: [], n: 40 }, { n: 1, fn() { at("horesh", 68); } }, { keys: [], n: 5 },
   { keys: ["ArrowRight"], n: 60 }, { keys: [], n: 20 }, ...Z(1), { keys: [], n: 60 }, ...Z(1), { keys: [], n: 110 }, ...Z(6),
-  { keys: [], n: 40, snap: true, fn() { log(st()); } }, { keys: [], n: 120, snap: true, fn() { log(st()); } }, { keys: [], n: 300, snap: true, fn() { log(st()); } },
+  { keys: [], n: 20, snap: true, fn() { log(st()); } }, { keys: [], n: 100, snap: true, fn() { log(st()); } }, { keys: [], n: 150, snap: true, fn() { log(st()); } }, { keys: [], n: 200, fn() { log(st()); } },
 ]);

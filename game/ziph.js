@@ -124,7 +124,7 @@ function z5Build(R) {
     z5.erem = z5Person(rm, "erem_lie", X(80), 1, () => !z5Has("z5_erem"));   // (Glen's clips face right; lying, his head to the left)
     z5.erem.k = 1.05;   // (sitting: a little bigger, to be seen among the roots)
     campfire(c + 100, GR - 1);
-    z5Person(rm, "erem_sit", X(97), 1, () => z5Has("z5_erem")); z5.eremSeat = X(97);   // (with the men now, a little apart)
+    z5.eremSeat = X(100);   // (Glen 11-17: after the talk he limps off toward the olive press and fades: that's all we see of him)
     z5Person(rm, "soldier_sit", X(104), -1); z5Person(rm, "soldier_talk", X(107), -1);
     rHyrax(rm, c + 112); rHyraxFamily(rm, c + 44, 2, 1);
   }
@@ -237,9 +237,12 @@ function z5Update(dt, r) {
     if (p.leaving) { p.x -= 70 * dt; p.fade = (p.fade || 0) + dt / 2.5; if (p.fade >= 1) { p.leaving = false; regionAdd("taken", "z5_jonathan_gone"); } }   // (Jonathan, home)
   }
   if (z5.pose) z5.pose.t += dt;
-  { const E = z5.erem;   // (the stranger: fading, limping over to the fire, sitting down)
-    if (E && E.fadeGo) { E.alpha = Math.max(0, Math.min(1, (E.alpha ?? 1) + E.fadeGo * dt * 2.6)); if (E.alpha <= 0 && E.fadeGo < 0 && E.sitNext) { E.spr = "erem_sit"; E.t = 0; E.fadeGo = 1; } if (E.alpha >= 1 && E.fadeGo > 0) { E.fadeGo = 0; if (E.sitNext) { E.sitNext = false; regionAdd("taken", "z5_erem"); } } }
-    if (E && E.walkTo != null) { E.x = Math.min(E.walkTo, E.x + Z5.EREM_LIMP * dt); if (E.x >= E.walkTo) { E.walkTo = null; E.sitNext = true; E.fadeGo = -1; } } }
+  { const E = z5.erem;   // (the stranger limping off toward the olive press, fading as he goes)
+    if (E && E.walkTo != null) {
+      E.x = Math.min(E.walkTo, E.x + Z5.EREM_LIMP * dt);
+      E.alpha = Math.max(0, Math.min(1, (E.walkTo - E.x) / ((E.walkTo - E.walkFrom) * 0.6)));   // (the last 60% of the way)
+      if (E.x >= E.walkTo) { E.walkTo = null; regionAdd("taken", "z5_erem"); }
+    } }
   const free = !region.script.length && region.wait <= 0 && !region.trans;
   // Jonathan (23:16-18): when David comes near him
   if (r.id === "horesh" && free && !z5Has("z5_jonathan") && d.x > z5.jonathan.x - 230) z5JonathanScene();
@@ -360,12 +363,9 @@ function z5EremScene() {
     { say: ["Stranger", "I remember places. I remember faces. I remember things that happened long ago. But I cannot remember who I am."] },
     { say: ["David", "Then perhaps the LORD will reveal it to you in time."] },
     { say: ["Stranger", "Until then, I am at your service."] },
-    // (Glen 11-17: "the kneel down frame of Erem is way too big. Then he starts walking and disappears to the well. It is
-    //  just too choppy") his rise clip's camera pulls back as he goes, so: a dip to standing, then he limps (erem_limp, its
-    //  walking frames each at his standing size) over to the men's fire and sits down there (z5Update)
-    { fn() { z5.pose = { hold: true, t: 0 }; E.fadeGo = -1; } }, { wait: 0.4 },
-    { fn() { E.spr = "erem_idle"; E.t = 0; E.once = false; E.k = Z5.NPC_K; E.fadeGo = 1; } }, { wait: 1.1 },
-    { fn() { z5.pose = null; E.spr = "erem_limp"; E.t = 0; E.dir = 1; E.walkTo = z5.eremSeat; toast("The man with no name walks with David's men now."); } }]);
+    // (Glen 11-17, his new clip: sitting, up into a crouch, standing; then "he can walk and fade out to the olive press")
+    { fn() { z5.pose = { hold: true, t: 0 }; E.spr = "erem_rise"; E.t = 0; E.once = true; E.k = Z5.NPC_K; } }, { wait: len("erem_rise") },
+    { fn() { z5.pose = null; E.spr = "erem_limp"; E.t = 0; E.once = false; E.dir = 1; E.walkFrom = E.x; E.walkTo = z5.eremSeat; toast("The man with no name walks with David's men now."); } }]);
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
