@@ -2232,6 +2232,18 @@ window.SPRITE_DATA = {
   "ay": 234,
   "align": "feet"
  },
+ "david_kneel_down": {
+  "src": "../assets/sprites/david_kneel_down.png",
+  "frames": 7,
+  "w": 193,
+  "h": 234,
+  "ms": 60,
+  "loop": false,
+  "pingpong": false,
+  "ax": 127,
+  "ay": 232,
+  "align": "feet"
+ },
  "david_kneel_hold": {
   "src": "../assets/sprites/david_kneel_hold.png",
   "frames": 12,
@@ -2254,6 +2266,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 105,
   "ay": 245,
+  "align": "feet"
+ },
+ "david_kneel_low": {
+  "src": "../assets/sprites/david_kneel_low.png",
+  "frames": 7,
+  "w": 207,
+  "h": 185,
+  "ms": 75,
+  "loop": false,
+  "pingpong": false,
+  "ax": 119,
+  "ay": 184,
   "align": "feet"
  },
  "david_ladder": {

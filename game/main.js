@@ -2470,7 +2470,7 @@ function updateDavid(dt) {
       if (st) { stones.push({ ...st, x: d.x + d.facing * 30, y: st.charged ? st.y : d.y - (d.h === LOW_H ? 40 : 78), vx: st.vx, vy: st.vy, charged: false, power: false, life: 2.5, trail: undefined, quick: true });
         sfx("sling_throw_quick", undefined, 0.9, 1.05); }
     }
-    if (d.throwT >= dur) { d.throwT = -1; d.runThrow = false; d.quickUsed = false; d.quickQueued = false; }
+    if (d.throwT >= dur) { if (d.onGround && d.h === LOW_H) d.kneelAfterThrow = true; d.throwT = -1; d.runThrow = false; d.quickUsed = false; d.quickQueued = false; }
   }
 
   if (typeof regionBow === "function" && regionBow(d, busy, dt)) { /* (Part Two: Jonathan's bow, Up + the sword button: ramah.js) */ }
@@ -2556,6 +2556,7 @@ function updateDavid(dt) {
     else if (d.vx > target) d.vx = Math.max(target, d.vx - acc * dt);
   }
   d.h = lowPose ? LOW_H : STAND_H;
+  if (!lowPose || Math.abs(d.vx) > 20) d.kneelAfterThrow = false;   // (stood up, or crawled off: the next crouch kneels down again)
   if (d.state === "climb" || d.state === "topout") return;   // on a ladder: no gravity, no collisions (the ladder's in open air)
 
   // drop through a one-way platform: Down + A while standing on one
@@ -2714,7 +2715,15 @@ function drawDavid(camX) {
       drawSprite(nm, Math.floor((d.climbDist || 0) / TUNE.CLIMB_STRIDE) % SPR[nm].frames, hx, y, 1); break; }   // his back to us
     case "roll": drawSprite("david_roll", Math.min(11, Math.floor(d.rollT / TUNE.ROLL_TIME * 12)), x, y, d.facing); break;
     case "getup": drawSprite("david_roll_getup", Math.min(6, 3 + Math.floor(d.t / 0.07)), x, y, d.facing); break;
-    case "crouch": drawSprite("david_crouch", frameOf("david_crouch", t, 40), x, y, d.facing); break;
+    case "crouch":
+      // (Glen 11-17, his two clips) down on one knee, then lower still to hide; after a low sling throw, held on one knee
+      if (SPR.david_kneel_down && SPR.david_kneel_low) {
+        const kd = SPR.david_kneel_down, kdT = kd.frames * kd.ms / 1000;
+        if (d.kneelAfterThrow) drawSprite("david_kneel_down", kd.frames - 1, x, y, d.facing);
+        else if (t < kdT) drawSprite("david_kneel_down", frameOf("david_kneel_down", t), x, y, d.facing);
+        else drawSprite("david_kneel_low", frameOf("david_kneel_low", t - kdT), x, y, d.facing);
+      } else drawSprite("david_crouch", frameOf("david_crouch", t, 40), x, y, d.facing);
+      break;
     case "crawl": drawSprite("david_crawl", frameOf("david_crawl", t), x, y, d.facing); break;
     case "kneel": { const i = frameOf("david_sit_harp", t, 95); drawSprite("david_sit_harp", i, x, y, d.facing, sitHarpScale(i)); break; }
     case "harp": {

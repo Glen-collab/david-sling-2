@@ -1,0 +1,20 @@
+{
+ "frames": 7,
+ "frame_w": 193,
+ "frame_h": 234,
+ "ms_per_frame": 60,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 127,
+ "anchor_y": 232,
+ "source": "david_kneel_b.mp4: standing, down on one knee (Glen 11-17)",
+ "video_frames": [
+  22,
+  27,
+  33,
+  38,
+  43,
+  49,
+  54
+ ]
+}

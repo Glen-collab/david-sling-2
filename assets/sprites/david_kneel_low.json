@@ -1,0 +1,20 @@
+{
+ "frames": 7,
+ "frame_w": 207,
+ "frame_h": 185,
+ "ms_per_frame": 75,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 119,
+ "anchor_y": 184,
+ "source": "david_kneel_a.mp4: one knee, down low to hide (Glen 11-17)",
+ "video_frames": [
+  60,
+  69,
+  77,
+  86,
+  95,
+  103,
+  112
+ ]
+}
