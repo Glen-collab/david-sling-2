@@ -20,7 +20,7 @@ const R3 = {
     GOLD: 0.9,         // the gold line: break it in one swing
     HP: 100,           // a wall's strength
     DMG: [20, 34],     // a swing's damage, from an empty bar to a full one (20: five swings; 34: three)
-    HIT: 6,            // david_gsword_smash: the frame the blade lands
+    HIT: 8,            // david_gsword_smash: the frame the blade lands (Glen's new clip, 11-17)
     REST: 0.5,         // after the blow, the blade on the ground this long
     REACH: 2.2,        // tiles from the wall to start it
     HOLE: 5,           // rows broken open at the bottom when it falls (David walks through)
