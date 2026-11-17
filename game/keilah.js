@@ -14,6 +14,9 @@
 const K4 = {
   // the people standing about (Part One's and Part Two's sprites): their size next to David
   NPC_K: 0.9,
+  // (Glen 11-17: "way disproportionate") each one's size beside David (240 px), on top of NPC_K: the villager sheets are
+  //  drawn 1.44x David (the girl and woman already smaller by TUNE.SPRITE_SIZE), Abiathar's a little under him. ABIATHAR_HOLD: the frame of his talk clip he stands on (it walks)
+  SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17 }, ABIATHAR_HOLD: 6,
   ASK: { NEAR: 90, KNEEL_MS: 161 },   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
   // (Glen 11-14: "We can build multiple floors to defend like the caves. That was fun.") the raiders: each wave's count,
   //  one every EVERY s; their walk and their run with a sack (px/s); a grab takes GRAB s; each floor's sacks; the wave's
@@ -70,7 +73,8 @@ const k4 = { told: {}, people: [], rocks: [], floors: [], raiders: [], raid: nul
 const k4Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function k4Tell(k, text) { if (!k4.told[k]) { k4.told[k] = true; toast(text); } }
 // someone standing about: their sprite (looped), x, the ground they stand on, facing; show: only when this is true
-function k4Person(room, spr, x, y = FOOT, dir = 1, show = null, k = K4.NPC_K) { const p = { room, spr, x, y, dir, show, k, t: Math.random() * 3 }; k4.people.push(p); return p; }
+const k4Size = n => K4.SIZE[n.replace(/_(stand|run|talk|ephod|pray|walk|hide)$/, "")] || 1;
+function k4Person(room, spr, x, y = FOOT, dir = 1, show = null, k = K4.NPC_K) { k *= k4Size(spr); const p = { room, spr, x, y, dir, show, k, t: Math.random() * 3 }; k4.people.push(p); return p; }
 // (Part Two's own: main.js held("right")) Out of Keilah runs by itself, as Part One's Rout did
 function regionAutoRun() {
   return typeof REGION_KEY !== "undefined" && REGION_KEY === "keilah" && !!region.room && region.room.id === "escape" && !!k4.run && k4.run.on && !k4.run.done && !k4.run.fail && david.deadT <= 0 && !(k4.run.grabT > 0);
@@ -464,7 +468,8 @@ function k4Draw(camX) {
     if (p.room !== r.id || (p.show && !p.show())) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     const S = SPR[p.spr]; if (!S) continue;
-    drawSprite(p.spr, p.still ? S.frames - 1 : frameOf(p.spr, p.t), x, p.y, p.dir, p.k);
+    const hold = p.spr === "abiathar_talk" ? Math.min(K4.ABIATHAR_HOLD, S.frames - 1) : null;   // (Glen 11-17: his talk clip walks; he stands)
+    drawSprite(p.spr, hold != null ? hold : p.still ? S.frames - 1 : frameOf(p.spr, p.t), x, p.y, p.dir, p.k);
   }
   // the livestock in the gate, once the floors are safe
   if (k4Has("k4_floors")) for (const h of k4.herd) if (h.room === r.id && SPR[h.spr]) drawSprite(h.spr, frameOf(h.spr, now), h.x - camX, h.y, h.dir, h.spr.startsWith("ox_") ? 1.3 : 0.9);
