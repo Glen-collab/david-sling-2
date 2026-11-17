@@ -84,7 +84,7 @@ const Menu = {
     } else {   // keep a picture of what's underneath (the game is paused behind the menu)
       this.snap = document.createElement("canvas"); this.snap.width = W; this.snap.height = H;
       this.snap.getContext("2d").drawImage(canvas, 0, 0);
-      this.under = WorldMap.active ? "map" : Courtyard.active ? "courtyard" : "stage";
+      this.under = typeof LandMap !== "undefined" && LandMap.active ? "landmap" : WorldMap.active ? "map" : Courtyard.active ? "courtyard" : "stage";   // (Glen 11-17: on the land map, no stage is under it: "Start the stage again" there went into Part One)
       WorldMap.active = false; Courtyard.active = false;   // paused; they come back on Resume
       toastTime = 0;   // (a stage's message would sit on top of the menu)
       themeMusic.pause(); mapAmbience.pause();   // paused means quiet: the theme and the hills stop (they fade back in on Resume)

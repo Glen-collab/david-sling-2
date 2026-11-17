@@ -461,6 +461,10 @@ const STORY_HASH = location.hash === "#3-A" ? "3-A" : null;   // a story stop fr
 const STAGE_HASH = (location.hash.match(/^#(\d-\d\d?)$/) || [])[1] || (STORY_HASH && "3-3");
 const LEVEL_NAME = location.hash === "#test" ? "test" : location.hash === "#range" ? "range" : STAGE_HASH || "1-1";   // #range: Gera's sling range (range.js), off the World 7 map
 // the game opens on the World 1 map; a stage in the address ("#1-2") goes straight into it (key 1 = 1-1)
+// (Glen 11-17: "besides the sprites, these games shouldn't interact") Part One's stages are still in this copy of the
+//  code, but Part Two never goes into them: a link to one (or to its test stages) goes to Part Two's own land map
+if (!/simgame/.test(location.pathname) && (STORY_HASH || /^#([1-8]-|test$|range$)/.test(location.hash))) { try { sessionStorage.setItem("david2TitleSeen", "1"); } catch (e) {} location.replace(location.pathname + location.search); }
+const NO_STAGE = !STAGE_HASH && LEVEL_NAME === "1-1";   // (the page with no stage: the title and the land map; nothing behind them is played)
 function backToMap() { history.replaceState(null, "", location.pathname + location.search); location.reload(); }
 const LEVEL_STAGE = LEVEL_NAME === "test" ? "1-1" : LEVEL_NAME === "range" ? "7-R" : LEVEL_NAME;   // which stage this is (for the Journal, the map and the saved stones)
 const SCENE_ONLY = new URLSearchParams(location.search).has("scene");
@@ -3161,15 +3165,11 @@ addEventListener("keydown", e => {
   if (e.code === "Escape" && setup.active) { setup.active = false; toast("Controller setup cancelled."); }
   if (e.code === "KeyR") { respawn(); }
   if (e.code === "KeyH") helpT = helpT > 0 ? 0 : 9999;
-  if (e.code === "Digit1") { location.hash = "1-1"; location.reload(); }
   if (e.code === "Digit5") backToMap();
-  if (e.code === "Digit6" && typeof WorldMap !== "undefined") { if (Journal.active) return; WorldMap.open("journey"); }
-  if (e.code === "Digit2") { location.hash = "test"; location.reload(); }
   if (e.code === "Digit4") {   // preview the Journal pages
     if (Journal.active && Journal.preview) Journal.close();
     else if (!Journal.active) Journal.openPreview(1);
   }
-  if (e.code === "Digit3") { bgWorld = bgWorld === "w1" ? "w2" : "w1"; toast(bgWorld === "w1" ? "World 1 background" : "World 2 background (preview)"); }
 });
 
 let helpT = 12;
@@ -3183,7 +3183,7 @@ function drawHUD() {
   if (helpT <= 0) {
     ctx.fillStyle = "rgba(0,0,0,0.35)"; ctx.fillRect(10, 10, 600, 26);
     ctx.fillStyle = "#fff"; ctx.font = "14px sans-serif";
-    ctx.fillText("H = controls   1 = World 1-1   2 = movement test   3 = swap background   4 = Journal   5 = map", 18, 28);
+    ctx.fillText("H = controls   4 = Journal   5 = map", 18, 28);
   } else drawHelp();
   drawDialog();
   drawCodeEntry(); if (typeof drawHarpDuel === "function") drawHarpDuel();
@@ -4979,6 +4979,8 @@ function frame(now) {
     }
     requestAnimationFrame(frame); return;
   }
+  // (Glen 11-17) the page with no stage is only the title and the land map: Part One's first stage behind them never plays
+  if (NO_STAGE && !setup.active && !Menu.active && !Journal.active && !WorldMap.active && !Courtyard.active && typeof LandMap !== "undefined" && !LandMap.active) LandMap.open();
   if (Menu.active || Journal.active || WorldMap.active || Courtyard.active || (typeof LandMap !== "undefined" && LandMap.active)) {   // (+ Part Two's land map: landmap.js)   // the menu, the Journal, a map or the home base covers the screen
     if (setup.active) updateSetup(real); else checkCombo(real);
     if (typeof battleLoop !== "undefined" && !battleLoop.paused) { battleLoop.pause(); W6.battleVol = 0; }   // no sword fight under the Journal's harp (world6.js)
