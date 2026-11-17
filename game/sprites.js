@@ -8007,13 +8007,13 @@ window.SPRITE_DATA = {
  "wildass_kick": {
   "src": "../assets/sprites/wildass_kick.png",
   "frames": 10,
-  "w": 478,
-  "h": 208,
-  "ms": 150,
+  "w": 502,
+  "h": 256,
+  "ms": 110,
   "loop": false,
   "pingpong": false,
-  "ax": 284,
-  "ay": 206,
+  "ax": 268,
+  "ay": 254,
   "align": "feet"
  },
  "wildass_walk": {

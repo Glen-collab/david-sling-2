@@ -12,7 +12,7 @@
 const WILD = {
   viper:     { idle: "viper_coil", act: "viper_strike", k: 1.5, hp: 1, near: 230, box: [-150, 60, 40], reach: 250, actFrames: [2, 7] },
   ostrich:   { idle: "ostrich_walk", run: "ostrich_run", k: 0.85, hp: 2, walk: 55, speed: 470, near: 520, box: [-60, 70, 260], runFor: 2.4 },
-  wildass:   { idle: "wildass_walk", act: "wildass_kick", k: 1.6, hp: 2, walk: 40, near: 200, box: [-110, 110, 180], kick: [-260, -40], actFrames: [3, 7], fleeSheet: "wildass_walk" },
+  wildass:   { idle: "wildass_walk", act: "wildass_kick", k: 1.6, hp: 2, walk: 40, near: 200, box: [-110, 110, 180], kick: [-260, -40], actFrames: [4, 8], kicks: 3, fleeSheet: "wildass_walk" },
   caracal:   { idle: "caracal_walk", run: "caracal_run", k: 2, hp: 1, walk: 60, speed: 380, near: 380, box: [-80, 80, 100], leap: 640, runFor: 1.6 },
   ibex:      { idle: "ibex_walk", run: "ibex_run", k: 1.7, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3 },
   // (Glen 11-12: "put the swarm in there and add a bunch of the single ones so it looks more natural") his swarm picture
@@ -158,7 +158,11 @@ function updateWild(b, dt, r) {
   }
   if (b.kind === "wildass") {
     if (b.state === "idle") { pace(); if (b.cool <= 0 && Math.abs(dx) < W_.near && Math.abs(dy) < 100) { b.state = "act"; b.t = 0; b.facing = dx > 0 ? -1 : 1; } }   // (turns its back on him)
-    else { const q = wildKickBox(b); if (q && touchesDavid(q)) wildHurt(b); if (b.t > wildDur(W_.act)) { b.state = "idle"; b.t = 0; b.cool = 1.2; } }
+    else { const q = wildKickBox(b); if (q && touchesDavid(q)) wildHurt(b);
+      if (b.t > wildDur(W_.act)) {   // (Glen 11-17: "if David stands by, a double or triple kick") still close behind it: it kicks again, from the wind-up
+        b.kicked = (b.kicked || 1) + 1;
+        if (b.kicked <= W_.kicks && Math.abs(dx) < W_.near && Math.abs(dy) < 100 && Math.sign(-dx) === b.facing) b.t = 3 * SPR[W_.act].ms / 1000;
+        else { b.state = "idle"; b.t = 0; b.cool = 1.2; b.kicked = 0; } } }
     return;
   }
   // the chargers: ostrich, caracal, ibex

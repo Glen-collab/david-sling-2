@@ -1,23 +1,23 @@
 {
-  "frames": 10,
-  "frame_w": 478,
-  "frame_h": 208,
-  "ms_per_frame": 150,
-  "loop": false,
-  "align": "feet",
-  "anchor_x": 284,
-  "anchor_y": 206,
-  "source": "wildass_clip.mp4",
-  "video_frames": [
-    110,
-    114,
-    118,
-    122,
-    126,
-    129,
-    133,
-    137,
-    141,
-    145
-  ]
+ "frames": 10,
+ "frame_w": 502,
+ "frame_h": 256,
+ "ms_per_frame": 110,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 268,
+ "anchor_y": 254,
+ "source": "wildass_kick2.mp4 (Glen 11-17: the second, cleaner kick of his clip, mirrored to face right): 0-3 standing, 4-8 both back legs out, 9 down",
+ "video_frames": [
+  90,
+  93,
+  97,
+  100,
+  103,
+  107,
+  110,
+  113,
+  117,
+  120
+ ]
 }
