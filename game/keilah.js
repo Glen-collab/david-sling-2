@@ -255,6 +255,16 @@ function k4Talk() {
     "hills:38": [[MEN, "They say Saul looks for you every day. But God hasn't handed you over to him, and He won't."]],
   };
   for (const p of k4.people) { const L = T_[p.room + ":" + Math.round(p.x / T - roomById(p.room).c0)]; if (L) rTalker(p, L); }
+  // (Glen 11-17: "coming back to the place should we have these guys talk like 'Saul will find you'") the men who grabbed
+  //  at him on the run out (23:12: they would have handed him over), once he's got away. Saul gave up coming (23:13)
+  const KM = "A man of Keilah", OUT = [
+    [[KM, "You came back? Saul will find you. He's looking for you every day."]],
+    [[KM, "We'd have handed you over to him. What else could we do? He'd have torn down our walls."]],
+    [[KM, "Saul gave up coming here when he heard you'd gone. Don't give him a reason to come back (1 Samuel 23:13)."]],
+    [[KM, "You saved our grain, and we'd have sold you for it. I'm not proud of it."]],
+    [[KM, "Go on, get out to the wilderness. The king's men are everywhere."]],
+  ];
+  k4.grabbers.forEach((g, i) => rTalker(g, () => k4Has("k4_escaped") && !(k4.run && k4.run.on && !k4.run.done) ? OUT[i % OUT.length] : null));
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
