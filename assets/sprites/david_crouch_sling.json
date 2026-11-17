@@ -7,19 +7,19 @@
  "align": "feet",
  "anchor_x": 164,
  "anchor_y": 257,
- "source": "david_crouch_sling.mp4 (Glen 11-17: down on one knee, the sling whirled overhead; frames 0-1 dropping to the knee, 2-11 the whirl)",
+ "source": "david_crouch_sling.mp4 (Glen 11-17: down on one knee, the sling whirled overhead; recut 11-17 from the first second only, so he looks ahead, not down or at the camera: 0-1 dropping to the knee, 2-7 one swing (looped while charging), 8-11 the swing again to the throw. Glen's painted frames kept at 0, 1, 4 and 10)",
  "video_frames": [
   1,
   9,
+  13,
+  15,
   17,
-  25,
-  33,
-  41,
-  49,
-  57,
-  65,
-  73,
-  81,
-  89
+  19,
+  21,
+  23,
+  13,
+  15,
+  17,
+  19
  ]
 }
