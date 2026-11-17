@@ -262,7 +262,7 @@ function rLowWall(room, c) {   // a low wall to hop onto (5 wide)
 }
 function rBoulder(room, c) {   // a boulder on the ground: its flat top to stand on (5 wide, the top the middle 3)
   const k = KIT.f_rock; region.props.push({ room, n: "f_rock", x: c * T + 2.5 * T - k.w / 2, y: FOOT - k.h });
-  block(c + 1, GR - 3, 3, 3, 1); platAt(c + 1, FOOT - k.h + 8, 3); for (let i = 1; i < 4; i++) artSolid.add((c + i) + "," + (GR - 3));
+  block(c + 1, GR - 3, 3, 3, 1); platAt(c + 1, (GR - 3) * T, 3);   // (Glen 11-17: the top on the block's own top; 3 px lower stood him inside the stone, and he knelt till he was pushed out) for (let i = 1; i < 4; i++) artSolid.add((c + i) + "," + (GR - 3));
 }
 function rOliveTree(room, c) {   // the olive tree, its left edge at column c; its long branch (to the right) a ledge
   const k = KIT.f_olive, x = c * T, y = FOOT - k.h; region.props.push({ room, n: "f_olive", x, y });
