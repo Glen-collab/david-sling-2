@@ -415,7 +415,7 @@ function drawProps(camX) {
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], ladders: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], talkers: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], ladders: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], talkers: [], paths: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionCamY() {   // main.js: how far up the camera is (0 but in a tall room: keep David about 60% down the screen)
   if (!REGION_ON) return 0;
@@ -469,7 +469,7 @@ const onTop = y => y / T - 1;   // the row to give rBreak / rRelic for something
 function rBreak(kind, room, c, r) { region.breaks.push({ kind, room, x: c * T + T / 2, y: (r + 1) * T, broken: false, fade: 0 }); }
 
 function buildRegion() {
-  FOOT = GR * T + 4; region.talkers.length = 0;
+  FOOT = GR * T + 4; region.talkers.length = 0; region.paths.length = 0; region.pathWalk = null;
   try { Object.assign(region.save, JSON.parse(localStorage.getItem(regionSaveKey()) || "{}")); } catch (e) {}
   { const f = new URLSearchParams(location.search).get("forget");   // (testing: "?forget=a,b" takes those out of the save, to see them again)
     if (f) { const ids = f.split(","); for (const k in region.save) if (Array.isArray(region.save[k])) region.save[k] = region.save[k].filter(id => !ids.includes(id)); regionWrite(); } }
@@ -863,8 +863,17 @@ function updateRegion(dt) {
   if (r.left === "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { region.trans = { t: 0, leave: true }; return; }   // the road out (Glen 11-03)
   if (low && r.leftDoor && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) {   // (Glen 11-12: "I always try to walk off screen") the edge goes where that door goes
     const to = region.doors.find(o => o.id === (region.doors.find(q => q.id === r.leftDoor) || {}).to); if (to) { regionGo(to.x - 30, -1); return; } }
+  // (Glen 11-17) a side path's ends lead back out: outL / outR = [room, column]
+  if (low && r.outL && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.outL[0]); regionGo((n.c0 + r.outL[1]) * T, -1); return; }
+  if (low && r.outR && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.outR[0]); regionGo((n.c0 + r.outR[1]) * T, 1); return; }
   if (low && r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
   if (low && r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
+  // (Glen 11-17) a path into the picture: Up, he turns his back and walks off along it
+  if (region.pathWalk) { const w = region.pathWalk; w.t += dt;
+    if (!w.gone && w.t >= PATH.TURN + PATH.WALK) { w.gone = true; const n = roomById(w.p.to); regionGo((n.c0 + w.p.at) * T, 1, () => { region.pathWalk = null; }); }
+    return; }
+  if (pressed("up") && d.onGround && !region.script.length && !(dialog.t > 0)) {
+    const p = pathNear(r); if (p) { region.pathWalk = { p, t: 0, x: d.x }; d.vx = 0; d.charging = false; return; } }
   // a door, a stair, a well: Up
   if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
@@ -921,6 +930,7 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
   return false;
 }
 function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's climbing (no gravity, no walking)
+  if (REGION_ON && region.pathWalk) { d.vx = 0; d.vy = 0; d.charging = false; d.swordT = -1; return true; }   // (walking off along a path)
   if (REGION_ON && REGION.holdDavid && REGION.holdDavid(d, dt)) return true;   // (a region's own: nobgath.js's swinging ropes)
   const c = REGION_ON && region.climb; if (!c) return false;
   d.vx = 0; d.vy = 0; d.onGround = false; d.swordT = -1; d.shield = false; d.charging = false; d.throwT = -1;
@@ -989,6 +999,11 @@ function wellOut(o) {   // out of the well: Glen's climb-out sheet, then he hops
 const wellK = () => SCALE * RTUNE.WELL_K;   // game px per px of Glen's well picture
 const wellRim = o => ({ x: o.x + RTUNE.WELL_RIM[0] * wellK(), y: GR * T + RTUNE.WELL_SINK - RTUNE.WELL_RIM[1] * wellK() });
 function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
+  if (REGION_ON && region.pathWalk) {   // (Glen 11-17) his back to us, then walking off up the path: smaller, fading
+    const w = region.pathWalk, P = PATH;
+    if (w.t < P.TURN) { const n = SPR.david_back_turn ? "david_back_turn" : "david_turn_away"; drawSprite(n, Math.min(SPR[n].frames - 1, Math.floor(w.t / P.TURN * SPR[n].frames)), x, y, d.facing); }
+    else { const u = Math.min(1, (w.t - P.TURN) / P.WALK); drawSprite("david_back_walk", frameOf("david_back_walk", w.t), x, y - u * P.RISE, 1, 1 - u * P.SHRINK, 1 - u * 0.85); }
+    return true; }
   const c = REGION_ON && region.climb; if (!c) return false;
   if (c.kind === "wellhop") { drawSprite("david_jump_air", 4, x, y - d.h / 2 - 6, d.facing); return true; }
   if (c.kind === "well") {   // the sheet's anchor is the hole's middle at the well's base, so it lands on the well
@@ -1801,6 +1816,28 @@ const STORY = {
   WALK_OFF: 140,       // px a second, Saul walking off
 };
 region.script = []; region.wait = 0; region.pose = null; region.story = null;
+// (Glen 11-17: "we can go down 'paths' that lead us different forest ways ... use the David back towards us to walk down
+//  different paths or ravines ... they can all lead back or out to the same place") a path into the picture at column c
+//  of room: Up there and he turns his back and walks off along it, into room `to` at column `at`. The side room's own
+//  ends (outL / outR on its room) bring him back out. say: told once, the first time he's near it
+const PATH = { REACH: 70, TURN: 0.5, WALK: 0.7, RISE: 70, SHRINK: 0.45 };
+function rPath(room, c, to, at, say = null) { region.paths.push({ room, x: c * T + T / 2, to, at, say }); }
+function pathNear(r) {
+  const d = david; if (!r || !d.onGround || region.trans) return null;
+  return region.paths.find(p => p.room === r.id && Math.abs(d.x - p.x) < PATH.REACH && Math.abs(d.y - FOOT) < 40) || null;
+}
+function drawPaths(camX) {
+  const r = region.room; if (!r || region.pathWalk) return;
+  for (const p of region.paths) {
+    if (p.room !== r.id) continue;
+    const x = p.x - camX; if (x < -200 || x > W + 200) continue;
+    // a worn trail going off into the picture: a pale track narrowing up from his feet
+    ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#e8d3a8";
+    ctx.beginPath(); ctx.moveTo(x - 46, FOOT - 2); ctx.quadraticCurveTo(x - 10, FOOT - 40, x - 6, FOOT - 80); ctx.lineTo(x + 6, FOOT - 80); ctx.quadraticCurveTo(x + 14, FOOT - 40, x + 46, FOOT - 2); ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  const n = pathNear(r);
+  if (n && !region.script.length && !(dialog.t > 0)) { upHint(n.x - camX, FOOT - 250); if (n.say && !regionHas("seen", "path_" + n.to + n.x)) { regionAdd("seen", "path_" + n.to + n.x); toast(n.say); } }
+}
 // (Glen 11-17: "everyone we have talked to or have seen can say something instead of just standing there") anyone
 //  standing about: Up beside them and they say their next line. p: their own object (room, x, y); lines: a list of
 //  [who, line], or a function giving one (null: nothing to say right now). Up is the world's first (its rocks, doors,
@@ -2007,7 +2044,7 @@ function drawRegionFront(camX) {   // main.js, after David: the railings he walk
     ctx.drawImage(im, x, Math.round(p.y), w, p.h || k.h);   // (p.h with p.w: a piece drawn smaller)
   }
   if (REGION.drawFront) REGION.drawFront(camX);
-  drawTalkers(camX);
+  drawPaths(camX); drawTalkers(camX);
   const near = region.story && !region.script.length && !(dialog.t > 0) && david.onGround && storyNear();
   if (near) upHint(near.x - camX, GR * T - 175);   // Up: hear them (over the railings: Glen 11-05)
 }

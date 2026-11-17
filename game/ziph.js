@@ -46,6 +46,15 @@ const ZIPH = {
       far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },   // (Glen's, 11-15)
     { id: "mountain", name: "The Mountain", w: 260, bg: "w4_1", mx: 14, my: 1, mw: 6, left: "maon",   /* (Glen 11-17: "too short ... a longer / wider level") */
       far: "ziph/mountain/far", mid: "ziph/mountain/mid.png", midY: 0, near: "ziph/mountain/near.png" },   // (Glen's, 11-15)
+    // (Glen 11-17: "go down 'paths' that lead us different forest ways ... they can all lead back or out to the same
+    //  place. We can do the up and down in the map") side paths: Up at a trail and he walks off into the picture; each
+    //  comes back out further along its room (outR) or where he went in (outL). Stand-in pictures till Glen's
+    { id: "goatpath", name: "A Goat Path", w: 100, bg: "w4_1", mx: 1, my: 2, mw: 3, outL: ["hills", 66], outR: ["hills", 103],
+      far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },
+    { id: "thicket", name: "The Thicket", w: 90, bg: "w4_1", mx: 4, my: 2, mw: 3, outL: ["horesh", 20], outR: ["horesh", 30],
+      far: "keilah/hereth/far", mid: "keilah/hereth/mid.png", midY: 0, near: "keilah/hereth/near.png" },
+    { id: "wadi", name: "The Dry Wadi", w: 110, bg: "w4_1", mx: 11, my: 2, mw: 3, outL: ["maon", 24], outR: ["maon", 90],
+      far: "ziph/hills/far", mid: "ziph/hills/mid.png", midY: 0, near: "ziph/hills/near.png" },
   ],
   // the Journal: Glen's song, the Final Chorus, its first half (SONG_PSALM57.md, his words exactly)
   steps: ["z5_jonathan", "z5_ziphites", "z5_surrounded", "z5_rescued"],
@@ -89,6 +98,7 @@ function z5Build(R) {
   if (typeof R4_KIT !== "undefined") Object.assign(KIT, R4_KIT);   // (adullam.js's rocks and rubble: hiding places)
   Object.assign(KIT, Z5_KIT);
   for (const pl of ["hills", "horesh", "hachilah", "maon", "mountain"]) for (const f of ["far", "mid.png", "near.png"]) roomImg("ziph/" + pl + "/" + f);
+  for (const pl of ["keilah/road", "keilah/hereth"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);   // (the side paths' stand-ins)
   for (const k of ["people", "guards", "hides", "lookouts", "clefts", "scouts"]) z5[k].length = 0;
   z5.siege = null; z5.pose = null; z5.caughtT = 0; z5.back = {};
   [...Object.keys(Z5_KIT), "w4_rubble_sand", "w4_arch_sand", "w4_rocks_sand"].forEach(kitImg);
@@ -218,8 +228,43 @@ function z5Build(R) {
       z5.hides.push({ room: rm, x: z5.rockX, x0: z5.rockX - w / 2, x1: z5.rockX + w / 2, y: FOOT - 4 }); }
     z5.endX = X(246);
   }
+  // -- the side paths (Glen 11-17): ridges and hollows off the way, something to find in each
+  c = R("goatpath");
+  { const rm = "goatpath", X = k => (c + k) * T;
+    ground(c, c + 99);
+    rLedge(rm, c + 12, 470, 5); rLedge(rm, c + 20, 380, 4); rLedge(rm, c + 28, 290, 4); rLedge(rm, c + 36, 380, 4);
+    rHole(rm, c + 44, 4); rLedge(rm, c + 52, 450, 4); rLedge(rm, c + 60, 350, 5); rLedge(rm, c + 70, 260, 4); rLedge(rm, c + 78, 360, 4);
+    rRelic("z5_pom_goatpath", "pomegranate", c + 30, onTop(290)); rRelic("z5_stone_goatpath", "stone", c + 72, onTop(260));
+    rHyraxFamily(rm, c + 16, 2); rWild("partridge", rm, c + 48, { range: 2 }); rWild("caracal", rm, c + 64, { range: 3 }); rWild("viper", rm, c + 88);
+    rBreak("jar", rm, c + 94, 16);
+    rPath("hills", z5PathAt("hills", 66), "goatpath", 3, "A goat path winds up into the hills. Up to follow it.");
+  }
+  c = R("thicket");
+  { const rm = "thicket", X = k => (c + k) * T;
+    ground(c, c + 89);
+    rLedge(rm, c + 10, 460, 4); rLedge(rm, c + 18, 360, 5); rLedge(rm, c + 27, 260, 4); rHole(rm, c + 34, 3);
+    rLedge(rm, c + 42, 430, 5); rLedge(rm, c + 52, 330, 4); rLedge(rm, c + 62, 450, 4);
+    rRelic("z5_truth_thicket", "truth", c + 29, onTop(260), "I will lie down and sleep in peace, for you, LORD alone, make me live in safety. (Psalm 4:8)");
+    rWild("hoopoe", rm, c + 8, { range: 1 }); rWild("viper", rm, c + 38); rWild("caracal", rm, c + 56, { range: 3 }); rWild("partridge", rm, c + 72, { range: 2 });
+    rHyrax(rm, c + 80); rBreak("basket", rm, c + 84, 16);
+    rPath("horesh", z5PathAt("horesh", 20), "thicket", 3, "The trees open on a deer track into the thicket. Up to follow it.");
+  }
+  c = R("wadi");
+  { const rm = "wadi", X = k => (c + k) * T;
+    ground(c, c + 109);
+    // (a dry riverbed: high banks at either end, down in the middle)
+    rLedge(rm, c + 6, 330, 6); rLedge(rm, c + 14, 420, 4); rHole(rm, c + 22, 4); rLedge(rm, c + 30, 470, 4);
+    rLedge(rm, c + 74, 470, 4); rHole(rm, c + 82, 4); rLedge(rm, c + 88, 420, 4); rLedge(rm, c + 96, 330, 6);
+    rLedge(rm, c + 46, 380, 5); rLedge(rm, c + 56, 290, 4);
+    rRelic("z5_truth_wadi", "truth", c + 58, onTop(290), "God, you are my God. I will earnestly seek you. My soul thirsts for you. My flesh longs for you, in a dry and weary land, where there is no water. (Psalm 63:1)");
+    rRelic("z5_pom_wadi", "pomegranate", c + 99, onTop(330));
+    rWild("wildass", rm, c + 40); rWild("ostrich", rm, c + 66); rWild("viper", rm, c + 52); rHyraxFamily(rm, c + 90, 1);
+    rBreak("jar", rm, c + 36, 16);
+    rPath("maon", z5PathAt("maon", 24), "wadi", 3, "A dry streambed cuts down into the rock. Up to follow it.");
+  }
   z5Talk();
 }
+const z5PathAt = (room, k) => roomById(room).c0 + k;   // (a path's column in its room)
 // (Glen 11-17: "everyone ... can say something instead of just standing there doing nothing") Up by David's men: their
 //  next line (their own words; a reference only where it's the verse). Keyed by room and column
 function z5Talk() {
