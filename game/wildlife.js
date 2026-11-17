@@ -163,8 +163,16 @@ function updateWild(b, dt, r) {
   }
   // the chargers: ostrich, caracal, ibex
   if (b.state === "idle") {
-    if (Math.abs(dx) < Tn.MIN_RUN * T && Math.abs(dy) < 150) b.facing = dx > 0 ? -1 : 1;   // (too close to charge: off a little first)
-    pace();
+    // (too close to charge: off a little first. Glen 11-17: "caught in a frame of going right to left and jerks back and
+    //  forth": turning away here and back to its patch in pace() every other frame. Now it backs off in one go, past
+    //  MIN_RUN and a tile, then turns and comes)
+    if (!b.retreat && Math.abs(dx) < Tn.MIN_RUN * T && Math.abs(dy) < 150) b.retreat = true;
+    if (b.retreat) {
+      b.facing = dx > 0 ? -1 : 1;
+      const m = wildMove(b, b.facing * W_.walk * 1.8, dt);
+      if (m.stop && b.cool <= 0) { b.retreat = false; b.state = "run"; b.t = 0; b.facing = dx > 0 ? 1 : -1; }   // (backed up against something: it comes anyway)
+      else if (Math.abs(dx) > (Tn.MIN_RUN + 1) * T || Math.abs(dy) >= 150 || Math.abs(b.x - b.hx) > far) b.retreat = false;
+    } else pace();
     if (b.cool <= 0 && !b.air && Math.abs(dx) < W_.near && Math.abs(dx) >= Tn.MIN_RUN * T && Math.abs(dy) < 150) {
       b.state = "run"; b.t = 0; b.facing = dx > 0 ? 1 : -1;
       if (W_.leap) { b.vy = -W_.leap; b.air = true; }
