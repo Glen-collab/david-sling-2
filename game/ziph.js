@@ -378,6 +378,11 @@ function z5SiegeStart() {
   z5.scouts.length = 0;
   regionAdd("taken", "z5_surrounded");
   rPlay([{ say: ["", "Saul went on this side of the mountain, and David and his men on that side of the mountain; and David hurried to get away for fear of Saul, for Saul and his men surrounded David and his men to take them. (1 Samuel 23:26)"] },
+    // (Glen 11-16) surrounded, he kneels and prays: Psalm 54, which he wrote about the Ziphites (WEB, ebible.org)
+    { fn() { z5.pose = { hold: true, t: 0, pray: true }; david.vx = 0; } }, { wait: 1.4 },
+    { say: ["David", "Save me, God, by your name. Vindicate me in your might. Hear my prayer, God. Listen to the words of my mouth. (Psalm 54:1-2)"] },
+    { say: ["David", "For strangers have risen up against me. Violent men have sought after my soul. They haven’t set God before them. (Psalm 54:3)"] },
+    { fn() { z5.pose = null; } },
     { fn() { toast("Surrounded! Too many to fight. Keep away from Saul's lines, and hide from the scouts who come through the rocks (hold Down behind a rock). Hold on."); } }]);
 }
 function z5SiegeEdges() {   // where the two fronts are now (px)
@@ -443,6 +448,7 @@ function z5SiegeUpdate(dt) {
 // drawing
 function z5DrawDavid(d, x, y) {
   if (z5.pose && z5.pose.embrace) return true;   // (he's in the two-shot, drawn with Jonathan)
+  if (z5.pose && z5.pose.pray) return drawDavidPray(z5.pose.t, x, y, d.facing);   // (Psalm 54 on the mountain: Glen's praying clip)
   if (z5.pose && z5.pose.kneel && SPR.david_kneel) { drawSprite("david_kneel", Math.min(SPR.david_kneel.frames - 1, Math.floor(z5.pose.t * 1000 / 161)), x, y, d.facing); return true; }
   return false;
 }

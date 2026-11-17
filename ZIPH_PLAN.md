@@ -171,3 +171,6 @@ Tests: tools/tests/z5tour.js, z5erem.js.
   ziphite_dash).
 - Courage's shield turning arrows back: Glen has the shield (all skills). It's built in the later worlds that have
   archers (nothing in Part Two shoots yet), and Ziph's courage is what turns them back.
+- David prays on the mountain: surrounded (23:26), he kneels and prays Psalm 54:1-3 (his psalm about the Ziphites, WEB)
+  with Glen's praying clip (drawDavidPray in region.js: david_kneel, then david_pray). The siege clock waits till he's
+  done. Test: tools/tests/z5pray.js.
