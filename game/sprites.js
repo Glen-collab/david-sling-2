@@ -3468,6 +3468,18 @@ window.SPRITE_DATA = {
   "ay": 104,
   "align": "feet"
  },
+ "erem_limp": {
+  "src": "../assets/sprites/erem_limp.png",
+  "frames": 6,
+  "w": 348,
+  "h": 246,
+  "ms": 230,
+  "loop": true,
+  "pingpong": false,
+  "ax": 174,
+  "ay": 244,
+  "align": "feet"
+ },
  "erem_rise": {
   "src": "../assets/sprites/erem_rise.png",
   "frames": 14,
@@ -4488,16 +4500,28 @@ window.SPRITE_DATA = {
   "ay": 137,
   "align": "feet"
  },
+ "hyrax_sniff": {
+  "src": "../assets/sprites/hyrax_sniff.png",
+  "frames": 16,
+  "w": 146,
+  "h": 69,
+  "ms": 170,
+  "loop": true,
+  "pingpong": true,
+  "ax": 74,
+  "ay": 68,
+  "align": "feet"
+ },
  "hyrax_walk": {
   "src": "../assets/sprites/hyrax_walk.png",
   "frames": 12,
-  "w": 120,
-  "h": 69,
+  "w": 134,
+  "h": 66,
   "ms": 42,
   "loop": true,
   "pingpong": false,
-  "ax": 76,
-  "ay": 68,
+  "ax": 63,
+  "ay": 66,
   "align": "feet"
  },
  "ibex_run": {

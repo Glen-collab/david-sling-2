@@ -10,10 +10,11 @@
 //   the messenger comes, 23:26-28; Sela Hammahlekoth; on to En-Gedi, 23:29; the Journal; the land map)
 
 const Z5 = {
-  RUBBLE_DOWN: 46,   // px the hiding rubble is sunk into the near ground (Glen 11-17)
+  RUBBLE_DOWN: 46,
+  EREM_LIMP: 95,   // px/s: the stranger limping over to the men's fire (Glen 11-17)   // px the hiding rubble is sunk into the near ground (Glen 11-17)
   NPC_K: 0.9,
   // Saul's men in the hills (as nobgath.js's Gath streets): walk, stop and look, turn
-  SNEAK: { WALK: 62, LOOK: 2.0, TURN: 0.45, SIGHT: 8, SIGHT_LOW: 2.2, SEEN_T: 0.6, NEAR: 30, CAUGHT_FADE: 1.4, K: 0.95 },
+  SNEAK: { WALK: 62, LOOK: 2.0, TURN: 0.45, SIGHT: 8, SIGHT_LOW: 2.2, SEEN_T: 0.6, NEAR: 30, CAUGHT_FADE: 1.4, K: 1.15 },
   // the Ziphites' lookouts: how far they see (tiles), the "!" before they run, their run to the fire (px/s); a fire lit
   //  brings Saul's men (back to the press)
   LOOK: { SIGHT: 9, SIGHT_LOW: 2.2, SPOT_T: 0.9, RUN: 230, K: 0.95, FIRE_K: 0.55, HIT: 60, FADE: 1.0 },
@@ -23,7 +24,7 @@ const Z5 = {
   // (Glen 11-17: "the soldiers were way too slow and I wasn't sure what was going on with the cave mouths ... faster and
   //  more diving and running and hiding") 40 s, not 55; every SURGE s both lines rush in RUSH cols over RUSH_T s; a cleft
   //  shows dust and a "!" WARN s before its scout runs out (SCOUT_RUN px/s for SCOUT_DASH s), one every SCOUT s
-  SIEGE: { END: 40, GAP: 9, SCOUT: 3.6, SCOUT_FOR: 6, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 0.95,
+  SIEGE: { END: 40, GAP: 9, SCOUT: 3.6, SCOUT_FOR: 6, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 1.15,
     SURGE: 6, RUSH: 3, RUSH_T: 0.8, WARN: 1.0, SCOUT_RUN: 270, SCOUT_DASH: 0.9 },
 };
 
@@ -102,7 +103,7 @@ function z5Build(R) {
     rLedge(rm, c + 48, 470, 4); rLedge(rm, c + 54, 380, 4); rRelic("z5_pom_hills", "pomegranate", c + 56, onTop(380));
     rHole(rm, c + 60, 3);
     z5Hide(rm, "w4_z_hide_rock", X(68)); z5Guard(rm, 72, 92, 1); z5Hide(rm, "w4_z_hide_rock", X(82)); z5Hide(rm, "w4_rubble_sand", X(96));
-    rWild("viper", rm, c + 100);
+    rWild("viper", rm, c + 100); rHyraxFamily(rm, c + 65, 1);
     campfire(c + 104, GR - 1); z5.back.hills2 = X(105);
     z5Hide(rm, "w4_z_hide_rock", X(112)); z5Guard(rm, 116, 136, -1); z5Guard(rm, 124, 146, 1); z5Hide(rm, "w4_rubble_sand", X(128)); z5Hide(rm, "w4_z_hide_rock", X(142));
     rWild("partridge", rm, c + 150);
@@ -116,15 +117,16 @@ function z5Build(R) {
     campfire(c + 4, GR - 1);
     rWild("hoopoe", rm, c + 14);
     z5.jonathan = z5Person(rm, "jonathan_idle", X(40), -1, () => !z5Has("z5_jonathan_gone"));
+    z5.jonathan.k = Z5.NPC_K * 1.12;   // (Glen 11-17: "I like the size of Jonathan in the hug": standing and talking, matched to it)
     rLedge(rm, c + 54, 470, 4); rRelic("z5_truth_horesh", "truth", c + 56, onTop(470),
       "Jonathan, Saul’s son, arose and went to David into the woods, and strengthened his hand in God. (1 Samuel 23:16)");
     // the stranger (Glen's Erem: stand-in clips till his own)
     z5.erem = z5Person(rm, "erem_lie", X(80), 1, () => !z5Has("z5_erem"));   // (Glen's clips face right; lying, his head to the left)
     z5.erem.k = 1.05;   // (sitting: a little bigger, to be seen among the roots)
     campfire(c + 100, GR - 1);
-    z5Person(rm, "erem_sit", X(97), 1, () => z5Has("z5_erem"));   // (with the men now, a little apart)
+    z5Person(rm, "erem_sit", X(97), 1, () => z5Has("z5_erem")); z5.eremSeat = X(97);   // (with the men now, a little apart)
     z5Person(rm, "soldier_sit", X(104), -1); z5Person(rm, "soldier_talk", X(107), -1);
-    rHyrax(rm, c + 112);
+    rHyrax(rm, c + 112); rHyraxFamily(rm, c + 44, 2, 1);
   }
 
   // -- The Hill of Hachilah (23:19-23): the Ziphites watch for Saul. A lookout who sees David runs to light his fire
@@ -137,14 +139,14 @@ function z5Build(R) {
     z5.whisper = false;
     //  (Glen's sheet 11-15: ziphite_whisper, bending to the soldier's ear and holding there; the soldier is the same
     //  listener, saul_soldier_listen)
-    z5Person(rm, "ziphite_whisper", X(11), 1, () => z5.whisper, Z5.SNEAK.K).once = true;
-    z5Person(rm, "saul_soldier_listen", X(11) + 62 * Z5.SNEAK.K, 1, () => z5.whisper, Z5.SNEAK.K).once = true;   // (Glen's, 11-15: bows his head to listen; drawn facing left)
+    z5Person(rm, "ziphite_whisper", X(11), 1, () => z5.whisper, Z5.LOOK.K).once = true;
+    z5Person(rm, "saul_soldier_listen", X(11) + 62 * Z5.LOOK.K + 8, 1, () => z5.whisper, Z5.SNEAK.K).once = true;   // (Glen's, 11-15: bows his head to listen; drawn facing left)
     // (Glen 11-17: "go above and below screen so it is a lot harder to get through with lookouts. It was pretty fast and
     //  easy") a tall hill: the ground, a long gully under the middle (fall in and it's back to the fire), and the way on
     //  up over the top of the screen and back down. A lookout and his signal fire on every level; rocks to crouch behind
     const H = [GR * T, 462, 312, 162, 12, -138];   // the levels' tops: the ground, then up a ledge at a time
     const look = (k, fire, facing, who = "watcher", lv = 0) => z5.lookouts.push({ room: rm, who, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, y: H[lv] + 4, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
-    const hide = (n, k, lv = 0) => z5Hide(rm, n, X(k), H[lv] + 4);
+    const hide = (n, k, lv = 0) => z5Hide(rm, lv ? "w4_z_hide_rock" : n, X(k), H[lv] + 4);   // (Glen 11-17: up on the ledges, boulders only: the rubble sinks in and hangs under them)
     const ledge = (k, w, lv) => rLedge(rm, c + k, H[lv], w);
     // the ground: the first lookout, as before
     hide("w4_z_hide_rock", 17); hide("w4_rubble_sand", 23); look(29, 34, -1);
@@ -165,7 +167,7 @@ function z5Build(R) {
     // the last stretch: a lookout on the ground, then one up on a rock shelf over the way out
     hide("w4_rubble_sand", 115); hide("w4_z_hide_rock", 120); look(126, 131, -1);
     ledge(128, 4, 1); ledge(133, 12, 2); hide("w4_z_hide_rock", 136, 2); look(142, 144, -1, "watcher", 2);
-    rBreak("basket", rm, c + 147, 16);
+    rBreak("basket", rm, c + 147, 16); rHyrax(rm, c + 139, { range: 2 });
   }
 
   // -- The Wilderness of Maon (23:24-25): the Arabah, white and hot. A breather: a spring, a Truth
@@ -178,7 +180,7 @@ function z5Build(R) {
     rLedge(rm, c + 46, 460, 5); rLedge(rm, c + 54, 360, 4);
     rRelic("z5_truth_maon", "truth", c + 56, onTop(360), "Behold, God is my helper. The Lord is the one who sustains my soul. (Psalm 54:4)");
     rWild("wildass", rm, c + 66);
-    rBoulder(rm, c + 74);
+    rBoulder(rm, c + 74); rHyraxFamily(rm, c + 84, 3);
     // (Glen 11-17: "he shouldn't be in this place ... that is about all we should see of him") Erem stays in Horesh
     rBreak("jar", rm, c + 94, 16);
   }
@@ -201,7 +203,12 @@ function z5Build(R) {
     z5.endX = X(146);
   }
 }
-function rHyrax(rm, c) { if (typeof WILD !== "undefined" && WILD.hyrax) rWild("hyrax", rm, c); }
+function rHyrax(rm, c, o = {}) { if (typeof WILD !== "undefined" && WILD.hyrax) rWild("hyrax", rm, c, o); }
+// (Glen 11-17: "they are cute ... big and little like momma and babies") a mother and her little ones trotting near her
+function rHyraxFamily(rm, c, babies = 2, facing = -1) {
+  rHyrax(rm, c, { range: 2, facing });
+  for (let i = 0; i < babies; i++) rHyrax(rm, c + (i + 1) * 1.3 * -facing, { range: 2, facing, size: 0.55 + i * 0.05 });
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 function z5Enter(r) {
@@ -230,11 +237,14 @@ function z5Update(dt, r) {
     if (p.leaving) { p.x -= 70 * dt; p.fade = (p.fade || 0) + dt / 2.5; if (p.fade >= 1) { p.leaving = false; regionAdd("taken", "z5_jonathan_gone"); } }   // (Jonathan, home)
   }
   if (z5.pose) z5.pose.t += dt;
+  { const E = z5.erem;   // (the stranger: fading, limping over to the fire, sitting down)
+    if (E && E.fadeGo) { E.alpha = Math.max(0, Math.min(1, (E.alpha ?? 1) + E.fadeGo * dt * 2.6)); if (E.alpha <= 0 && E.fadeGo < 0 && E.sitNext) { E.spr = "erem_sit"; E.t = 0; E.fadeGo = 1; } if (E.alpha >= 1 && E.fadeGo > 0) { E.fadeGo = 0; if (E.sitNext) { E.sitNext = false; regionAdd("taken", "z5_erem"); } } }
+    if (E && E.walkTo != null) { E.x = Math.min(E.walkTo, E.x + Z5.EREM_LIMP * dt); if (E.x >= E.walkTo) { E.walkTo = null; E.sitNext = true; E.fadeGo = -1; } } }
   const free = !region.script.length && region.wait <= 0 && !region.trans;
   // Jonathan (23:16-18): when David comes near him
   if (r.id === "horesh" && free && !z5Has("z5_jonathan") && d.x > z5.jonathan.x - 230) z5JonathanScene();
   // the stranger: after Jonathan's gone, when David comes near him
-  if (r.id === "horesh" && free && z5Has("z5_jonathan") && !z5Has("z5_erem") && d.x > z5.erem.x - 210) z5EremScene();
+  if (r.id === "horesh" && free && z5Has("z5_jonathan") && !z5Has("z5_erem") && !z5.erem.going && d.x > z5.erem.x - 210) { z5.erem.going = true; z5EremScene(); }
   // the runner in Maon (23:25)
   if (r.id === "maon" && free && !z5Has("z5_warned") && d.x > z5.runner.x - 200) {
     regionAdd("taken", "z5_warned"); d.facing = 1;
@@ -350,8 +360,12 @@ function z5EremScene() {
     { say: ["Stranger", "I remember places. I remember faces. I remember things that happened long ago. But I cannot remember who I am."] },
     { say: ["David", "Then perhaps the LORD will reveal it to you in time."] },
     { say: ["Stranger", "Until then, I am at your service."] },
-    { fn() { z5.pose = { hold: true, t: 0 }; } }, pose("erem_rise", true), { wait: len("erem_rise") }, pose("erem_idle", false), { wait: 0.8 },
-    { fn() { z5.pose = null; regionAdd("taken", "z5_erem"); toast("The man with no name walks with David's men now."); } }]);
+    // (Glen 11-17: "the kneel down frame of Erem is way too big. Then he starts walking and disappears to the well. It is
+    //  just too choppy") his rise clip's camera pulls back as he goes, so: a dip to standing, then he limps (erem_limp, its
+    //  walking frames each at his standing size) over to the men's fire and sits down there (z5Update)
+    { fn() { z5.pose = { hold: true, t: 0 }; E.fadeGo = -1; } }, { wait: 0.4 },
+    { fn() { E.spr = "erem_idle"; E.t = 0; E.once = false; E.k = Z5.NPC_K; E.fadeGo = 1; } }, { wait: 1.1 },
+    { fn() { z5.pose = null; E.spr = "erem_limp"; E.t = 0; E.dir = 1; E.walkTo = z5.eremSeat; toast("The man with no name walks with David's men now."); } }]);
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -517,7 +531,7 @@ function z5DrawPeople(camX) {
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     const S = SPR[p.spr]; if (!S) continue;
     const i = p.hold != null ? p.hold : p.once ? Math.min(S.frames - 1, Math.floor(p.t * 1000 / S.ms)) : frameOf(p.spr, p.t);
-    drawSprite(p.spr, i, x, p.y, p.dir, p.k, p.leaving ? Math.max(0, 1 - (p.fade || 0)) : 1, p.filter || "");
+    drawSprite(p.spr, i, x, p.y, p.dir, p.k, p.leaving ? Math.max(0, 1 - (p.fade || 0)) : p.alpha ?? 1, p.filter || "");
   }
 }
 function z5DrawMan(g, camX, n0) {   // one of Saul's men (walking, looking, turning), with his sight wedge

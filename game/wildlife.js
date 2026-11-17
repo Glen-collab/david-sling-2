@@ -26,7 +26,8 @@ const WILD = {
   bee:       { idle: "bee_fly", k: 0.5, orbit: true },
   partridge: { idle: "partridge_idle", run: "partridge_run", k: 1, shy: true, speed: 330, near: 210,
                tell: "A partridge! Saul hunted David “as when one hunts a partridge in the mountains.” (1 Samuel 26:20)" },
-  hyrax:     { idle: "hyrax_walk", run: "hyrax_walk", k: 1, shy: true, walk: 22, speed: 280, near: 190,
+  // (Glen's hyrax, 11-17: it walks its patch, stops to sniff and look about (graze: [walk s, sniff s]), runs when he comes)
+  hyrax:     { idle: "hyrax_walk", run: "hyrax_walk", graze: "hyrax_sniff", grazeT: [2.5, 3.2], k: 1, shy: true, walk: 30, speed: 280, near: 190,
                tell: "Rock hyraxes! “The hyraxes are but a feeble folk, yet make they their houses in the rocks.” (Proverbs 30:26)" },
   hoopoe:    { idle: "hoopoe_walk", run: "hoopoe_walk", k: 1, shy: true, walk: 18, speed: 260, near: 180 },
 };
@@ -118,6 +119,12 @@ function updateWild(b, dt, r) {
   }
   const pace = () => {   // (off its patch after a charge: it walks back. Glen 11-12: up onto rocks and low walls, like David)
     if (!W_.walk) { if (b.air) wildMove(b, 0, dt); return; }
+    if (W_.graze) {   // (a while walking, a while stopped, sniffing)
+      b.gz = (b.gz ?? Math.random() * 4) + dt; const [wk, sn] = W_.grazeT;
+      if (b.gz > wk + sn) b.gz = 0;
+      b.grazing = b.gz > wk && b.x >= lo && b.x <= hi;
+      if (b.grazing) { if (b.air) wildMove(b, 0, dt); return; }
+    }
     if (b.x < lo) b.facing = 1; else if (b.x > hi) b.facing = -1;
     if (Math.abs(dx) < 140 && Math.sign(dx) === b.facing && Math.abs(dy) < 100) b.facing *= -1;   // (never wanders into him)
     if (wildMove(b, b.facing * W_.walk * (b.x < lo || b.x > hi ? 2 : 1), dt).stop) b.facing *= -1;
@@ -223,7 +230,7 @@ function drawSwarm(b, x) {   // his swarm (its three frames), and the single bug
   ctx.restore();
 }
 function drawWild(b, x) {
-  const W_ = WILD[b.kind], k = W_.k;
+  const W_ = WILD[b.kind], k = W_.k * (b.size || 1);   // (b.size: Glen 11-17, a mother hyrax and her little ones)
   if (W_.bugs) { drawSwarm(b, x); return; }
   if (b.dead) {
     if (b.state === "scatter" && W_.die && b.t < wildDur(W_.die)) drawSprite(W_.die, frameOf(W_.die, b.t), x, b.y, b.facing, k, Math.max(0, 1 - b.t / wildDur(W_.die)));
@@ -236,7 +243,7 @@ function drawWild(b, x) {
     return;
   }
   if (b.state === "drop") { drawSprite(W_.run, 4, x, b.y, b.facing, k); return; }
-  const n = b.state === "act" ? W_.act : (b.state === "run" || b.state === "flee" || b.state === "back") ? (W_.run || W_.fleeSheet || W_.idle) : W_.idle;
+  const n = b.grazing && b.state === "idle" && W_.graze && SPR[W_.graze] ? W_.graze : b.state === "act" ? W_.act : (b.state === "run" || b.state === "flee" || b.state === "back") ? (W_.run || W_.fleeSheet || W_.idle) : W_.idle;
   // (standing still, a walk sheet would walk on the spot: the shy ones and the viper only loop when moving or idle by design)
   const f = b.kind === "viper" && b.state === "idle" ? 0 : frameOf(n, b.t);   // (Glen 11-12: the coiled viper lies still; it moves when it strikes)
   drawSprite(n, f, x, b.y, b.facing, k, b.alpha == null ? 1 : b.alpha, b.flash > 0 ? "brightness(2.2)" : "");

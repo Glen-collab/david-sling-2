@@ -1,0 +1,30 @@
+{
+ "frames": 16,
+ "frame_w": 146,
+ "frame_h": 69,
+ "ms_per_frame": 170,
+ "loop": true,
+ "align": "feet",
+ "anchor_x": 74,
+ "anchor_y": 68,
+ "source": "hyrax_walk2.mp4 (Glen 11-17)",
+ "video_frames": [
+  50,
+  56,
+  62,
+  68,
+  74,
+  80,
+  86,
+  92,
+  98,
+  104,
+  110,
+  116,
+  122,
+  128,
+  134,
+  140
+ ],
+ "pingpong": true
+}

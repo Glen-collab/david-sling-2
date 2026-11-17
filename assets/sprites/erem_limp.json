@@ -1,0 +1,11 @@
+{
+ "frames": 6,
+ "frame_w": 348,
+ "frame_h": 246,
+ "ms_per_frame": 230,
+ "loop": true,
+ "align": "feet",
+ "anchor_x": 174,
+ "anchor_y": 244,
+ "source": "erem_rise frames 8-13, each to erem_idle's height (Glen 11-17: the clip's camera pulls back)"
+}

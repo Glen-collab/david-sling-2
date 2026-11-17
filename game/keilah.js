@@ -111,6 +111,7 @@ function k4Build(R) {
     rOliveTree(rm, c + 52); oliveRow(c + 63, onTop(FOOT - KIT.f_olive.h + 328) - 0.4, 3);
     rBoulder(rm, c + 70);
     rWild("caracal", rm, c + 78, { range: 6 * T });
+    if (typeof rHyraxFamily === "function") rHyraxFamily(rm, c + 64, 2);   // (Glen's hyraxes, 11-17: a mother and two little ones)
     { const c1 = rTerrace(rm, c + 82, 2); oliveRow(c + 84, onTop(FOOT - 136) - 0.4, c1 - c - 85); }
     // (Glen 11-16: a ledge was on the wall's top stones) the terrace (to col 101) is the step: one ledge above it
     rLedge(rm, c + 95, 370, 4); rRelic("k4_pom_hereth", "pomegranate", c + 97, onTop(370));

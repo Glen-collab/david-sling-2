@@ -125,7 +125,7 @@ const TUNE = {
     // (Glen 11-17: "his size was ok until he stood up, then he was huge") Erem's head measured in every clip: 50 px lying,
     //  sitting, drinking, talking and getting up; 40 standing (erem_idle), David's 42. (11-17: "Erem should be taller than
     //  David") all of them now 44 with Ziph's NPC_K: standing, he's 270 to David's 240
-    erem_idle: 1.22,
+    erem_idle: 1.22, erem_limp: 1.3,   // (the limp: bent over, so a little more to match)
     david_play_harp: 0.81, david_sit_harp: 0.81,
     david_crawl: 0.92,
     saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1, saul_soldier_kneel: 1.1,   // Saul's men: a head taller than David
