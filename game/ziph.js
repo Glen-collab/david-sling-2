@@ -31,7 +31,7 @@ const ZIPH = {
       far: "ziph/hills/far", mid: "ziph/hills/mid.png", midY: 0, near: "ziph/hills/near.png" },   // (Glen's, 11-15)
     { id: "horesh", name: "The Woods of Horesh", w: 120, bg: "w4_1", mx: 4, my: 1, mw: 3, left: "hills", right: "hachilah",
       far: "ziph/horesh/far", mid: "ziph/horesh/mid.png", midY: 0, near: "ziph/horesh/near.png" },   // (Glen's, 11-15)
-    { id: "hachilah", name: "The Hill of Hachilah", w: 150, bg: "w4_1", mx: 7, my: 1, mw: 4, left: "horesh", right: "maon",
+    { id: "hachilah", name: "The Hill of Hachilah", w: 150, up: 24, bg: "w4_1", mx: 7, my: 0, mw: 4, mh: 2, left: "horesh", right: "maon",
       far: "ziph/hachilah/far", mid: "ziph/hachilah/mid.png", midY: 0, near: "ziph/hachilah/near.png" },   // (Glen's, 11-15: dusk)
     { id: "maon", name: "The Wilderness of Maon", w: 100, bg: "w4_1", mx: 11, my: 1, mw: 3, left: "hachilah", right: "mountain",
       far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },   // (Glen's, 11-15)
@@ -60,11 +60,11 @@ const z5 = { told: {}, people: [], guards: [], hides: [], lookouts: [], clefts: 
 const z5Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function z5Tell(k, text) { if (!z5.told[k]) { z5.told[k] = true; toast(text); } }
 function z5Person(room, spr, x, dir = 1, show = null, k = Z5.NPC_K) { const p = { room, spr, x, y: FOOT, dir, show, k, t: Math.random() * 3 }; z5.people.push(p); return p; }
-function z5Hide(room, n, x) {   // a rock to crouch behind (in front of David)
+function z5Hide(room, n, x, foot = FOOT) {   // a rock to crouch behind (in front of David); foot: what it stands on (a ledge's top + 4)
   // (Glen 11-17: "put the rubble in the foreground and lower ... so it looks like it is on his path") the rubble sunk into
   //  the near ground, over David's feet, so its foot is on the path in front of him, not on the ground behind
-  const k = KIT[n]; region.props.push({ room, n, x: x - k.w / 2, y: FOOT - k.h + (k.top || 0) * 0.3 + (n === "w4_rubble_sand" ? Z5.RUBBLE_DOWN : 0), front: true });
-  z5.hides.push({ room, x, x0: x - k.w / 2, x1: x + k.w / 2 });
+  const k = KIT[n]; region.props.push({ room, n, x: x - k.w / 2, y: foot - k.h + (k.top || 0) * 0.3 + (n === "w4_rubble_sand" ? Z5.RUBBLE_DOWN : 0), front: true });
+  z5.hides.push({ room, x, x0: x - k.w / 2, x1: x + k.w / 2, y: foot - 4 });
 }
 function z5Guard(room, c0, c1, facing) {   // one of Saul's men walking his beat, c0 to c1 (columns), looking at each end
   z5.guards.push({ room, from: c0 * T, to: c1 * T, x: (facing > 0 ? c0 : c1) * T, y: FOOT, facing, state: "walk", t: Math.random() * 2, seen: 0 });
@@ -135,15 +135,33 @@ function z5Build(R) {
     //  listener, saul_soldier_listen)
     z5Person(rm, "ziphite_whisper", X(11), 1, () => z5.whisper, Z5.SNEAK.K).once = true;
     z5Person(rm, "saul_soldier_listen", X(11) + 62 * Z5.SNEAK.K, 1, () => z5.whisper, Z5.SNEAK.K).once = true;   // (Glen's, 11-15: bows his head to listen; drawn facing left)
-    const look = (k, fire, facing, who = "watcher") => z5.lookouts.push({ room: rm, who, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
-    z5Hide(rm, "w4_z_hide_rock", X(18)); look(30, 38, -1); z5Hide(rm, "w4_rubble_sand", X(26));
-    rLedge(rm, c + 40, 470, 4); rLedge(rm, c + 46, 370, 5); rRelic("z5_stone_hach", "stone", c + 48, onTop(370));
-    rHole(rm, c + 52, 3);
-    z5Hide(rm, "w4_z_hide_rock", X(62)); look(76, 66, 1, "pointer"); look(80, 90, -1); z5Hide(rm, "w4_z_hide_rock", X(70));
-    campfire(c + 96, GR - 1); z5.back.hachilah2 = X(97);
-    z5Hide(rm, "w4_rubble_sand", X(108)); look(120, 128, -1); z5Hide(rm, "w4_z_hide_rock", X(114));
-    rLedge(rm, c + 124, 460, 5); look(134, 142, -1);
-    rBreak("basket", rm, c + 146, 16);
+    // (Glen 11-17: "go above and below screen so it is a lot harder to get through with lookouts. It was pretty fast and
+    //  easy") a tall hill: the ground, a long gully under the middle (fall in and it's back to the fire), and the way on
+    //  up over the top of the screen and back down. A lookout and his signal fire on every level; rocks to crouch behind
+    const H = [GR * T, 462, 312, 162, 12, -138];   // the levels' tops: the ground, then up a ledge at a time
+    const look = (k, fire, facing, who = "watcher", lv = 0) => z5.lookouts.push({ room: rm, who, x: X(k), x0: X(k), fire: X(fire), facing, f0: facing, y: H[lv] + 4, state: "watch", t: Math.random() * 2, seen: 0, alpha: 1 });
+    const hide = (n, k, lv = 0) => z5Hide(rm, n, X(k), H[lv] + 4);
+    const ledge = (k, w, lv) => rLedge(rm, c + k, H[lv], w);
+    // the ground: the first lookout, as before
+    hide("w4_z_hide_rock", 17); hide("w4_rubble_sand", 23); look(29, 34, -1);
+    // up: three steps to the first height, a lookout there between his fire and the climb on
+    ledge(33, 4, 1); ledge(38, 4, 2); ledge(43, 15, 3);
+    hide("w4_z_hide_rock", 46, 3); hide("w4_rubble_sand", 51, 3); look(54, 57, -1, "watcher", 3);
+    oliveRow(c + 44, onTop(H[3]) - 0.4, 3);
+    // on up, over the top of the screen: the high ridge, two lookouts back to back
+    ledge(58, 4, 4); ledge(63, 22, 5);
+    rRelic("z5_stone_hach", "stone", c + 64, onTop(H[5]));
+    hide("w4_z_hide_rock", 68, 5); look(73, 66, 1, "pointer", 5); hide("w4_rubble_sand", 77, 5); look(81, 84, -1, "watcher", 5);
+    oliveRow(c + 69, onTop(H[5]) - 0.4, 3);
+    // and down the far side, a ledge at a time, to the ground
+    ledge(86, 4, 4); ledge(91, 9, 3); hide("w4_rubble_sand", 94, 3); look(98, 92, 1, "pointer", 3);
+    ledge(101, 4, 2); ledge(106, 4, 1);
+    rHole(rm, c + 36, 72);   // (the gully: the ledges are the only way over)
+    campfire(c + 110, GR - 1); z5.back.hachilah2 = X(111);
+    // the last stretch: a lookout on the ground, then one up on a rock shelf over the way out
+    hide("w4_rubble_sand", 115); hide("w4_z_hide_rock", 120); look(126, 131, -1);
+    ledge(128, 4, 1); ledge(133, 12, 2); hide("w4_z_hide_rock", 136, 2); look(142, 144, -1, "watcher", 2);
+    rBreak("basket", rm, c + 147, 16);
   }
 
   // -- The Wilderness of Maon (23:24-25): the Arabah, white and hot. A breather: a spring, a Truth
@@ -157,7 +175,7 @@ function z5Build(R) {
     rRelic("z5_truth_maon", "truth", c + 56, onTop(360), "Behold, God is my helper. The Lord is the one who sustains my soul. (Psalm 54:4)");
     rWild("wildass", rm, c + 66);
     rBoulder(rm, c + 74);
-    z5Person(rm, "erem_idle", X(88), 1, () => z5Has("z5_erem"));   // (looking out at the hills, the wind in his cloak)
+    // (Glen 11-17: "he shouldn't be in this place ... that is about all we should see of him") Erem stays in Horesh
     rBreak("jar", rm, c + 94, 16);
   }
 
@@ -262,7 +280,7 @@ function z5Caught(say) {
 // the hills: Saul's men on their beats (as nobgath.js's streets of Gath)
 function z5Hidden() {
   const d = david, S = Z5.SNEAK;
-  return d.h === LOW_H && z5.hides.some(h => h.room === region.room.id && d.x > h.x0 - S.NEAR && d.x < h.x1 + S.NEAR);
+  return d.h === LOW_H && z5.hides.some(h => h.room === region.room.id && d.x > h.x0 - S.NEAR && d.x < h.x1 + S.NEAR && Math.abs(d.y - (h.y ?? GR * T)) < 40);
 }
 function z5Sees(g, sight, low) {
   const d = david, dx = d.x - g.x;
@@ -342,7 +360,7 @@ function z5LookUpdate(dt) {
     if (l.state === "down") { l.x += l.dir * 300 * dt; l.alpha = Math.max(0, 1 - l.t / L.FADE); continue; }
     if (l.state === "watch") {
       if (l.t > 3.5 + (l.x0 % 7) * 0.3) { l.facing *= -1; l.t = 0; }   // (he looks one way, then the other)
-      if (z5Sees({ room: l.room, x: l.x, y: FOOT, facing: l.facing, state: "watch" }, L.SIGHT, L.SIGHT_LOW)) {
+      if (z5Sees({ room: l.room, x: l.x, y: l.y - 4, facing: l.facing, state: "watch" }, L.SIGHT, L.SIGHT_LOW)) {
         l.seen += dt; if (l.seen > 0.15) { l.state = "spot"; l.t = 0; z5Tell("spot", "A lookout has seen David! Stop him before he lights his fire: sling or sword."); }
       } else l.seen = Math.max(0, l.seen - dt);
     } else if (l.state === "spot") {
@@ -361,7 +379,7 @@ function z5StoneHits(s) {
   const r = region.room; if (!r) return false;
   if (r.id === "hachilah") for (const l of z5.lookouts) {
     if (l.state === "down" || l.state === "lit") continue;
-    if (Math.abs(s.x - l.x) < Z5.LOOK.HIT && s.y < FOOT + 4 && s.y > FOOT - 300 * SCALE * Z5.LOOK.K) {
+    if (Math.abs(s.x - l.x) < Z5.LOOK.HIT && s.y < l.y + 4 && s.y > l.y - 300 * SCALE * Z5.LOOK.K) {
       l.state = "down"; l.t = 0; l.dir = Math.sign(l.x - david.x) || 1; l.facing = l.dir; sfx("stone_hit", l.x, 0.4, 1.1);
       z5Tell("down", "The lookout runs off, unhurt. His fire stays dark.");
       if (!s.sword && typeof stoneHit === "function") stoneHit(s, 0.6);
@@ -463,7 +481,7 @@ function z5Draw(camX) {
     const x = l.fire - camX; if (x < -400 || x > W + 400) continue;
     const im = kitImg(l.lit ? "w4_z_fire" : "w4_z_fire_out"), k = Z5_KIT.w4_z_fire; if (!im) continue;
     const fl = l.lit ? 1 + Math.sin(now * 17 + l.x0) * 0.03 + Math.sin(now * 29) * 0.02 : 1;   // (lit: the flames flicker)
-    ctx.drawImage(im, x - k.w / 2, FOOT + 6 - k.h * fl, k.w, k.h * fl);
+    ctx.drawImage(im, x - k.w / 2, l.y + 6 - k.h * fl, k.w, k.h * fl);
   }
   // the rock of escape, after
   if (r.id === "mountain" && z5Has("z5_rescued")) {
@@ -515,15 +533,15 @@ function z5DrawFront(camX) {
         const i = run ? frameOf(n, l.t)
           : pt ? (l.state === "spot" ? Math.min(SPR[n].frames - 1, Math.floor(l.t * 1000 / SPR[n].ms)) : 0)
           : l.state === "spot" ? 4 : frameOf(n, now + l.x0 * 0.003);
-        drawSprite(n, i, x, FOOT, l.facing, Z5.LOOK.K, l.alpha);
+        drawSprite(n, i, x, l.y, l.facing, Z5.LOOK.K, l.alpha);
       }
     }
     if (l.state === "watch") {   // where he's looking
       const reach = Z5.LOOK.SIGHT * T, col = l.seen > 0 ? "255,70,40" : "255,214,90", gr = ctx.createLinearGradient(x, 0, x + l.facing * reach, 0);
       gr.addColorStop(0, `rgba(${col},0.3)`); gr.addColorStop(1, `rgba(${col},0.03)`);
-      ctx.save(); ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x + l.facing * 30, FOOT - 220); ctx.lineTo(x + l.facing * reach, FOOT - 260); ctx.lineTo(x + l.facing * reach, FOOT); ctx.lineTo(x + l.facing * 30, FOOT - 120); ctx.closePath(); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x + l.facing * 30, l.y - 220); ctx.lineTo(x + l.facing * reach, l.y - 260); ctx.lineTo(x + l.facing * reach, l.y); ctx.lineTo(x + l.facing * 30, l.y - 120); ctx.closePath(); ctx.fill(); ctx.restore();
     }
-    if (l.state === "spot" || l.state === "run") { ctx.save(); ctx.fillStyle = "#ffdc4a"; ctx.strokeStyle = "#3a2400"; ctx.lineWidth = 5; ctx.font = "bold 44px sans-serif"; ctx.textAlign = "center"; ctx.strokeText("!", x, FOOT - 300); ctx.fillText("!", x, FOOT - 300); ctx.restore(); }
+    if (l.state === "spot" || l.state === "run") { ctx.save(); ctx.fillStyle = "#ffdc4a"; ctx.strokeStyle = "#3a2400"; ctx.lineWidth = 5; ctx.font = "bold 44px sans-serif"; ctx.textAlign = "center"; ctx.strokeText("!", x, l.y - 300); ctx.fillText("!", x, l.y - 300); ctx.restore(); }
   }
   if (r.id === "mountain") {
     for (const g of z5.scouts) z5DrawMan(g, camX);
