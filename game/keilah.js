@@ -18,7 +18,7 @@ const K4 = {
   //  drawn 1.44x David (the girl and woman already smaller by TUNE.SPRITE_SIZE), Abiathar's a little under him. ABIATHAR_HOLD: the frame of his talk clip he stands on (it walks)
   SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17,
     townsman: 1.2, townswoman: 1.15 },   // (11-17: "these people are small in Keilah": the night street's men and women, 216 and 208 px to David's 240) ABIATHAR_HOLD: 6,
-  ASK: { NEAR: 90, KNEEL_MS: 161 },   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
+  ASK: { NEAR: 90, KNEEL_MS: 161, ABIATHAR: 170 },   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
   // (Glen 11-14: "We can build multiple floors to defend like the caves. That was fun.") the raiders: each wave's count,
   //  one every EVERY s; their walk and their run with a sack (px/s); a grab takes GRAB s; each floor's sacks; the wave's
   //  lost if LOSE sacks get away; REST s between waves; HURT: px from David that knocks him (while they walk at him)
@@ -323,6 +323,9 @@ function k4Update(dt, r) {
     rPlay([{ say: ["A runner", "Behold, the Philistines are fighting against Keilah, and are robbing the threshing floors! (1 Samuel 23:1)"] },
       { fn() { toast("Ask the LORD first: go to the rock and press Up."); } }]);
   }
+  // (Glen 11-17) Abiathar with the ephod, once Saul's coming: walk up to him and the asking starts
+  if (r.id === "town" && k4Has("k4_saul") && !k4Has("k4_ephod") && !region.script.length && region.wait <= 0 && !region.trans && d.onGround && Math.abs(d.x - k4.abiathar.x) < K4.ASK.ABIATHAR) {
+    const ep = k4.rocks.find(o => o.id === "ephod"); if (ep) { k4AskScene(ep); return; } }
   // Up by the rock (or Abiathar): ask
   if (!region.script.length && region.wait <= 0 && !region.trans && d.onGround && pressed("up")) {
     const rock = k4.rocks.find(o => o.room === r.id && Math.abs(d.x - o.x) < K4.ASK.NEAR + (o.id === "ephod" ? 40 : 0));
@@ -558,6 +561,8 @@ function k4DrawGate(x, shut) {
 }
 function k4DrawFront(camX) {
   const r = region.room; if (!r) return;
+  // (Glen 11-17: "put an arrow above him like the other main characters that talk") Abiathar, waiting with the ephod
+  if (r.id === "town" && k4Has("k4_saul") && !k4Has("k4_ephod") && !region.script.length && k4.abiathar) upHint(k4.abiathar.x - camX, FOOT - 175);
   if (r.id === "floors") for (const q of k4.raiders) {
     const x = q.x - camX; if (x < -300 || x > W + 300) continue;
     let n = "raider_run", i = frameOf(n, q.t);
