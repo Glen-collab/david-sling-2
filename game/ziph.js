@@ -10,6 +10,7 @@
 //   the messenger comes, 23:26-28; Sela Hammahlekoth; on to En-Gedi, 23:29; the Journal; the land map)
 
 const Z5 = {
+  RUBBLE_DOWN: 46,   // px the hiding rubble is sunk into the near ground (Glen 11-17)
   NPC_K: 0.9,
   // Saul's men in the hills (as nobgath.js's Gath streets): walk, stop and look, turn
   SNEAK: { WALK: 62, LOOK: 2.0, TURN: 0.45, SIGHT: 8, SIGHT_LOW: 2.2, SEEN_T: 0.6, NEAR: 30, CAUGHT_FADE: 1.4, K: 0.95 },
@@ -60,7 +61,9 @@ const z5Has = id => typeof region !== "undefined" && region.save && region.save.
 function z5Tell(k, text) { if (!z5.told[k]) { z5.told[k] = true; toast(text); } }
 function z5Person(room, spr, x, dir = 1, show = null, k = Z5.NPC_K) { const p = { room, spr, x, y: FOOT, dir, show, k, t: Math.random() * 3 }; z5.people.push(p); return p; }
 function z5Hide(room, n, x) {   // a rock to crouch behind (in front of David)
-  const k = KIT[n]; region.props.push({ room, n, x: x - k.w / 2, y: FOOT - k.h + (k.top || 0) * 0.3, front: true });
+  // (Glen 11-17: "put the rubble in the foreground and lower ... so it looks like it is on his path") the rubble sunk into
+  //  the near ground, over David's feet, so its foot is on the path in front of him, not on the ground behind
+  const k = KIT[n]; region.props.push({ room, n, x: x - k.w / 2, y: FOOT - k.h + (k.top || 0) * 0.3 + (n === "w4_rubble_sand" ? Z5.RUBBLE_DOWN : 0), front: true });
   z5.hides.push({ room, x, x0: x - k.w / 2, x1: x + k.w / 2 });
 }
 function z5Guard(room, c0, c1, facing) {   // one of Saul's men walking his beat, c0 to c1 (columns), looking at each end
