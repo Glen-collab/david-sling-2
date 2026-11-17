@@ -202,6 +202,23 @@ function z5Build(R) {
     z5.rockX = X(80);   // Sela Hammahlekoth: the rock of escape, after
     z5.endX = X(146);
   }
+  z5Talk();
+}
+// (Glen 11-17: "everyone ... can say something instead of just standing there doing nothing") Up by David's men: their
+//  next line (their own words; a reference only where it's the verse). Keyed by room and column
+function z5Talk() {
+  const MEN = "One of David's men", jon = () => z5Has("z5_jonathan");
+  const T_ = {
+    "hills:8": [[MEN, "Strongholds in the rocks, and Saul looking for us every day (1 Samuel 23:14)."],
+      [MEN, "Keep low going past Saul's men. David won't lift a hand against the king's soldiers, and neither will we."]],
+    "hills:13": [[MEN, "The Ziphites keep watching us from their hilltops. I don't trust them."]],
+    "horesh:104": () => jon() ? [[MEN, "Jonathan came all the way out here to find you? Now that's a friend."]]
+      : [[MEN, "Woods at last. Shade, and a little rest."]],
+    "horesh:107": () => jon() ? [[MEN, "He said you'll be king over Israel, and he'll be next to you (1 Samuel 23:17). The king's own son!"]]
+      : [[MEN, "Someone's coming through the trees up ahead. One man, alone. Not one of Saul's, I think."]],
+    "maon:16": () => z5Has("z5_warned") ? [[MEN, "Drink at the spring while you can. Saul isn't far behind us."]] : null,
+  };
+  for (const p of z5.people) { const L = T_[p.room + ":" + Math.round(p.x / T - roomById(p.room).c0)]; if (L) rTalker(p, L); }
 }
 function rHyrax(rm, c, o = {}) { if (typeof WILD !== "undefined" && WILD.hyrax) rWild("hyrax", rm, c, o); }
 // (Glen 11-17: "they are cute ... big and little like momma and babies") a mother and her little ones trotting near her

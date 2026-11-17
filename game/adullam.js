@@ -632,6 +632,20 @@ function r4Build(R) {
     for (const [n, k, dir, f] of [["soldier_sit", 30, 1, 0], ["soldier_sit", 36, -1, 2], ["soldier_talk", 44, -1, 0], ["soldier2_fear", 53, 1, 0], ["boy_scared", 57, -1, 0], ["soldier_sit", 85, 1, 1], ["soldier4_fear", 92, -1, 0]])
       r4.men.push({ id: null, room: "camp", x: at(k), y: FOOT, still: n, f, dir, state: "camp", t: Math.random() * 3 });
     NEW.forEach((m, i) => r4.men.push({ id: null, room: "camp", x: at([40, 48, 61, 66, 72, 78, 97, 102][i]), y: FOOT, still: "soldier" + m[2] + "_fear", f: -1, dir: i % 2 ? 1 : -1, state: "camp", need: "r4_man_" + i, t: 0 }));
+    // (Glen 11-17: "everyone ... can say something instead of just standing there") Up by anyone in the camp: their next
+    //  line (their own words; a reference only where it's the verse)
+    const MEN = "One of David's men", CAMP = {
+      30: [[MEN, "Everyone in distress, everyone in debt, everyone bitter in soul: we all came to you (1 Samuel 22:2)."]],
+      36: [[MEN, "I owed more than I could ever pay. Out here, nobody's counting."]],
+      44: [[MEN, "You're our captain now, David. Where you go, we go."]],
+      53: [[MEN, "Saul's spies could be anywhere. Is this cave really safe?"]],
+      57: [["A boy", "Is it true a giant fell to your sling? If you teach me, I won't be scared anymore."]],
+      85: [[MEN, "The cave stays cool in the heat of the day. I could stay here forever."]],
+      92: [[MEN, "They say the king is furious. What will he do when he finds us?"]] };
+    for (const m of r4.men) if (m.state === "camp") {
+      if (m.need) { m.show = () => regionHas("taken", m.need); rTalker(m, [[MEN, ["You came looking for me. I thought no one would.", "A place by the fire and people around me again. Thank you, David."][r4.men.filter(q => q.need).indexOf(m) % 2]]]); }
+      else if (CAMP[Math.round(m.x / T - cc)]) rTalker(m, CAMP[Math.round(m.x / T - cc)]);
+    }
   }
 
   // (Glen 11-13: "we need spiders in these caves too") Part Two's spiders: on their threads over the way (they drop when

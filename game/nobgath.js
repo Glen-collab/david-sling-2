@@ -854,6 +854,25 @@ function r3Build(R) {
     r3.people.push({ room: "court", name: "achish_idle", x: X(35), facing: 1, k: R3.NPC_K, ph: 0, y: GR * T - 33, tag: "achish" });   // (standing on his dais by the throne; his sheets face left)
     r3Person("court", "gath_elite_idle", X(42), -1);
   }
+  r3Talk();
+}
+// (Glen 11-17: "everyone ... can say something instead of just standing there doing nothing") the ones Nob's own Up
+//  didn't cover yet: Ahimelech after the bread, and Gath's people (Up by them: their next line; a reference only where
+//  it's the verse). Not while a scene plays, and not the guards walking their rounds (they're to be slipped past)
+function r3Talk() {
+  const G = "A guard of Gath", mad = () => r3Has("r3_mad"), gate = () => r3Has("r3_gath");
+  const say = (p, f) => p && !p.walk && rTalker(p, () => r3.scene ? null : f());
+  say(r3Who("ahimelech"), () => r3Has("r3_bread") ? [["Ahimelech", "The holy bread was for the priests alone, but you and your young men were hungry (1 Samuel 21:4-6). Go in peace, David."]] : null);
+  const at = (room, k) => r3.people.find(p => p.room === room && Math.round(p.x / T - roomById(room).c0) === k);
+  say(at("gathroad", 128), () => mad() ? [[G, "Back again, madman? Achish doesn't want you. Go home."]]
+    : [[G, "A Hebrew, alone on the road to Gath? Go on in. The city has seen stranger things."]]);
+  say(r3Who("servants"), () => gate() && !mad() ? [["Achish's servants", "Isn't this David the king of the land? Didn't they sing to one another about him in dances, saying, ‘Saul has slain his thousands, and David his ten thousands’? (1 Samuel 21:11)"]]
+    : mad() ? [["Achish's servants", "The king says he's mad. Have you ever seen a madman with eyes that sharp?"]]
+    : [["Achish's servants", "That one coming up the road... where have I seen his face before?"]]);
+  for (const p of [r3Who("guard1"), r3Who("guard2"), at("gath", 38)]) say(p, () => !gate() ? null : mad()
+    ? [[G, "The king said, “Do I lack madmen?” (1 Samuel 21:15) And here you are again!"]]
+    : [[G, "Keep walking, Hebrew. We've got our eyes on you."]]);
+  say(at("court", 42), () => mad() ? [["A captain of Gath", "The king had you thrown out once already. Don't make him do it twice."]] : null);
 }
 
 function r3Enter(r) {

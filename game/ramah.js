@@ -371,6 +371,13 @@ function r2Build(R) {
     campfire(c + 11, GR - 1);
     rBreak("hall_lamp", "naioth", c + 18, 16); rBreak("hall_lamp", "naioth", c + 40, 16);
     r2.samNX = X(56); r2.prophets = [["prophet_old", X(51), 1, 1.2], ["prophet_lyre", X(60), -1, 1.2], ["prophet_drum", X(63), -1, 1.2]];   // (Glen's prophets, 11-10: hands raised, the lyre, the hand drum; 19:20)
+    // (Glen 11-17: "everyone ... can say something instead of just standing there") Up by a prophet: their line. Not in the chase
+    { const calm = () => !r2.chase || r2.chase.phase === "done", P = "A prophet";
+      const L = [() => [[P, "Samuel stands at our head here at Naioth. We praise the LORD together, morning and evening."]],
+        () => [[P, "You play the harp too? Then you know: when you played, the evil spirit left King Saul (1 Samuel 16:23)."]],
+        () => r2Has("r2_naioth") ? [[P, "Saul sent men to take you, and the Spirit of God came on them, and they prophesied too (1 Samuel 19:20)!"]]
+          : [[P, "Stay near Samuel. Saul's men will come for you, but this is the LORD's place."]]];
+      r2.prophets.forEach(([, x], i) => rTalker({ room: "naioth", x, y: FOOT }, () => calm() ? L[i]() : null)); }
     const rows = [380, 170, -40, -250, -460, -670, -880].map((y, k) => {
       const row = []; let col = 3 + [2, 18, 4, 19, 7, 11, 16][k];   // (Glen 11-07: so no two ladders stack; tools/tests/w2nlad.js)
       for (let i = 0; col + 13 + 5 * ((i + k) % 2) < nr.w - 3; i++, col += 26) row.push([col, (i + k) % 2]);
@@ -482,7 +489,7 @@ function r2Update(dt, r) {
       sayLine("In Ramah", r2Has("r2_arrows") && i % 2 ? "Leaving us? Your road goes on from the stone Ezel. Back past the well, and press Up by the stone." : R2_TALK[i % R2_TALK.length]); return; } }
   // the chase at Naioth (19:19-24)
   if (r.id === "naioth" && r2Has("r2_samuel") && !r2Has("r2_naioth") && !r2.chase && d.x > roomById("naioth").c0 * T + 18 * T && d.y > GR * T - 40 && d.onGround) { r2ChaseStart(); return; }
-  if (r.id === "naioth" && r2Has("r2_samuel") && pressed("up") && Math.abs(d.x - r2.samNX) < 100 && d.onGround && (!r2.chase || r2.chase.phase === "done")) {
+  if (r.id === "naioth" && r2Has("r2_samuel") && pressed("up") && Math.abs(d.x - r2.samNX) < 75 && d.onGround && (!r2.chase || r2.chase.phase === "done")) {
     if (r2Has("r2_arrows")) sayLine("Samuel", "Your road goes on, David. Go back to the stone Ezel, where Jonathan left you, and the LORD will lead you on from there.");   // (Glen 11-09: someone should say where the way out is)
     else if (r2Has("r2_naioth") && !r2Has("r2_ezel")) sayLine("Samuel", "Go back to Jonathan, my son: he waits for you at the stone Ezel. The door at the far left will take you to him.");   // (Glen 11-07: "where do I go?")
     else sayLine("Samuel", R2_SAMUEL[(r2.samI = ((r2.samI || 0) + 1)) % R2_SAMUEL.length]);

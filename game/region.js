@@ -415,7 +415,7 @@ function drawProps(camX) {
 
 // ---- the save: which rooms you've been in, what you've found, which seals you've seen, where you last saved ----
 const region = { room: null, fade: 0, trans: null, mapOpen: false, mapT: 0, inited: false, sealNear: null,
-  doors: [], relics: [], ladders: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
+  doors: [], relics: [], ladders: [], seals: [], walls: [], blocks: [], props: [], holes: [], crumbles: [], beasts: [], talkers: [], ledges: [], climb: null, breaks: [], drops: [], save: { at: null, explored: [], taken: [], seen: [], sealsSeen: [] } };
 function regionSaveKey() { return slotKey("david2Region") + "_" + REGION.key; }   // (read in buildRegion: slotKey is main.js's)
 function regionCamY() {   // main.js: how far up the camera is (0 but in a tall room: keep David about 60% down the screen)
   if (!REGION_ON) return 0;
@@ -469,7 +469,7 @@ const onTop = y => y / T - 1;   // the row to give rBreak / rRelic for something
 function rBreak(kind, room, c, r) { region.breaks.push({ kind, room, x: c * T + T / 2, y: (r + 1) * T, broken: false, fade: 0 }); }
 
 function buildRegion() {
-  FOOT = GR * T + 4;
+  FOOT = GR * T + 4; region.talkers.length = 0;
   try { Object.assign(region.save, JSON.parse(localStorage.getItem(regionSaveKey()) || "{}")); } catch (e) {}
   { const f = new URLSearchParams(location.search).get("forget");   // (testing: "?forget=a,b" takes those out of the save, to see them again)
     if (f) { const ids = f.split(","); for (const k in region.save) if (Array.isArray(region.save[k])) region.save[k] = region.save[k].filter(id => !ids.includes(id)); regionWrite(); } }
@@ -828,6 +828,7 @@ function updateRegion(dt) {
   regionFall(d);
   updateBreaks(dt); updateBeasts(dt, r); strWatch(); updateFloorCrumbles(dt, r); updateHarpRoom(dt, r); updateRegionScript(dt); updateStory(dt, r); journalWatch();
   if (REGION.update) REGION.update(dt, r);   // (another region's own: ramah.js)
+  updateTalkers(r);
   bgWorld = r.bg || bgWorld;
   // going through: fade out, move him (and the party), fade back in
   const tr = region.trans;
@@ -1798,6 +1799,34 @@ const STORY = {
   WALK_OFF: 140,       // px a second, Saul walking off
 };
 region.script = []; region.wait = 0; region.pose = null; region.story = null;
+// (Glen 11-17: "everyone we have talked to or have seen can say something instead of just standing there") anyone
+//  standing about: Up beside them and they say their next line. p: their own object (room, x, y); lines: a list of
+//  [who, line], or a function giving one (null: nothing to say right now). Up is the world's first (its rocks, doors,
+//  scenes): this only answers when nothing else did
+const TALK = { NEAR: 95, HIGH: 90 };
+function rTalker(p, lines) { region.talkers.push({ p, lines, i: -1 }); return p; }
+function talkerNear(r) {
+  const d = david;
+  if (!r || region.script.length || region.wait > 0 || region.trans || (dialog.t > 0) || !d.onGround || d.deadT > 0) return null;
+  let best = null;   // (the nearest one: two people a few steps apart)
+  for (const o of region.talkers) {
+    const p = o.p; if (p.room !== r.id || (p.show && !p.show()) || p.gone) continue;
+    const dx = Math.abs(d.x - p.x); if (dx > TALK.NEAR || Math.abs(d.y - (p.y ?? FOOT)) > TALK.HIGH || (best && dx >= best.dx)) continue;
+    const L = typeof o.lines === "function" ? o.lines() : o.lines; if (L && L.length) best = { o, L, dx };
+  }
+  return best;
+}
+function updateTalkers(r) {
+  if (!pressed("up")) return;
+  const n = talkerNear(r); if (!n) return;
+  const { o, L } = n; o.i = (o.i + 1) % L.length;
+  david.facing = Math.sign(o.p.x - david.x) || david.facing; david.vx = 0;
+  rPlay([{ say: L[o.i] }]);
+}
+function drawTalkers(camX) {
+  const n = talkerNear(region.room); if (!n) return;
+  upHint(n.o.p.x - camX, (n.o.p.y ?? FOOT) - (n.o.p.hintH || 190));
+}
 function rPlay(steps) { region.script.push(...steps); }
 function updateRegionScript(dt) {
   if (dialog.t > 0 && dialog.hold) return;
@@ -1976,6 +2005,7 @@ function drawRegionFront(camX) {   // main.js, after David: the railings he walk
     ctx.drawImage(im, x, Math.round(p.y), w, k.h);
   }
   if (REGION.drawFront) REGION.drawFront(camX);
+  drawTalkers(camX);
   const near = region.story && !region.script.length && !(dialog.t > 0) && david.onGround && storyNear();
   if (near) upHint(near.x - camX, GR * T - 175);   // Up: hear them (over the railings: Glen 11-05)
 }

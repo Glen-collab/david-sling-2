@@ -217,6 +217,43 @@ function k4Build(R) {
     k4.endX = X(20);
     campfire(c + 46, GR - 1);
   }
+  k4Talk();
+}
+// (Glen 11-17: "everyone ... can say something instead of just standing there doing nothing") Up by anyone: their next
+//  line. Their own words, not Scripture, unless a reference is given. Keyed by room and column
+function k4Talk() {
+  const MEN = "One of David's men", W = "A woman of Keilah", M = "A man of Keilah", saul = () => k4Has("k4_saul");
+  const T_ = {
+    "hereth:9": [[MEN, "Four hundred of us, out here under the trees. Gad the prophet told David to come back to Judah (1 Samuel 22:5)."]],
+    "hereth:12": () => k4Has("k4_asked") ? [[MEN, "The LORD said go down to Keilah. If the LORD goes with us, I'll go too."]]
+      : [[MEN, "Keilah? Against the armies of the Philistines? We're afraid enough right here in Judah (1 Samuel 23:3)."]],
+    "hereth:15": [[MEN, "Keep your sling handy. There's more than foxes in these woods."]],
+    "hereth:19": [[MEN, "Every twig that snaps, I think it's Saul."]],
+    "hereth:23": [[MEN, "We left everything to follow you, David. I'd do it again."]],
+    "hereth:26": [[MEN, "I came out here to hide from Saul, not to fight Philistines. But if the LORD says go..."]],
+    "hereth:33": () => !k4Has("k4_news") ? null : k4Has("k4_floors") ? [["The runner", "You saved the floors! I ran all the way to tell you, and it was worth every step."]]
+      : [["The runner", "The threshing floors, past the woods! Hurry, they're carrying off the grain!"]],
+    "town:9": [[W, "The Philistines robbed our threshing floors every harvest. This year we'll have bread! Bless you, David."],
+      [W, "My husband says a town with gates and bars is the safest place in all Judah."]],
+    "town:18": () => saul() ? [[M, "Saul is coming here? Well... we'll have to do what's best for Keilah."]]
+      : [[M, "We watched from the wall. You drove them off and brought their livestock back too (1 Samuel 23:5)."]],
+    "town:44": [["A girl of Keilah", "Is that big ox yours now? Can I give him a name?"],
+      ["A girl of Keilah", "Mother says you play the harp for the king. Will you play for us tonight?"]],
+    "town:46": [["A boy of Keilah", "I saw you sling a stone clear across the floors! Will you teach me?"],
+      ["A boy of Keilah", "When I grow up, I'm going to be one of David's men."]],
+    "town:92": () => saul() ? [["An old man of Keilah", "Saul is a hard man, son. A frightened town will hand over one man to save itself. Be careful whom you trust."]]
+      : [["An old man of Keilah", "I've seen a lot of harvests stolen. Never one given back. The LORD is with you, young man."]],
+    "town:66": () => k4Has("k4_ephod") ? [["Abiathar", "The LORD has answered you. The men of Keilah would hand you over. Go, while the gate is still open!"]] : null,
+    "town:72": () => saul() ? [[MEN, "Saul, coming here? Behind these walls we're shut in like sheep in a pen."]]
+      : [[MEN, "We were afraid to come down to Keilah, and the LORD gave us the victory anyway."]],
+    "town:76": [[MEN, "Walls all around us for once. I could sleep for a week."]],
+    "town:80": [[MEN, "There were about four hundred of us at the cave. Now there are about six hundred (1 Samuel 22:2; 23:13)."]],
+    "hills:26": [[MEN, "Out of Keilah, all six hundred of us. We'll go wherever we can go (1 Samuel 23:13)."]],
+    "hills:30": [[MEN, "They would have handed us over to Saul. After all we did for them."]],
+    "hills:34": [[MEN, "No walls out here. But no gates to shut us in, either."]],
+    "hills:38": [[MEN, "They say Saul looks for you every day. But God hasn't handed you over to him, and He won't."]],
+  };
+  for (const p of k4.people) { const L = T_[p.room + ":" + Math.round(p.x / T - roomById(p.room).c0)]; if (L) rTalker(p, L); }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
