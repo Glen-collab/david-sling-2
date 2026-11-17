@@ -655,8 +655,8 @@ function z5DrawFront(camX) {
         if (SPR.messenger_gallop) {
           const mAt = sAt - 170, m0 = cx - 700, arrive = 0.9 + (mAt - m0) / 520;
           if (t < 0.9) {} else if (back < 0.6 && t < arrive) drawSprite("messenger_gallop", frameOf("messenger_gallop", t), m0 + (t - 0.9) * 520 - camX, FOOT, -1, 0.85);
-          else if (back < 0.6) drawSprite(SPR.messenger_talk ? "messenger_talk" : "messenger_gallop", frameOf("messenger_talk", t), mAt - camX, FOOT, -1, 0.85);
-          else drawSprite("messenger_gallop", frameOf("messenger_gallop", t), mAt - (back - 0.6) * 520 - camX, FOOT, 1, 0.85);
+          else if (back < 0.6) { const n = SPR.messenger_ride_talk ? "messenger_ride_talk" : "messenger_talk"; drawSprite(n, frameOf(n, t), mAt - camX, FOOT, -1, 0.85); }   // (Glen 11-17: talking from the saddle)
+          else drawSprite("messenger_gallop", frameOf("messenger_gallop", t * 1.5), mAt - (back - 0.6) * 900 - camX, FOOT, 1, 0.85);   // (then turned round, away faster)
         }
       }
     }

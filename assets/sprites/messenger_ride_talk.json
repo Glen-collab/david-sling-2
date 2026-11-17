@@ -1,0 +1,28 @@
+{
+ "frames": 14,
+ "frame_w": 395,
+ "frame_h": 347,
+ "ms_per_frame": 110,
+ "loop": true,
+ "align": "feet",
+ "anchor_x": 248,
+ "anchor_y": 344,
+ "source": "messenger_ride_talk.mp4 (Glen 11-17): pulled up, telling Saul from the saddle (there and back)",
+ "video_frames": [
+  106,
+  115,
+  125,
+  134,
+  144,
+  153,
+  162,
+  172,
+  181,
+  190,
+  200,
+  209,
+  219,
+  228
+ ],
+ "pingpong": true
+}

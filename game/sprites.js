@@ -5496,6 +5496,18 @@ window.SPRITE_DATA = {
   "ay": 344,
   "align": "feet"
  },
+ "messenger_ride_talk": {
+  "src": "../assets/sprites/messenger_ride_talk.png",
+  "frames": 14,
+  "w": 395,
+  "h": 347,
+  "ms": 110,
+  "loop": true,
+  "pingpong": true,
+  "ax": 248,
+  "ay": 344,
+  "align": "feet"
+ },
  "messenger_stop": {
   "src": "../assets/sprites/messenger_stop.png",
   "frames": 12,
