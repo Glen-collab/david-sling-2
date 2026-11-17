@@ -1,25 +1,25 @@
 {
-  "frames": 12,
-  "frame_w": 298,
-  "frame_h": 328,
-  "ms_per_frame": 104,
-  "loop": true,
-  "align": "feet",
-  "anchor_x": 143,
-  "anchor_y": 325,
-  "source": "david_gsword_walk_clip.mp4",
-  "video_frames": [
-    50,
-    52,
-    55,
-    58,
-    60,
-    62,
-    65,
-    68,
-    70,
-    72,
-    75,
-    78
-  ]
+ "frames": 12,
+ "frame_w": 142,
+ "frame_h": 255,
+ "ms_per_frame": 104,
+ "loop": true,
+ "align": "feet",
+ "anchor_x": 75,
+ "anchor_y": 253,
+ "source": "david_gsword_walkrun2.mov: walking (Glen 11-17, for one look with the sword)",
+ "video_frames": [
+  22,
+  24,
+  25,
+  27,
+  28,
+  30,
+  32,
+  33,
+  35,
+  36,
+  38,
+  39
+ ]
 }

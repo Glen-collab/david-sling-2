@@ -1982,14 +1982,14 @@ window.SPRITE_DATA = {
  },
  "david_gsword_flip": {
   "src": "../assets/sprites/david_gsword_flip.png",
-  "frames": 12,
-  "w": 394,
-  "h": 318,
+  "frames": 9,
+  "w": 195,
+  "h": 251,
   "ms": 156,
   "loop": false,
   "pingpong": false,
-  "ax": 197,
-  "ay": 200,
+  "ax": 97,
+  "ay": 126,
   "align": "center"
  },
  "david_gsword_hold": {
@@ -2019,13 +2019,13 @@ window.SPRITE_DATA = {
  "david_gsword_jump": {
   "src": "../assets/sprites/david_gsword_jump.png",
   "frames": 10,
-  "w": 366,
-  "h": 340,
+  "w": 164,
+  "h": 263,
   "ms": 138,
   "loop": false,
   "pingpong": false,
-  "ax": 183,
-  "ay": 211,
+  "ax": 82,
+  "ay": 132,
   "align": "center"
  },
  "david_gsword_kneel_down": {
@@ -2055,13 +2055,13 @@ window.SPRITE_DATA = {
  "david_gsword_land": {
   "src": "../assets/sprites/david_gsword_land.png",
   "frames": 8,
-  "w": 370,
-  "h": 340,
+  "w": 167,
+  "h": 256,
   "ms": 130,
   "loop": false,
   "pingpong": false,
-  "ax": 219,
-  "ay": 336,
+  "ax": 84,
+  "ay": 254,
   "align": "feet"
  },
  "david_gsword_rest": {
@@ -2078,14 +2078,14 @@ window.SPRITE_DATA = {
  },
  "david_gsword_run": {
   "src": "../assets/sprites/david_gsword_run.png",
-  "frames": 10,
-  "w": 342,
-  "h": 328,
+  "frames": 12,
+  "w": 193,
+  "h": 256,
   "ms": 138,
   "loop": true,
   "pingpong": false,
-  "ax": 199,
-  "ay": 325,
+  "ax": 131,
+  "ay": 254,
   "align": "feet"
  },
  "david_gsword_run_sling": {
@@ -2127,13 +2127,13 @@ window.SPRITE_DATA = {
  "david_gsword_walk": {
   "src": "../assets/sprites/david_gsword_walk.png",
   "frames": 12,
-  "w": 298,
-  "h": 328,
+  "w": 142,
+  "h": 255,
   "ms": 104,
   "loop": true,
   "pingpong": false,
-  "ax": 143,
-  "ay": 325,
+  "ax": 75,
+  "ay": 253,
   "align": "feet"
  },
  "david_guard": {

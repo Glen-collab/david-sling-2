@@ -1,21 +1,21 @@
 {
-  "frames": 8,
-  "frame_w": 370,
-  "frame_h": 340,
-  "ms_per_frame": 130,
-  "loop": false,
-  "align": "feet",
-  "anchor_x": 219,
-  "anchor_y": 336,
-  "source": "david_gsword_clipB.mp4",
-  "video_frames": [
-    108,
-    111,
-    115,
-    118,
-    122,
-    125,
-    129,
-    132
-  ]
+ "frames": 8,
+ "frame_w": 167,
+ "frame_h": 256,
+ "ms_per_frame": 130,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 84,
+ "anchor_y": 254,
+ "source": "david_gsword_jump2.mp4: the landing (Glen 11-17)",
+ "video_frames": [
+  94,
+  99,
+  104,
+  109,
+  113,
+  118,
+  123,
+  128
+ ]
 }

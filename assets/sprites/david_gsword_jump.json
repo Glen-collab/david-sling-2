@@ -1,23 +1,23 @@
 {
-  "frames": 10,
-  "frame_w": 366,
-  "frame_h": 340,
-  "ms_per_frame": 138,
-  "loop": false,
-  "align": "center",
-  "anchor_x": 183,
-  "anchor_y": 211,
-  "source": "david_gsword_clipB.mp4",
-  "video_frames": [
-    78,
-    82,
-    85,
-    89,
-    92,
-    96,
-    99,
-    103,
-    106,
-    110
-  ]
+ "frames": 10,
+ "frame_w": 164,
+ "frame_h": 263,
+ "ms_per_frame": 138,
+ "loop": false,
+ "align": "center",
+ "anchor_x": 82,
+ "anchor_y": 132,
+ "source": "david_gsword_jump2.mp4: straight up, tucked, feet down (Glen 11-17)",
+ "video_frames": [
+  28,
+  36,
+  43,
+  51,
+  58,
+  66,
+  73,
+  81,
+  88,
+  96
+ ]
 }
