@@ -92,7 +92,8 @@ function z5Guard(room, c0, c1, facing) {   // one of Saul's men walking his beat
 // building
 // (Glen's, 11-15: tools/cut_piece.py) the stronghold, his hiding rock, the rock of escape, the signal fire (lit, and its
 //  cold heap: the flames taken out)
-const Z5_KIT = { w4_z_stronghold: { w: 460, h: 252 }, w4_z_hide_rock: { w: 150, h: 151 }, w4_z_escape_rock: { w: 300, h: 245 },
+const Z5_KIT = { w4_tree_stump: { w: 560, h: 333 }, w4_tree_dead: { w: 300, h: 443 }, w4_tree_acacia: { w: 640, h: 315 }, w4_tree_oak: { w: 400, h: 329 }, w4_tree_terebinth: { w: 680, h: 447 },   // (Glen's trees, 11-17)
+  w4_z_stronghold: { w: 460, h: 252 }, w4_z_hide_rock: { w: 150, h: 151 }, w4_z_escape_rock: { w: 300, h: 245 },
   w4_z_fire: { w: 210, h: 229 }, w4_z_fire_out: { w: 210, h: 229 } };
 function z5Build(R) {
   if (typeof R4_KIT !== "undefined") Object.assign(KIT, R4_KIT);   // (adullam.js's rocks and rubble: hiding places)
@@ -228,6 +229,15 @@ function z5Build(R) {
       z5.hides.push({ room: rm, x: z5.rockX, x0: z5.rockX - w / 2, x1: z5.rockX + w / 2, y: FOOT - 4 }); }
     z5.endX = X(246);
   }
+  // (Glen's trees, 11-17) standing on the ground behind David (front: in front of him, sunk so its roots cross his path)
+  const tree = (rm, n, k, front = false, sink = 10) => { const kk = Z5_KIT[n]; region.props.push({ room: rm, n, x: (roomById(rm).c0 + k) * T - kk.w / 2, y: FOOT - kk.h + sink, front, back: !front }); };
+  tree("hills", "w4_tree_oak", 100); tree("hills", "w4_tree_dead", 133);
+  tree("horesh", "w4_tree_terebinth", 26); tree("horesh", "w4_tree_stump", 62); tree("horesh", "w4_tree_terebinth", 94);
+  tree("maon", "w4_tree_acacia", 76); tree("mountain", "w4_tree_dead", 200); tree("mountain", "w4_tree_acacia", 232);
+  tree("goatpath", "w4_tree_oak", 8); tree("goatpath", "w4_tree_dead", 40); tree("goatpath", "w4_tree_oak", 86);
+  tree("thicket", "w4_tree_terebinth", 6); tree("thicket", "w4_tree_oak", 24); tree("thicket", "w4_tree_terebinth", 46); tree("thicket", "w4_tree_stump", 68); tree("thicket", "w4_tree_terebinth", 82);
+  tree("thicket", "w4_tree_stump", 38, true, 170);   // (a big root crossing the deer track, in front of him)
+  tree("wadi", "w4_tree_acacia", 18); tree("wadi", "w4_tree_dead", 64); tree("wadi", "w4_tree_acacia", 102);
   // -- the side paths (Glen 11-17): ridges and hollows off the way, something to find in each
   c = R("goatpath");
   { const rm = "goatpath", X = k => (c + k) * T;
