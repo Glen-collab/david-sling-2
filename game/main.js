@@ -2632,6 +2632,12 @@ function drawDavid(camX) {
     } else if (!d.charging && d.runThrow && SPR.david_run_sling_throw) {
       i = Math.min(11, Math.floor(d.throwT / TUNE.RUN_THROW_TIME * 12));
       drawSprite("david_run_sling_throw", i, x, y, d.facing);
+    } else if (d.onGround && d.h === LOW_H && !d.aimingUp && SPR.david_crouch_sling) {
+      // (Glen 11-17) crouched: down on one knee, the sling whirled overhead (frames 2-11), the stone low
+      if (d.charging) i = Math.min(1, Math.floor(d.charge * 1000 / 90)) + (d.charge > 0.18 ? 1 + Math.floor(d.charge * 1000 / 70) % 10 : 0);
+      else i = Math.min(11, Math.floor(d.throwT / TUNE.THROW_TIME * 12));
+      drawSprite("david_crouch_sling", i, x, y, d.facing);
+      gx = x - d.facing * 10; gy = y - 95;
     } else {
       if (d.charging) i = Math.floor(d.charge * 1000 / 70) % 6;
       else i = Math.min(11, Math.floor(d.throwT / TUNE.THROW_TIME * 12));

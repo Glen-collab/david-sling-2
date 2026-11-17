@@ -1,0 +1,25 @@
+{
+ "frames": 12,
+ "frame_w": 291,
+ "frame_h": 259,
+ "ms_per_frame": 70,
+ "loop": false,
+ "align": "feet",
+ "anchor_x": 164,
+ "anchor_y": 257,
+ "source": "david_crouch_sling.mp4 (Glen 11-17: down on one knee, the sling whirled overhead; frames 0-1 dropping to the knee, 2-11 the whirl)",
+ "video_frames": [
+  1,
+  9,
+  17,
+  25,
+  33,
+  41,
+  49,
+  57,
+  65,
+  73,
+  81,
+  89
+ ]
+}

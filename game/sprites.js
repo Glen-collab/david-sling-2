@@ -1872,6 +1872,18 @@ window.SPRITE_DATA = {
   "ay": 234,
   "align": "feet"
  },
+ "david_crouch_sling": {
+  "src": "../assets/sprites/david_crouch_sling.png",
+  "frames": 12,
+  "w": 291,
+  "h": 259,
+  "ms": 70,
+  "loop": false,
+  "pingpong": false,
+  "ax": 164,
+  "ay": 257,
+  "align": "feet"
+ },
  "david_dive": {
   "src": "../assets/sprites/david_dive.png",
   "frames": 10,
