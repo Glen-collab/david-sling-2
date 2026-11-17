@@ -156,7 +156,7 @@ function k4Build(R) {
       "David inquired of the LORD yet again. The LORD answered him, and said, “Arise, go down to Keilah; for I will deliver the Philistines into your hand.” (1 Samuel 23:4)");
     oliveRow(c + 55, onTop(300) - 0.4, 4); oliveRow(c + 85, onTop(300) - 0.4, 4);
     // the town's gate at the right: once the floors are safe, the livestock in the gate (23:5)
-    for (const [n, k] of [["ox_stand", 101], ["sheep2_graze", 104], ["goat_stand", 106], ["sheep_graze", 102]]) k4.herd.push({ room: rm, spr: n, x: X(k), y: FOOT, dir: -1 });   // (Glen's ox, 11-15)
+    for (const [n, k] of [["ox_stand", 105], ["sheep2_graze", 104], ["goat_stand", 106], ["sheep_graze", 102]]) k4.herd.push({ room: rm, spr: n, x: X(k), y: FOOT, dir: -1 });   // (Glen's ox, 11-15)   (Glen 11-17: backed up from 101 to 105, his head and nose in the gateway)
   }
 
   // -- Keilah (23:6-12): the town saved. The people, Abiathar with the ephod (after the floors), the runner, and the
