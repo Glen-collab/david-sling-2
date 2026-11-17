@@ -102,7 +102,7 @@ function z5Build(R) {
   for (const pl of ["keilah/road", "keilah/hereth"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);   // (the side paths' stand-ins)
   for (const k of ["people", "guards", "hides", "lookouts", "clefts", "scouts"]) z5[k].length = 0;
   z5.siege = null; z5.pose = null; z5.caughtT = 0; z5.back = {};
-  [...Object.keys(Z5_KIT), "w4_trail", "w4_rubble_sand", "w4_arch_sand", "w4_rocks_sand"].forEach(kitImg);
+  [...Object.keys(Z5_KIT), "w4_trail", "w4_trail_rocks", "w4_trail_dry", "w4_rubble_sand", "w4_arch_sand", "w4_rocks_sand"].forEach(kitImg);
   const G = GR * T;
 
   // -- The Hills of Ziph (23:14): Saul seeks him every day. His men walk the hills: rock to rock, crouch when one looks
@@ -247,7 +247,7 @@ function z5Build(R) {
     rRelic("z5_pom_goatpath", "pomegranate", c + 30, onTop(290)); rRelic("z5_stone_goatpath", "stone", c + 72, onTop(260));
     rHyraxFamily(rm, c + 16, 2); rWild("partridge", rm, c + 48, { range: 2 }); rWild("caracal", rm, c + 64, { range: 3 }); rWild("viper", rm, c + 88);
     rBreak("jar", rm, c + 94, 16);
-    rPath("hills", z5PathAt("hills", 66), "goatpath", 3, "A goat path winds up into the hills. Up to follow it.");
+    rPath("hills", z5PathAt("hills", 66), "goatpath", 3, "A goat path winds up into the hills. Up to follow it.", "w4_trail_rocks");
   }
   c = R("thicket");
   { const rm = "thicket", X = k => (c + k) * T;
@@ -270,7 +270,7 @@ function z5Build(R) {
     rRelic("z5_pom_wadi", "pomegranate", c + 99, onTop(330));
     rWild("wildass", rm, c + 40); rWild("ostrich", rm, c + 66); rWild("viper", rm, c + 52); rHyraxFamily(rm, c + 90, 1);
     rBreak("jar", rm, c + 36, 16);
-    rPath("maon", z5PathAt("maon", 24), "wadi", 3, "A dry streambed cuts down into the rock. Up to follow it.");
+    rPath("maon", z5PathAt("maon", 24), "wadi", 3, "A dry streambed cuts down into the rock. Up to follow it.", "w4_trail_dry");
   }
   z5Talk();
 }

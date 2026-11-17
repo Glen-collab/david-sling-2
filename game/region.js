@@ -1822,21 +1822,22 @@ region.script = []; region.wait = 0; region.pose = null; region.story = null;
 //  of room: Up there and he turns his back and walks off along it, into room `to` at column `at`. The side room's own
 //  ends (outL / outR on its room) bring him back out. say: told once, the first time he's near it
 const PATH = { REACH: 70, TURN: 0.5, WALK: 0.7, RISE: 70, SHRINK: 0.45 };
-function rPath(room, c, to, at, say = null) { region.paths.push({ room, x: c * T + T / 2, to, at, say }); }
+function rPath(room, c, to, at, say = null, trail = "w4_trail") { region.paths.push({ room, x: c * T + T / 2, to, at, say, trail }); }   // (trail: which of Glen's trail pictures)
 function pathNear(r) {
   const d = david; if (!r || !d.onGround || region.trans) return null;
   return region.paths.find(p => p.room === r.id && Math.abs(d.x - p.x) < PATH.REACH && Math.abs(d.y - FOOT) < 40) || null;
 }
 // (Glen's trail, 11-17: "a path we can use and fill with vegetation to create the illusion") behind David, where it goes
 //  off into the picture; a pale track if the picture isn't there
-const TRAIL = { W: 440, H: 188, SINK: 34 };
+const TRAIL = { SINK: 34,   // (each picture's size; SINK: px its foot goes into the ground)
+  w4_trail: { w: 440, h: 188 }, w4_trail_rocks: { w: 460, h: 280 }, w4_trail_dry: { w: 440, h: 167 } };
 function drawPathTrails(camX) {
   const r = region.room; if (!r) return;
-  const im = kitImg("w4_trail");
   for (const p of region.paths) {
     if (p.room !== r.id) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
-    if (im) { ctx.drawImage(im, x - TRAIL.W / 2, FOOT - TRAIL.H + TRAIL.SINK, TRAIL.W, TRAIL.H); continue; }
+    const im = kitImg(p.trail), k = TRAIL[p.trail];
+    if (im && k) { ctx.drawImage(im, x - k.w / 2, FOOT - k.h + TRAIL.SINK, k.w, k.h); continue; }
     ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#e8d3a8";
     ctx.beginPath(); ctx.moveTo(x - 46, FOOT - 2); ctx.quadraticCurveTo(x - 10, FOOT - 40, x - 6, FOOT - 80); ctx.lineTo(x + 6, FOOT - 80); ctx.quadraticCurveTo(x + 14, FOOT - 40, x + 46, FOOT - 2); ctx.closePath(); ctx.fill(); ctx.restore();
   }
