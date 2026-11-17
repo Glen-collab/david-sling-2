@@ -19,7 +19,7 @@ const K4 = {
   SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17,
     townsman: 1.2, townswoman: 1.15 },   // (11-17: "these people are small in Keilah": the night street's men and women, 216 and 208 px to David's 240) ABIATHAR_HOLD: 6,
   ASK: { NEAR: 90, KNEEL_MS: 161, ABIATHAR: 170 },
-  GATE_REACH: 160,   // (Glen 11-17) px before an open gate where Up takes him through   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
+  GATE_REACH: 160, GATE_TURN: 0.75,   // (Glen 11-17) px before an open gate where Up takes him through   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
   // (Glen 11-14: "We can build multiple floors to defend like the caves. That was fun.") the raiders: each wave's count,
   //  one every EVERY s; their walk and their run with a sack (px/s); a grab takes GRAB s; each floor's sacks; the wave's
   //  lost if LOSE sacks get away; REST s between waves; HURT: px from David that knocks him (while they walk at him)
@@ -324,6 +324,14 @@ function k4Update(dt, r) {
     rPlay([{ say: ["A runner", "Behold, the Philistines are fighting against Keilah, and are robbing the threshing floors! (1 Samuel 23:1)"] },
       { fn() { toast("Ask the LORD first: go to the rock and press Up."); } }]);
   }
+  // (Glen 11-17: "use the turn and go through sprite like going into the caves") through a gate: into the gateway, his
+  //  back to us (Adullam's tunnel turn), then the cut to the far side
+  const gw = k4.gateWalk;
+  if (gw) {
+    gw.t += dt; d.vx = 0; d.x += (gw.at - d.x) * Math.min(1, dt * 6);
+    if (!gw.gone && gw.t >= K4.GATE_TURN) { gw.gone = true; const n = roomById(gw.to); regionGo((n.c0 + 2) * T, 1, () => { k4.gateWalk = null; }); }
+    return;
+  }
   // (Glen 11-17) Abiathar with the ephod, once Saul's coming: walk up to him and the asking starts
   if (r.id === "town" && k4Has("k4_saul") && !k4Has("k4_ephod") && !region.script.length && region.wait <= 0 && !region.trans && d.onGround && Math.abs(d.x - k4.abiathar.x) < K4.ASK.ABIATHAR) {
     const ep = k4.rocks.find(o => o.id === "ephod"); if (ep) { k4AskScene(ep); return; } }
@@ -339,7 +347,7 @@ function k4Update(dt, r) {
   //  stop him even open: Up at one, open, and through it he goes
   const gate = (x, open, to, say) => {
     if (d.x > x) { d.x = x; d.vx = Math.min(0, d.vx); if (!open) k4Tell("wall" + x, say); }
-    if (open && d.onGround && d.x > x - K4.GATE_REACH && pressed("up") && !region.script.length && region.wait <= 0 && !region.trans) { const n = roomById(to); regionGo((n.c0 + 2) * T, 1); return true; }
+    if (open && d.onGround && d.x > x - K4.GATE_REACH && pressed("up") && !region.script.length && region.wait <= 0 && !region.trans) { k4.gateWalk = { t: 0, to, at: x + 100 }; d.vx = 0; d.charging = false; return true; }
     return false;
   };
   if (r.id === "floors" && gate((r.c0 + r.w - 9) * T, k4Has("k4_floors"), "town", "The raiders are still at the floors. Save the grain first!")) return;
@@ -357,6 +365,7 @@ function k4Update(dt, r) {
 }
 function k4Hold(d, dt) {
   const R_ = k4.run;
+  if (k4.gateWalk) { d.vx = 0; return true; }   // (turning into a gate)
   if (R_ && R_.grabT > 0) { R_.grabT -= dt; d.vx = 0; d.vy = Math.min(TUNE.MAX_FALL, d.vy + TUNE.GRAVITY * dt); collideBody(d, BODY_W, d.h, dt); return true; }
   if (R_ && R_.fail) { d.vx = 0; return true; }
   return false;
@@ -507,6 +516,9 @@ function k4RunUpdate(dt) {
 // ---------------------------------------------------------------------------------------------------------------------
 // drawing
 function k4DrawDavid(d, x, y) {
+  if (k4.gateWalk) {   // (as Adullam's tunnels) his back-turn clip, held on its last frame, his back to us, till the cut
+    const n = SPR.david_back_turn ? "david_back_turn" : "david_turn_away", f = SPR[n] ? SPR[n].frames : 8;
+    drawSprite(n, Math.min(f - 1, Math.floor(k4.gateWalk.t / K4.GATE_TURN * f)), x, y, d.facing); return true; }
   if (!k4.kneel) return false;
   return drawDavidPray(k4.kneel.t, x, y, d.facing);   // (Glen 11-16: he kneels, then prays with his hands together)
 }
@@ -573,7 +585,7 @@ function k4DrawFront(camX) {
   if (r.id === "town" && k4Has("k4_saul") && !k4Has("k4_ephod") && !region.script.length && k4.abiathar) upHint(k4.abiathar.x - camX, FOOT - 175);
   // (Glen 11-17) at an open gate: Up to go through
   { const gx = r.id === "floors" && k4Has("k4_floors") ? (r.c0 + r.w - 9) * T : r.id === "town" && k4Has("k4_ephod") ? k4.gateX : null;
-    if (gx != null && !region.script.length && david.x > gx - K4.GATE_REACH) upHint(gx + 100 - camX, FOOT - 330); }
+    if (gx != null && !region.script.length && !k4.gateWalk && david.x > gx - K4.GATE_REACH) upHint(gx + 100 - camX, FOOT - 330); }
   if (r.id === "floors") for (const q of k4.raiders) {
     const x = q.x - camX; if (x < -300 || x > W + 300) continue;
     let n = "raider_run", i = frameOf(n, q.t);
