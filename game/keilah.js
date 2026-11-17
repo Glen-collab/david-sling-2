@@ -18,7 +18,8 @@ const K4 = {
   //  drawn 1.44x David (the girl and woman already smaller by TUNE.SPRITE_SIZE), Abiathar's a little under him. ABIATHAR_HOLD: the frame of his talk clip he stands on (it walks)
   SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17,
     townsman: 1.2, townswoman: 1.15 },   // (11-17: "these people are small in Keilah": the night street's men and women, 216 and 208 px to David's 240) ABIATHAR_HOLD: 6,
-  ASK: { NEAR: 90, KNEEL_MS: 161, ABIATHAR: 170 },   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
+  ASK: { NEAR: 90, KNEEL_MS: 161, ABIATHAR: 170 },
+  GATE_REACH: 160,   // (Glen 11-17) px before an open gate where Up takes him through   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
   // (Glen 11-14: "We can build multiple floors to defend like the caves. That was fun.") the raiders: each wave's count,
   //  one every EVERY s; their walk and their run with a sack (px/s); a grab takes GRAB s; each floor's sacks; the wave's
   //  lost if LOSE sacks get away; REST s between waves; HURT: px from David that knocks him (while they walk at him)
@@ -334,8 +335,15 @@ function k4Update(dt, r) {
   // the way on is shut till he's asked (Hereth), till the floors are safe (to the town), till the question (the gate)
   const wall = (x, ok, say) => { if (!ok && d.x > x) { d.x = x; d.vx = Math.min(0, d.vx); k4Tell("wall" + x, say); } };
   if (r.id === "hereth") wall((r.c0 + r.w - 3) * T, k4Has("k4_asked"), "David won't go down to Keilah before he asks the LORD. The rock: Up.");
-  if (r.id === "floors") wall((r.c0 + r.w - 9) * T, k4Has("k4_floors"), "The raiders are still at the floors. Save the grain first!");
-  if (r.id === "town") wall(k4.gateX, k4Has("k4_ephod"), k4Has("k4_saul") ? "Ask the LORD first: Abiathar has the ephod (Up by him)." : "Keilah is safe, and glad of it. Stay a while.");
+  // (Glen 11-17: "when this gate and the gate with oxen opens I should have to hit up to go in") the town's two gates
+  //  stop him even open: Up at one, open, and through it he goes
+  const gate = (x, open, to, say) => {
+    if (d.x > x) { d.x = x; d.vx = Math.min(0, d.vx); if (!open) k4Tell("wall" + x, say); }
+    if (open && d.onGround && d.x > x - K4.GATE_REACH && pressed("up") && !region.script.length && region.wait <= 0 && !region.trans) { const n = roomById(to); regionGo((n.c0 + 2) * T, 1); return true; }
+    return false;
+  };
+  if (r.id === "floors" && gate((r.c0 + r.w - 9) * T, k4Has("k4_floors"), "town", "The raiders are still at the floors. Save the grain first!")) return;
+  if (r.id === "town" && gate(k4.gateX, k4Has("k4_ephod"), "escape", k4Has("k4_saul") ? "Ask the LORD first: Abiathar has the ephod (Up by him)." : "Keilah is safe, and glad of it. Stay a while.")) return;
   if (r.id === "floors") k4RaidUpdate(dt);
   if (r.id === "escape") k4RunUpdate(dt);
   // the end (23:13-14)
@@ -563,6 +571,9 @@ function k4DrawFront(camX) {
   const r = region.room; if (!r) return;
   // (Glen 11-17: "put an arrow above him like the other main characters that talk") Abiathar, waiting with the ephod
   if (r.id === "town" && k4Has("k4_saul") && !k4Has("k4_ephod") && !region.script.length && k4.abiathar) upHint(k4.abiathar.x - camX, FOOT - 175);
+  // (Glen 11-17) at an open gate: Up to go through
+  { const gx = r.id === "floors" && k4Has("k4_floors") ? (r.c0 + r.w - 9) * T : r.id === "town" && k4Has("k4_ephod") ? k4.gateX : null;
+    if (gx != null && !region.script.length && david.x > gx - K4.GATE_REACH) upHint(gx + 100 - camX, FOOT - 330); }
   if (r.id === "floors") for (const q of k4.raiders) {
     const x = q.x - camX; if (x < -300 || x > W + 300) continue;
     let n = "raider_run", i = frameOf(n, q.t);
