@@ -179,7 +179,7 @@ function k4Build(R) {
     k4Person(rm, "villager_girl_stand", X(44), FOOT, -1, () => !k4Has("k4_ephod"));
     k4Person(rm, "villager_boy_stand", X(46), FOOT, -1, () => !k4Has("k4_ephod"));
     rAwning(rm, c + 50); rRoof(rm, X(57), 330, 1); rRelic("k4_oil_town", "oil", c + 59, onTop(330));
-    k4.abiathar = k4Person(rm, "abiathar_talk", X(66), FOOT, -1, () => k4Has("k4_floors"));
+    k4.abiathar = k4Person(rm, SPR.abiathar_stand ? "abiathar_stand" : "abiathar_talk", X(66), FOOT, -1, () => k4Has("k4_floors"));   // (Glen's picture, 11-17: standing with the ephod, waiting for David)
     k4.rocks.push({ id: "ephod", room: rm, x: X(68) });   // (the ephod: Up by Abiathar)
     for (const k of [72, 76, 80]) k4Person(rm, ["soldier_talk", "soldier2_fear", "soldier4_fear"][k % 3], X(k), FOOT, k % 2 ? 1 : -1).still = k !== 72;
     rDeco(rm, "t_house", c + 86); rDeco(rm, "t_jars", c + 94);
@@ -259,7 +259,7 @@ function k4AskScene(rock) {
       { say: ["", "The LORD said, “He will come down.” (1 Samuel 23:11)"] },
       { say: ["David", "Will the men of Keilah deliver me and my men into the hand of Saul? (1 Samuel 23:12)"] },
       { say: ["", "The LORD said, “They will deliver you up.” (1 Samuel 23:12)"] },
-      pose("abiathar_talk"),
+      pose(SPR.abiathar_stand ? "abiathar_stand" : "abiathar_talk"),
       { fn() { k4.kneel = null; regionAdd("taken", "k4_ephod"); learnSkill("ask");
         toast("Night falls on Keilah. The doors are shutting. Get out before they shut the gate: run!"); } }]);
   }

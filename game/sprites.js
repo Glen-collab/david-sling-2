@@ -36,6 +36,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "abiathar_stand": {
+  "src": "../assets/sprites/abiathar_stand.png",
+  "frames": 1,
+  "w": 75,
+  "h": 229,
+  "ms": 1000,
+  "loop": false,
+  "pingpong": false,
+  "ax": 42,
+  "ay": 227,
+  "align": "feet"
+ },
  "abiathar_talk": {
   "src": "../assets/sprites/abiathar_talk.png",
   "frames": 12,
