@@ -796,6 +796,10 @@ function r3Build(R) {
     oliveRow(c + 38, 16, 4); oliveRow(c + 70, 16, 4); rRelic("r3_truth_streets", "truth", c + 48, 16,
       "When I am afraid, I will put my trust in you. In God, whose word I praise, in God I have put my trust. I will not be afraid. (Psalm 56:3-4)");
     rKitDoor("d_palace", "streets", c + 99, "door", "d_courtin", "w3_palace_door");   // (Achish's palace: Glen's carved doorway, 11-12)
+    // (Glen 11-17: "I have to leave the palace and the guard is there and I act mad again and then I walk off to the
+    //  right with a big arrow") the guard at the king's door; thrown out, David acts mad for him, then away right
+    r3Person("streets", "gath_guard_idle", X(103), -1, R3.NPC_K, "doorguard");
+    r3.palaceOut = X(100); r3.leaveAt = X(105);
     // (Glen 11-10) past the king's door, a cracked wall across the lane: Goliath's sword breaks through, on to his yard
     r3Wall("r3_wall_streets", "streets", c + 108, 4);
   }
@@ -942,6 +946,11 @@ function r3Update(dt) {
   // Gath: the guard knows him at the gate (21:11); Achish's court (21:14-15)
   if (r.id === "gath" && !r3Has("r3_gath") && free && d.x > r3.gateAt) { r3GateScene(); return; }
   if (r.id === "court" && !r3Has("r3_mad") && free && d.x > r3.courtAt) { r3CourtScene(); return; }
+  if (r.id === "streets" && r3Has("r3_mad") && !regionHas("taken", "g_exit_open") && free && d.x > r3.leaveAt) {   // (Glen 11-17) away right: the end
+    regionAdd("taken", "g_exit_open");
+    rPlay([{ say: ["", "David therefore departed from there and escaped to Adullam’s cave. (1 Samuel 22:1)"] }, { fn() { jsceneOpen(true); } }]);
+    return;
+  }
   if (r.id === "court" && r3Has("r3_mad") && free) {   // (a later visit) the guards on their beat
     const C = R3.COURT2, crouch = david.h === LOW_H;
     for (const tag of ["elite1", "elite2"]) {
@@ -1194,13 +1203,16 @@ function r3CourtScene() {
       rPlay([
         { say: ["Achish", "Look, the man is mad! Why have you brought him to me? Do I lack madmen, that you've brought this fellow to play the madman in front of me? Shall this fellow come into my house? (1 Samuel 21:14-15)"] },
         { fn() { r3Anim("achish", "achish_point"); r3Anim("elite1", "gath_elite_block", -1); r3Anim("elite2", "gath_elite_block", -1); } },
-        { say: ["", "The king's guards close in. Keep it up, all the way out the door!"] },
-        { fn() { r3MadMash("Get past the guards! Keep acting crazy!", R3.MAD.GUARDS, "david_mad_stagger", () => {
+        { say: ["A royal guard", "You heard the king. Out with him!"] },
+        // (Glen 11-17) out of the palace: the street, the guard at the king's door. Act mad for him too, then away right
+        { fn() { const g = r3Who("doorguard"); moveParty(r3.palaceOut, GR * T); david.facing = 1; snapCamera(); if (g) g.facing = -1; }, wait: 0.4 },
+        { say: ["", "The king's guards throw David out of the palace, into the street."] },
+        { say: ["The guard at the door", "Back again? Let's see how mad you really are."] },
+        { fn() { r3MadMash("Act mad for the guard!", R3.MAD.GUARDS, "david_mad_stagger", () => {
+          r3Anim("doorguard", "gath_guard_laugh");
           rPlay([
-            { say: ["A royal guard", "Get this crazy person out of here!"] },
-            { fn() { regionAdd("taken", "r3_mad"); } },
-            { say: ["", "David therefore departed from there and escaped to Adullam’s cave. (1 Samuel 22:1)"] },
-            { fn() { regionAdd("taken", "g_exit_open"); jsceneOpen(true); } },
+            { say: ["The guard at the door", "Ha! Get this crazy person out of here! Go on, off with you!"] },
+            { fn() { r3Anim("doorguard", "gath_guard_idle"); regionAdd("taken", "r3_mad"); toast("Get out of Gath: go right!"); } },
           ]);
         }); } },
       ]);
@@ -1476,6 +1488,15 @@ function r3DrawMight() {
   if (r3.caughtT > 0) { const k = 1 - Math.abs(r3.caughtT - R3.SNEAK.CAUGHT_FADE / 2) / (R3.SNEAK.CAUGHT_FADE / 2); ctx.fillStyle = `rgba(0,0,0,${k})`; ctx.fillRect(0, 0, W, H); }
   for (const q of r3.chips) { ctx.globalAlpha = Math.max(0, 1 - q.t / q.life); ctx.fillStyle = "#e3d3b0"; ctx.fillRect(q.x - camX - q.r / 2, q.y - camY - q.r / 2, q.r, q.r); }
   ctx.globalAlpha = 1;
+  if (region.room && region.room.id === "streets" && r3Has("r3_mad") && !regionHas("taken", "g_exit_open") && !region.script.length && !(dialog && dialog.t > 0)) {
+    // (Glen 11-17: "a big arrow or something ... pointing me to the right") out of Gath
+    const bob = Math.sin(performance.now() / 160) * 14, ax = W - 190 + bob, ay = H * 0.52;
+    ctx.save(); ctx.globalAlpha = 0.92; ctx.fillStyle = "#ffd76a"; ctx.strokeStyle = "rgba(59,42,24,0.9)"; ctx.lineWidth = 6; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(ax - 110, ay - 26); ctx.lineTo(ax - 10, ay - 26); ctx.lineTo(ax - 10, ay - 62); ctx.lineTo(ax + 70, ay); ctx.lineTo(ax - 10, ay + 62); ctx.lineTo(ax - 10, ay + 26); ctx.lineTo(ax - 110, ay + 26); ctx.closePath();
+    ctx.stroke(); ctx.fill();
+    ctx.font = "bold 26px Georgia, serif"; ctx.textAlign = "center"; ctx.lineWidth = 5; ctx.strokeText("Out of Gath", ax - 30, ay + 104); ctx.fillStyle = "#fff4d6"; ctx.fillText("Out of Gath", ax - 30, ay + 104);
+    ctx.restore();
+  }
   const m = r3.might; if (!m) return;
   const M = R3.MIGHT, cx = W / 2, top = 150, bh = 330, bw = 46, bx = W - 170;
   ctx.save(); ctx.textAlign = "center"; ctx.lineJoin = "round";
