@@ -1370,6 +1370,7 @@ function drawRegion(camX) {
   drawTowerEnds(camX); drawProps(camX); drawRegionLadders(camX); drawLedges(camX);
   drawFloorCrumbles(camX);
   drawBreaks(camX);
+  drawPathTrails(camX);   // (behind the animals and David)
   drawBeasts(camX);
   drawHarpRoom(camX);
   drawStory(camX);
@@ -1826,15 +1827,22 @@ function pathNear(r) {
   const d = david; if (!r || !d.onGround || region.trans) return null;
   return region.paths.find(p => p.room === r.id && Math.abs(d.x - p.x) < PATH.REACH && Math.abs(d.y - FOOT) < 40) || null;
 }
-function drawPaths(camX) {
-  const r = region.room; if (!r || region.pathWalk) return;
+// (Glen's trail, 11-17: "a path we can use and fill with vegetation to create the illusion") behind David, where it goes
+//  off into the picture; a pale track if the picture isn't there
+const TRAIL = { W: 440, H: 188, SINK: 34 };
+function drawPathTrails(camX) {
+  const r = region.room; if (!r) return;
+  const im = kitImg("w4_trail");
   for (const p of region.paths) {
     if (p.room !== r.id) continue;
-    const x = p.x - camX; if (x < -200 || x > W + 200) continue;
-    // a worn trail going off into the picture: a pale track narrowing up from his feet
+    const x = p.x - camX; if (x < -300 || x > W + 300) continue;
+    if (im) { ctx.drawImage(im, x - TRAIL.W / 2, FOOT - TRAIL.H + TRAIL.SINK, TRAIL.W, TRAIL.H); continue; }
     ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#e8d3a8";
     ctx.beginPath(); ctx.moveTo(x - 46, FOOT - 2); ctx.quadraticCurveTo(x - 10, FOOT - 40, x - 6, FOOT - 80); ctx.lineTo(x + 6, FOOT - 80); ctx.quadraticCurveTo(x + 14, FOOT - 40, x + 46, FOOT - 2); ctx.closePath(); ctx.fill(); ctx.restore();
   }
+}
+function drawPaths(camX) {
+  const r = region.room; if (!r || region.pathWalk) return;
   const n = pathNear(r);
   if (n && !region.script.length && !(dialog.t > 0)) { upHint(n.x - camX, FOOT - 250); if (n.say && !regionHas("seen", "path_" + n.to + n.x)) { regionAdd("seen", "path_" + n.to + n.x); toast(n.say); } }
 }

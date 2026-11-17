@@ -102,7 +102,7 @@ function z5Build(R) {
   for (const pl of ["keilah/road", "keilah/hereth"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);   // (the side paths' stand-ins)
   for (const k of ["people", "guards", "hides", "lookouts", "clefts", "scouts"]) z5[k].length = 0;
   z5.siege = null; z5.pose = null; z5.caughtT = 0; z5.back = {};
-  [...Object.keys(Z5_KIT), "w4_rubble_sand", "w4_arch_sand", "w4_rocks_sand"].forEach(kitImg);
+  [...Object.keys(Z5_KIT), "w4_trail", "w4_rubble_sand", "w4_arch_sand", "w4_rocks_sand"].forEach(kitImg);
   const G = GR * T;
 
   // -- The Hills of Ziph (23:14): Saul seeks him every day. His men walk the hills: rock to rock, crouch when one looks
