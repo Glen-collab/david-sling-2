@@ -453,9 +453,8 @@ function k4RunUpdate(dt) {
 // ---------------------------------------------------------------------------------------------------------------------
 // drawing
 function k4DrawDavid(d, x, y) {
-  if (!k4.kneel || !SPR.david_kneel) return false;
-  drawSprite("david_kneel", Math.min(SPR.david_kneel.frames - 1, Math.floor(k4.kneel.t * 1000 / K4.ASK.KNEEL_MS)), x, y, d.facing);
-  return true;
+  if (!k4.kneel) return false;
+  return drawDavidPray(k4.kneel.t, x, y, d.facing);   // (Glen 11-16: he kneels, then prays with his hands together)
 }
 function k4Draw(camX) {
   const r = region.room; if (!r) return;

@@ -2388,6 +2388,18 @@ window.SPRITE_DATA = {
   "ay": 197,
   "align": "feet"
  },
+ "david_pray": {
+  "src": "../assets/sprites/david_pray.png",
+  "frames": 18,
+  "w": 125,
+  "h": 186,
+  "ms": 200,
+  "loop": true,
+  "pingpong": true,
+  "ax": 88,
+  "ay": 185,
+  "align": "feet"
+ },
  "david_rip_page": {
   "src": "../assets/sprites/david_rip_page.png",
   "frames": 6,

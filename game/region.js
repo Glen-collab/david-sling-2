@@ -236,6 +236,15 @@ function rStair(room, c) {   // the brick stair, up to the left: a ledge on each
 function rColumn(room, c) { const k = KIT.hall_column; region.props.push({ room, n: "hall_column", x: c * T + T / 2 - k.w, y: GR * T + 4 - 2 * k.h, s: 2 }); }   // a cedar column, twice size   // a cedar column, twice size, behind everything
 // ---- the Fields kit (Glen 11-05) ----
 let FOOT = 0;   // (set in buildRegion: GR * T + 4) where a piece's bottom stands (a little into the ground)
+// (Glen 11-16) David praying: he kneels (david_kneel, once), then prays (Glen's clip, david_pray, a slow loop). t: seconds
+//  since he began to kneel. Use it anywhere he stops to pray
+function drawDavidPray(t, x, y, facing) {
+  const k = SPR.david_kneel, p = SPR.david_pray; if (!k) return false;
+  const kt = k.frames * k.ms / 1000;
+  if (t < kt || !p) drawSprite("david_kneel", Math.min(k.frames - 1, Math.floor(t * 1000 / k.ms)), x, y, facing);
+  else drawSprite("david_pray", frameOf("david_pray", t - kt), x, y, facing);
+  return true;
+}
 function rTerrace(room, c, nMid, kit = "f_wall") {   // a terrace wall from column c, solid, its stone top a ledge; returns the column after it (kit: w3_ywall in Goliath's yard)
   const parts = [kit + "_left", ...Array(nMid).fill(kit + "_mid"), kit + "_right"];
   let px = c * T;
