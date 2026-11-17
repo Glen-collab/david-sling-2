@@ -122,6 +122,9 @@ const TUNE = {
     // the older David, matched by head size to his idle (Glen 2026-11-02: the throw drew him nearly a head taller, the harp
     // bigger still; the 1.15 here was Part One's boy)
     david_sling_throw: 0.92,
+    // (Glen 11-17: "his size was ok until he stood up, then he was huge") Erem's head measured in every clip: 50 px lying,
+    //  sitting, drinking, talking and getting up; 40 standing (erem_idle), David's 42. All of them now 41
+    erem_lie: 0.82, erem_wake: 0.82, erem_drink: 0.82, erem_talk: 0.82, erem_sit: 0.82, erem_rise: 0.82,
     david_play_harp: 0.81, david_sit_harp: 0.81,
     david_crawl: 0.92,
     saul_soldier_walk: 1.1, saul_soldier_look: 1.1, saul_soldier_alert: 1.1, saul_soldier_turn: 1.1, saul_soldier_kneel: 1.1,   // Saul's men: a head taller than David
