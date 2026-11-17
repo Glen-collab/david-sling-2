@@ -20,7 +20,11 @@ const Z5 = {
   // the mountain: END s till the messenger; the two fronts close from the room's ends to GAP tiles either side of the
   //  middle; a scout comes through a cleft every SCOUT s and walks SCOUT_FOR s; a front pushes him back PUSH px (a heart)
   CLEFT_K: 1.3,   // the clefts on the mountain (w4_arch_sand), how big
-  SIEGE: { END: 55, GAP: 9, SCOUT: 6.5, SCOUT_FOR: 7, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 0.95 },
+  // (Glen 11-17: "the soldiers were way too slow and I wasn't sure what was going on with the cave mouths ... faster and
+  //  more diving and running and hiding") 40 s, not 55; every SURGE s both lines rush in RUSH cols over RUSH_T s; a cleft
+  //  shows dust and a "!" WARN s before its scout runs out (SCOUT_RUN px/s for SCOUT_DASH s), one every SCOUT s
+  SIEGE: { END: 40, GAP: 9, SCOUT: 3.6, SCOUT_FOR: 6, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 0.95,
+    SURGE: 6, RUSH: 3, RUSH_T: 0.8, WARN: 1.0, SCOUT_RUN: 270, SCOUT_DASH: 0.9 },
 };
 
 const ZIPH = {
@@ -395,7 +399,8 @@ function z5StoneHits(s) {
 // ---------------------------------------------------------------------------------------------------------------------
 // the mountain (23:26-28): the two fronts close in; scouts come through the clefts; then the messenger
 function z5SiegeStart() {
-  z5.siege = { t: 0, scoutT: 3, hurtT: 0, done: false, mess: null };
+  z5.siege = { t: 0, scoutT: 2.5, hurtT: 0, done: false, mess: null, surgeT: Z5.SIEGE.SURGE, rush: 0, extra: 0 };
+  for (const k of z5.clefts) k.warn = 0;
   z5.scouts.length = 0;
   regionAdd("taken", "z5_surrounded");
   rPlay([{ say: ["", "Saul went on this side of the mountain, and David and his men on that side of the mountain; and David hurried to get away for fear of Saul, for Saul and his men surrounded David and his men to take them. (1 Samuel 23:26)"] },
@@ -410,8 +415,8 @@ function z5SiegeEdges() {   // where the two fronts are now (px)
   const S = z5.siege, P = Z5.SIEGE; if (!S) return null;
   let u = Math.min(1, S.t / P.END); u = 1 - Math.pow(1 - u, 1.6);   // (fast at first, then slow: tight for the last stretch)
   if (S.back) u = Math.max(0, u - S.back);   // (after the messenger: they draw back)
-  const gap = P.GAP * T;
-  return [z5.siegeL + (z5.siegeMid - gap - z5.siegeL) * u, z5.siegeR - (z5.siegeR - (z5.siegeMid + gap)) * u];
+  const gap = P.GAP * T, ex = S.back ? 0 : S.extra || 0;   // (ex: what their rushes have gained)
+  return [Math.min(z5.siegeMid - gap, z5.siegeL + (z5.siegeMid - gap - z5.siegeL) * u + ex), Math.max(z5.siegeMid + gap, z5.siegeR - (z5.siegeR - (z5.siegeMid + gap)) * u - ex)];
 }
 function z5SiegeUpdate(dt) {
   const d = david, P = Z5.SIEGE;
@@ -422,6 +427,10 @@ function z5SiegeUpdate(dt) {
   if (region.script.length && !S.mess) return;
   S.t += dt; S.hurtT -= dt;
   if (S.mess) { S.mess.t += dt; S.back = Math.min(1, (S.back || 0) + dt * 0.18); return; }
+  // a rush: both lines charge in a few steps at once, every SURGE s
+  S.surgeT -= dt;
+  if (S.surgeT <= 0) { S.surgeT = P.SURGE * (0.85 + Math.random() * 0.3); S.rush = P.RUSH_T; z5Tell("rush", "They're charging! Keep moving: get between the lines."); if (typeof sfx === "function") sfx("war_horn", d.x, 0.25, 1.4); }
+  if (S.rush > 0) { S.rush -= dt; S.extra += P.RUSH * T / P.RUSH_T * dt; }
   const [L, R_] = z5SiegeEdges();
   // a front's reach: knocked back toward the middle, a heart
   if (S.hurtT <= 0 && (d.x < L + 40 || d.x > R_ - 40)) {
@@ -434,16 +443,23 @@ function z5SiegeUpdate(dt) {
   S.scoutT -= dt;
   if (S.scoutT <= 0) {
     S.scoutT = P.SCOUT * (0.8 + Math.random() * 0.4);
-    const open = z5.clefts.filter(k => k.x > L + 3 * T && k.x < R_ - 3 * T && Math.abs(k.x - d.x) > 4 * T);
+    const open = z5.clefts.filter(k => k.x > L + 3 * T && k.x < R_ - 3 * T && Math.abs(k.x - d.x) > 3 * T && !(k.warn > 0));
     if (open.length) {
       const k = open.reduce((a, b) => Math.abs(b.x - d.x) < Math.abs(a.x - d.x) ? b : a);   // (the nearest one: he has to hide)
-      z5.scouts.push({ room: "mountain", x: k.x, from: k.x - P.SCOUT_BEAT * T, to: k.x + P.SCOUT_BEAT * T, y: FOOT, facing: Math.sign(d.x - k.x) || 1, state: "walk", t: 0, life: 0, seen: 0, alpha: 0 });
-      z5Tell("scout", "A scout comes through the rocks! Crouch behind a rock (hold Down) till he goes.");
+      k.warn = P.WARN;   // (dust and a "!" at its mouth first: someone's coming)
+      z5Tell("scout", "Dust in the rocks: a scout is coming through! Crouch behind a rock (hold Down) till he goes.");
     }
   }
+  for (const k of z5.clefts) if (k.warn > 0 && (k.warn -= dt) <= 0) {
+    k.warn = 0;
+    z5.scouts.push({ room: "mountain", x: k.x, from: k.x - P.SCOUT_BEAT * T, to: k.x + P.SCOUT_BEAT * T, y: FOOT, facing: Math.sign(d.x - k.x) || 1, state: "dash", t: 0, life: 0, seen: 0, alpha: 0 });
+  }
   for (const g of z5.scouts) {
-    g.t += dt; g.life += dt; g.alpha = Math.min(1, g.life * 2, Math.max(0, (P.SCOUT_FOR - g.life) * 2));
-    if (g.state === "walk") {
+    g.t += dt; g.life += dt; g.alpha = Math.min(1, g.life * 5, Math.max(0, (P.SCOUT_FOR - g.life) * 2));
+    if (g.state === "dash") {   // (he runs out of the cleft toward where David was)
+      g.x += g.facing * P.SCOUT_RUN * dt;
+      if (g.t > P.SCOUT_DASH) { g.state = "look"; g.t = 0; g.from = Math.min(g.from, g.x); g.to = Math.max(g.to, g.x); }
+    } else if (g.state === "walk") {
       g.x += g.facing * Z5.SNEAK.WALK * 1.2 * dt;
       if ((g.facing > 0 && g.x >= g.to) || (g.facing < 0 && g.x <= g.from)) { g.state = "look"; g.t = 0; }
     } else if (g.state === "look" && g.t > 1.4) { g.state = "turn"; g.t = 0; }
@@ -512,8 +528,8 @@ function z5DrawMan(g, camX, n0) {   // one of Saul's men (walking, looking, turn
     gr.addColorStop(0, `rgba(${col},${0.34 * a})`); gr.addColorStop(1, `rgba(${col},0.03)`);
     ctx.save(); ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x + g.facing * 20, g.y - 120); ctx.lineTo(x + g.facing * reach, g.y - 165); ctx.lineTo(x + g.facing * reach, g.y); ctx.lineTo(x + g.facing * 20, g.y - 70); ctx.closePath(); ctx.fill(); ctx.restore();
   }
-  const n = g.state === "walk" ? "saul_soldier_walk" : g.state === "turn" ? "saul_soldier_turn" : "saul_soldier_look";
-  if (SPR[n]) drawSprite(n, g.state === "walk" ? frameOf(n, g.t) : Math.min(SPR[n].frames - 1, Math.floor(g.t * 1000 / SPR[n].ms)), x, g.y, g.facing, Z5.SNEAK.K, a);
+  const n = g.state === "walk" || g.state === "dash" ? "saul_soldier_walk" : g.state === "turn" ? "saul_soldier_turn" : "saul_soldier_look";
+  if (SPR[n]) drawSprite(n, g.state === "dash" ? frameOf(n, g.t * 3) : g.state === "walk" ? frameOf(n, g.t) : Math.min(SPR[n].frames - 1, Math.floor(g.t * 1000 / SPR[n].ms)), x, g.y, g.facing, Z5.SNEAK.K, a);
   if (g.seen > 0) { ctx.save(); ctx.fillStyle = "#ffdc4a"; ctx.strokeStyle = "#3a2400"; ctx.lineWidth = 5; ctx.font = "bold 44px sans-serif"; ctx.textAlign = "center"; ctx.strokeText("!", x, g.y - 270); ctx.fillText("!", x, g.y - 270); ctx.restore(); }
 }
 function z5DrawFront(camX) {
@@ -545,12 +561,19 @@ function z5DrawFront(camX) {
   }
   if (r.id === "mountain") {
     for (const g of z5.scouts) z5DrawMan(g, camX);
+    // a cleft about to let a scout out: dust in its mouth, a "!" over it
+    for (const k of z5.clefts) if (k.warn > 0) {
+      const x = k.x - camX, a = 0.5 + 0.5 * Math.sin(now * 14), gr = ctx.createRadialGradient(x, FOOT - 60, 10, x, FOOT - 60, 130);
+      gr.addColorStop(0, "rgba(214,184,140,0.6)"); gr.addColorStop(1, "rgba(214,184,140,0)"); ctx.fillStyle = gr; ctx.fillRect(x - 130, FOOT - 190, 260, 190);
+      ctx.save(); ctx.globalAlpha = 0.6 + 0.4 * a; ctx.fillStyle = "#ffdc4a"; ctx.strokeStyle = "#3a2400"; ctx.lineWidth = 5; ctx.font = "bold 48px sans-serif"; ctx.textAlign = "center";
+      ctx.strokeText("!", x, FOOT - 250); ctx.fillText("!", x, FOOT - 250); ctx.restore();
+    }
     const E = z5SiegeEdges();
     if (E) {   // the two fronts: Saul's men in a line, dust in front of them
       for (const [edge, dir] of [[E[0], 1], [E[1], -1]]) {
         for (let i = 0; i < 5; i++) {
           const x = edge - dir * (40 + i * 70) - camX; if (x < -300 || x > W + 300) continue;
-          if (SPR.saul_soldier_walk) drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", now + i * 0.37), x, FOOT - (i % 2) * 6, dir, Z5.SIEGE.K * (1 - i * 0.04));
+          if (SPR.saul_soldier_walk) drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", now * (z5.siege && z5.siege.rush > 0 ? 3 : 1.4) + i * 0.37), x, FOOT - (i % 2) * 6, dir, Z5.SIEGE.K * (1 - i * 0.04));
         }
         const x = edge - camX; const g = ctx.createRadialGradient(x, FOOT - 40, 10, x, FOOT - 40, 160);
         g.addColorStop(0, "rgba(214,184,140,0.45)"); g.addColorStop(1, "rgba(214,184,140,0)"); ctx.fillStyle = g; ctx.fillRect(x - 160, FOOT - 200, 320, 200);
