@@ -92,7 +92,7 @@ function k4Build(R) {
   k4.people.length = k4.rocks.length = k4.floors.length = k4.raiders.length = k4.beams.length = k4.grabbers.length = k4.pots.length = k4.throwers.length = k4.lights.length = k4.herd.length = 0;
   k4.raid = null; k4.run = null; k4.kneel = null;
   for (const n of ["raider_run", "raider_grab", "raider_flee", "raider_hit"]) TUNE.SPRITE_SIZE[n] = K4.RAID.K;
-  ["w4_town_wall", "w3_cart", "w3_hide_sacks", "w4_hanging_log", "w4_threshing_floor", "t_house", "t_stall", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
+  ["w4_town_wall", "w3_cart", "w3_hide_sacks", "w4_hanging_log", "w4_threshing_floor", "t_house", "t_stall", "t_stair", "t_roof_left", "t_roof_mid", "t_roof_right", "t_awning", ...[0, 1, 2, 3].flatMap(i => ["w4_gstage_day_" + i, "w4_gstage_night_" + i])].forEach(kitImg);
   const G = GR * T;
 
   // -- The Forest of Hereth (22:5; 23:1-4): the 400 camped under the trees; a runner with the news; the rock where David
@@ -175,7 +175,7 @@ function k4Build(R) {
     k4Person(rm, "villager_man_stand", X(18), FOOT, -1, () => !k4Has("k4_ephod"));
     campfire(c + 22, GR - 1);
     rTownStair(rm, c + 26); rRoof(rm, X(32), 420, 2); oliveRow(c + 34, onTop(420) - 0.4, 5);
-    rDeco(rm, "t_house", c + 30);
+    // (Glen 11-17: a house stood over the stair and the roof, hiding the steps: taken out)
     k4Person(rm, "villager_girl_stand", X(44), FOOT, -1, () => !k4Has("k4_ephod"));
     k4Person(rm, "villager_boy_stand", X(46), FOOT, -1, () => !k4Has("k4_ephod"));
     rAwning(rm, c + 50); rRoof(rm, X(57), 330, 1); rRelic("k4_oil_town", "oil", c + 59, onTop(330));
