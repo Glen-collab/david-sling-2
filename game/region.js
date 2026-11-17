@@ -1055,7 +1055,7 @@ const regionHit = fromX => {   // what a hit takes off: by whatever's nearest wh
   const near = (k, kind) => { const dd = Math.abs((k.x || 0) - fromX); if (dd < bd) { bd = dd; best = kind; } };
   if (typeof critters !== "undefined") for (const k of critters) near(k, k.kind);
   if (typeof snakes !== "undefined") for (const s of snakes) near(s, s.kind);
-  for (const b of region.beasts) if (!b.dead) near(b, b.kind);
+  for (const b of region.beasts) if (!b.dead && !beastAway(b)) near(b, b.kind);
   return RTUNE.HIT[best] ?? RTUNE.HIT.default;
 };
 const breakScale = (k, img) => k.h / (img.naturalHeight * k.fit);   // picture px to game px
@@ -1082,7 +1082,7 @@ function stoneHitsRegion(s) {   // main.js's stone loop (the sling, and the swor
     return true;
   }
   for (const b of region.beasts) {
-    if (b.dead) continue;
+    if (b.dead || beastAway(b)) continue;
     if (b.kind === "phil") { if (philHit(b, s)) return true; continue; }
     if (WILD[b.kind]) { if (wildHit(b, s)) return true; continue; }   // (wildlife.js)
     const q = beastBox(b);
@@ -1571,10 +1571,12 @@ function beastHurt(b) {
   }
   hurtDavid(b.x);
 }
+// (Glen 11-17) a beast with need: only there once that's been done (the mountain's animals come out after Saul's men go)
+const beastAway = b => !!b.need && !regionHas("taken", b.need);
 function updateBeasts(dt, r) {
   const d = david;
   for (const b of region.beasts) {
-    if (b.room !== r.id) continue;
+    if (b.room !== r.id || beastAway(b)) continue;
     b.t += dt; b.cool = Math.max(0, b.cool - dt);
     if (b.dead) continue;
     if (b.kind === "phil") { updatePhil(b, dt); continue; }
@@ -1630,7 +1632,7 @@ function updateBeasts(dt, r) {
 }
 function drawBeasts(camX) {
   for (const b of region.beasts) {
-    const x = b.x - camX; if (x < -200 || x > W + 200 || roomAt(b.x) !== region.room) continue;
+    const x = b.x - camX; if (x < -200 || x > W + 200 || roomAt(b.x) !== region.room || beastAway(b)) continue;
     if (b.kind === "phil") { if (!b.dead) drawPhil(b, x); continue; }
     if (WILD[b.kind]) { drawWild(b, x); continue; }   // (wildlife.js)
     if (b.dead) {   // a puff of dust, once
@@ -2002,7 +2004,7 @@ function drawRegionFront(camX) {   // main.js, after David: the railings he walk
     const k = KIT[p.n], im = kitImg(p.n), w = p.w || k.w, par = p.par || 1;
     const x = Math.round(W / 2 + (p.x + w / 2 - camX - W / 2) * par - w / 2);   // (par > 1: close to the camera, sliding by faster)
     if (!im || x > W || x + w < 0) continue;
-    ctx.drawImage(im, x, Math.round(p.y), w, k.h);
+    ctx.drawImage(im, x, Math.round(p.y), w, p.h || k.h);   // (p.h with p.w: a piece drawn smaller)
   }
   if (REGION.drawFront) REGION.drawFront(camX);
   drawTalkers(camX);

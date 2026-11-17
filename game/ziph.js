@@ -24,7 +24,11 @@ const Z5 = {
   // (Glen 11-17: "the soldiers were way too slow and I wasn't sure what was going on with the cave mouths ... faster and
   //  more diving and running and hiding") 40 s, not 55; every SURGE s both lines rush in RUSH cols over RUSH_T s; a cleft
   //  shows dust and a "!" WARN s before its scout runs out (SCOUT_RUN px/s for SCOUT_DASH s), one every SCOUT s
-  SIEGE: { END: 40, GAP: 9, SCOUT: 3.6, SCOUT_FOR: 6, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 1.15,
+  // (Glen 11-17: "too short ... waiting for the 'hold on' to fill up and the soldiers are walking in place") a wider
+  //  mountain (260 cols), and the lines close at a steady pace the whole END s, meeting GAP cols either side of the
+  //  middle just as the messenger comes; a rush only gets them there sooner (RUSH_SHARE of the way is theirs)
+  ESCAPE_ROCK: { K: 0.78, DOWN: 48 },   // (Glen 11-17) the split rock: its size, and px sunk into the near ground
+  SIEGE: { END: 60, GAP: 7, RUSH_SHARE: 0.15, SCOUT: 3.6, SCOUT_FOR: 6, SCOUT_BEAT: 4, PUSH: 150, HURT_COOL: 1.2, K: 1.15,
     SURGE: 6, RUSH: 3, RUSH_T: 0.8, WARN: 1.0, SCOUT_RUN: 270, SCOUT_DASH: 0.9 },
 };
 
@@ -40,7 +44,7 @@ const ZIPH = {
       far: "ziph/hachilah/far", mid: "ziph/hachilah/mid.png", midY: 0, near: "ziph/hachilah/near.png" },   // (Glen's, 11-15: dusk)
     { id: "maon", name: "The Wilderness of Maon", w: 100, bg: "w4_1", mx: 11, my: 1, mw: 3, left: "hachilah", right: "mountain",
       far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },   // (Glen's, 11-15)
-    { id: "mountain", name: "The Mountain", w: 160, bg: "w4_1", mx: 14, my: 1, mw: 4, left: "maon",
+    { id: "mountain", name: "The Mountain", w: 260, bg: "w4_1", mx: 14, my: 1, mw: 6, left: "maon",   /* (Glen 11-17: "too short ... a longer / wider level") */
       far: "ziph/mountain/far", mid: "ziph/mountain/mid.png", midY: 0, near: "ziph/mountain/near.png" },   // (Glen's, 11-15)
   ],
   // the Journal: Glen's song, the Final Chorus, its first half (SONG_PSALM57.md, his words exactly)
@@ -188,19 +192,31 @@ function z5Build(R) {
   // -- The Mountain (23:26-28): Saul on this side, David on that. Surrounded. Hold out till the messenger comes
   c = R("mountain");
   { const rm = "mountain", X = k => (c + k) * T;
-    ground(c, c + 159);
+    ground(c, c + 259);
     campfire(c + 4, GR - 1); z5.back.mountain = X(5);
-    z5.siegeAt = X(14); z5.siegeL = X(8); z5.siegeR = X(150); z5.siegeMid = X(80);
+    z5.siegeAt = X(14); z5.siegeL = X(8); z5.siegeR = X(250); z5.siegeMid = X(129);
     // (Glen 11-16: "try the art we have") a cleft: Adullam's dark sandstone opening, a rock heap either side; the
     //  scouts step out of the dark
     const cleft = x => { const a = KIT.w4_arch_sand, r = KIT.w4_rocks_sand, s = Z5.CLEFT_K;
       region.props.push({ room: rm, n: "w4_arch_sand", x: x - a.w * s / 2, y: FOOT - a.h * s + 12, s });
       for (const side of [-1, 1]) region.props.push({ room: rm, n: "w4_rocks_sand", x: x + side * (a.w * s / 2 + 10) - r.w * 0.8 / 2, y: FOOT - r.h * 0.8 + 8, s: 0.8 }); };
-    for (const k of [34, 58, 102, 126]) { z5.clefts.push({ room: rm, x: X(k) }); cleft(X(k)); }
-    for (const k of [26, 44, 66, 80, 94, 114, 134]) z5Hide(rm, k % 3 === 1 ? "w4_rubble_sand" : "w4_z_hide_rock", X(k));
-    rLedge(rm, c + 50, 470, 4); rLedge(rm, c + 74, 430, 5); rLedge(rm, c + 108, 470, 4);
-    z5.rockX = X(80);   // Sela Hammahlekoth: the rock of escape, after
-    z5.endX = X(146);
+    for (const k of [34, 62, 92, 118, 140, 166, 196, 226]) { z5.clefts.push({ room: rm, x: X(k) }); cleft(X(k)); }
+    for (const k of [24, 46, 74, 84, 104, 152, 178, 186, 208, 238]) z5Hide(rm, k % 3 === 1 ? "w4_rubble_sand" : "w4_z_hide_rock", X(k));
+    rLedge(rm, c + 52, 470, 4); rLedge(rm, c + 78, 430, 5); rLedge(rm, c + 110, 470, 4); rLedge(rm, c + 156, 450, 5); rLedge(rm, c + 214, 470, 4);
+    // (Glen 11-17: "after the soldiers leave there are no more anything ... an ibex ... some birds and our little hyrax
+    //  family. Something to dodge or do") out once Saul's men have gone (need: z5_rescued), on the way to En-Gedi
+    const after = { need: "z5_rescued" };
+    rWild("ibex", rm, c + 150, Object.assign({ range: 3 }, after)); rWild("ibex", rm, c + 204, Object.assign({ range: 3, facing: -1 }, after));
+    rWild("partridge", rm, c + 140, Object.assign({ range: 2 }, after)); rWild("hoopoe", rm, c + 172, Object.assign({ range: 1 }, after)); rWild("partridge", rm, c + 222, Object.assign({ range: 2 }, after));
+    rWild("caracal", rm, c + 190, Object.assign({ range: 3 }, after));
+    { const n0 = region.beasts.length; rHyraxFamily(rm, c + 162, 2); rHyrax(rm, c + 236); for (const b of region.beasts.slice(n0)) b.need = "z5_rescued"; }
+    z5.rockX = X(129);   // Sela Hammahlekoth: the rock of escape
+    // (Glen 11-17: "the rock is too high. And ... we can use it for somewhere to hide behind") his split rock, in front of
+    //  the path, sunk into the ground, smaller: crouch behind it like the others
+    { const k = Z5_KIT.w4_z_escape_rock, s = Z5.ESCAPE_ROCK.K, w = k.w * s, h = k.h * s;
+      region.props.push({ room: rm, n: "w4_z_escape_rock", x: z5.rockX - w / 2, y: FOOT - h + Z5.ESCAPE_ROCK.DOWN, w, h, front: true });
+      z5.hides.push({ room: rm, x: z5.rockX, x0: z5.rockX - w / 2, x1: z5.rockX + w / 2, y: FOOT - 4 }); }
+    z5.endX = X(246);
   }
   z5Talk();
 }
@@ -444,10 +460,12 @@ function z5SiegeStart() {
 }
 function z5SiegeEdges() {   // where the two fronts are now (px)
   const S = z5.siege, P = Z5.SIEGE; if (!S) return null;
-  let u = Math.min(1, S.t / P.END); u = 1 - Math.pow(1 - u, 1.6);   // (fast at first, then slow: tight for the last stretch)
+  let u = Math.min(1, S.t / P.END);   // (steady, all the way: Glen 11-17)
   if (S.back) u = Math.max(0, u - S.back);   // (after the messenger: they draw back)
-  const gap = P.GAP * T, ex = S.back ? 0 : S.extra || 0;   // (ex: what their rushes have gained)
-  return [Math.min(z5.siegeMid - gap, z5.siegeL + (z5.siegeMid - gap - z5.siegeL) * u + ex), Math.max(z5.siegeMid + gap, z5.siegeR - (z5.siegeR - (z5.siegeMid + gap)) * u - ex)];
+  const gap = P.GAP * T, spanL = z5.siegeMid - gap - z5.siegeL, spanR = z5.siegeR - (z5.siegeMid + gap);
+  const ex = S.back ? 0 : Math.min(S.extra || 0, P.RUSH_SHARE * spanL);   // (what their rushes have gained: a share of the way, never past it)
+  const k = 1 - P.RUSH_SHARE;
+  return [Math.min(z5.siegeMid - gap, z5.siegeL + spanL * k * u + ex), Math.max(z5.siegeMid + gap, z5.siegeR - spanR * k * u - ex)];
 }
 function z5SiegeUpdate(dt) {
   const d = david, P = Z5.SIEGE;
@@ -502,13 +520,18 @@ function z5SiegeUpdate(dt) {
   }
   z5.scouts = z5.scouts.filter(g => g.life < P.SCOUT_FOR);
   // the messenger (23:27)
+  // (Glen 11-17: "someone running up to Saul ... otherwise we are just reading. Maybe the guards can cross in front of
+  //  David as he's hiding and someone comes running up behind") David drops low; Saul comes up and his men march past in
+  //  front of him; the messenger gallops in behind them to Saul; then they all turn back
   if (S.t >= P.END && !S.mess) {
-    S.mess = { t: 0 }; z5.scouts.length = 0;
-    rPlay([{ wait: 2.2 },
+    S.mess = { t: 0, x: d.x, cx: camX };   // (cx: where the screen was: the scene is played on it) z5.scouts.length = 0; z5.pose = { hold: true, t: 0, hide: true }; d.vx = 0;
+    toast("Hide! Saul's men are coming through!");
+    rPlay([{ wait: 3.4 },
       { say: ["A messenger, to Saul", "Hurry and come, for the Philistines have made a raid on the land! (1 Samuel 23:27)"] },
-      { wait: 1.2 },
+      { fn() { if (z5.siege && z5.siege.mess) z5.siege.mess.go = z5.siege.mess.t; } },
+      { wait: 2.6 },
       { say: ["", "So Saul returned from pursuing David, and went against the Philistines. Therefore they called that place Sela Hammahlekoth. (1 Samuel 23:28)"] },
-      { fn() { regionAdd("taken", "z5_rescued"); z5.siege = null; toast("Rescued! David didn't win the day. God turned Saul back. On to En-Gedi: go right."); } }]);
+      { fn() { regionAdd("taken", "z5_rescued"); z5.siege = null; z5.pose = null; toast("Rescued! David didn't win the day. God turned Saul back. On to En-Gedi: go right."); } }]);
   }
 }
 
@@ -516,7 +539,11 @@ function z5SiegeUpdate(dt) {
 // drawing
 function z5DrawDavid(d, x, y) {
   if (z5.pose && z5.pose.embrace) return true;   // (he's in the two-shot, drawn with Jonathan)
-  if (z5.pose && z5.pose.pray) return drawDavidPray(z5.pose.t, x, y, d.facing);   // (Psalm 54 on the mountain: Glen's praying clip)
+  if (z5.pose && z5.pose.pray) return drawDavidPray(z5.pose.t, x, y, d.facing);
+  if (z5.pose && z5.pose.hide && SPR.david_kneel_down && SPR.david_kneel_low) {   // (11-17) low, hiding, while Saul's men march past
+    const kd = SPR.david_kneel_down, kdT = kd.frames * kd.ms / 1000, t = z5.pose.t;
+    if (t < kdT) drawSprite("david_kneel_down", frameOf("david_kneel_down", t), x, y, d.facing); else drawSprite("david_kneel_low", frameOf("david_kneel_low", t - kdT), x, y, d.facing);
+    return true; }   // (Psalm 54 on the mountain: Glen's praying clip)
   if (z5.pose && z5.pose.kneel && SPR.david_kneel) { drawSprite("david_kneel", Math.min(SPR.david_kneel.frames - 1, Math.floor(z5.pose.t * 1000 / 161)), x, y, d.facing); return true; }
   return false;
 }
@@ -530,11 +557,8 @@ function z5Draw(camX) {
     const fl = l.lit ? 1 + Math.sin(now * 17 + l.x0) * 0.03 + Math.sin(now * 29) * 0.02 : 1;   // (lit: the flames flicker)
     ctx.drawImage(im, x - k.w / 2, l.y + 6 - k.h * fl, k.w, k.h * fl);
   }
-  // the rock of escape, after
-  if (r.id === "mountain" && z5Has("z5_rescued")) {
-    const im = kitImg("w4_z_escape_rock"), k = Z5_KIT.w4_z_escape_rock;   // (Glen's: split down the middle, its stone pile)
-    if (im) { const x = z5.rockX - camX; ctx.drawImage(im, x - k.w / 2, FOOT - k.h + 14, k.w, k.h); }
-  }
+  // (the rock of escape: a hiding piece now, built with the room. Glen 11-17: "why did the rock break?" It's split by
+  //  name, Sela Hammahlekoth, and is there from the start rather than popping in after)
 }
 // the people: drawn in front of the near layer (11-15: Horesh's roots hid the stranger sitting under them)
 function z5DrawPeople(camX) {
@@ -600,23 +624,40 @@ function z5DrawFront(camX) {
       ctx.strokeText("!", x, FOOT - 250); ctx.fillText("!", x, FOOT - 250); ctx.restore();
     }
     const E = z5SiegeEdges();
-    if (E) {   // the two fronts: Saul's men in a line, dust in front of them
+    const moving = E && z5.lastEdges ? Math.abs(E[0] - z5.lastEdges[0]) + Math.abs(E[1] - z5.lastEdges[1]) > 0.05 : true; z5.lastEdges = E;
+    if (E) {   // the two fronts: Saul's men in a line, dust in front of them (standing, not walking in place, when they've stopped)
       for (const [edge, dir] of [[E[0], 1], [E[1], -1]]) {
         for (let i = 0; i < 5; i++) {
           const x = edge - dir * (40 + i * 70) - camX; if (x < -300 || x > W + 300) continue;
-          if (SPR.saul_soldier_walk) drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", now * (z5.siege && z5.siege.rush > 0 ? 3 : 1.4) + i * 0.37), x, FOOT - (i % 2) * 6, dir, Z5.SIEGE.K * (1 - i * 0.04));
+          if (!moving && SPR.saul_soldier_look) drawSprite("saul_soldier_look", frameOf("saul_soldier_look", now * 0.5 + i * 0.37), x, FOOT - (i % 2) * 6, dir, Z5.SIEGE.K * (1 - i * 0.04));
+          else if (SPR.saul_soldier_walk) drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", now * (z5.siege && z5.siege.rush > 0 ? 3 : 1.4) + i * 0.37), x, FOOT - (i % 2) * 6, dir, Z5.SIEGE.K * (1 - i * 0.04));
         }
         const x = edge - camX; const g = ctx.createRadialGradient(x, FOOT - 40, 10, x, FOOT - 40, 160);
         g.addColorStop(0, "rgba(214,184,140,0.45)"); g.addColorStop(1, "rgba(214,184,140,0)"); ctx.fillStyle = g; ctx.fillRect(x - 160, FOOT - 200, 320, 200);
       }
-      // Saul himself, behind his men on the left; the messenger riding in to him
-      const sx = E[0] - 360 - camX;
-      if (SPR.saul_walk) drawSprite(z5.siege && z5.siege.mess ? "saul_stand" : "saul_walk", z5.siege && z5.siege.mess ? 0 : frameOf("saul_walk", now), sx, FOOT, z5.siege && z5.siege.mess && z5.siege.mess.t > 4 ? -1 : 1, Z5.SIEGE.K);
-      const M = z5.siege && z5.siege.mess;
-      if (M && SPR.messenger_gallop) {
-        const mx = Math.min(sx + 170, sx - 700 + M.t * 520);
-        const n = mx < sx + 170 ? "messenger_gallop" : "messenger_talk";
-        drawSprite(n, frameOf(n, M.t), mx, FOOT, -1, 0.85);
+      // Saul himself, behind his men on the left; at the end (Glen 11-17) the scene played out where David can see it
+      const M = z5.siege && z5.siege.mess, K = Z5.SIEGE.K;
+      if (!M) { if (SPR.saul_walk) drawSprite("saul_walk", frameOf("saul_walk", now), E[0] - 360 - camX, FOOT, 1, K); }
+      else {
+        const t = M.t, go = M.go, dx = M.x, back = go != null ? t - go : -1;
+        // Saul: walks up behind his men, stops, turns to the messenger; then away
+        const cx = M.cx, s0 = cx - 160, sAt = cx + 330;
+        if (back < 0) { const u = Math.min(1, t / 1.6), sx = s0 + (sAt - s0) * u;
+          if (u < 1 && SPR.saul_walk) drawSprite("saul_walk", frameOf("saul_walk", t), sx - camX, FOOT, 1, K);
+          else if (SPR.saul_stand) drawSprite("saul_stand", 0, sx - camX, FOOT, t > 2.4 ? -1 : 1, K); }
+        else if (SPR.saul_walk) drawSprite("saul_walk", frameOf("saul_walk", t), sAt - back * 130 - camX, FOOT, -1, K);
+        // his men: three march right past in front of David, hiding; called back, they turn and go
+        for (let i = 0; i < 3; i++) {
+          const x0 = cx - 120 - i * 120, until = back < 0 ? t : go, x = x0 + until * 150 - (back > 0 ? back * 180 : 0);
+          if (SPR.saul_soldier_walk) drawSprite("saul_soldier_walk", frameOf("saul_soldier_walk", t * 1.4 + i * 0.37), x - camX, FOOT + 4 - (i % 2) * 6, back > 0 ? -1 : 1, K * (1 - i * 0.03));
+        }
+        // the messenger: in at a gallop from behind them, to Saul; then off again
+        if (SPR.messenger_gallop) {
+          const mAt = sAt - 170, m0 = cx - 700, arrive = 0.9 + (mAt - m0) / 520;
+          if (t < 0.9) {} else if (back < 0.6 && t < arrive) drawSprite("messenger_gallop", frameOf("messenger_gallop", t), m0 + (t - 0.9) * 520 - camX, FOOT, -1, 0.85);
+          else if (back < 0.6) drawSprite(SPR.messenger_talk ? "messenger_talk" : "messenger_gallop", frameOf("messenger_talk", t), mAt - camX, FOOT, -1, 0.85);
+          else drawSprite("messenger_gallop", frameOf("messenger_gallop", t), mAt - (back - 0.6) * 520 - camX, FOOT, 1, 0.85);
+        }
       }
     }
   }
