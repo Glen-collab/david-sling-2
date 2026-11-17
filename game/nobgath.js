@@ -806,8 +806,8 @@ function r3Build(R) {
   c = R("giantyard");
   { const X = k => (c + k) * T, Y = R3.YARD;
     ground(c, c + 95);
-    rHole("giantyard", c + 8, 4);
-    rTerrace("giantyard", c + 15, 2);
+    rHole("giantyard", c + 6, 4);
+    rTerrace("giantyard", c + 11, 1);   // (Glen 11-16: the step ends at col 25, clear of the bridge's pit at 27)
     rHole("giantyard", c + 27, 29);
     // the bridge: its post on this side, three plank pieces, the gap, three more, the far post. Its planks level with the ground
     const seg = (n, x) => { const k = KIT[n]; region.props.push({ room: "giantyard", n, x, y: GR * T - Y.PLANK[n] }); return x + k.w - 4; };
@@ -819,10 +819,10 @@ function r3Build(R) {
     r3Thorn("giantyard", X(61)); r3Thorn("giantyard", X(64));
     r3VineZone("giantyard", X(57), X(72));
     r3Quiver("giantyard", X(4));
-    rWild("flies", "giantyard", c + 76, { y: FOOT - 90 }); bird("owl", "giantyard", X(15) + T / 2, FOOT - 134);   // (Glen 11-12: flies round his door; an owl on the giant's step)
+    rWild("flies", "giantyard", c + 76, { y: FOOT - 90 }); bird("owl", "giantyard", X(13) + T / 2, FOOT - 134);   // (Glen 11-12: flies round his door; an owl on the giant's step)
     rTerrace("giantyard", c + 67, 1);
     rKitDoor("d_goliath", "giantyard", c + 85, "door", "d_goliathout", "w3_goliath_door");
-    oliveRow(c + 3, 16, 3); rRelic("r3_stone_yard", "stone", c + 17, onTop(FOOT - 136));
+    oliveRow(c + 3, 16, 3); rRelic("r3_stone_yard", "stone", c + 18, onTop(FOOT - 136));
   }
 
   // -- Goliath's house (Glen's picture, 11-10): the giant's bed, his jar, his sandals, his bronze helmet (17:5). A Truth
