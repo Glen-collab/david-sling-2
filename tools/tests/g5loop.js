@@ -4,7 +4,7 @@ const log = m => TEST_ERRORS.push("INFO " + m);
 const at = (rm, k, y = GR * T) => { const r = roomById(rm); moveParty((r.c0 + k) * T, y); snapCamera(); };
 const clear = () => { dialog.t = 0; region.script.length = 0; region.wait = 0; };
 const quiet = () => { region.beasts.length = 0; if (typeof critters !== "undefined") critters.length = 0; };
-const takeAll = rm => { for (const f of g5RoomFood(rm)) { david.x = f.x; david.y = f.y; g5Update(1 / 60, roomById(rm)); } };
+const takeAll = rm => { for (const f of g5RoomFood(rm)) { david.x = f.x; david.y = f.y; g5Update(1 / 60, roomById(f.room)); } };
 const steps = [
   { n: 1, fn() { region.crawl = null; region.save.taken = region.save.taken.filter(k => !/^g5_(f_|load|cut|called)/.test(k) && k !== "g_exit_open"); g5.pack.length = 0; } }, { keys: [], n: 30 },
   { n: 1, fn() { clear(); quiet(); at("spring", 20); } }, { keys: [], n: 10 },

@@ -27,6 +27,10 @@ const G5 = {
   // Glen's robe-cut two-shot (saul_robe_cut): as engedi.js's #9-1
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
+  // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
+  //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
+  SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 1050, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5 },
+  POOL_BANK: 330, POOL_LEDGE: 352,   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
   SHEEP_K: 2.2,            // the flock in the pens
@@ -53,6 +57,10 @@ const ENGEDI = {
       far: "engedi/pens/far", mid: "engedi/pens/mid.png", midY: 0, near: "engedi/pens/near.png" },   // (Glen's, 11-18)
     { id: "spring", name: "The Spring", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 4, left: "pens", right: "rocks",
       far: "engedi/spring/far", mid: "engedi/spring/mid.png", midY: 0 },   // (Glen's, 11-18: the oasis; palm fronds hanging over, the pool's edge)
+    // (Glen's, 11-18: "the falls piece a whole mid ground and foreground room for the swimming part and the cave mouth")
+    //  his long pool, the falls and the cave at its far end; Up at the Spring's falls, swim across, out at the cave
+    { id: "pool", name: "The Pool Below the Falls", w: 100, bg: "w4_1", mx: 6, my: 2, mw: 3, outL: ["spring", 58], water: 361,
+      far: "engedi/spring/far" },
     { id: "rocks", name: "The Rocks of the Wild Goats", w: 64, up: 40, bg: "w4_1", mx: 9, my: 0, mw: 2, mh: 2, left: "spring", right: "wild",
       far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0, near: "engedi/rocks/near.png" },   // (Glen's, 11-18)
     { id: "wild", name: "The Wilderness of En-Gedi", w: 150, bg: "w4_1", mx: 11, my: 1, mw: 4, left: "rocks",
@@ -91,7 +99,9 @@ function g5Food(room, kind, c, y = FOOT - 4) {   // a provision lying at column 
   const n = g5.food.filter(f => f.room === room).length + 1;
   g5.food.push({ id: "g5_f_" + room + "_" + n, room, kind, x: (roomById(room).c0 + c) * T + T / 2, y, t: Math.random() * 6 });
 }
-const g5RoomFood = room => g5.food.filter(f => f.room === room);
+const G5_RUN_OF = { pool: "spring" };   // (the pool's water skin is part of the Spring's load)
+const g5RunOf = room => G5_RUN_OF[room] || room;
+const g5RoomFood = room => g5.food.filter(f => g5RunOf(f.room) === room);
 const g5Done = room => g5RoomFood(room).every(f => g5Has(f.id));
 const g5Stage = () => G5_RUNS.filter(g5Done).length;   // loads home (0-3)
 const g5Open = room => { const i = G5_RUNS.indexOf(room); return i <= 0 || g5Done(G5_RUNS[i - 1]); };
@@ -105,7 +115,8 @@ function g5Build(R) {
   Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
-  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far"]) roomImg(n);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png"]) roomImg(n);
+  g5.swim = null; g5.breath = G5.SWIM.BREATH;
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
   ["w4_z_hide_rock", "w4_rubble_sand", "w4_tree_acacia", "w4_tree_dead", "w4_tree_oak", ...Object.values(G5_FOOD).map(f => f[1])].forEach(kitImg);
@@ -152,14 +163,27 @@ function g5Build(R) {
     g5Pool(rm, c + 40, 5);
     g5.falls = X(62);
     g5Food(rm, "water", 54); g5Food(rm, "water", 70);
-    rRelic("g5_truth_falls", "truth", c + 65, GR - 1, "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
-    rLedge(rm, c + 74, 460, 4); rLedge(rm, c + 80, 360, 4); g5Food(rm, "water", 82, 360 - 4);
+    rLedge(rm, c + 74, 460, 4); rLedge(rm, c + 80, 360, 4);
     g5Pool(rm, c + 86, 5);
     rLedge(rm, c + 110, 450, 5); g5Food(rm, "dates", 112, 450 - 4);
     rWild("viper", rm, c + 30); rWild("hornet", rm, c + 70, { y: 380, hy: 380 }); rHyrax(rm, c + 118);
     g5Hide(rm, "w4_z_hide_rock", X(22)); g5Hide(rm, "w4_rubble_sand", X(50)); g5Hide(rm, "w4_z_hide_rock", X(72)); g5Hide(rm, "w4_z_hide_rock", X(100)); g5Hide(rm, "w4_rubble_sand", X(116));
     g5Guard(rm, 24, 38, 0); g5Guard(rm, 96, 110, 0, FOOT, -1); g5Guard(rm, 48, 56, 1); g5Guard(rm, 70, 80, 2, FOOT, -1);
     g5.entry.spring = X(4);
+    rPath(rm, c + 58, "pool", 2, "The pool goes on behind the falls. Up to go and see.");
+  }
+
+  // -- The Pool Below the Falls (Glen's): in off the bank, swim the pool (a water skin on the bottom), out onto the rocks at
+  //  the cave mouth behind the falls: the Truth inside
+  c = R("pool");
+  { const rm = "pool", X = k => (c + k) * T;
+    ground(c, c + 99);
+    rLedge(rm, c, G5.POOL_BANK, 4);
+    rLedge(rm, c + 87, G5.POOL_LEDGE, 13);
+    g5Food(rm, "water", 52, GR * T - 4);   // (the Spring's third skin, down on the bottom)
+    rRelic("g5_truth_falls", "truth", c + 96, onTop(G5.POOL_LEDGE), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
+    rRelic("g5_pom_pool", "pomegranate", c + 30, GR - 1);
+    g5.entry.pool = X(2);
   }
 
   // -- The Rocks of the Wild Goats (24:2): tall. The ibex go straight up the rock; David learns the wall climb from them
@@ -243,6 +267,8 @@ function g5Enter(r) {
   const d = david;
   // where he came in: being seen sends him back here (the pack kept)
   g5.entry[r.id] = d.x < (r.c0 + r.w / 2) * T ? (r.c0 + 4) * T : (r.c0 + r.w - 5) * T;
+  if (r.id === "pool") { g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
+    g5.swim = null; g5.breath = G5.SWIM.BREATH; g5Tell("swim", "Into the water! A for a stroke up, Up and Down. Watch your breath: come up for air."); }
   if (r.id === "camp" && !g5Has("g5_intro")) {
     regionAdd("taken", "g5_intro");
     rPlay([{ wait: 0.5 },
@@ -278,11 +304,11 @@ function g5Update(dt, r) {
   // the pack: touching a provision picks it up (its room's run open, not already home)
   for (const f of g5.food) {
     f.t += dt;
-    if (f.room !== r.id || g5Has(f.id) || g5.pack.includes(f.id) || g5.drops.some(o => o.id === f.id) || !g5Open(f.room)) continue;
+    if (f.room !== r.id || g5Has(f.id) || g5.pack.includes(f.id) || g5.drops.some(o => o.id === f.id) || !g5Open(g5RunOf(f.room))) continue;
     if (Math.abs(d.x - f.x) < G5.PACK_REACH && d.y > f.y - 90 && d.y - d.h < f.y + 10 && d.deadT <= 0) {
       g5.pack.push(f.id); sfx("pickup", f.x, 0.6);
-      const left = g5RoomFood(f.room).filter(o => !g5Has(o.id) && !g5.pack.includes(o.id)).length;
-      toast(`David picks up ${G5_FOOD[f.kind][0]}. ${left ? left + " more in " + roomById(f.room).name + "." : "That's all of it here: back to the camp!"}`);
+      const run = g5RunOf(f.room), left = g5RoomFood(run).filter(o => !g5Has(o.id) && !g5.pack.includes(o.id)).length;
+      toast(`David picks up ${G5_FOOD[f.kind][0]}. ${left ? left + " more for this load (" + roomById(run).name + ")." : "That's the whole load: back to the camp!"}`);
     }
   }
   // a hit: one provision falls out and bounces (a few seconds to grab it back); a death: the pack's gone, all back in place
@@ -416,11 +442,40 @@ function g5Hold(d, dt) {
     d.vx = 0; return true;
   }
   if (g5.pose && g5.pose.hold) { d.vx = 0; return false; }
+  if (g5Swim(d, dt)) return true;
   if (g5.saul && g5.saul.outside && g5.saul.step === "call") { d.vx = 0; return false; }
   const r = region.room;
   if (r && !region.script.length) g5SneakUpdate(dt, r);
   if (r && r.id === "pens" && g5Has("g5_cut") && !g5Has("g5_called") && !region.script.length) g5CallScene();
   return false;
+}
+// ---- the pool: below the waterline he swims (as adullam.js's r4Hold, without its rock lids)
+function g5Swim(d, dt) {
+  const r = region.room, S = G5.SWIM;
+  if (!r || !r.water || r !== roomAt(d.x) || d.deadT > 0 || region.trans) { g5.swim = null; return false; }
+  const wy = r.water, top = wy + S.FLOAT;
+  if (g5.leapT > 0) { g5.leapT -= dt; if (d.vy < 0) return false; }
+  if (!g5.swim) {
+    if (d.y < wy + 40 || d.onGround && d.y < wy + S.FLOAT) { g5.breath = Math.min(S.BREATH, g5.breath + dt * 4); return false; }
+    g5.swim = { t: 0 }; d.vy = Math.min(d.vy, 120); setState("idle");
+  }
+  const sw = g5.swim, dir = (held("right") ? 1 : 0) - (held("left") ? 1 : 0), still = !(dir || held("up") || held("down") || pressed("a"));
+  sw.t += dt * (still ? S.TREAD : 1); sw.tt = (sw.tt || 0) + dt;
+  d.vx = dir * S.X; if (dir) d.facing = dir;
+  d.vy += S.SINK * dt;
+  if (pressed("a")) { if (d.y <= top + S.LEAP_NEAR) { g5.swim = null; g5.leapT = 0.5; d.vy = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
+  if (held("up")) d.vy -= S.PUSH * dt; if (held("down")) d.vy += S.PUSH * dt;
+  d.vy = Math.max(-S.MAXV, Math.min(S.MAXV, d.vy));
+  d.x = Math.max(r.c0 * T + 20, Math.min((r.c0 + r.w) * T - 20, d.x + d.vx * dt));
+  d.y += d.vy * dt;
+  if (d.y < top) { d.y = top; if (d.vy < 0) d.vy = 0; }
+  if (d.y > GR * T) { d.y = GR * T; d.vy = 0; }
+  if (still && d.y < top + S.FLOAT_NEAR) { d.vy = 0; d.y += (top - d.y) * Math.min(1, dt * 4); }
+  sw.tread = still && d.y <= top + 8;
+  d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false;
+  if (d.y <= top + 6) g5.breath = Math.min(S.BREATH, g5.breath + dt * 4);
+  else { g5.breath -= dt; if (g5.breath <= 0) { g5.breath = S.AFTER; hurtDavid(d.x, "", true); toast("Out of breath! Swim up for air."); } }
+  return true;
 }
 function g5Hidden() {
   const d = david, S = G5.SNEAK;
@@ -463,6 +518,8 @@ function g5StoneHits(s) {
 // drawing
 function g5DrawDavid(d, x, y) {
   if (g5.pose && g5.pose.hide) return true;   // (in the two-shot with Saul)
+  if (g5.swim && g5.swim.tread && SPR.david_tread) { drawSprite("david_tread", frameOf("david_tread", g5.swim.tt), x, y, d.facing); return true; }
+  if (g5.swim && SPR.david_swim2) { drawSprite("david_swim2", frameOf("david_swim2", g5.swim.t), x, y - 50, d.facing, G5.SWIM.K); return true; }
   if (g5.pose && g5.pose.name && SPR[g5.pose.name]) { drawSprite(g5.pose.name, frameOf(g5.pose.name, g5.pose.t), x, y, d.facing); return true; }
   return false;
 }
@@ -474,6 +531,8 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
 function g5Draw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
+  // the pool (Glen's long picture, 1:1 with the room)
+  if (r.id === "pool") { const im = roomImg("engedi/pool/pool.png"); if (im) ctx.drawImage(im, r.c0 * T - camX, 0, 3600, 720); }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   if (r.id === "spring") { const im = kitImg("w4_e_falls"), k = KIT.w4_e_falls;
     if (im) { const s = im.naturalWidth / k.w, hh = k.water + 24; ctx.drawImage(im, 0, 0, im.naturalWidth, hh * s, g5.falls - k.fx - camX, FOOT - k.water, k.w, hh); } }
@@ -488,7 +547,7 @@ function g5Draw(camX) {
   for (const f of g5.food) {
     if (f.room !== r.id || g5Has(f.id) || g5.pack.includes(f.id) || g5.drops.some(o => o.id === f.id)) continue;
     const x = f.x - camX; if (x < -100 || x > W + 100) continue;
-    const open = g5Open(f.room), bob = Math.sin(f.t * 2.4) * 3;
+    const open = g5Open(g5RunOf(f.room)), bob = Math.sin(f.t * 2.4) * 3;
     if (open) { const g = ctx.createRadialGradient(x, f.y - 26, 4, x, f.y - 26, 60); g.addColorStop(0, "rgba(255,226,140,0.45)"); g.addColorStop(1, "rgba(255,226,140,0)"); ctx.fillStyle = g; ctx.fillRect(x - 60, f.y - 90, 120, 100); }
     g5DrawFoodAt(f.kind, x, f.y + 4, open ? 1 : 0.55, bob);
   }
@@ -538,6 +597,12 @@ function g5DrawFront(camX) {
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5DrawOver() {
   const r = region.room; if (!r) return;
+  // in the pool: the water over him (a light tint below the surface), and his breath over his head
+  if (r.id === "pool") {
+    ctx.save(); ctx.fillStyle = "rgba(40,150,175,0.22)"; ctx.fillRect(0, r.water + 10 - camY, W, H); ctx.restore();
+    if (g5.swim || g5.breath < G5.SWIM.BREATH - 0.05) { const k = Math.max(0, g5.breath / G5.SWIM.BREATH), x = david.x - camX - 40, y = david.y - 150 - camY;
+      ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(x - 2, y - 2, 84, 12); ctx.fillStyle = k > 0.3 ? "#7fd8ff" : "#ff6a5a"; ctx.fillRect(x, y, 80 * k, 8); }
+  }
   // the dark of the cave while Saul's in it: a little light on David and on the king
   if (r.id === "camp" && g5.saul && !g5.saul.outside && G5_DARK) {
     // (soft lights cut out of a dark layer, drawn on its own canvas so two lights that overlap add up, not cancel)
