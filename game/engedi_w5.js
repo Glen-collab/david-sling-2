@@ -128,7 +128,7 @@ function g5Build(R) {
   let c = R("camp");
   { const rm = "camp", X = k => (c + k) * T;
     ground(c, c + 59);
-    g5.men = [g5Person(rm, "soldier_sit", X(5), 1), g5Person(rm, "abiathar_stand", X(9), 1), g5Person(rm, "abishai_idle", X(14), 1),
+    g5.men = [g5Person(rm, () => g5Stage() > 0 ? "man_eat" : "man_hungry", X(5), 1, null, 1.2), g5Person(rm, "abiathar_stand", X(9), 1), g5Person(rm, "abishai_idle", X(14), 1),
       g5Person(rm, "asahel_idle", X(19), -1), g5Person(rm, "soldier_talk", X(23), -1)];   // (Glen 11-18: not the same man twice; Abiathar came with the ephod at Keilah, 23:6)
     g5.abishai = g5.men[2];
     g5.pileX = X(28);
@@ -622,7 +622,8 @@ function g5DrawFront(camX) {
   for (const p of g5.people) {
     if (p.room !== r.id || (p.show && !p.show())) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
-    if (SPR[p.spr]) drawSprite(p.spr, frameOf(p.spr, p.t), x, p.y, p.dir, p.k, 1, r.id === "camp" && g5.saul ? "brightness(0.6)" : "");
+    const n = typeof p.spr === "function" ? p.spr() : p.spr;   // (Glen's sitting man: hungry, then eating, 11-18)
+    if (SPR[n]) drawSprite(n, frameOf(n, p.t), x, p.y, p.dir, p.k, 1, r.id === "camp" && g5.saul ? "brightness(0.6)" : "");
   }
   for (const g of g5.guards) if (g.room === r.id && g5Active(g) && typeof z5DrawMan === "function") z5DrawMan(g, camX);
   const s = g5.saul;

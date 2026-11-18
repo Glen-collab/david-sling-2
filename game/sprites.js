@@ -5472,16 +5472,40 @@ window.SPRITE_DATA = {
   "ay": 348,
   "align": "feet"
  },
- "men_eat": {
-  "src": "../assets/sprites/men_eat.png",
-  "frames": 24,
-  "w": 236,
+ "man_eat": {
+  "src": "../assets/sprites/man_eat.png",
+  "frames": 4,
+  "w": 123,
   "h": 159,
-  "ms": 127,
+  "ms": 260,
+  "loop": true,
+  "pingpong": true,
+  "ax": 63,
+  "ay": 158,
+  "align": "feet"
+ },
+ "man_hungry": {
+  "src": "../assets/sprites/man_hungry.png",
+  "frames": 16,
+  "w": 103,
+  "h": 152,
+  "ms": 125,
   "loop": true,
   "pingpong": false,
+  "ax": 72,
+  "ay": 151,
+  "align": "feet"
+ },
+ "men_eat": {
+  "src": "../assets/sprites/men_eat.png",
+  "frames": 4,
+  "w": 235,
+  "h": 156,
+  "ms": 260,
+  "loop": true,
+  "pingpong": true,
   "ax": 66,
-  "ay": 157,
+  "ay": 155,
   "align": "feet"
  },
  "men_hungry": {
