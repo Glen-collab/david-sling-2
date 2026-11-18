@@ -5472,6 +5472,30 @@ window.SPRITE_DATA = {
   "ay": 348,
   "align": "feet"
  },
+ "men_eat": {
+  "src": "../assets/sprites/men_eat.png",
+  "frames": 24,
+  "w": 236,
+  "h": 159,
+  "ms": 127,
+  "loop": true,
+  "pingpong": false,
+  "ax": 66,
+  "ay": 157,
+  "align": "feet"
+ },
+ "men_hungry": {
+  "src": "../assets/sprites/men_hungry.png",
+  "frames": 16,
+  "w": 236,
+  "h": 160,
+  "ms": 151,
+  "loop": true,
+  "pingpong": false,
+  "ax": 66,
+  "ay": 159,
+  "align": "feet"
+ },
  "messenger_dismount": {
   "src": "../assets/sprites/messenger_dismount.png",
   "frames": 14,

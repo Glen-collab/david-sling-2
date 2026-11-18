@@ -1,0 +1,29 @@
+{
+  "frames": 16,
+  "frame_w": 236,
+  "frame_h": 160,
+  "ms_per_frame": 151,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 66,
+  "anchor_y": 159,
+  "source": "clip men hungry.mp4",
+  "video_frames": [
+    26,
+    30,
+    33,
+    37,
+    40,
+    44,
+    48,
+    51,
+    55,
+    59,
+    62,
+    66,
+    70,
+    73,
+    77,
+    80
+  ]
+}

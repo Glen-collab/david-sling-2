@@ -133,6 +133,8 @@ function g5Build(R) {
     g5.abishai = g5.men[2];
     g5.pileX = X(28);
     campfire(c + 36, GR - 1);
+    // (Glen's clips, 11-18) two of the men by the fire: hungry, heads down, till the first load is home; then bread and figs
+    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, 1.2); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0, 1.2);
     g5.entry.camp = X(54);
   }
 
