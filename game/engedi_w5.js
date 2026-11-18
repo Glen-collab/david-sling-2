@@ -637,13 +637,31 @@ function g5DrawFront(camX) {
   // the cave behind the falls: an Up arrow at its mouth; while he goes in, the falling water in front of him
   if (r.id === "pool") {
     if (!g5.cave && !g5Has("g5_truth_falls") && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) upHint(g5CaveX() - camX, G5.POOL_LEDGE - 115);   // (in the dark of the mouth: higher, it was under the hearts)
-    if (g5.cave && SPR.waterfall) { const want = 300, k = want / (SPR.waterfall.h * SCALE * (TUNE.SPRITE_SIZE.waterfall || 1)), fx = (r.c0 + G5.CAVE.FALLS) * T + T / 2;
-      ctx.save(); ctx.beginPath(); ctx.rect(fx - camX - 50, 0, 100, G5.POOL_LEDGE + 14); ctx.clip(); ctx.globalCompositeOperation = "screen";   // (only the falling water itself: no mist box round it)
-      drawSprite("waterfall", frameOf("waterfall", performance.now() / 1000), fx - camX, G5.POOL_LEDGE + 10 - want, 1, k, 0.7); ctx.restore(); }
+    if (g5.cave) g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, G5.POOL_LEDGE + 14, 300, 0.75);
   }
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
     const a = o.t > G5.DROP_FOR - 1.2 ? 0.4 + 0.6 * Math.abs(Math.sin(o.t * 12)) : 1; g5DrawFoodAt(f.kind, o.x - camX, o.y + 4, a); }
+}
+// David 1's waterfall (just the water), shrunk: a band round the falling sheet, its sides and foot faded out soft (Glen
+//  11-18: the hard box cut round it showed an edge), laid over him with "screen" so only the white water shows
+const G5_WF = typeof document !== "undefined" ? document.createElement("canvas") : null;
+function g5FallsOver(x, bottom, want, alpha) {
+  const s = SPR.waterfall; if (!s || !G5_WF || !s.img.complete || !s.img.naturalWidth) return;
+  const sc = want / s.h, x0 = s.ax - 75, bw = 150, w = Math.ceil(bw * sc), h = Math.ceil(want), c = G5_WF;
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  const cx = c.getContext("2d"), i = frameOf("waterfall", performance.now() / 1000);
+  cx.globalCompositeOperation = "source-over"; cx.clearRect(0, 0, w, h);
+  cx.drawImage(s.img, i * s.w + x0, 0, bw, s.h, 0, 0, w, h);
+  cx.globalCompositeOperation = "destination-in";
+  const gx = cx.createLinearGradient(0, 0, w, 0);
+  gx.addColorStop(0, "rgba(0,0,0,0)"); gx.addColorStop(0.32, "#000"); gx.addColorStop(0.68, "#000"); gx.addColorStop(1, "rgba(0,0,0,0)");
+  cx.fillStyle = gx; cx.fillRect(0, 0, w, h);
+  const gy = cx.createLinearGradient(0, 0, 0, h);
+  gy.addColorStop(0, "rgba(0,0,0,0)"); gy.addColorStop(0.12, "#000"); gy.addColorStop(0.85, "#000"); gy.addColorStop(1, "rgba(0,0,0,0)");
+  cx.fillStyle = gy; cx.fillRect(0, 0, w, h);
+  ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = alpha;
+  ctx.drawImage(c, Math.round(x - (s.ax - x0) * sc), Math.round(bottom - want)); ctx.restore();
 }
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5DrawOver() {
