@@ -33,7 +33,7 @@ const G5 = {
   POOL_BANK: 330, POOL_LEDGE: 352,
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
-  CAVE: { AT: 96, FALLS: 94.2, REACH: 190, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
+  CAVE: { WATER_H: 380, AT: 96, FALLS: 94.2, REACH: 190, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
   SHEEP_K: 2.2,            // the flock in the pens
@@ -458,12 +458,13 @@ function g5Hold(d, dt) {
   return false;
 }
 const g5CaveX = () => (roomById("pool").c0 + G5.CAVE.AT) * T + T / 2;
+const g5FallsX = () => (roomById("pool").c0 + G5.CAVE.FALLS) * T + T / 2;
 function g5CaveUpdate(dt) {
   const C = g5.cave, K = G5.CAVE, d = david;
   if (dialog.t > 0) return;   // (reading the Truth: the walk out waits)
   C.t += dt;
   const walkEnd = K.TURN + K.WALK, inEnd = walkEnd + K.INSIDE;
-  if (C.t > K.TURN && C.t <= walkEnd) d.x = C.x0 + (g5CaveX() - C.x0) * Math.min(1, (C.t - K.TURN) / K.WALK);
+  if (C.t > K.TURN && C.t <= walkEnd) d.x = C.x0 + (g5FallsX() - C.x0) * Math.min(1, (C.t - K.TURN) / K.WALK);   // (in under the falling water itself)
   if (C.t > walkEnd && !C.taken) {
     C.taken = true; const f = region.relics.find(o => o.id === "g5_truth_falls");
     if (f) takeRelic(f);
@@ -552,14 +553,16 @@ function g5DrawDavid(d, x, y) {
   return false;
 }
 // (Glen's, 11-18: "here is an animated one") the pool moving: his clip, the green keyed out, the ends crossfaded so it loops
-let G5_POOL_V = null;
-function g5PoolVideo() {
+const G5_VIDS = {};
+const g5PoolVideo = () => g5Video("pool");
+// (Glen's clips, keyed to webm with alpha, looping, muted: pool = the whole pool; falls = just the falling water, 11-18)
+function g5Video(name) {
   if (typeof document === "undefined") return null;
-  if (!G5_POOL_V) {
-    const v = G5_POOL_V = document.createElement("video");
-    Object.assign(v, { muted: true, loop: true, playsInline: true, preload: "auto", src: "../assets/rooms/engedi/pool/pool.webm?v=" + (window.BUILD || 0) });
+  if (!G5_VIDS[name]) {
+    const v = G5_VIDS[name] = document.createElement("video");
+    Object.assign(v, { muted: true, loop: true, playsInline: true, preload: "auto", src: `../assets/rooms/engedi/pool/${name}.webm?v=` + (window.BUILD || 0) });
   }
-  const v = G5_POOL_V;
+  const v = G5_VIDS[name];
   if (v.paused && !v._trying) { v._trying = true; const p = v.play(); if (p && p.catch) p.catch(() => {}).finally(() => { v._trying = false; }); else v._trying = false; }
   return v;
 }
@@ -636,8 +639,10 @@ function g5DrawFront(camX) {
     ctx.fillStyle = g; ctx.fillRect(wx, y + k.h * 0.8, ww, H - (y + k.h * 0.8) + 400); ctx.drawImage(im, x, y, k.w, k.h); } }
   // the cave behind the falls: an Up arrow at its mouth; while he goes in, the falling water in front of him
   if (r.id === "pool") {
+    g5Video("falls");   // (loaded and running while he's in the pool room, ready for the cave)
     if (!g5.cave && !g5Has("g5_truth_falls") && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) upHint(g5CaveX() - camX, G5.POOL_LEDGE - 115);   // (in the dark of the mouth: higher, it was under the hearts)
-    if (g5.cave) g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, G5.POOL_LEDGE + 14, 300, 0.75);
+    if (g5.cave) { const C = g5.cave, K = G5.CAVE, end = K.TURN + K.WALK + K.INSIDE + K.OUT, fade = Math.min(1, C.t / K.TURN, (end - C.t) / K.OUT);
+      g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, G5.POOL_LEDGE + 14, G5.CAVE.WATER_H, Math.max(0, fade)); }
   }
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
@@ -647,6 +652,10 @@ function g5DrawFront(camX) {
 //  11-18: the hard box cut round it showed an edge), laid over him with "screen" so only the white water shows
 const G5_WF = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5FallsOver(x, bottom, want, alpha) {
+  const v = g5Video("falls");   // Glen's clip of just the falling water (falls.webm), when it's playing
+  if (v && v.readyState >= 2 && v.videoWidth) {
+    const w = want * v.videoWidth / v.videoHeight;
+    ctx.save(); ctx.globalAlpha = alpha * 0.95; ctx.drawImage(v, Math.round(x - w / 2), Math.round(bottom - want), w, want); ctx.restore(); return; }
   const s = SPR.waterfall; if (!s || !G5_WF || !s.img.complete || !s.img.naturalWidth) return;
   const sc = want / s.h, x0 = s.ax - 75, bw = 150, w = Math.ceil(bw * sc), h = Math.ceil(want), c = G5_WF;
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
