@@ -128,8 +128,8 @@ function g5Build(R) {
   let c = R("camp");
   { const rm = "camp", X = k => (c + k) * T;
     ground(c, c + 59);
-    g5.men = [g5Person(rm, "soldier_sit", X(5), 1), g5Person(rm, "soldier_talk", X(9), 1), g5Person(rm, "abishai_idle", X(14), 1),
-      g5Person(rm, "soldier_sit", X(19), -1), g5Person(rm, "soldier_talk", X(23), -1)];
+    g5.men = [g5Person(rm, "soldier_sit", X(5), 1), g5Person(rm, "abiathar_stand", X(9), 1), g5Person(rm, "abishai_idle", X(14), 1),
+      g5Person(rm, "asahel_idle", X(19), -1), g5Person(rm, "soldier_talk", X(23), -1)];   // (Glen 11-18: not the same man twice; Abiathar came with the ephod at Keilah, 23:6)
     g5.abishai = g5.men[2];
     g5.pileX = X(28);
     campfire(c + 36, GR - 1);
@@ -249,11 +249,11 @@ function g5Talk() {
   const MEN = "One of David's men", st = () => g5Stage();
   const say = {
     0: () => st() === 0 ? [[MEN, "There's nothing left to eat in here. Not a crumb."]] : st() === 1 ? [[MEN, "Fresh water! I'd forgotten what it tastes like."]] : st() === 2 ? [[MEN, "Honey! Who climbs up there for honey? You do, apparently."]] : [[MEN, "Salt and figs. We'll eat like kings tonight. Well, like men hiding from one."]],
-    1: () => st() === 0 ? [[MEN, "Saul has three thousand men out there, looking for us on the rocks of the wild goats (1 Samuel 24:2)."]] : [[MEN, "Every time you go out, there are more of Saul's men by the pens. Keep low."]],
+    1: () => st() === 0 ? [["Abiathar", "Saul has three thousand men out there, looking for us on the rocks of the wild goats (1 Samuel 24:2)."]] : [["Abiathar", "Every time you go out, there are more of Saul's men by the pens. Keep low."]],
     2: () => st() === 0 ? [["Abishai", "Six hundred men, and nothing to feed them. The Spring's past the sheep pens. Water there, and dates on the trees."]]
       : st() === 1 ? [["Abishai", "Next, the rocks where the wild goats live. Watch how they go up: they'll show you the way."]]
       : st() === 2 ? [["Abishai", "One more: the wilderness, down toward the Salt Sea. Salt, figs and almonds."]] : [["Abishai", "That's everything. Rest now. We stay deep in the cave, where no one can see us."]],
-    3: () => [[MEN, "If Saul's men find this cave, we're trapped in here. So nobody follows you home."]],
+    3: () => [["Asahel", "If Saul's men find this cave, we're trapped in here. So nobody follows you home."]],
     4: () => st() < 3 ? [[MEN, "Bring it all back here, by the fire. We'll share it out."]] : [[MEN, "Shh. Someone's at the cave mouth."]],
   };
   g5.men.forEach((p, i) => rTalker(p, () => say[i]()));
