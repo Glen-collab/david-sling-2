@@ -27,6 +27,7 @@ const G5 = {
   // Glen's robe-cut two-shot (saul_robe_cut): as engedi.js's #9-1
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
+  PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
   SHEEP_K: 2.2,            // the flock in the pens
 };
@@ -35,22 +36,27 @@ const G5_FOOD = {
   water: ["a water skin", "w4_waterskin"], dates: ["dates", "w4_basket"], honey: ["honey out of the rock", "w4_pot"],
   eggs: ["partridge eggs", "w4_bowl"], salt: ["salt", "w4_jar_big"], figs: ["figs", "w4_basket"], almonds: ["almonds", "w4_bag"],
 };
-const G5_RUNS = ["spring", "rocks", "wild"];   // the supply rooms, in order
+const G5_RUNS = ["spring", "rocks", "wild"];
+// (Glen's, 11-18: tools/cut_piece.py) the date palm, the tall cliff, the beehive in the rock, the sheep pen wall, the pool
+const G5_KIT = { w4_e_palm: { w: 470, h: 533 }, w4_e_cliff: { w: 300, h: 1037 }, w4_e_hive: { w: 230, h: 210 }, w4_e_penwall: { w: 250, h: 78 }, w4_e_pool: { w: 270, h: 66 },
+  w4_e_falls: { w: 1100, h: 350, fx: 836, water: 185 } };   // (his falls with the cave behind: fx, the falls' middle; water, its surface, px down)   // the supply rooms, in order
 
 const ENGEDI = {
   key: "engedi", name: "En-Gedi", start: "camp", carry: ["gibeah", "ramah", "nobgath", "adullam", "keilah", "ziph"],
   strCap: 8,
   rooms: [
+    // (Glen's, 11-18: the cave mouth bright on the right, the floor with the fire; "stocked", his storeroom cave, once
+    //  every load is home: g5Update)
     { id: "camp", name: "The Camp in the Cave", w: 60, cave: true, mx: 0, my: 1, mw: 2, right: "pens",
-      strip: "w4/camp_strip", floor: "w4/camp_floor" },   // (stand-in: Adullam's camp)
+      far: "engedi/camp/far", near: "engedi/camp/near.png" },
     { id: "pens", name: "The Sheep Pens by the Way", w: 110, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "camp", right: "spring",
-      far: "keilah/floors/far", mid: "keilah/floors/mid.png", midY: 0, near: "keilah/floors/near.png" },   // (stand-in)
+      far: "engedi/pens/far", mid: "engedi/pens/mid.png", midY: 0, near: "engedi/pens/near.png" },   // (Glen's, 11-18)
     { id: "spring", name: "The Spring", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 4, left: "pens", right: "rocks",
-      far: "keilah/hereth/far", mid: "keilah/hereth/mid.png", midY: 0, near: "keilah/hereth/near.png" },   // (stand-in)
+      far: "engedi/spring/far", mid: "engedi/spring/mid.png", midY: 0 },   // (Glen's, 11-18: the oasis; palm fronds hanging over, the pool's edge)
     { id: "rocks", name: "The Rocks of the Wild Goats", w: 64, up: 40, bg: "w4_1", mx: 9, my: 0, mw: 2, mh: 2, left: "spring", right: "wild",
-      far: "ziph/mountain/far", mid: "ziph/mountain/mid.png", midY: 0, near: "ziph/mountain/near.png" },   // (stand-in)
+      far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0, near: "engedi/rocks/near.png" },   // (Glen's, 11-18)
     { id: "wild", name: "The Wilderness of En-Gedi", w: 150, bg: "w4_1", mx: 11, my: 1, mw: 4, left: "rocks",
-      far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },   // (stand-in)
+      far: "engedi/wild/far", mid: "engedi/wild/mid.png", midY: 0, near: "engedi/wild/near.png" },   // (Glen's, 11-18)
   ],
   // the Journal: Glen's song, the Final Chorus, its second half (SONG_PSALM57.md, his words exactly)
   steps: ["g5_load_spring", "g5_load_rocks", "g5_load_wild", "g5_cut"],
@@ -96,7 +102,10 @@ const g5Active = g => g5Stage() >= g.run && !g5Has("g5_cut");
 function g5Build(R) {
   if (typeof R4_KIT !== "undefined") Object.assign(KIT, R4_KIT);   // (adullam.js's camp things: the stand-in provisions)
   if (typeof Z5_KIT !== "undefined") Object.assign(KIT, Z5_KIT);   // (ziph.js's hiding rock and trees)
-  for (const pl of ["keilah/floors", "keilah/hereth", "ziph/mountain", "ziph/maon"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
+  Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
+  g5.cliffs = []; g5.pools = [];
+  for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far"]) roomImg(n);
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
   ["w4_z_hide_rock", "w4_rubble_sand", "w4_tree_acacia", "w4_tree_dead", "w4_tree_oak", ...Object.values(G5_FOOD).map(f => f[1])].forEach(kitImg);
@@ -118,7 +127,9 @@ function g5Build(R) {
   { const rm = "pens", X = k => (c + k) * T;
     ground(c, c + 109);
     campfire(c + 4, GR - 1); campfire(c + 104, GR - 1);
-    rLowWall(rm, c + 26); rLowWall(rm, c + 60); rLowWall(rm, c + 88);
+    // (Glen's pen wall over the low wall's stone: the same hop up, the same top)
+    const pen = k => { rLowWall(rm, c + k); const p = region.props[region.props.length - 1], w = KIT.w4_e_penwall; Object.assign(p, { n: "w4_e_penwall", x: (c + k) * T + 2.5 * T - w.w / 2, y: FOOT - w.h + 4 }); };
+    pen(26); pen(60); pen(88);
     for (const k of [28, 62, 90]) g5.hides.push({ room: rm, x: X(k + 2), x0: X(k) - 20, x1: X(k + 5) + 20, y: FOOT - 4 });   // (crouched by a pen wall)
     g5Hide(rm, "w4_z_hide_rock", X(18)); g5Hide(rm, "w4_rubble_sand", X(46)); g5Hide(rm, "w4_z_hide_rock", X(76)); g5Hide(rm, "w4_rubble_sand", X(100));
     g5.flock = [["sheep_graze", X(32), 1], ["sheep2_graze", X(37), -1], ["sheepblack_graze", X(66), 1], ["sheep_graze", X(71), -1], ["sheep2_graze", X(94), 1]];
@@ -132,14 +143,18 @@ function g5Build(R) {
   { const rm = "spring", X = k => (c + k) * T;
     ground(c, c + 129);
     campfire(c + 4, GR - 1); campfire(c + 125, GR - 1);
-    const b1 = rOliveTree(rm, c + 12), b2 = rOliveTree(rm, c + 92);   // (stand-ins for the palms: dates up on the branch)
-    g5Food(rm, "dates", 24, b1 - 4); g5Food(rm, "dates", 104, b2 - 4);
-    rHole(rm, c + 40, 3);   // (a deep pool, till the water's in)
+    // (Glen's date palms: up the stones to the crown, the dates in the fronds)
+    const palm = k => { const w = KIT.w4_e_palm; region.props.push({ room: rm, n: "w4_e_palm", x: X(k) - w.w / 2, y: FOOT - w.h + 8 });
+      const top = G5.PALM_TOP; platAt(c + k - 2, top, 4); return top; };
+    const b1 = palm(18), b2 = palm(98);
+    rLedge(rm, c + 10, 460, 3); rLedge(rm, c + 13, 360, 3); rLedge(rm, c + 92, 460, 3); rLedge(rm, c + 95, 360, 3);
+    g5Food(rm, "dates", 18, b1 - 4); g5Food(rm, "dates", 98, b2 - 4);
+    g5Pool(rm, c + 40, 5);
     g5.falls = X(62);
     g5Food(rm, "water", 54); g5Food(rm, "water", 70);
-    rRelic("g5_truth_falls", "truth", c + 62, GR - 1, "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
+    rRelic("g5_truth_falls", "truth", c + 65, GR - 1, "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
     rLedge(rm, c + 74, 460, 4); rLedge(rm, c + 80, 360, 4); g5Food(rm, "water", 82, 360 - 4);
-    rHole(rm, c + 86, 3);
+    g5Pool(rm, c + 86, 5);
     rLedge(rm, c + 110, 450, 5); g5Food(rm, "dates", 112, 450 - 4);
     rWild("viper", rm, c + 30); rWild("hornet", rm, c + 70, { y: 380, hy: 380 }); rHyrax(rm, c + 118);
     g5Hide(rm, "w4_z_hide_rock", X(22)); g5Hide(rm, "w4_rubble_sand", X(50)); g5Hide(rm, "w4_z_hide_rock", X(72)); g5Hide(rm, "w4_z_hide_rock", X(100)); g5Hide(rm, "w4_rubble_sand", X(116));
@@ -154,6 +169,8 @@ function g5Build(R) {
     campfire(c + 3, GR - 1); campfire(c + 60, GR - 1);
     // the first cliff: climb either face (Up at it), its top a shelf
     const cliff = (k, w, topRow) => { rock(c + k, topRow, w, GR - topRow); platAt(c + k, topRow * T, w);
+      for (let i = 0; i < w; i++) for (let r_ = topRow; r_ < GR; r_++) artSolid.add((c + k + i) + "," + r_);
+      g5.cliffs.push({ room: rm, x: (c + k) * T, w: w * T, top: topRow * T });
       region.walls.push({ room: rm, x0: (c + k) * T, x1: (c + k + w) * T, top: topRow * T, need: "wallClimb" }); };
     cliff(14, 7, 6);
     rWild("ibex", rm, c + 17, { y: 6 * T, hy: 6 * T, range: 2 });
@@ -164,6 +181,7 @@ function g5Build(R) {
     // the high crag, sheer from the ground: honey in its top, the bees round it (its top on the room's first row: the
     //  engine's solid rock can't go higher than that; the sky ledges above are the way to the eggs)
     cliff(36, 8, 1);
+    { const w = KIT.w4_e_hive; region.props.push({ room: rm, n: "w4_e_hive", x: X(40) + T / 2 - w.w / 2, y: T - w.h + 14 }); }
     g5Food(rm, "honey", 38, T - 4); g5Food(rm, "honey", 40, T - 4); g5Food(rm, "honey", 42, T - 4);
     rWild("hornet", rm, c + 40, { y: T - 120, hy: T - 120 });
     for (const k of [0, 1, 2]) rWild("bee", rm, c + 39 + k, { y: T - 34 - k * 14, ph: k * 1.6 });
@@ -213,6 +231,11 @@ function g5Talk() {
   };
   g5.men.forEach((p, i) => rTalker(p, () => say[i]()));
 }
+// (Glen's pool, 11-18) a pit with his pool drawn over it, in front of David: till swimming, falling in costs a heart
+function g5Pool(rm, c, w) {
+  const n0 = region.props.length; rHole(rm, c, w); region.props.splice(n0);   // (no pit rims: the pool's own walls)
+  g5.pools.push({ room: rm, x: (c + w / 2) * T });
+}
 function rHyrax(rm, c, o = {}) { if (typeof WILD !== "undefined" && WILD.hyrax) rWild("hyrax", rm, c, o); }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -251,6 +274,7 @@ function g5Update(dt, r) {
   for (const p of g5.people) p.t += dt;
   if (g5.pose) g5.pose.t += dt;
   const free = !region.script.length && region.wait <= 0 && !region.trans;
+  roomById("camp").far = g5Stage() >= 3 ? "engedi/camp_stocked/far" : "engedi/camp/far";   // (the men fed: the storeroom)
   // the pack: touching a provision picks it up (its room's run open, not already home)
   for (const f of g5.food) {
     f.t += dt;
@@ -450,6 +474,16 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
 function g5Draw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
+  // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
+  if (r.id === "spring") { const im = kitImg("w4_e_falls"), k = KIT.w4_e_falls;
+    if (im) { const s = im.naturalWidth / k.w, hh = k.water + 24; ctx.drawImage(im, 0, 0, im.naturalWidth, hh * s, g5.falls - k.fx - camX, FOOT - k.water, k.w, hh); } }
+  // the cliffs (Glen's tall picture, as much of it as the cliff is high, from its top shelf down)
+  for (const k of g5.cliffs || []) {
+    if (k.room !== r.id) continue; const im = kitImg("w4_e_cliff"); if (!im) break;
+    const x = k.x - camX - 14, w = k.w + 28, s = w / im.naturalWidth, h = GR * T + 8 - k.top + 18;
+    if (x > W || x + w < 0) continue;
+    ctx.drawImage(im, 0, 0, im.naturalWidth, Math.min(im.naturalHeight, h / s), x, k.top - 18, w, Math.min(h, im.naturalHeight * s));
+  }
   // the provisions, lying about (a soft glow so they read as something to take)
   for (const f of g5.food) {
     if (f.room !== r.id || g5Has(f.id) || g5.pack.includes(f.id) || g5.drops.some(o => o.id === f.id)) continue;
@@ -489,8 +523,14 @@ function g5DrawFront(camX) {
     g5DrawSaul(s, camX);
   }
   // the falls (the Spring), in front of David: the Truth is behind the water (Glen's sheet hangs from its top)
-  if (r.id === "spring" && SPR.waterfall) { const k = G5.FALLS_K, h = SPR.waterfall.h * SCALE * (TUNE.SPRITE_SIZE.waterfall || 1) * k;
-    drawSprite("waterfall", frameOf("waterfall", performance.now() / 1000), g5.falls - camX, FOOT + 10 - h, 1, k, 0.85); }
+  //  (moving water over Glen's painted falls)
+  if (r.id === "spring" && SPR.waterfall) { const want = 210, k = want / (SPR.waterfall.h * SCALE * (TUNE.SPRITE_SIZE.waterfall || 1));
+    drawSprite("waterfall", frameOf("waterfall", performance.now() / 1000), g5.falls - camX, FOOT + 6 - want, 1, k, 0.75); }
+  // the pools (Glen's), over their pits, in front of him: in the water, not behind it
+  for (const o of g5.pools || []) if (o.room === r.id) { const im = kitImg("w4_e_pool"), k = KIT.w4_e_pool; if (im) {
+    const x = o.x - k.w / 2 - camX, y = GR * T - k.h * 0.34, wx = x + k.w * 0.17, ww = k.w * 0.66;   // (the deep water under it, down out of sight: no black pit)
+    const g = ctx.createLinearGradient(0, y + k.h * 0.8, 0, y + k.h + 160); g.addColorStop(0, "rgba(52,150,160,0.95)"); g.addColorStop(1, "rgba(10,40,52,1)");
+    ctx.fillStyle = g; ctx.fillRect(wx, y + k.h * 0.8, ww, H - (y + k.h * 0.8) + 400); ctx.drawImage(im, x, y, k.w, k.h); } }
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
     const a = o.t > G5.DROP_FOR - 1.2 ? 0.4 + 0.6 * Math.abs(Math.sin(o.t * 12)) : 1; g5DrawFoodAt(f.kind, o.x - camX, o.y + 4, a); }
