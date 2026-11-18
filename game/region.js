@@ -13,7 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
-const REGION_KEY = location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
+const REGION_KEY = location.hash === "#9-11" ? "engedi" : location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
 const REGION_UP = 130;   // (Glen 11-13: 130 for World 4's Old Well Shaft, 124 rows up; was 110)
 //   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
@@ -108,7 +108,7 @@ const REGION_GIBEAH = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
-const REGION = REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
+const REGION = REGION_KEY === "engedi" && typeof ENGEDI !== "undefined" ? ENGEDI : REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -2120,6 +2120,13 @@ const CRAWLS = {
     "Then the people of Ziph go to Saul", "and offer to hand David over.", "Saul comes hunting, and in the wilderness of Maon", "he surrounds David on a mountain.",
     "There is nowhere left to run.", "",
     "“Behold, God is my helper.", "The Lord is the one who sustains my soul.”", "(Psalm 54:4)"],
+  engedi: ["# World 5: En-Gedi", "",   // (draft, 11-18: SERMONS_DRAFT.md's World 5)
+    "David and his men hide in the strongholds", "of En-Gedi, in the caves above the Salt Sea.", "(1 Samuel 23:29)", "",
+    "Six hundred men, and nothing to eat.", "Someone has to go out for food,", "and Saul is coming.", "",
+    "“Saul took three thousand chosen men", "out of all Israel, and went to seek David", "and his men on the rocks of the wild goats.”", "(1 Samuel 24:2)", "",
+    "And then the king walks into the very cave", "where David is hiding. Alone.", "",
+    "David's men whisper: this is the day.", "But David will not lift his hand", "against the LORD's anointed.", "",
+    "Mercy is stronger than a sword."],
 };
 const regionCrawlStart = () => { region.crawl = { t: 0 }; };
 function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has the screen

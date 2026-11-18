@@ -14,7 +14,7 @@ const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself
   { id: "adullam", name: "Adullam", world: "World 4", x: 525, y: 281, stage: "9-8", key: "adullam", room: "mouth", after: "gath" },   // (11-13: adullam.js)
   { id: "keilah", name: "Keilah", world: "World 4", x: 512, y: 350, stage: "9-9", key: "keilah", room: "hereth", after: "adullam" },   // (11-14: keilah.js)
   { id: "ziph", name: "Ziph", world: "World 5", x: 610, y: 565, stage: "9-10", key: "ziph", room: "hills", after: "keilah" },   // (11-15: ziph.js)
-  { id: "engedi", name: "En-Gedi", world: "World 5", x: 1012, y: 269, stage: null, after: "ziph" },
+  { id: "engedi", name: "En-Gedi", world: "World 5", x: 1012, y: 269, stage: "9-11", key: "engedi", room: "camp", after: "ziph" },   // (11-18: engedi_w5.js)
   { id: "carmel", name: "Carmel", world: "World 6", x: 762, y: 450, stage: null, after: "engedi" },
   { id: "ziklag", name: "Ziklag", world: "World 7", x: 656, y: 512, stage: null, after: "carmel" },
   { id: "hebron", name: "Hebron", world: "World 8", x: 887, y: 168, stage: null, after: "ziklag" },
@@ -30,7 +30,7 @@ function landDone(id) {   // (a place in a stage shared with another: its own sa
 }
 // (Glen 11-12: "restart that level ... like I don't have the key or the sword, like I'm new to it") Y on the map, twice:
 //  that stage's save gone (rooms, finds, doors), and the skills it taught, so it plays from the beginning
-const LAND_SKILLS = { ramah: ["rope", "bow"], nobgath: ["heavySword"], keilah: ["ask"], ziph: ["courage"] };
+const LAND_SKILLS = { ramah: ["rope", "bow"], nobgath: ["heavySword"], keilah: ["ask"], ziph: ["courage"], engedi: ["wallClimb"] };
 function landReset(p) {
   const key = p.key || p.id;
   try { localStorage.removeItem(slotKey("david2Region") + "_" + key); } catch (e) {}
