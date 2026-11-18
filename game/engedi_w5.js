@@ -30,7 +30,10 @@ const G5 = {
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 1050, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5 },
-  POOL_BANK: 330, POOL_LEDGE: 352,   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
+  POOL_BANK: 330, POOL_LEDGE: 352,
+  // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
+  //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
+  CAVE: { AT: 96, FALLS: 94.2, REACH: 190, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
   SHEEP_K: 2.2,            // the flock in the pens
@@ -118,7 +121,7 @@ function g5Build(R) {
   for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png"]) roomImg(n);
   g5.swim = null; g5.breath = G5.SWIM.BREATH;
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
-  g5.saul = null; g5.pose = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
+  g5.saul = null; g5.pose = null; g5.cave = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
   ["w4_z_hide_rock", "w4_rubble_sand", "w4_tree_acacia", "w4_tree_dead", "w4_tree_oak", ...Object.values(G5_FOOD).map(f => f[1])].forEach(kitImg);
 
   // -- The Camp in the Cave (24:3: "David and his men were staying in the innermost parts of the cave")
@@ -181,7 +184,7 @@ function g5Build(R) {
     rLedge(rm, c, G5.POOL_BANK, 4);
     rLedge(rm, c + 87, G5.POOL_LEDGE, 13);
     g5Food(rm, "water", 52, GR * T - 4);   // (the Spring's third skin, down on the bottom)
-    rRelic("g5_truth_falls", "truth", c + 96, onTop(G5.POOL_LEDGE), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
+    rRelic("g5_truth_falls", "truth", c + G5.CAVE.AT, onTop(G5.POOL_LEDGE), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)", "g5_never");   // (inside the cave: found by going in, never lying out on the rocks)
     rRelic("g5_pom_pool", "pomegranate", c + 30, GR - 1);
     g5.entry.pool = X(2);
   }
@@ -325,6 +328,10 @@ function g5Update(dt, r) {
     if (o.t > G5.DROP_AFTER && Math.abs(d.x - o.x) < G5.PACK_REACH && d.y > o.y - 90 && d.y - d.h < o.y + 10) { g5.pack.push(o.id); o.t = 99; sfx("pickup", o.x, 0.6); }
   }
   g5.drops = g5.drops.filter(o => o.t < G5.DROP_FOR);
+  // the cave behind the falls (the pool): Up at its mouth and he goes in
+  if (r.id === "pool" && free && !g5.cave && pressed("up") && d.onGround && Math.abs(d.x - g5CaveX()) < G5.CAVE.REACH && !g5Has("g5_truth_falls")) {
+    g5.cave = { t: 0, x0: d.x, taken: false }; d.vx = 0; }
+  if (g5.cave) g5CaveUpdate(dt);
   // home: the pack set down by the pile
   if (r.id === "camp" && free && g5.pack.length && d.x < (r.c0 + G5.CAMP_REACH) * T) g5Deliver();
   // the way on is shut till the load before it is home
@@ -442,12 +449,26 @@ function g5Hold(d, dt) {
     d.vx = 0; return true;
   }
   if (g5.pose && g5.pose.hold) { d.vx = 0; return false; }
+  if (g5.cave) { d.vx = d.vy = 0; d.charging = false; return true; }   // (walking into the cave behind the falls)
   if (g5Swim(d, dt)) return true;
   if (g5.saul && g5.saul.outside && g5.saul.step === "call") { d.vx = 0; return false; }
   const r = region.room;
   if (r && !region.script.length) g5SneakUpdate(dt, r);
   if (r && r.id === "pens" && g5Has("g5_cut") && !g5Has("g5_called") && !region.script.length) g5CallScene();
   return false;
+}
+const g5CaveX = () => (roomById("pool").c0 + G5.CAVE.AT) * T + T / 2;
+function g5CaveUpdate(dt) {
+  const C = g5.cave, K = G5.CAVE, d = david;
+  if (dialog.t > 0) return;   // (reading the Truth: the walk out waits)
+  C.t += dt;
+  const walkEnd = K.TURN + K.WALK, inEnd = walkEnd + K.INSIDE;
+  if (C.t > K.TURN && C.t <= walkEnd) d.x = C.x0 + (g5CaveX() - C.x0) * Math.min(1, (C.t - K.TURN) / K.WALK);
+  if (C.t > walkEnd && !C.taken) {
+    C.taken = true; const f = region.relics.find(o => o.id === "g5_truth_falls");
+    if (f) takeRelic(f);
+  }
+  if (C.t > inEnd + K.OUT) { g5.cave = null; d.facing = -1; }
 }
 // ---- the pool: below the waterline he swims (as adullam.js's r4Hold, without its rock lids)
 function g5Swim(d, dt) {
@@ -518,6 +539,13 @@ function g5StoneHits(s) {
 // drawing
 function g5DrawDavid(d, x, y) {
   if (g5.pose && g5.pose.hide) return true;   // (in the two-shot with Saul)
+  if (g5.cave) {   // his back to us, then into the dark behind the falls, smaller and fading; then out again
+    const C = g5.cave, K = G5.CAVE, walkEnd = K.TURN + K.WALK, inEnd = walkEnd + K.INSIDE;
+    if (C.t < K.TURN) { const n = SPR.david_back_turn ? "david_back_turn" : "david_turn_away"; if (SPR[n]) drawSprite(n, Math.min(SPR[n].frames - 1, Math.floor(C.t / K.TURN * SPR[n].frames)), x, y, d.facing); }
+    else if (C.t < walkEnd) { const u = (C.t - K.TURN) / K.WALK; if (SPR.david_back_walk) drawSprite("david_back_walk", frameOf("david_back_walk", C.t), x, y - u * K.RISE, 1, 1 - u * K.SHRINK, 1 - u * 0.9); }
+    else if (C.t > inEnd) { const u = Math.min(1, (C.t - inEnd) / K.OUT); drawSprite("david_idle", 0, x, y, -1, 1, u); }   // (back out of the dark)
+    return true;
+  }
   if (g5.swim && g5.swim.tread && SPR.david_tread) { drawSprite("david_tread", frameOf("david_tread", g5.swim.tt), x, y, d.facing); return true; }
   if (g5.swim && SPR.david_swim2) { drawSprite("david_swim2", frameOf("david_swim2", g5.swim.t), x, y - 50, d.facing, G5.SWIM.K); return true; }
   if (g5.pose && g5.pose.name && SPR[g5.pose.name]) { drawSprite(g5.pose.name, frameOf(g5.pose.name, g5.pose.t), x, y, d.facing); return true; }
@@ -606,6 +634,13 @@ function g5DrawFront(camX) {
     const x = o.x - k.w / 2 - camX, y = GR * T - k.h * 0.34, wx = x + k.w * 0.17, ww = k.w * 0.66;   // (the deep water under it, down out of sight: no black pit)
     const g = ctx.createLinearGradient(0, y + k.h * 0.8, 0, y + k.h + 160); g.addColorStop(0, "rgba(52,150,160,0.95)"); g.addColorStop(1, "rgba(10,40,52,1)");
     ctx.fillStyle = g; ctx.fillRect(wx, y + k.h * 0.8, ww, H - (y + k.h * 0.8) + 400); ctx.drawImage(im, x, y, k.w, k.h); } }
+  // the cave behind the falls: an Up arrow at its mouth; while he goes in, the falling water in front of him
+  if (r.id === "pool") {
+    if (!g5.cave && !g5Has("g5_truth_falls") && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) upHint(g5CaveX() - camX, G5.POOL_LEDGE - 115);   // (in the dark of the mouth: higher, it was under the hearts)
+    if (g5.cave && SPR.waterfall) { const want = 300, k = want / (SPR.waterfall.h * SCALE * (TUNE.SPRITE_SIZE.waterfall || 1)), fx = (r.c0 + G5.CAVE.FALLS) * T + T / 2;
+      ctx.save(); ctx.beginPath(); ctx.rect(fx - camX - 50, 0, 100, G5.POOL_LEDGE + 14); ctx.clip(); ctx.globalCompositeOperation = "screen";   // (only the falling water itself: no mist box round it)
+      drawSprite("waterfall", frameOf("waterfall", performance.now() / 1000), fx - camX, G5.POOL_LEDGE + 10 - want, 1, k, 0.7); ctx.restore(); }
+  }
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
     const a = o.t > G5.DROP_FOR - 1.2 ? 0.4 + 0.6 * Math.abs(Math.sin(o.t * 12)) : 1; g5DrawFoodAt(f.kind, o.x - camX, o.y + 4, a); }
