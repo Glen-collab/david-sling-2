@@ -523,6 +523,18 @@ function g5DrawDavid(d, x, y) {
   if (g5.pose && g5.pose.name && SPR[g5.pose.name]) { drawSprite(g5.pose.name, frameOf(g5.pose.name, g5.pose.t), x, y, d.facing); return true; }
   return false;
 }
+// (Glen's, 11-18: "here is an animated one") the pool moving: his clip, the green keyed out, the ends crossfaded so it loops
+let G5_POOL_V = null;
+function g5PoolVideo() {
+  if (typeof document === "undefined") return null;
+  if (!G5_POOL_V) {
+    const v = G5_POOL_V = document.createElement("video");
+    Object.assign(v, { muted: true, loop: true, playsInline: true, preload: "auto", src: "../assets/rooms/engedi/pool/pool.webm?v=" + (window.BUILD || 0) });
+  }
+  const v = G5_POOL_V;
+  if (v.paused && !v._trying) { v._trying = true; const p = v.play(); if (p && p.catch) p.catch(() => {}).finally(() => { v._trying = false; }); else v._trying = false; }
+  return v;
+}
 function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
   const n = G5_FOOD[kind][1], im = kitImg(n), k = KIT[n]; if (!im || !k) return;
   const w = G5.ITEM_W * (kind === "salt" ? 0.7 : 1), h = w * k.h / k.w;
@@ -531,8 +543,12 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
 function g5Draw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
-  // the pool (Glen's long picture, 1:1 with the room)
-  if (r.id === "pool") { const im = roomImg("engedi/pool/pool.png"); if (im) ctx.drawImage(im, r.c0 * T - camX, 0, 3600, 720); }
+  // the pool: Glen's animated clip (keyed, looping: pool.webm), his still picture till it's playing
+  if (r.id === "pool") {
+    const v = g5PoolVideo();
+    if (v && v.readyState >= 2 && !v.paused) ctx.drawImage(v, r.c0 * T - camX, 0, 3600, 722);   // (its 698 stretched a hair to the screen's foot: no ground under it)
+    else { const im = roomImg("engedi/pool/pool.png"); if (im) ctx.drawImage(im, r.c0 * T - camX, 0, 3600, 720); }
+  }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   if (r.id === "spring") { const im = kitImg("w4_e_falls"), k = KIT.w4_e_falls;
     if (im) { const s = im.naturalWidth / k.w, hh = k.water + 24; ctx.drawImage(im, 0, 0, im.naturalWidth, hh * s, g5.falls - k.fx - camX, FOOT - k.water, k.w, hh); } }
