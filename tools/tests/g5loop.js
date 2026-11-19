@@ -30,14 +30,14 @@ const steps = [
   { n: 1, fn() { log("stage " + g5Stage() + ", script " + region.script.length); } },
 ];
 for (let i = 0; i < 12; i++) steps.push({ keys: ["KeyZ"], n: 2 }, { keys: [], n: 40 });
-steps.push({ n: 1, fn() { log("saul: " + (g5.saul && g5.saul.mode + " " + g5.saul.step) + ", camp outL " + roomById("camp").outL); clear(); at("camp", 2); } }, { keys: ["ArrowLeft"], n: 60 },
+steps.push({ n: 1, fn() { log("saul: " + (g5.saul && g5.saul.mode + " " + g5.saul.step)); log("camp outR " + roomById("camp").outR); clear(); at("camp", 57); } }, { keys: ["ArrowRight"], n: 60 }, { keys: [], n: 1, snap: true },
   { n: 1, fn() { log("room " + region.room.id + ", saul " + g5.saul.step); } });
 for (let i = 0; i < 4; i++) steps.push({ keys: ["KeyZ"], n: 2 }, { keys: [], n: 60 });
 steps.push({ n: 1, fn() { log("saul " + g5.saul.step + " " + g5.saul.mode); } }, { keys: [], n: 10, snap: true },
   // creep up behind him
   { n: 1, fn() { david.x = g5.saul.x - 70; david.facing = 1; } }, { keys: ["ArrowDown"], n: 6 }, { keys: ["ArrowDown", "KeyV"], n: 2 }, { keys: [], n: 30, snap: true });
 for (let i = 0; i < 8; i++) steps.push({ keys: ["KeyZ"], n: 2 }, { keys: [], n: 60 });
-steps.push({ keys: [], n: 300 }, { n: 1, fn() { log("cut " + g5Has("g5_cut") + ", saul " + !!g5.saul); } }, { keys: ["ArrowRight"], n: 200 }, { n: 1, fn() { log("after following him out: " + region.room.id + ", camp outL " + roomById("camp").outL); at("pens", 6); } }, { keys: [], n: 60, snap: true });
+steps.push({ keys: [], n: 300 }, { n: 1, fn() { log("cut " + g5Has("g5_cut") + ", saul " + !!g5.saul); } }, { keys: ["ArrowRight"], n: 200 }, { n: 1, fn() { log("after following him out: " + region.room.id + ", camp outR " + roomById("camp").outR + ", calling " + region.script.length); } }, { keys: [], n: 60, snap: true });
 for (let i = 0; i < 14; i++) steps.push({ keys: ["KeyZ"], n: 2 }, { keys: [], n: 40 });
 steps.push({ n: 1, fn() { log("called " + g5Has("g5_called") + ", exit " + g5Has("g_exit_open")); } });
 testRun(steps);

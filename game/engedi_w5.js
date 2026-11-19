@@ -24,7 +24,7 @@ const G5 = {
   // Saul's men (as ziph.js's hills: walk, stop and look, turn); the more loads home, the more of them
   SNEAK: { WALK: 62, LOOK: 2.0, TURN: 0.45, SIGHT: 8, SIGHT_LOW: 2.2, SEEN_T: 0.6, NEAR: 30, CAUGHT_FADE: 1.4 },
   // the cave, at the end: walking upright this close to Saul (px) and he stirs; the sword reaches his robe from this close
-  SAUL_HEAR: 7 * 36, CUT_REACH: 95, SAUL_AT: 27, SAUL_WALK: 80,   // (SAUL_AT: his column in the innermost part)
+  SAUL_HEAR: 7 * 36, CUT_REACH: 95, SAUL_AT: 27, SAUL_WALK: 80,   // (SAUL_AT: his column in the cave by the pens)
   INNER: { IN: 5, DARK: 0.93, LIT: [[230, 100], [210, 110]], GLOW: 170 },   // where David comes in, how dark, the lights on him and the king, the way out's glow
   // Glen's robe-cut two-shot (saul_robe_cut): as engedi.js's #9-1
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
@@ -91,7 +91,9 @@ const ENGEDI = {
     //  hidden", his two pictures, the pens' sky and near strip) back into the camp by Up at the mouth only
     // (Glen 11-19: "Saul is clearly right there with all the provisions around ... it was super dark like a real cave")
     //  the robe is cut back here, in the dark (his #9-1 test cave's look), not in the stocked camp; out its right end, the camp
-    { id: "inner", name: "The Innermost Part of the Cave", w: 40, cave: true, mx: 0, my: 0, mw: 2, outR: ["camp", 3],
+    // (Glen 11-19: "Did Saul go that deep in? No ... a second hidden cave mouth ... the one Saul came into", above the
+    //  Hidden Cave Mouth) the robe is cut here, near the mouth; in from the camp going right, out its bright end at the pens
+    { id: "inner", name: "The Cave by the Sheep Pens", w: 40, cave: true, mx: 2, my: 0, mw: 1, outL: ["camp", 55], outR: ["pens", 8],
       strip: "w4/narrows_strip", floor: "w4/narrows_floor", ledgeDark: 0.5 },
     { id: "hideout", name: "The Hidden Cave Mouth", w: 46, bg: "w4_1", mx: 2, my: 1, mw: 1, right: "pens",
       far: "engedi/pens/far", mid: "engedi/hideout/mid.png", midY: -100, near: "engedi/pens/near.png" },
@@ -193,7 +195,7 @@ function g5Build(R) {
     g5.entry.camp = X(54);
   }
 
-  // -- The Innermost Part of the Cave: only bare rock and the dark
+  // -- The Cave by the Sheep Pens (24:3, where Saul went in): only bare rock and the dark
   c = R("inner");
   ground(c, c + 39);
 
@@ -422,7 +424,7 @@ function g5Update(dt, r) {
   const free = !region.script.length && region.wait <= 0 && !region.trans;
   // (the men fed: the storeroom; Glen 11-19: but while Saul's in the cave, the bare cave: "Saul would have noticed")
   roomById("camp").far = g5Stage() >= 3 ? "engedi/camp_stocked/far" : "engedi/camp/far";
-  roomById("camp").outL = g5SaulIn() ? ["inner", G5.INNER.IN] : null;   // (the way back into the dark: only while Saul's in the cave)
+  roomById("camp").outR = g5SaulIn() ? ["inner", G5.INNER.IN] : ["hideout", 25];   // (Glen 11-19: while Saul's in the cave, right goes through the dark to the mouth he came into)
   // the pack: touching a provision picks it up (its room's run open, not already home)
   for (const f of g5.food) {
     f.t += dt;
@@ -463,7 +465,7 @@ function g5Update(dt, r) {
   if (r.id === "spring") wall((r.c0 + r.w - 2) * T, g5Open("rocks"), "The men are waiting for water and food. Take it back to the camp first.");
   if (r.id === "rocks") wall((r.c0 + r.w - 2) * T, g5Open("wild"), "Take the honey and the eggs back to the men first.");
   if (r.id === "inner" && g5.saul && !g5.saul.outside) g5SaulUpdate(dt);
-  if (r.id === "camp" && g5SaulIn() && g5.saul.step === "wait") g5Tell("goinner", "Saul has gone into the cave. Back into the innermost part, where it's dark: go left.");
+  if (r.id === "camp" && g5SaulIn() && g5.saul.step === "wait") g5Tell("goinner", "Saul has gone into the cave by the sheep pens. Go right, through the dark toward its mouth.");
 }
 function g5Deliver() {
   const d = david, before = g5Stage(), n = g5.pack.length;
@@ -495,7 +497,7 @@ function g5SaulComes() {
   return [
     { say: ["", "He came to the sheep pens by the way, where there was a cave; and Saul went in. Now David and his men were staying in the innermost parts of the cave. (1 Samuel 24:3)"] },
     { fn() { g5.saul = { x: (c + G5.SAUL_AT + 8) * T, to: (c + G5.SAUL_AT) * T, y: FOOT, alpha: 0, t: 0, facing: -1, mode: "walk", step: "wait" };
-      toast("Saul has gone into the cave. Back into the innermost part, where it's dark: go left."); } },
+      toast("Saul has gone into the cave by the sheep pens. Go right, through the dark toward its mouth."); } },
   ];
 }
 // into the dark: the king comes in from the light and sits, his back to them
@@ -1008,7 +1010,7 @@ function g5DrawOver() {
   // the dark of the cave while Saul's in it: a little light on David and on the king
   if (r.id === "inner" && G5_DARK) {   // (Glen 11-19: "super dark like a real cave", as his #9-1 test cave)
     // (soft lights cut out of a dark layer, drawn on its own canvas so two lights that overlap add up, not cancel)
-    const I = G5.INNER, s = g5.saul, L = [[david.x - camX, david.y - I.LIT[0][1] - camY, I.LIT[0][0]], [(r.c0 + r.w) * T - camX, FOOT - 70 - camY, I.GLOW]];   // (the way back toward the camp's light)
+    const I = G5.INNER, s = g5.saul, L = [[david.x - camX, david.y - I.LIT[0][1] - camY, I.LIT[0][0]], [(r.c0 + r.w) * T - camX, FOOT - 70 - camY, I.GLOW]];   // (the mouth Saul came in by: its daylight)
     if (s && s.step !== "wait" && s.alpha > 0) L.push([s.x - camX, s.y - I.LIT[1][1] - camY, I.LIT[1][0] * s.alpha]);
     const c = G5_DARK; if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
     const x2 = c.getContext("2d"); x2.globalCompositeOperation = "source-over"; x2.clearRect(0, 0, W, H);
