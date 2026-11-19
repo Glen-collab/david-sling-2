@@ -881,6 +881,7 @@ function updateRegion(dt) {
   // a door, a stair, a well: Up
   if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
+  if (held("up") && !d.onGround && regionClimbGrab(d)) return;   // (Glen 11-19: "when I jump to it I should stick like Spiderman when I press up")
   if (pressed("down") && d.onGround && regionClimbDown(d)) return;   // (Glen 11-19: like the well, Down at the edge of a rock face's top)
   if (pressed("up") && d.onGround) {
     const door = region.doors.find(o => o.kind !== "hole" && !o.shut && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - (o.y ?? GR * T)) < 30);
@@ -930,6 +931,22 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
     if (!face) continue;
     if (!hasSkill(w.need)) { const s = region.seals.find(q => q.id === w.seal); if (s) sealSay(s); return true; }
     region.climb = { kind: "wall", wall: w, fx: face.x, f: face.f, dist: 0 }; d.facing = face.f; d.vx = d.vy = 0; d.x = face.x - face.f * RTUNE.FACE_OFF;
+    return true;
+  }
+  return false;
+}
+// in the air by a rock face he can climb, holding Up: he grabs it and hangs on, wherever on the face he is
+function regionClimbGrab(d) {
+  if ((region.grabT || 0) > performance.now() / 1000) return false;   // (just pushed off: not straight back on)
+  const r = roomAt(d.x); if (!r) return false;
+  for (const w of region.walls) {
+    if (w.room !== r.id || !hasSkill(w.need) || d.y <= w.top + 10 || d.y >= GR * T - 4) continue;
+    const reach = RTUNE.FACE_REACH + 14;
+    const face = Math.abs(d.x - w.x0) < reach && d.x < w.x0 + 10 ? { x: w.x0, f: 1 }
+               : Math.abs(d.x - w.x1) < reach && d.x > w.x1 - 10 ? { x: w.x1, f: -1 } : null;
+    if (!face) continue;
+    region.climb = { kind: "wall", wall: w, fx: face.x, f: face.f, dist: 0 }; d.facing = face.f; d.vx = d.vy = 0; d.x = face.x - face.f * RTUNE.FACE_OFF;
+    setState("idle");
     return true;
   }
   return false;
@@ -1011,7 +1028,7 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     const W2 = RTUNE.WALL2, k2 = SCALE * (TUNE.SPRITE_SIZE[W2.TOP] || 1);
     if (SPR[W2.TOP] && d.y <= w.top + W2.TOP_FEET * k2) { region.climb = { kind: "walltop", wall: w, fx: c.fx, f: c.f, dir: 1, t: 0 }; return true; }   // (his pull up over it)
     if (d.y <= w.top + RTUNE.TOP_OUT) { d.y = w.top; d.x = c.fx + c.f * 30; d.onGround = true; region.climb = null; return true; }   // over the top
-    if (pressed("a")) { region.climb = null; d.vx = -c.f * TUNE.WALK_SPEED * 0.6; d.vy = -TUNE.JUMP_SPEED * 0.5; d.facing = -c.f; setState("jump"); }   // push off
+    if (pressed("a")) { region.climb = null; region.grabT = performance.now() / 1000 + 0.35; d.vx = -c.f * TUNE.WALK_SPEED * 0.6; d.vy = -TUNE.JUMP_SPEED * 0.5; d.facing = -c.f; setState("jump"); }   // push off
     return true;
   }
   return true;
