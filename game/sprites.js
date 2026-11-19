@@ -4584,6 +4584,18 @@ window.SPRITE_DATA = {
   "ay": 66,
   "align": "feet"
  },
+ "ibex_far": {
+  "src": "../assets/sprites/ibex_far.png",
+  "frames": 12,
+  "w": 222,
+  "h": 196,
+  "ms": 108,
+  "loop": true,
+  "pingpong": false,
+  "ax": 173,
+  "ay": 191,
+  "align": "feet"
+ },
  "ibex_run": {
   "src": "../assets/sprites/ibex_run.png",
   "frames": 12,

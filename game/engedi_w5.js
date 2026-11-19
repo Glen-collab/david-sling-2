@@ -84,7 +84,7 @@ const ENGEDI = {
   ],
   end: ["May the LORD judge between me and you, and may the LORD avenge me of you; but my hand will not be on you.", "1 Samuel 24:12"],
   build: R => g5Build(R), enter: r => g5Enter(r), update: (dt, r) => g5Update(dt, r), holdDavid: (d, dt) => g5Hold(d, dt),
-  drawDavid: (d, x, y) => g5DrawDavid(d, x, y), draw: camX => g5Draw(camX), drawFront: camX => g5DrawFront(camX),
+  drawDavid: (d, x, y) => g5DrawDavid(d, x, y), draw: camX => g5Draw(camX), drawFront: camX => g5DrawFront(camX), afterFar: (r, o, w, k, fy) => g5FarIbex(r, o, w, k, fy),
   drawOver: () => g5DrawOver(), stoneHits: s => g5StoneHits(s),
 };
 
@@ -506,6 +506,25 @@ function g5Swim(d, dt) {
   if (d.y <= top + 6) g5.breath = Math.min(S.BREATH, g5.breath + dt * 4);
   else { g5.breath -= dt; if (g5.breath <= 0) { g5.breath = S.AFTER; hurtDavid(d.x, "", true); toast("Out of breath! Swim up for air."); } }
   return true;
+}
+// ---- (Glen 11-19: "a couple in motion ... just stand and walk a little") ibex far off on the far picture's ledges: a few
+//  steps, a stop, a turn. x0, x1, y: the ledge in the picture's own px (2160 x 720)
+const G5_FAR_IBEX = { rocks: [{ x0: 50, x1: 290, y: 346 }, { x0: 1153, x1: 1342, y: 365 }, { x0: 740, x1: 880, y: 292 }], H: 40, SPEED: 14 };
+function g5FarIbex(r, o, w, k, fy) {
+  const L = G5_FAR_IBEX[r.id]; if (!L || !SPR.ibex_far) return;
+  const now = performance.now() / 1000, dt = Math.min(0.1, now - (g5.farT || now)); g5.farT = now;
+  g5.farIbex = g5.farIbex || {};
+  const list = g5.farIbex[r.id] = g5.farIbex[r.id] || L.map((l, i) => ({ l, x: l.x0 + (l.x1 - l.x0) * (0.3 + 0.4 * i), f: i ? -1 : 1, stop: 1 + i * 2, t: 0 }));
+  const sk = G5_FAR_IBEX.H / (SPR.ibex_far.h * SCALE * (TUNE.SPRITE_SIZE.ibex_far || 1));
+  for (const b of list) {
+    b.t += dt;
+    if (b.stop > 0) { b.stop -= dt; if (b.stop <= 0 && Math.random() < 0.35) b.f = -b.f; }
+    else { b.x += b.f * G5_FAR_IBEX.SPEED * dt;
+      if (b.x < b.l.x0 || b.x > b.l.x1) { b.x = Math.max(b.l.x0, Math.min(b.l.x1, b.x)); b.f = -b.f; b.stop = 1.5 + Math.random() * 2; }
+      else if (Math.random() < dt * 0.15) b.stop = 2 + Math.random() * 3; }
+    const fr = b.stop > 0 ? 0 : frameOf("ibex_far", b.t);
+    for (let x0 = o - w; x0 < W + w; x0 += w) { const sx = x0 + b.x * k; if (sx > -60 && sx < W + 60) drawSprite("ibex_far", fr, sx, fy + b.l.y * k, b.f, sk); }
+  }
 }
 function g5Hidden() {
   const d = david, S = G5.SNEAK;

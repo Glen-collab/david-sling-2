@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 222,
+  "frame_h": 196,
+  "ms_per_frame": 108,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 173,
+  "anchor_y": 191,
+  "source": "clip ibex.mp4",
+  "video_frames": [
+    59,
+    62,
+    64,
+    67,
+    69,
+    72,
+    75,
+    77,
+    80,
+    82,
+    85,
+    87
+  ]
+}
