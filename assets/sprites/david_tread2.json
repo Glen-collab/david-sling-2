@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 187,
+  "frame_h": 238,
+  "ms_per_frame": 83,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 142,
+  "anchor_y": 121,
+  "source": "clip david tread.mp4",
+  "video_frames": [
+    51,
+    53,
+    55,
+    57,
+    59,
+    61,
+    63,
+    65,
+    67,
+    69,
+    71,
+    73
+  ]
+}

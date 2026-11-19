@@ -1824,6 +1824,18 @@ window.SPRITE_DATA = {
   "ay": 324,
   "align": "feet"
  },
+ "david_breast": {
+  "src": "../assets/sprites/david_breast.png",
+  "frames": 14,
+  "w": 257,
+  "h": 284,
+  "ms": 90,
+  "loop": true,
+  "pingpong": true,
+  "ax": 128,
+  "ay": 143,
+  "align": "center"
+ },
  "david_carry_lamb_arms": {
   "src": "../assets/sprites/david_carry_lamb_arms.png",
   "frames": 6,
@@ -2676,6 +2688,18 @@ window.SPRITE_DATA = {
   "ay": 233,
   "align": "feet"
  },
+ "david_surf": {
+  "src": "../assets/sprites/david_surf.png",
+  "frames": 12,
+  "w": 299,
+  "h": 224,
+  "ms": 167,
+  "loop": true,
+  "pingpong": false,
+  "ax": 183,
+  "ay": 119,
+  "align": "center"
+ },
  "david_swim": {
   "src": "../assets/sprites/david_swim.png",
   "frames": 12,
@@ -2819,6 +2843,18 @@ window.SPRITE_DATA = {
   "ax": 116,
   "ay": 237,
   "align": "feet"
+ },
+ "david_tread2": {
+  "src": "../assets/sprites/david_tread2.png",
+  "frames": 12,
+  "w": 187,
+  "h": 238,
+  "ms": 83,
+  "loop": true,
+  "pingpong": false,
+  "ax": 142,
+  "ay": 121,
+  "align": "center"
  },
  "david_turn_away": {
   "src": "../assets/sprites/david_turn_away.png",

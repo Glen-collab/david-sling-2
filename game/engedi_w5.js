@@ -32,7 +32,9 @@ const G5 = {
   SIT_K: 0.92, OLD_K: 0.76,   // (Glen 11-18: the sitting men's clips and the old man in blue, heads too big beside David)
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
-  SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 110, LEAP: 1120, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5 },
+  SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 110, LEAP: 1120, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5,
+    // the sheets: treading, swimming along the top, under; the clip's waterline row in each top sheet; how high under
+    LOOK: { TREAD: "david_tread2", SURF: "david_surf", UNDER: "david_breast", TREAD_WL: 50, SURF_WL: 66, UNDER_Y: 60 } },
   POOL_BANK: 330, POOL_LEDGE: 312,   // (Glen 11-18: the ledge on the painted rocks left of the falls, not on the water)
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
@@ -500,7 +502,8 @@ function g5Swim(d, dt) {
   d.y += d.vy * dt;
   if (d.y < top) { d.y = top; if (d.vy < 0) d.vy = 0; }
   if (d.y > GR * T) { d.y = GR * T; d.vy = 0; }
-  if (still && d.y < top + S.FLOAT_NEAR) { d.vy = 0; d.y += (top - d.y) * Math.min(1, dt * 4); }
+  if (!held("down") && d.vy >= 0 && d.y < top + S.FLOAT_NEAR) { d.vy = 0;   // (near the top he floats, still or swimming along it: Down to dive)
+    d.y += (top - d.y) * Math.min(1, dt * 4); }
   sw.tread = still && d.y <= top + 8;
   d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false;
   if (d.y <= top + 6) g5.breath = Math.min(S.BREATH, g5.breath + dt * 4);
@@ -573,6 +576,13 @@ function g5DrawDavid(d, x, y) {
     else if (C.t < walkEnd) { const u = (C.t - K.TURN) / K.WALK; if (SPR.david_back_walk) drawSprite("david_back_walk", frameOf("david_back_walk", C.t), x, y - u * K.RISE, 1, 1 - u * K.SHRINK, 1 - u * 0.9); }
     else if (C.t > inEnd) { const u = Math.min(1, (C.t - inEnd) / K.OUT); drawSprite("david_idle", 0, x, y, -1, 1, u); }   // (back out of the dark)
     return true;
+  }
+  if (g5.swim) {   // (Glen's 11-19 clips: treading, the crawl along the top, the breaststroke under; the clips' own waterline on ours)
+    const S = G5.SWIM, L = S.LOOK, wy = y - (d.y - region.room.water), up = d.y <= region.room.water + S.FLOAT + 8;
+    const atTop = (n, wl) => drawSprite(n, frameOf(n, g5.swim.tt), x, wy + (SPR[n].ay - wl) * SCALE, d.facing);
+    if (up && g5.swim.tread && SPR[L.TREAD]) { atTop(L.TREAD, L.TREAD_WL); return true; }
+    if (up && SPR[L.SURF]) { atTop(L.SURF, L.SURF_WL); return true; }
+    if (SPR[L.UNDER]) { drawSprite(L.UNDER, frameOf(L.UNDER, g5.swim.t), x, y - L.UNDER_Y, d.facing); return true; }
   }
   if (g5.swim && g5.swim.tread && SPR.david_tread) { drawSprite("david_tread", frameOf("david_tread", g5.swim.tt), x, y, d.facing); return true; }
   if (g5.swim && SPR.david_swim2) { drawSprite("david_swim2", frameOf("david_swim2", g5.swim.t), x, y - 50, d.facing, G5.SWIM.K); return true; }

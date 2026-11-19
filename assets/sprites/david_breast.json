@@ -1,0 +1,28 @@
+{
+  "frames": 14,
+  "frame_w": 257,
+  "frame_h": 284,
+  "ms_per_frame": 90,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 128,
+  "anchor_y": 143,
+  "source": "clip david swim under breaststroke.mp4",
+  "video_frames": [
+    50,
+    54,
+    58,
+    62,
+    67,
+    71,
+    75,
+    79,
+    83,
+    87,
+    92,
+    96,
+    100,
+    104
+  ],
+  "pingpong": true
+}

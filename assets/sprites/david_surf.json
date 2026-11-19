@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 299,
+  "frame_h": 224,
+  "ms_per_frame": 167,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 183,
+  "anchor_y": 119,
+  "source": "clip david swim surface.mp4",
+  "video_frames": [
+    72,
+    76,
+    80,
+    84,
+    88,
+    92,
+    96,
+    100,
+    104,
+    108,
+    112,
+    116
+  ]
+}
