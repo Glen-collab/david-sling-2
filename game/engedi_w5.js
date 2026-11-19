@@ -34,7 +34,7 @@ const G5 = {
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 110, LEAP: 1120, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5,
     // the sheets: treading, swimming along the top, under; the clip's waterline row in each top sheet; how high under
-    LOOK: { TREAD: "david_tread2", SURF: "david_surf", UNDER: "david_breast", TREAD_WL: 50, SURF_WL: 66, UNDER_Y: 60 } },
+    LOOK: { TREAD: "david_tread2", SURF: "david_surf", UNDER: "david_breast", TREAD_WL: 50, SURF_WL: 16, UNDER_Y: 60 } },
   POOL_BANK: 330, POOL_LEDGE: 312,   // (Glen 11-18: the ledge on the painted rocks left of the falls, not on the water)
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
