@@ -241,7 +241,7 @@ function g5Build(R) {
     g5Hide(rm, "w4_z_hide_rock", X(22)); g5Hide(rm, "w4_rubble_sand", X(50)); g5Hide(rm, "w4_z_hide_rock", X(72)); g5Hide(rm, "w4_z_hide_rock", X(100)); g5Hide(rm, "w4_rubble_sand", X(116));
     g5Guard(rm, 24, 38, 0); g5Guard(rm, 96, 110, 0, FOOT, -1); g5Guard(rm, 48, 56, 1); g5Guard(rm, 70, 80, 2, FOOT, -1);
     g5.entry.spring = X(4);
-    rPath(rm, c + 58, "pool", 2, "The pool goes on behind the falls. Up to go and see.");
+    rPath(rm, c + 58, "pool", 2, "The pool goes on behind the falls. Up to go and see.", "none");   // (Glen 11-19: "it is just the waterfall", no trail drawn over it)
   }
 
   // -- The Pool Below the Falls (Glen's): in off the bank, swim the pool (a water skin on the bottom), out onto the rocks at
