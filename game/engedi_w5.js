@@ -47,7 +47,7 @@ const G5 = {
   //  columns of rock, WATER px its surface, DIE: px under it he's gone)
   // the back way: the crack's column in the Wilderness, its picture (Glen's hidden mouth, smaller: K, the crack across it,
   //  its floor px in it), the flooded cave's fish
-  BACK: { MOUTH: 146, K: 0.45, MID: 0.53, FLOOR: 766, FISH: [["biter", 14, 30, 20], ["tilapia", 24, 44, -40], ["biter", 36, 56, 30], ["perch", 46, 60, -20]] },
+  BACK: { MOUTH: 146, PIC: "engedi/secret/thorns.png", W: 960, H: 600, K: 0.85, MID: 0.61, FLOOR: 480, FISH: [["biter", 14, 30, 20], ["tilapia", 24, 44, -40], ["biter", 36, 56, 30], ["perch", 46, 60, -20]] },
   HOLLOW: { LEDGES: [[56, 520, 4], [48, 460, 4], [40, 410, 4], [33, 370, 5], [25, 430, 4], [17, 480, 4]], BATS: [[50, 120], [36, 110], [22, 130]], TRUTH: [35, 370],
     GROUND: [11, 63], WATER: 628, DIE: 40 },
   // the pool's fish (adullam.js's, its R4.FISH sizes): [kind, from column, to column, px off the middle of the water]
@@ -162,7 +162,7 @@ function g5Build(R) {
   Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
-  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png", "engedi/hideout/mouth.png", "engedi/hideout/mid.png", "engedi/hideout/mouth_small.png"]) roomImg(n);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png", "engedi/hideout/mouth.png", "engedi/hideout/mid.png", "engedi/hideout/mouth_small.png", "engedi/secret/thorns.png"]) roomImg(n);
   g5.swim = null; g5.breath = G5.SWIM.BREATH; g5.fish = [];
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.cave = null; g5.crawl = null; g5.prevRoom = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
@@ -302,7 +302,7 @@ function g5Build(R) {
     g5Hide(rm, "w4_rubble_sand", X(100)); g5Hide(rm, "w4_z_hide_rock", X(112)); g5Hide(rm, "w4_z_hide_rock", X(132));
     g5Guard(rm, 24, 40, 0); g5Guard(rm, 70, 86, 0, FOOT, -1); g5Guard(rm, 104, 124, 0);
     g5.entry.wild = X(4);
-    rPath(rm, c + G5.BACK.MOUTH, "backway", 2, "A crack in the rocks, half hidden. Cool air comes out of it. Up to go in.", "none");
+    rPath(rm, c + G5.BACK.MOUTH, "backway", 2, "A way in, hidden behind the thorns. Cool air comes out of it. Up to go in.", "none");
   }
 
   // -- The Flooded Cave (Glen 11-19): the back way from the Wilderness; in on the left bank, the fish, out on the far ledge
@@ -728,8 +728,8 @@ function g5Draw(camX) {
   }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
-  if (r.id === "wild") { const im = roomImg("engedi/hideout/mouth.png"), B = G5.BACK, K = G5.HIDEOUT;   // (the back way's crack: Glen's hidden mouth)
-    if (im) { const w = K.W * B.K, h = K.H * B.K; g5DrawFaded(G5_CRACK, im, (r.c0 + B.MOUTH) * T + T / 2 - B.MID * w - camX, FOOT + 4 - B.FLOOR * B.K, w, h, 0.14); } }
+  if (r.id === "wild") { const B = G5.BACK, im = roomImg(B.PIC);   // (the back way's crack: Glen's thorn-hidden cave, 11-19)
+    if (im) { const w = B.W * B.K, h = B.H * B.K; g5DrawFaded(G5_CRACK, im, (r.c0 + B.MOUTH) * T + T / 2 - B.MID * w - camX, FOOT + 4 - B.FLOOR * B.K, w, h, 0.14); } }
   if (r.id === "hollow") {   // the dark water down in the pit, between the rock at its ends
     const L = G5.HOLLOW, x0 = (r.c0 + L.GROUND[0] + 1) * T - camX, x1 = (r.c0 + L.GROUND[1]) * T - camX, y = L.WATER - camY;
     const g = ctx.createLinearGradient(0, y, 0, y + 120); g.addColorStop(0, "rgba(40,78,92,0.95)"); g.addColorStop(1, "rgba(4,14,20,1)");
