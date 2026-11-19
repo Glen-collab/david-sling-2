@@ -28,7 +28,7 @@ const G5 = {
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
   // the Spring's falls and cave mouth (cut from the pool's picture): its size, the falls' middle and the water line (px in the cut)
-  SPRING_FALLS2: { K: 0.85, W: 742, H: 420, FX: 419, BASE: 371 },   // (his clip's size, its falls' middle and the foot of its rocks, px)
+  SPRING_FALLS2: { K: 0.85, W: 742, H: 488, FX: 413, BASE: 350, CLIP: "falls3", UP: 10 },   // (Glen 11-19, his locked-camera one: the stream runs out over the path in front)   // (his clip's size, its falls' middle and the foot of its rocks, px)
   SPRING_FALLS: { K: 0.8, FX: 470, WATER: 372, SRC_X: 2900 },   // (SRC_X: where it was cut from the pool's picture, px)
   SIT_K: 0.92, OLD_K: 0.76,   // (Glen 11-18: the sitting men's clips and the old man in blue, heads too big beside David)
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
@@ -134,7 +134,7 @@ function g5Build(R) {
   Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
-  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls2_still.png"]) roomImg(n);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png"]) roomImg(n);
   g5.swim = null; g5.breath = G5.SWIM.BREATH; g5.fish = [];
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.cave = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
@@ -762,9 +762,9 @@ function g5FallsOver(x, bottom, want, alpha) {
 }
 // Glen's falls among mossy rocks (11-19, keyed, steadied and looped: falls2.webm), at the Spring where he goes into the pool
 function g5SpringFalls2(r) {
-  const F = G5.SPRING_FALLS2, v = g5Video("falls2"), still = roomImg("engedi/spring/falls2_still.png");
+  const F = G5.SPRING_FALLS2, v = g5Video(F.CLIP), still = roomImg("engedi/spring/" + F.CLIP + "_still.png");
   const playing = v && v.readyState >= 2 && !v.paused && v.videoWidth, src = playing ? v : still; if (!src) return false;
-  const w = F.W * F.K, h = F.H * F.K, x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.BASE * F.K;
+  const w = F.W * F.K, h = F.H * F.K, x = g5.falls - F.FX * F.K - camX, y = FOOT - F.UP - F.BASE * F.K;
   ctx.drawImage(src, x, y, w, h); return true;
 }
 const G5_FALLS_CUT = typeof document !== "undefined" ? document.createElement("canvas") : null;
