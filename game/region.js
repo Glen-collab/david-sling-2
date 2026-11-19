@@ -2626,9 +2626,13 @@ function drawRegionMap() {
       while (px > 12 && ctx.measureText(nm).width > room) ctx.font = hand(--px);
       ctx.fillStyle = M.INK;
       const words = nm.split(" ");
-      if (ctx.measureText(nm).width > room && words.length > 1) {   // (Glen 11-13: "maybe above each other") still too long: a word a line, from the bottom up
-        let wp = Math.round(22 * Math.max(0.8, cs)); ctx.font = hand(wp);
-        while (wp > 11 && Math.max(...words.map(w => ctx.measureText(w).width)) > room + 6) ctx.font = hand(--wp);
+      // (Glen 11-13: "maybe above each other") still too long: a word a line, from the bottom up. (Glen 11-19: "same font
+      //  as hidden cave mouth": a name that had to shrink to fit on one line stacks instead, if that keeps it bigger)
+      let wp = Math.round(22 * Math.max(0.8, cs)); ctx.font = hand(wp);
+      if (words.length > 1) while (wp > 11 && Math.max(...words.map(w => ctx.measureText(w).width)) > room + 6) ctx.font = hand(--wp);
+      ctx.font = hand(px);
+      if (words.length > 1 && (ctx.measureText(nm).width > room || (words.length <= 3 && wp > px + 2))) {   // (a short name only: a long one stays on its line)
+        ctx.font = hand(wp);
         words.forEach((w, i) => ctx.fillText(w, x + r.mw * C / 2, y + mh - 11 - (words.length - 1 - i) * (wp + 2)));
       } else ctx.fillText(nm, x + r.mw * C / 2, y + mh - 11); }
     // the edges you can walk through: a gap in the ink line
