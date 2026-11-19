@@ -738,10 +738,10 @@ function g5Draw(camX) {
   if (r.id === "hollow") {   // the dark water down in the pit, between the rock at its ends
     const L = G5.HOLLOW, x0 = (r.c0 + L.GROUND[0] + 1) * T - camX, x1 = (r.c0 + L.GROUND[1]) * T - camX, y = L.WATER - camY;
     const g = ctx.createLinearGradient(0, y, 0, y + 120); g.addColorStop(0, "rgba(40,78,92,0.95)"); g.addColorStop(1, "rgba(4,14,20,1)");
-    ctx.fillStyle = g; ctx.fillRect(x0, y, x1 - x0, H - y + 200);
-    ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#a8d4e0";
-    for (let x = x0; x < x1; x += 22) ctx.fillRect(x, y + Math.sin(now * 2 + x * 0.05) * 1.5, 12, 2);
-    ctx.restore(); }
+    ctx.save(); ctx.fillStyle = g; const F = 48;   // (its ends fade into the rock, not a square edge)
+    ctx.fillRect(x0 + F, y, x1 - x0 - 2 * F, H - y + 200);
+    for (let i = 0; i < F; i += 4) { ctx.globalAlpha = (i + 2) / F; ctx.fillRect(x0 + i, y + (F - i) * 0.15, 4, H - y + 200); ctx.fillRect(x1 - i - 4, y + (F - i) * 0.15, 4, H - y + 200); }
+    ctx.restore(); g5WaterTop(x0 + F / 2, x1 - F / 2, y, now, camX, 0.25); }
   if (r.id === "hideout") { const im = roomImg("engedi/hideout/mouth.png"), K = G5.HIDEOUT;
     if (im) ctx.drawImage(im, r.c0 * T - camX, FOOT + 4 - K.FLOOR * K.K, K.W * K.K, K.H * K.K); }
   if (r.id === "camp" && !g5.crawl) g5Video("crawl_out");   // (loading in the camp, ready for the way out)
@@ -893,6 +893,17 @@ const G5_CRACK = typeof document !== "undefined" ? document.createElement("canva
 const G5_MOUTH = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_WATER = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
+// (Glen 11-19: "a dotted line for the water line. It looks weird") the surface of drawn water: one soft, slowly rolling
+//  line of light with a faint glow under it, not a row of dashes
+function g5WaterTop(x0, x1, y, t, camX, a) {
+  const wave = x => y + Math.sin(t * 1.6 + (x + camX) * 0.018) * 1.6 + Math.sin(t * 2.3 + (x + camX) * 0.041) * 0.8;
+  ctx.save();
+  const g = ctx.createLinearGradient(0, y - 2, 0, y + 14); g.addColorStop(0, `rgba(190,230,235,${a * 0.5})`); g.addColorStop(1, "rgba(190,230,235,0)");
+  ctx.fillStyle = g; ctx.fillRect(x0, y - 2, x1 - x0, 16);
+  ctx.strokeStyle = `rgba(215,242,245,${a})`; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (let x = x0; x <= x1; x += 8) { const yy = wave(x); if (x === x0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+  ctx.stroke(); ctx.restore();
+}
 function g5DrawOver() {
   const r = region.room; if (!r) return;
   // in the pool: the water over him (a light tint below the surface), and his breath over his head
@@ -901,9 +912,8 @@ function g5DrawOver() {
     if (r.id !== "pool") {   // (the flooded cave: no picture of its water, so its water drawn: dark green-blue, a glint along the top)
       const y0 = r.water - camY + 6, g = ctx.createLinearGradient(0, y0, 0, H);
       g.addColorStop(0, "rgba(40,110,120,0.5)"); g.addColorStop(1, "rgba(6,30,38,0.8)");
-      ctx.save(); ctx.fillStyle = g; ctx.fillRect(0, y0, W, H); ctx.globalAlpha = 0.5; ctx.fillStyle = "#bfe6ea";
-      const t = performance.now() / 1000; for (let x = -((camX * 0.5) % 24); x < W; x += 24) ctx.fillRect(x, y0 + Math.sin(t * 2 + (x + camX) * 0.04) * 1.5, 13, 2);
-      ctx.restore();
+      ctx.save(); ctx.fillStyle = g; ctx.fillRect(0, y0, W, H); ctx.restore();
+      g5WaterTop(0, W, y0, performance.now() / 1000, camX, 0.35);
     } else
     if (v && v.readyState >= 2 && !v.paused && G5_WATER) {   // (Glen 11-19: the pool's own clip again, over him, see-through: anything in it looks in it)
       const y0 = r.water - camY + O.TOP, oc = G5_WATER, o = oc.getContext("2d");
