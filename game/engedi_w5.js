@@ -48,6 +48,8 @@ const G5 = {
   // the back way: the crack's column in the Wilderness, its picture (Glen's hidden mouth, smaller: K, the crack across it,
   //  its floor px in it), the flooded cave's fish
   BACK: { MOUTH: 146, PIC: "engedi/secret/thorns.png", W: 960, H: 600, K: 0.85, MID: 0.61, FLOOR: 480, FISH: [["biter", 14, 30, 20], ["tilapia", 24, 44, -40], ["biter", 36, 56, 30], ["perch", 46, 60, -20]] },
+  // the Fork in the Dark: its two mouths (cols: to the Spring, to the camp), how big they're drawn, and its bats
+  FORK: { SPRING: 13, CAMP: 31, MW: 190, MH: 345, BATS: [[9, 130], [22, 110], [35, 140]] },
   HOLLOW: { LEDGES: [[56, 520, 4], [48, 460, 4], [40, 410, 4], [33, 370, 5], [25, 430, 4], [17, 480, 4]], BATS: [[50, 120], [36, 110], [22, 130]], TRUTH: [35, 370],
     GROUND: [11, 63], WATER: 628, DIE: 40 },
   // the pool's fish (adullam.js's, its R4.FISH sizes): [kind, from column, to column, px off the middle of the water]
@@ -103,8 +105,12 @@ const ENGEDI = {
     // (Glen 11-19: "from the wilderness have another cave ... with a swim ... a room that goes to another cave above water room
     //  that just happens to go back to camp") in at a hidden crack at the Wilderness's far end, swim the flooded cave, out on
     //  its far ledge into the Cave Behind the Falls (its right end), and through it to the camp: the back way home
-    { id: "backway", name: "The Flooded Cave", w: 70, cave: true, mx: 11, my: 2, mw: 3, water: 361, outL: ["wild", 145], outR: ["hollow", 64],
+    { id: "backway", name: "The Flooded Cave", w: 70, cave: true, mx: 11, my: 2, mw: 3, water: 361, outL: ["wild", 145], outR: ["fork", 2],
       strip: "w4/flooded_strip", floor: "w4/flooded_floor", ledgeDark: 0.5 },
+    // (Glen 11-19: "one more room that is dark like that but a pass through with two cave mouths to go through. One will put
+    //  him at the entrance of the spring cave mouth and the other will put him into the camp in the cave")
+    { id: "fork", name: "The Fork in the Dark", w: 40, cave: true, mx: 14, my: 2, mw: 2, outL: ["backway", 66],
+      strip: "w4/narrows_strip", floor: "w4/narrows_floor", ledgeDark: 0.5 },   // (dry and dark: the Flooded Cave's walls have its water painted in)
     { id: "rocks", name: "The Rocks of the Wild Goats", w: 64, up: 40, bg: "w4_1", mx: 9, my: 0, mw: 2, mh: 2, left: "spring", right: "wild",
       far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0, near: "engedi/rocks/near.png" },   // (Glen's, 11-18)
     { id: "wild", name: "The Wilderness of En-Gedi", w: 150, bg: "w4_1", mx: 11, my: 1, mw: 4, left: "rocks",
@@ -313,6 +319,15 @@ function g5Build(R) {
     rLedge(rm, c + 62, G5.POOL_LEDGE, 8);
     for (const [kind, k0, k1, dy] of B.FISH) g5FishAt(kind, c, k0, k1, dy, rm);
   }
+  // -- The Fork in the Dark (Glen 11-19): out of the Flooded Cave, two mouths: Up at one to the Spring (by its falls),
+  //  Up at the other into the camp
+  c = R("fork");
+  { const rm = "fork", F = G5.FORK;
+    ground(c, c + 39);
+    for (const [k, y] of F.BATS) rBat(rm, c + k, y);
+    rPath(rm, c + F.SPRING, "spring", 58, "Daylight, and the sound of falling water. This way comes out at the Spring. Up to go.", "none");
+    rPath(rm, c + F.CAMP, "camp", 6, "Woodsmoke, and men's voices far off. This way goes to the camp. Up to go.", "none");
+  }
   // trees (Glen's, from Ziph), behind David
   const tree = (rm, n, k, sink = 10) => { const kk = KIT[n]; if (kk) region.props.push({ room: rm, n, x: (roomById(rm).c0 + k) * T - kk.w / 2, y: FOOT - kk.h + sink, back: true }); };
   tree("pens", "w4_tree_oak", 50); tree("wild", "w4_tree_acacia", 68); tree("wild", "w4_tree_acacia", 102); tree("wild", "w4_tree_dead", 30); tree("rocks", "w4_tree_dead", 8);
@@ -358,6 +373,8 @@ function g5Enter(r) {
     g5.swim = null; g5.breath = G5.SWIM.BREATH;
     if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); g5Tell("backway", "Water all the way across. Swim it: watch your breath, and the fish."); } }
   if (r.id === "hollow" && d.x > (r.c0 + 60) * T) { d.y = FOOT; d.vy = 0; snapCamera(); }
+  if (r.id === "backway" && d.x > (r.c0 + 60) * T) { d.y = G5.POOL_LEDGE; d.vy = 0; snapCamera(); }   // (back from the Fork: on the far ledge)
+  if (r.id === "fork") g5Tell("fork", "Two ways on in the dark. One smells of water and palms, the other of smoke.");
   if (r.id === "pool") { for (const f of g5.fish) if (f.room === r.id) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
     g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
     if (d.x > (r.c0 + 80) * T) { d.y = G5.POOL_LEDGE; d.vy = 0; d.x = (r.c0 + 87) * T; snapCamera(); }   // (back out of the cave behind the falls: on the rocks)
@@ -732,7 +749,23 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
 // (Glen 11-19: "the ibex goes behind the cave ... have him come in front") the back way's thorn-hidden cave, drawn behind
 //  the props and the animals
 function g5DrawBack(camX) {
-  const r = region.room; if (!r || r.id !== "wild") return;
+  const r = region.room; if (!r) return;
+  if (r.id === "fork") { const F = G5.FORK;   // its two mouths: dark openings in the rock, the far end's light in each
+    const now = performance.now() / 1000;
+    for (const [k, rgb, fire] of [[F.SPRING, "200,230,170", false], [F.CAMP, "255,170,90", true]]) {
+      const x = (r.c0 + k) * T + T / 2 - camX, y = FOOT; if (x < -F.MW || x > W + F.MW) continue;
+      const flick = fire ? 0.08 * Math.sin(now * 7) + 0.05 * Math.sin(now * 13) : 0;
+      // (the light far back in two of the wall picture's own arches: soft, low, clipped to the arch)
+      const yb = y - 48; ctx.save(); ctx.beginPath(); ctx.moveTo(x - F.MW / 2, yb); ctx.lineTo(x - F.MW / 2, y - F.MH + F.MW / 2); ctx.arc(x, y - F.MH + F.MW / 2, F.MW / 2, Math.PI, 0); ctx.lineTo(x + F.MW / 2, yb); ctx.closePath(); ctx.clip();   // (down to the arch's own sill)
+      ctx.globalCompositeOperation = "lighter";
+      const g = ctx.createRadialGradient(x, y - 95, 4, x, y - 110, F.MH * 0.8);
+      g.addColorStop(0, `rgba(${rgb},${0.42 + flick})`); g.addColorStop(0.4, `rgba(${rgb},0.12)`); g.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.fillStyle = g; ctx.fillRect(x - F.MW, y - F.MH, F.MW * 2, F.MH); ctx.restore();
+      const gl = ctx.createRadialGradient(x, y - 20, 10, x, y - 20, F.MW * 1.3);   // (its light spilling onto the floor)
+      gl.addColorStop(0, `rgba(${rgb},0.16)`); gl.addColorStop(1, `rgba(${rgb},0)`); ctx.fillStyle = gl; ctx.fillRect(x - F.MW * 1.3, y - F.MH, F.MW * 2.6, F.MH + 40);
+    }
+    return; }
+  if (r.id !== "wild") return;
   const B = G5.BACK, im = roomImg(B.PIC);
   if (im) { const w = B.W * B.K, h = B.H * B.K; g5DrawFaded(G5_CRACK, im, (r.c0 + B.MOUTH) * T + T / 2 - B.MID * w - camX, FOOT + 4 - B.FLOOR * B.K, w, h, 0.14); }
 }
