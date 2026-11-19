@@ -1890,7 +1890,7 @@ function drawPathTrails(camX) {
   }
 }
 function drawPaths(camX) {
-  const r = region.room; if (!r || region.pathWalk) return;
+  const r = region.room; if (!r || region.pathWalk || region.cutIn) return;   // (cutIn: a region's clip is playing)
   const n = pathNear(r);
   if (n && !region.script.length && !(dialog.t > 0)) { upHint(n.x - camX, FOOT - 250); if (n.say && !regionHas("seen", "path_" + n.to + n.x)) { regionAdd("seen", "path_" + n.to + n.x); toast(n.say); } }
 }
