@@ -200,7 +200,7 @@ function g5Build(R) {
     ground(c, c + 63);
     campfire(c + 3, GR - 1); campfire(c + 60, GR - 1);
     // the first cliff: climb either face (Up at it), its top a shelf
-    const cliff = (k, w, topRow) => { rock(c + k, topRow, w, GR - topRow); platAt(c + k, topRow * T, w);
+    const cliff = (k, w, topRow) => { block(c + k, topRow, w, GR - topRow, 6); platAt(c + k, topRow * T, w);
       for (let i = 0; i < w; i++) for (let r_ = topRow; r_ < GR; r_++) artSolid.add((c + k + i) + "," + r_);
       g5.cliffs.push({ room: rm, x: (c + k) * T, w: w * T, top: topRow * T });
       region.walls.push({ room: rm, x0: (c + k) * T, x1: (c + k + w) * T, top: topRow * T, need: "wallClimb" }); };
@@ -220,9 +220,9 @@ function g5Build(R) {
     rRelic("g5_stone_crag", "stone", c + 43, 0);
     // past the crag: down on the ground again, the eggs on a shelf, an eagle
     rLedge(rm, c + 50, 470, 4); g5Food(rm, "eggs", 51, 470 - 4);
-    bird("eagle", rm, X(55), 300);
+    rLedge(rm, c + 54, 150, 3); bird("eagle", rm, X(55) + T / 2, 150 - 78);   // (its sheet has room under its feet)   // (Glen 11-19: up high on its own perch, not floating)
     g5Hide(rm, "w4_z_hide_rock", X(26)); g5Hide(rm, "w4_rubble_sand", X(32)); g5Hide(rm, "w4_z_hide_rock", X(48)); g5Hide(rm, "w4_z_hide_rock", X(56));
-    g5Guard(rm, 23, 34, 0); g5Guard(rm, 46, 58, 2, FOOT, -1);
+    g5Guard(rm, 23, 34, 0); g5Guard(rm, 46, 58, 0, FOOT, -1);   // (Glen 11-19: a soldier by the eagle's rocks from the first: they're worth hiding behind)
     g5.goatAt = X(9);
     g5.entry.rocks = X(4);
   }

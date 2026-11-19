@@ -352,7 +352,7 @@ const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9,
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
-  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8 },   // (eagles dive)
+  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8, reachY: 600, CYCLE: 3.2, DIVE: 1.1, HIGH: 330 },   // (eagles dive: a cycle (s), the last part of it the dive; how high over him between)
   // (Glen 11-12, his clips: wildlife.js's cutter) the stork on the road to Gath, guarding its patch (Jeremiah 8:7); the
   //  owl in the ruins of Goliath's yard (Psalm 102:6)
   stork: { fly: "stork_fly",  perch: "stork_peck", size: 0.8, speed: 250, near: 300, chase: 5 },
@@ -1631,12 +1631,14 @@ function updateBeasts(dt, r) {
       }
     } else if (BIRD[b.kind]) {
       const B = BIRD[b.kind], top = -(r.up || 0) * T + 60;
-      if (b.state === "perch") { if (!b.cool && Math.abs(dx) < B.near && Math.abs(d.y - b.y) < 280) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
+      if (b.state === "perch") { if (!b.cool && Math.abs(dx) < B.near && Math.abs(d.y - b.y) < (B.reachY || 280)) { b.state = "fly"; b.t = 0; b.facing = Math.sign(dx) || 1; } }
       else if (b.state === "fly") {
         b.x += b.facing * B.speed * dt;
-        const dive = b.kind === "eagle" && Math.sin(b.t * 1.6) > 0.6;   // (an eagle folds and drops at him now and then)
-        const want = (dive ? d.y - 30 : d.y - 90) + Math.sin(b.t * 4) * 22;
-        b.y += (want - b.y) * Math.min(1, dt * (dive ? 3.5 : 1.6));
+        // (an eagle, Glen 11-19: "it should go up high and then swoop down") up high over him, then folds and drops at
+        //  him, and up again
+        const ph = b.kind === "eagle" ? b.t % B.CYCLE : 0, dive = b.kind === "eagle" && ph > B.CYCLE - B.DIVE;
+        const want = b.kind === "eagle" ? (dive ? d.y - 30 : d.y - B.HIGH) + Math.sin(b.t * 2) * 18 : d.y - 90 + Math.sin(b.t * 4) * 22;
+        b.y += (want - b.y) * Math.min(1, dt * (dive ? 4.5 : 1.4));
         b.y = Math.max(top, Math.min(GR * T - 30, b.y));
         if ((b.facing > 0 && b.x > d.x + 300) || (b.facing < 0 && b.x < d.x - 300)) b.facing *= -1;
         const ins = (r.inset || 0) * T; b.x = Math.max(r.c0 * T + ins + 40, Math.min((r.c0 + r.w) * T - ins - 40, b.x));
