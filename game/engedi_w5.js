@@ -316,6 +316,12 @@ function g5Build(R) {
   // trees (Glen's, from Ziph), behind David
   const tree = (rm, n, k, sink = 10) => { const kk = KIT[n]; if (kk) region.props.push({ room: rm, n, x: (roomById(rm).c0 + k) * T - kk.w / 2, y: FOOT - kk.h + sink, back: true }); };
   tree("pens", "w4_tree_oak", 50); tree("wild", "w4_tree_acacia", 68); tree("wild", "w4_tree_acacia", 102); tree("wild", "w4_tree_dead", 30); tree("rocks", "w4_tree_dead", 8);
+  // (Glen 11-19: "put ravens in the trees and vultures here and there") ravens in the dead trees' branches, vultures on the
+  //  acacias' flat tops and on the ground; px from the tree's middle, and up from his feet
+  const G5_TREE_BIRDS = { dead: [["raven", 46, 250], ["raven", -58, 205]], acacia: [["vulture", -140, 266], ["vulture", 110, 282]] };
+  const perch = (rm, kind, k) => { for (const [b, dx, up] of G5_TREE_BIRDS[kind]) bird(b, rm, (roomById(rm).c0 + k) * T + dx, FOOT - up); };
+  perch("wild", "dead", 30); perch("rocks", "dead", 8); perch("wild", "acacia", 68); perch("wild", "acacia", 102);
+  bird("vulture", "wild", (roomById("wild").c0 + 88) * T, FOOT); bird("vulture", "wild", (roomById("wild").c0 + 122) * T, FOOT);
   g5Talk();
 }
 // Up by David's men: their next line, as the loads come in

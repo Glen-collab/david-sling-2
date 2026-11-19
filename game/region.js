@@ -60,7 +60,7 @@ const RTUNE = {
   HP_PER_HEART: 10,
   // the Harp Room (1 Samuel 18:10-11): play to calm the king; he throws the spear twice; David gets up and jumps
   HARP: { CALM_TIME: 14, THROW_AT: [0.3, 0.65], SPEAR_Y: 52, SPEAR_SPEED: 820, RELEASE: 9, BACK: 0.12 },
-  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5, crow: 5, raven: 6, eagle: 10, phil: 10 },   // how much each thing takes off with a hit
+  HIT: { default: 10, scorpion: 8, viper: 12, whip: 4, rat: 5, jackal: 10, spider: 8, spiderw: 8, bat2: 6, rat2: 5, crow: 5, raven: 6, vulture: 8, eagle: 10, phil: 10 },   // how much each thing takes off with a hit
   HEAL: { heart_small: 5, heart_big: 20 },   // what the hearts that drop out of broken things give back
   // things to break with the sling or the sword (Glen 11-03, like Castlevania's candles): they come back when you
   // leave the room and come in again. Glen's break sets (tools/cut_breakables.py): <art>, <art>_breaking, <art>_broken,
@@ -356,6 +356,7 @@ const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9,
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
+  vulture: { fly: "vulture_fly", perch: "vulture_stand", size: 0.62, speed: 190, near: 300, chase: 5 },   // (Glen 11-19: "vultures here and there", World 1's sheets)
   eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8, reachY: 600, CYCLE: 3.2, DIVE: 1.1, HIGH: 330, dive: "eagle_dive", diveK: 2.3 },   // (eagles dive: a cycle (s), the last part of it the dive; how high over him between)
   // (Glen 11-12, his clips: wildlife.js's cutter) the stork on the road to Gath, guarding its patch (Jeremiah 8:7); the
   //  owl in the ruins of Goliath's yard (Psalm 102:6)
@@ -1538,7 +1539,7 @@ function drawDoorArt(o, x) {   // stand-ins until Glen paints them
   ctx.restore();
 }
 // ---- the creatures: spiders on threads and on the floor, bats, rats ----
-const BEAST = { stork: { w: 34, h: 74 }, owl: { w: 34, h: 46 }, phil: { w: 28, h: 120 }, crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
+const BEAST = { stork: { w: 34, h: 74 }, owl: { w: 34, h: 46 }, phil: { w: 28, h: 120 }, crow: { w: 34, h: 54 }, raven: { w: 42, h: 66 }, vulture: { w: 56, h: 84 }, eagle: { w: 60, h: 80 }, spider: { w: 34, h: 60 }, spiderw: { w: 44, h: 50 }, bat2: { w: 34, h: 50 }, rat2: { w: 38, h: 40 } };
 function beastBox(b) {
   const k = BEAST[b.kind];
   if (BIRD[b.kind] && b.state !== "perch") { const cy = b.y + 20; return { x0: b.x - k.w * 1.25, x1: b.x + k.w * 1.25, y0: cy - k.h * 0.7, y1: cy + k.h * 0.7 }; }   // (Glen 11-06) flying: drawn centred at y + 20, so the box is too (it sat above the bird)
@@ -2243,7 +2244,7 @@ const STR = {
   HP: 2,          // health each level adds (Glen 11-13: was 5)
   DMG: 0.25,      // each level: a stone (or a sword stroke) takes this much more off a Philistine (one is 1)
   // what driving each one off is worth (not the harmless ones: the whip snake, the hedgehog)
-  XP: { scorpion: 1, viper: 2, rat: 1, rat2: 1, spider: 1, spiderw: 1, bat2: 1, crow: 1, raven: 1, eagle: 3, jackal: 2, phil: 4, wolf: 3 },
+  XP: { scorpion: 1, viper: 2, rat: 1, rat2: 1, spider: 1, spiderw: 1, bat2: 1, crow: 1, raven: 1, vulture: 2, eagle: 3, jackal: 2, phil: 4, wolf: 3 },
 };
 const strXP = () => region.save.str || 0;
 const strLevel = (xp = strXP()) => { let l = 1; while (l < STR.NEED.length && xp >= STR.NEED[l]) l++; return Math.min(l, REGION.strCap); };
