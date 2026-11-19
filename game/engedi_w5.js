@@ -617,7 +617,7 @@ function g5Swim(d, dt) {
   d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false;
   if (d.y <= top + 6) g5.breath = Math.min(S.BREATH, g5.breath + dt * 4);
   else { g5.breath -= dt; if (g5.breath <= 0) { g5.breath = S.AFTER; hurtDavid(d.x, "", true); toast("Out of breath! Swim up for air."); } }
-  if (typeof updateSword === "function" && regionSword()) updateSword(d, dt, false);   // (Glen 11-19: his swipe in the water, as Adullam's)
+  if (typeof updateSword === "function" && regionSword()) { updateSword(d, dt, false); if (typeof r4SwimEdge === "function") r4SwimEdge(d); }   // (Glen 11-19: his swipe in the water, as Adullam's)
   return true;
 }
 // ---- (Glen 11-19: "a couple in motion ... just stand and walk a little") ibex far off on the far picture's ledges: a few
