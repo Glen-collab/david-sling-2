@@ -637,7 +637,7 @@ function g5Swim(d, dt) {
   if (!held("down") && d.vy >= 0 && d.y < top + S.FLOAT_NEAR) { d.vy = 0;   // (near the top he floats, still or swimming along it: Down to dive)
     d.y += (top - d.y) * Math.min(1, dt * 4); }
   sw.tread = still && d.y <= top + 8;
-  d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false;
+  d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false; d.throwT = -1; d.thrown = false; d.harp = false;   // (Glen 11-19: a sling throw going as he went in never ended under water, and held up his sword the whole swim)
   if (d.y <= top + 6) g5.breath = Math.min(S.BREATH, g5.breath + dt * 4);
   else { g5.breath -= dt; if (g5.breath <= 0) { g5.breath = S.AFTER; hurtDavid(d.x, "", true); toast("Out of breath! Swim up for air."); } }
   if (typeof updateSword === "function" && regionSword()) { updateSword(d, dt, false); if (typeof r4SwimEdge === "function") r4SwimEdge(d); }   // (Glen 11-19: his swipe in the water, as Adullam's)

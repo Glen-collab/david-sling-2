@@ -779,7 +779,7 @@ function r4Hold(d, dt) {
   if (d.y > GR * T) { d.y = GR * T; d.vy = 0; }
   if (still && !lid && d.y < top + R4.SWIM.FLOAT_NEAR) { d.vy = 0; d.y += (top - d.y) * Math.min(1, dt * 4); }   // (still near the top: he floats up and rests there)
   sw.tread = still && !lid && d.y <= top + 8;   // (Glen 11-13: still at the surface: his treading-water clip)
-  d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false;
+  d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false; d.throwT = -1; d.thrown = false; d.harp = false;   // (Glen 11-19: a sling throw going as he went in never ended under water, and held up his sword the whole swim)
   if (typeof updateSword === "function" && regionSword()) { updateSword(d, dt, false); r4SwimEdge(d); }   // (Glen 11-13: "I need to have a sword attack" in the water)
   // breath: at the surface it comes back; under, it runs out
   if (!lid && d.y <= top + 6) r4.breath = Math.min(S.BREATH, r4.breath + dt * 4);
@@ -789,10 +789,10 @@ function r4Hold(d, dt) {
 
 // (Glen 11-19: "I can't use my sword underwater") the swipe in the water reaches forward, level with him, late in his clip:
 //  the standing swing's edge (overhead and down, early) missed what the drawn blade cut. Seconds, px ahead, px up
-const R4_SWIM_EDGE = { T0: 0.12, T1: 0.33, X0: 20, X1: 120, UP: 60 };
+const R4_SWIM_EDGE = { T0: 0.12, T1: 0.33, X0: 20, X1: 120, UP: [30, 75] };   // (two rows: a fish a little above or below his arm is hit too)
 function r4SwimEdge(d) {
   const E = R4_SWIM_EDGE; if (!(d.swordT >= E.T0 && d.swordT <= E.T1)) return;
-  for (let k = E.X0; k <= E.X1; k += 25) stones.push({ x: d.x + d.facing * k, y: d.y - E.UP, vx: d.facing, vy: 0, life: 0.034, sword: true });
+  for (const up of E.UP) for (let k = E.X0; k <= E.X1; k += 25) stones.push({ x: d.x + d.facing * k, y: d.y - up, vx: d.facing, vy: 0, life: 0.034, sword: true });
 }
 function r4DrawDavid(d, x, y) {
   const w = r4.walk, U = R4.TUNNEL;
