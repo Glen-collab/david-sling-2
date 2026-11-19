@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 221,
+  "frame_h": 202,
+  "ms_per_frame": 111,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 148,
+  "anchor_y": 200,
+  "source": "david_land_hero (Glen 11-19)",
+  "video_frames": [
+    114,
+    117,
+    120,
+    122,
+    125,
+    128,
+    131,
+    134,
+    137,
+    139,
+    142,
+    145
+  ]
+}

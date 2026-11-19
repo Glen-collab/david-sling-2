@@ -1956,6 +1956,18 @@ window.SPRITE_DATA = {
   "ay": 232,
   "align": "feet"
  },
+ "david_freefall": {
+  "src": "../assets/sprites/david_freefall.png",
+  "frames": 10,
+  "w": 136,
+  "h": 207,
+  "ms": 50,
+  "loop": true,
+  "pingpong": false,
+  "ax": 86,
+  "ay": 205,
+  "align": "feet"
+ },
  "david_gsword_back_walk": {
   "src": "../assets/sprites/david_gsword_back_walk.png",
   "frames": 10,
@@ -2386,6 +2398,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 103,
   "ay": 244,
+  "align": "feet"
+ },
+ "david_land_hero": {
+  "src": "../assets/sprites/david_land_hero.png",
+  "frames": 12,
+  "w": 221,
+  "h": 202,
+  "ms": 111,
+  "loop": false,
+  "pingpong": false,
+  "ax": 148,
+  "ay": 200,
   "align": "feet"
  },
  "david_ledge_climb": {

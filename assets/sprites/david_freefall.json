@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 136,
+  "frame_h": 207,
+  "ms_per_frame": 50,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 86,
+  "anchor_y": 205,
+  "source": "david_freefall (Glen 11-19)",
+  "video_frames": [
+    57,
+    58,
+    59,
+    61,
+    62,
+    63,
+    64,
+    65,
+    67,
+    68
+  ]
+}

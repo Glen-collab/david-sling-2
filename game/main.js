@@ -88,6 +88,9 @@ const TUNE = {
   // (Glen 11-03, his jump-off-the-wall clip) a long drop: the falling pose past DROP_POSE px, and the heavy landing
   // (crouch, then up) past HEAVY_FALL px, both measured below where he left the ground (off a wall or a ledge). The landing plays at LAND_HEAVY_MS a frame; walking or jumping cuts it short.
   DROP_POSE: 50, HEAVY_FALL: 4 * 36, LAND_HEAVY_MS: 85,
+  // (Glen 11-19: "a super hero landing for David when he free falls") his clip: the fall, arms out, and the landing down on
+  //  one knee and a hand; ms a frame, then how long he stays down and rises back into standing (s)
+  LAND_HERO_MS: 70, LAND_HERO_HOLD: 0.15, LAND_HERO_RISE: 0.25,
   LIVES: 5,
   OLIVES_PER_LIFE: 100,   // olives to fill the oil flask = 1 extra life
   HURT_INVINCIBLE: 1.3,   // seconds of flashing after a hit
@@ -2605,7 +2608,7 @@ function updateDavid(dt) {
     if (fallSpeed > 600 && !d.carrying) { setState("land"); return; }
   }
   if (d.state === "land" && d.t < 0.2 && dir === 0) return;
-  if (d.state === "landHeavy" && !animDone("david_land_heavy", d.t, TUNE.LAND_HEAVY_MS) && dir === 0 && !d.jumpBuf) return;
+  if (d.state === "landHeavy" && d.t < landHeavyTime() && dir === 0 && !d.jumpBuf) return;
   if (d.carrying) { setState("carry"); return; }
   if (d.h === LOW_H) { setState(Math.abs(d.vx) > 20 ? "crawl" : "crouch"); return; }
   const sp = Math.abs(d.vx);
@@ -2622,6 +2625,9 @@ const RUN_SLING_STONE = [[21, 232], [34, 279], [-28, 278], [-97, 285], [-135, 23
                          [-77, 187], [25, 234], [-31, 278], [-103, 286], [-138, 232], [-127, 185]];
 // the harp clip's camera crept closer as he sat down, so shrink those frames back to his normal size
 function sitHarpScale(i) { const a = TUNE.SIT_HARP_SIZES; return a[Math.min(i, a.length - 1)] ?? 1; }
+const landHero = () => !!(SPR.david_land_hero && SPR.david_land_hero.img.naturalWidth);
+const landHeavyTime = () => landHero() ? SPR.david_land_hero.frames * TUNE.LAND_HERO_MS / 1000 + TUNE.LAND_HERO_HOLD + TUNE.LAND_HERO_RISE
+  : SPR.david_land_heavy.frames * TUNE.LAND_HEAVY_MS / 1000;
 function drawDavid(camX) {
   const d = david, x = d.x - camX, y = d.y;
   if (drawCaveDavid(d, x, y)) return;
@@ -2709,12 +2715,18 @@ function drawDavid(camX) {
       const k = Math.max(0, Math.min(1, (d.vy + TUNE.JUMP_SPEED) / (2 * TUNE.JUMP_SPEED)));
       const i = 1 + Math.round(k * 8);
       const drop = d.vy > 0 && d.y - (d.airTop ?? d.y) > TUNE.DROP_POSE && SPR.david_drop;   // a long drop: Glen's falling pose
+      if (drop && SPR.david_freefall && SPR.david_freefall.img.naturalWidth) { drawSprite("david_freefall", frameOf("david_freefall", t), x, y, d.facing); break; }   // (Glen 11-19: his arms-out fall)
       if (drop) { drawSprite("david_drop", Math.min(SPR.david_drop.frames - 1, Math.floor((d.y - d.airTop - TUNE.DROP_POSE) / 30)), x, y, d.facing); break; }
       drawSprite("david_jump_air", i, x, y - d.h / 2 - 6, d.facing); break;
     }
     case "flip": drawSprite("david_flip", frameOf("david_flip", t, 60), x, y - d.h / 2 - 6, d.facing); break;
     case "land": drawSprite("david_jump_land", frameOf("david_jump_land", t, 45), x, y, d.facing); break;
-    case "landHeavy": drawSprite("david_land_heavy", frameOf("david_land_heavy", t, TUNE.LAND_HEAVY_MS), x, y, d.facing); break;
+    case "landHeavy": {
+      if (!landHero()) { drawSprite("david_land_heavy", frameOf("david_land_heavy", t, TUNE.LAND_HEAVY_MS), x, y, d.facing); break; }
+      const S = SPR.david_land_hero, down = S.frames * TUNE.LAND_HERO_MS / 1000 + TUNE.LAND_HERO_HOLD, u = Math.max(0, Math.min(1, (t - down) / TUNE.LAND_HERO_RISE));
+      if (u < 1) drawSprite("david_land_hero", Math.min(S.frames - 1, Math.floor(t * 1000 / TUNE.LAND_HERO_MS)), x, y, d.facing, 1, 1 - u);   // (down on one knee, then up into standing)
+      if (u > 0) drawSprite("david_idle", 0, x, y, d.facing, 1, u);
+      break; }
     case "slip": drawSprite("david_slip", frameOf("david_slip", t, TUNE.SLIP_MS), x, y, d.facing); break;
     case "topout": drawSprite("david_topout", d.topK || 0, x, y, (d.topK || 0) < 2 ? 1 : d.topDir); break;   // back view, then from the side
     case "climb": { const nm = d.ladder && d.ladder.rope ? "david_climb" : SPR.david_ladder ? "david_ladder" : "david_climb";   // (a rope: his rope climb)   // (Glen 11-06: his ladder climb, shield on his back)
