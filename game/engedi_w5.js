@@ -122,7 +122,7 @@ const ENGEDI = {
   ],
   end: ["May the LORD judge between me and you, and may the LORD avenge me of you; but my hand will not be on you.", "1 Samuel 24:12"],
   build: R => g5Build(R), enter: r => g5Enter(r), update: (dt, r) => g5Update(dt, r), holdDavid: (d, dt) => g5Hold(d, dt),
-  drawDavid: (d, x, y) => g5DrawDavid(d, x, y), draw: camX => g5Draw(camX), drawFront: camX => g5DrawFront(camX), afterFar: (r, o, w, k, fy) => g5FarIbex(r, o, w, k, fy),
+  drawDavid: (d, x, y) => g5DrawDavid(d, x, y), drawBack: camX => g5DrawBack(camX), draw: camX => g5Draw(camX), drawFront: camX => g5DrawFront(camX), afterFar: (r, o, w, k, fy) => g5FarIbex(r, o, w, k, fy),
   drawOver: () => g5DrawOver(), stoneHits: s => g5StoneHits(s),
 };
 
@@ -717,6 +717,13 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
   const w = G5.ITEM_W * (kind === "salt" ? 0.7 : 1), h = w * k.h / k.w;
   ctx.save(); ctx.globalAlpha = a; ctx.drawImage(im, x - w / 2, y - h + bob, w, h); ctx.restore();
 }
+// (Glen 11-19: "the ibex goes behind the cave ... have him come in front") the back way's thorn-hidden cave, drawn behind
+//  the props and the animals
+function g5DrawBack(camX) {
+  const r = region.room; if (!r || r.id !== "wild") return;
+  const B = G5.BACK, im = roomImg(B.PIC);
+  if (im) { const w = B.W * B.K, h = B.H * B.K; g5DrawFaded(G5_CRACK, im, (r.c0 + B.MOUTH) * T + T / 2 - B.MID * w - camX, FOOT + 4 - B.FLOOR * B.K, w, h, 0.14); }
+}
 function g5Draw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
@@ -728,8 +735,6 @@ function g5Draw(camX) {
   }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
-  if (r.id === "wild") { const B = G5.BACK, im = roomImg(B.PIC);   // (the back way's crack: Glen's thorn-hidden cave, 11-19)
-    if (im) { const w = B.W * B.K, h = B.H * B.K; g5DrawFaded(G5_CRACK, im, (r.c0 + B.MOUTH) * T + T / 2 - B.MID * w - camX, FOOT + 4 - B.FLOOR * B.K, w, h, 0.14); } }
   if (r.id === "hollow") {   // the dark water down in the pit, between the rock at its ends
     const L = G5.HOLLOW, x0 = (r.c0 + L.GROUND[0] + 1) * T - camX, x1 = (r.c0 + L.GROUND[1]) * T - camX, y = L.WATER - camY;
     const g = ctx.createLinearGradient(0, y, 0, y + 120); g.addColorStop(0, "rgba(40,78,92,0.95)"); g.addColorStop(1, "rgba(4,14,20,1)");
