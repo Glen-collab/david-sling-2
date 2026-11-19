@@ -1,0 +1,11 @@
+{
+  "frames": 10,
+  "frame_w": 202,
+  "frame_h": 202,
+  "ms_per_frame": 100,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 101,
+  "anchor_y": 101,
+  "source": "clip eagle dive.mp4 (video frames 138-162, talons out)"
+}

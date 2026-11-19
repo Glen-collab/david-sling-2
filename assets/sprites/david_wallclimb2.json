@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 142,
+  "frame_h": 325,
+  "ms_per_frame": 142,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 71,
+  "anchor_y": 164,
+  "source": "clip david wall climb top.mp4",
+  "video_frames": [
+    38,
+    41,
+    45,
+    48,
+    52,
+    55,
+    58,
+    62,
+    65,
+    69,
+    72,
+    76
+  ]
+}

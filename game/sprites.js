@@ -2880,6 +2880,18 @@ window.SPRITE_DATA = {
   "ay": 262,
   "align": "feet"
  },
+ "david_wallclimb2": {
+  "src": "../assets/sprites/david_wallclimb2.png",
+  "frames": 12,
+  "w": 142,
+  "h": 325,
+  "ms": 142,
+  "loop": true,
+  "pingpong": false,
+  "ax": 71,
+  "ay": 164,
+  "align": "center"
+ },
  "david_wallclimb_back": {
   "src": "../assets/sprites/david_wallclimb_back.png",
   "frames": 12,
@@ -2903,6 +2915,18 @@ window.SPRITE_DATA = {
   "ax": 75,
   "ay": 137,
   "align": "center"
+ },
+ "david_walltop": {
+  "src": "../assets/sprites/david_walltop.png",
+  "frames": 28,
+  "w": 247,
+  "h": 586,
+  "ms": 95,
+  "loop": false,
+  "pingpong": false,
+  "ax": 144,
+  "ay": 259,
+  "align": "corner"
  },
  "david_well_climb": {
   "src": "../assets/sprites/david_well_climb.png",
@@ -3215,6 +3239,18 @@ window.SPRITE_DATA = {
   "ax": 74,
   "ay": 112,
   "align": "feet"
+ },
+ "eagle_dive": {
+  "src": "../assets/sprites/eagle_dive.png",
+  "frames": 10,
+  "w": 202,
+  "h": 202,
+  "ms": 100,
+  "loop": true,
+  "pingpong": false,
+  "ax": 101,
+  "ay": 101,
+  "align": "center"
  },
  "eagle_fly": {
   "src": "../assets/sprites/eagle_fly.png",

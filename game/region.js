@@ -38,6 +38,10 @@ const RTUNE = {
   WELL_BOTTOM: 282,  // ...in the picture: the well's base
   WELL_RIM: [62, 182],   // ...where he's crouched on the rim at the end: picture px right of the hole's middle, up from the base
   WELL_HOP: 0.3,     // s: the hop from the ground up onto the rim, going in
+  // (Glen 11-19: "a much better David climbing a wall and then getting on top of it ... reverse for climbing down") his
+  //  climb (in place, his hands at x HANDS past its middle and his feet FEET below it, sheet px) and his pull up over the
+  //  top (anchored on the top corner: it starts with his feet TOP_FEET below it and ends standing END_IN in from it)
+  WALL2: { SHEET: "david_wallclimb2", STRIDE: 30, HANDS: 44, FEET: 143, TOP: "david_walltop", TOP_FEET: 316, END_IN: 72 },
   LEDGE_SHEET: "david_ledge_climb",   // Glen's climb-over clip (11-03): walk up, hands on, hop up, crouched on top
   LEDGE_FEET: -11,   // ...his feet at the start, px from the wall's edge (the sheet's anchor)
   LEDGE_TOP: 24,     // ...the middle of him crouched on top at the end, px from the edge
@@ -352,7 +356,7 @@ const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9,
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
-  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8, reachY: 600, CYCLE: 3.2, DIVE: 1.1, HIGH: 330 },   // (eagles dive: a cycle (s), the last part of it the dive; how high over him between)
+  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8, reachY: 600, CYCLE: 3.2, DIVE: 1.1, HIGH: 330, dive: "eagle_dive", diveK: 1.8 },   // (eagles dive: a cycle (s), the last part of it the dive; how high over him between)
   // (Glen 11-12, his clips: wildlife.js's cutter) the stork on the road to Gath, guarding its patch (Jeremiah 8:7); the
   //  owl in the ruins of Goliath's yard (Psalm 102:6)
   stork: { fly: "stork_fly",  perch: "stork_peck", size: 0.8, speed: 250, near: 300, chase: 5 },
@@ -937,8 +941,10 @@ function regionClimbDown(d) {   // on top of a rock face, by its edge: over the 
     const face = d.x >= w.x0 - 4 && d.x - w.x0 < RTUNE.FACE_REACH ? { x: w.x0, f: 1 }
                : d.x <= w.x1 + 4 && w.x1 - d.x < RTUNE.FACE_REACH ? { x: w.x1, f: -1 } : null;
     if (!face) continue;
-    region.climb = { kind: "wall", wall: w, fx: face.x, f: face.f, dist: 0 }; d.facing = face.f; d.vx = d.vy = 0;
-    d.x = face.x - face.f * RTUNE.FACE_OFF; d.y = w.top + RTUNE.TOP_OUT + 6; d.onGround = false;
+    d.facing = face.f; d.vx = d.vy = 0; d.onGround = false;
+    if (SPR[RTUNE.WALL2.TOP]) { region.climb = { kind: "walltop", wall: w, fx: face.x, f: face.f, dir: -1, t: 0 }; return true; }   // (his pull-over backwards)
+    region.climb = { kind: "wall", wall: w, fx: face.x, f: face.f, dist: 0 };
+    d.x = face.x - face.f * RTUNE.FACE_OFF; d.y = w.top + RTUNE.TOP_OUT + 6;
     return true;
   }
   return false;
@@ -977,6 +983,16 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     if ((!sh || c.t >= sh.frames * sh.ms / 1000) && !c.done) { c.done = true; c.then(); }   // (it holds the last frame after)
     return true;
   }
+  if (c.kind === "walltop") {   // up over the top (dir 1) or back down over the edge onto the face (dir -1)
+    const W2 = RTUNE.WALL2, sh = SPR[W2.TOP], k2 = SCALE * (TUNE.SPRITE_SIZE[W2.TOP] || 1), w = c.wall;
+    c.t += dt; const u = Math.min(1, c.t / (sh.frames * sh.ms / 1000)), p = c.dir > 0 ? u : 1 - u;
+    d.x = c.fx - c.f * RTUNE.FACE_OFF + (W2.END_IN * k2 + RTUNE.FACE_OFF) * c.f * p; d.y = w.top + W2.TOP_FEET * k2 * (1 - p);   // (the camera follows him)
+    if (u >= 1) {
+      if (c.dir > 0) { d.x = c.fx + c.f * W2.END_IN * k2; d.y = w.top; d.onGround = true; region.climb = null; }
+      else { region.climb = { kind: "wall", wall: w, fx: c.fx, f: c.f, dist: 0 }; d.x = c.fx - c.f * RTUNE.FACE_OFF; d.y = w.top + W2.TOP_FEET * k2 + 4; }
+    }
+    return true;
+  }
   if (c.kind === "rope") {
     d.x = c.x; d.y += v * RTUNE.CLIMB_SPEED * dt; c.dist += Math.abs(v) * RTUNE.CLIMB_SPEED * dt;
     if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }   // down on the floor
@@ -992,6 +1008,8 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
     const w = c.wall;
     d.x = c.fx - c.f * RTUNE.FACE_OFF; d.y += v * RTUNE.WALL_SPEED * dt; c.dist += Math.abs(v) * RTUNE.WALL_SPEED * dt;
     if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; d.x = c.fx - c.f * (BODY_W / 2 + 3); return true; }   // (off the face: clear of the rock, or it lifts him onto its top)
+    const W2 = RTUNE.WALL2, k2 = SCALE * (TUNE.SPRITE_SIZE[W2.TOP] || 1);
+    if (SPR[W2.TOP] && d.y <= w.top + W2.TOP_FEET * k2) { region.climb = { kind: "walltop", wall: w, fx: c.fx, f: c.f, dir: 1, t: 0 }; return true; }   // (his pull up over it)
     if (d.y <= w.top + RTUNE.TOP_OUT) { d.y = w.top; d.x = c.fx + c.f * 30; d.onGround = true; region.climb = null; return true; }   // over the top
     if (pressed("a")) { region.climb = null; d.vx = -c.f * TUNE.WALK_SPEED * 0.6; d.vy = -TUNE.JUMP_SPEED * 0.5; d.facing = -c.f; setState("jump"); }   // push off
     return true;
@@ -1029,6 +1047,14 @@ function drawRegionClimb(d, x, y) {   // main.js drawDavid: true if it drew him
     const sh = SPR[RTUNE.LEDGE_SHEET]; if (!sh) return false;
     const k = Math.min(sh.frames - 1, Math.floor(c.t * 1000 / sh.ms)), i = c.dir > 0 ? k : sh.frames - 1 - k;
     drawSprite(RTUNE.LEDGE_SHEET, i, x, y, 1); return true;
+  }
+  if (c.kind === "walltop") {   // anchored on the top corner of the face
+    const W2 = RTUNE.WALL2, sh = SPR[W2.TOP], k = Math.min(sh.frames - 1, Math.floor(c.t * 1000 / sh.ms)), i = c.dir > 0 ? k : sh.frames - 1 - k;
+    drawSprite(W2.TOP, i, x + (c.fx - d.x), y + (c.wall.top - d.y), c.f); return true;
+  }
+  if (c.kind === "wall" && SPR[RTUNE.WALL2.SHEET]) {   // (Glen 11-19) his new climb: his hands on the face, his feet at y
+    const W2 = RTUNE.WALL2, n = W2.SHEET, s = SPR[n], k2 = SCALE * (TUNE.SPRITE_SIZE[n] || 1);
+    drawSprite(n, Math.floor(c.dist / W2.STRIDE) % s.frames, x + (c.fx - d.x) - c.f * W2.HANDS * k2, y - W2.FEET * k2, c.f); return true;
   }
   if (c.kind === "wall") {
     // (Glen 11-03: he climbed too low) the sheet's anchor is its middle, not his feet: lift it so his feet are at y
@@ -1638,7 +1664,7 @@ function updateBeasts(dt, r) {
         //  him, and up again
         const ph = b.kind === "eagle" ? b.t % B.CYCLE : 0, dive = b.kind === "eagle" && ph > B.CYCLE - B.DIVE;
         const want = b.kind === "eagle" ? (dive ? d.y - 30 : d.y - B.HIGH) + Math.sin(b.t * 2) * 18 : d.y - 90 + Math.sin(b.t * 4) * 22;
-        b.y += (want - b.y) * Math.min(1, dt * (dive ? 4.5 : 1.4));
+        b.y += (want - b.y) * Math.min(1, dt * (dive ? 4.5 : 1.4)); b.dive = dive;
         b.y = Math.max(top, Math.min(GR * T - 30, b.y));
         if ((b.facing > 0 && b.x > d.x + 300) || (b.facing < 0 && b.x < d.x - 300)) b.facing *= -1;
         const ins = (r.inset || 0) * T; b.x = Math.max(r.c0 * T + ins + 40, Math.min((r.c0 + r.w) * T - ins - 40, b.x));
@@ -1684,6 +1710,7 @@ function drawBeasts(camX) {
     else if (BIRD[b.kind]) {
       const B = BIRD[b.kind], fl = B.fly;
       if (b.state === "perch") drawSprite(B.perch, frameOf(B.perch, b.t), x, b.y, b.facing, B.size);
+      else if (b.dive && b.state === "fly" && B.dive && SPR[B.dive]) drawSprite(B.dive, frameOf(B.dive, b.t), x, b.y + 20, b.facing, B.diveK);   // (Glen 11-19: talons out)
       else drawSprite(fl, frameOf(fl, b.t), x, b.y + 20, fl.startsWith("raven") ? -b.facing : b.facing, B.size);   // (the raven sheets face left)
     }
     else if (b.kind === "bat2") {
