@@ -178,7 +178,7 @@ function g5Build(R) {
     g5.pileX = X(28);
     campfire(c + 36, GR - 1);
     // (Glen's clips, 11-18) two of the men by the fire: hungry, heads down, till the first load is home; then bread and figs
-    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, G5.SIT_K); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0, G5.SIT_K);
+    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, G5.SIT_K); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0 && !g5SaulIn(), G5.SIT_K);   // (back in the dark while Saul sits by the fire)
     g5.entry.camp = X(54);
   }
 
@@ -387,7 +387,8 @@ function g5Update(dt, r) {
   for (const p of g5.people) p.t += dt;
   if (g5.pose) g5.pose.t += dt;
   const free = !region.script.length && region.wait <= 0 && !region.trans;
-  roomById("camp").far = g5Stage() >= 3 ? "engedi/camp_stocked/far" : "engedi/camp/far";   // (the men fed: the storeroom)
+  // (the men fed: the storeroom; Glen 11-19: but while Saul's in the cave, the bare cave: "Saul would have noticed")
+  roomById("camp").far = g5Stage() >= 3 && !g5SaulIn() ? "engedi/camp_stocked/far" : "engedi/camp/far";
   // the pack: touching a provision picks it up (its room's run open, not already home)
   for (const f of g5.food) {
     f.t += dt;
@@ -463,6 +464,7 @@ function g5SaulComes() {
     { fn() { g5.saul.step = "creep"; toast("Creep up behind Saul (hold Down). The sword (X) can only cut the corner of his robe."); } },
   ];
 }
+const g5SaulIn = () => !!(g5.saul && !g5.saul.outside);
 function g5SaulUpdate(dt) {
   const s = g5.saul, d = david;
   s.t += dt;
@@ -474,6 +476,10 @@ function g5SaulUpdate(dt) {
   }
   if (s.mode === "stand" && SPR.saul_stand && s.t > SPR.saul_stand.frames * SPR.saul_stand.ms / 1000) { s.mode = "walk"; s.t = 0; s.facing = 1; }
   if (s.step !== "creep" || region.script.length || region.wait > 0) return;
+  // (Glen 11-19: creeping right he walked straight past Saul's back and got sent back) creeping in, he stops at Saul's
+  //  back, in reach of the robe
+  const stopAt = s.x - G5.CUT_REACH * 0.6;
+  if (d.onGround && d.x > stopAt && d.x < s.x + 20) { d.x = stopAt; d.vx = 0; d.facing = 1; g5Tell("cutnow", "Right behind the king. X: cut the corner of his robe."); }
   // walking upright close by, or getting out in front of him: he stirs, and David slips back into the dark
   const loud = d.h !== LOW_H && Math.abs(d.vx) > 25 && s.x - d.x < G5.SAUL_HEAR;
   if (loud || d.x > s.x + 20) {
@@ -504,7 +510,7 @@ function g5CallScene() {
   const d = david, c = roomById("pens").c0;
   regionAdd("taken", "g5_called");
   g5.saul = { x: (c + 22) * T, y: FOOT, alpha: 1, t: 0, facing: 1, mode: "walk", outside: true, step: "call" };
-  d.vx = 0; d.facing = 1;
+  d.vx = 0; d.facing = 1; if (d.x < (c + 8) * T) { d.x = (c + 8) * T; snapCamera(); }   // (Glen 11-19: he was almost off the screen's edge)
   const S = g5.saul, mode = m => ({ fn() { S.mode = m; S.t = 0; } });
   rPlay([{ wait: 0.8 },
     { say: ["David", "“My lord the king!” (1 Samuel 24:8)"] },
