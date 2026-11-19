@@ -875,9 +875,7 @@ function g5DrawFront(camX) {
     const x = o.x0 - camX, w = o.x1 - o.x0, y = GR * T + 10 - camY; if (x > W || x + w < 0) continue;
     const g = ctx.createLinearGradient(0, y, 0, y + 220); g.addColorStop(0, "rgba(70,170,180,0.96)"); g.addColorStop(0.35, "rgba(30,105,120,0.98)"); g.addColorStop(1, "rgba(8,34,46,1)");
     ctx.fillStyle = g; ctx.fillRect(x, y, w, H - y + 400);
-    const t = performance.now() / 1000; ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = "#cdeff0";   // (the surface, a little ripple of light)
-    for (let i = 0; i < w; i += 18) ctx.fillRect(x + i, y + 1 + Math.sin(t * 2 + i * 0.15) * 1.5, 11, 3);
-    ctx.restore(); }
+    g5WaterTop(x, x + w, y + 2, performance.now() / 1000, camX, 0.6); }   // (Glen 11-19: the surface one soft line, not dashes)
   // the cave behind the falls: an Up arrow at its mouth; while he goes in, the falling water in front of him
   if (r.id === "pool") {
     g5Video("falls");   // (loaded and running while he's in the pool room, ready for the cave)
