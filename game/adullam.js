@@ -245,16 +245,16 @@ function r4FishAt(room, kind, c, k0, k1, dy = 0) {
 }
 const R4_FISH_IMG = {};
 const r4FishImg = k => R4_FISH_IMG[k] || (R4_FISH_IMG[k] = Object.assign(new Image(), { src: `../assets/sprites/w4_fish_${k}.png?v=${window.BUILD || 0}` }));
-function r4Fish(dt, r) {
+function r4Fish(dt, r, list = r4.fish, swimming = !!r4.swim, float = R4.SWIM.FLOAT) {   // (list, swimming, float: En-Gedi's pool too, Glen 11-19)
   const d = david, F = R4.FISH;
-  for (const f of r4.fish) {
+  for (const f of list) {
     if (f.room !== r.id) continue;
     if (f.gone) continue;
     if (stones.some(s => Math.abs(s.x - f.x) < F[f.kind].w * F.K * 0.45 && Math.abs(s.y - f.y) < 50)) {   // (the sword's edge, or a stone)
       f.gone = true; for (let i = 0; i < 10; i++) bits.push({ x: f.x, y: f.y, vx: (Math.random() - 0.5) * 220, vy: (Math.random() - 0.5) * 220, life: 0.7, color: i % 2 ? "#8a8070" : "#c8d8e0" }); continue;
     }
     const K = F[f.kind]; f.t += dt; f.st += dt; f.turn = Math.max(0, f.turn - dt);
-    const dx = d.x - f.x, dy = (d.y - 30) - f.y, inWater = !!r4.swim;
+    const dx = d.x - f.x, dy = (d.y - 30) - f.y, inWater = swimming;
     if (f.kind === "biter") {
       if (f.state === "swim" && inWater && Math.abs(dx) < K.SEE && Math.abs(dy) < 140 && (Math.sign(dx) === f.dir || Math.abs(dx) < 120) && d.deadT <= 0) { f.state = "dart"; f.st = 0; f.t = 0; }
       else if (f.state === "dart" && f.st > K.DART_T) { f.state = "rest"; f.st = 0; }
@@ -267,7 +267,7 @@ function r4Fish(dt, r) {
       if (f.x < f.x0 && f.dir < 0 || f.x > f.x1 && f.dir > 0) { f.dir = -f.dir; f.turn = 0.3; }
       f.y += (f.y0 + Math.sin(f.t * 1.3) * 10 - f.y) * Math.min(1, dt * 2);
     }
-    f.y = Math.max(r.water + R4.SWIM.FLOAT - 20, Math.min(GR * T - 20, f.y));
+    f.y = Math.max(r.water + float - 20, Math.min(GR * T - 20, f.y));
     // a touch: a heart
     const hx = K.w * F.K * F.HIT[0], hy = K.h * F.K * F.HIT[1];
     if (Math.abs(dx) < hx + 14 && Math.abs(dy) < hy + 30 && d.deadT <= 0 && d.inv <= 0) {
@@ -275,9 +275,9 @@ function r4Fish(dt, r) {
     }
   }
 }
-function r4DrawFish(camX) {
+function r4DrawFish(camX, list = r4.fish) {
   const F = R4.FISH;
-  for (const f of r4.fish) {
+  for (const f of list) {
     if (f.room !== region.room.id || f.gone) continue;
     const K = F[f.kind], im = r4FishImg(f.kind), w = K.w * F.K, h = K.h * F.K, x = f.x - camX;
     if (!im.complete || !im.naturalWidth || x < -w || x > W + w) continue;
@@ -798,10 +798,12 @@ function r4DrawDavid(d, x, y) {
     return true;
   }
   if (r4.swim && d.swordT >= 0) {   // (Glen 11-13: "a good swipe with the sword" in the water: his clip, over the swing's time)
+    if (SPR.david_swim_swipe) { const S = SPR.david_swim_swipe; drawSprite("david_swim_swipe", Math.min(S.frames - 1, Math.floor(d.swordT / W9.SWORD_TIME * S.frames)), x, y - 60, d.facing); return true; }   // (Glen 11-19: his crisper swipe, forward)
     const n = SPR.david_swim_sword ? SPR.david_swim_sword.frames : 12;
     drawSprite("david_swim_sword", Math.min(n - 1, Math.floor(d.swordT / W9.SWORD_TIME * n)), x, y - 50, d.facing, R4.SWIM.K); return true;
   }
   if (r4.swim && r4.swim.tread) { drawSprite("david_tread", frameOf("david_tread", r4.swim.tt), x, y, d.facing); return true; }
+  if (r4.swim && SPR.david_swim_under) { drawSprite("david_swim_under", frameOf("david_swim_under", r4.swim.t), x, y - 60, d.facing); return true; }   // (Glen 11-19: crisper)
   if (r4.swim) { drawSprite("david_swim2", frameOf("david_swim2", r4.swim.t), x, y - 50, d.facing, R4.SWIM.K); return true; }   // (Glen 11-13: his better swim)
   return false;
 }

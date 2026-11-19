@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 531,
+  "frame_h": 318,
+  "ms_per_frame": 87,
+  "loop": false,
+  "align": "center",
+  "anchor_x": 266,
+  "anchor_y": 180,
+  "source": "clip david swim sword swipe.mp4",
+  "video_frames": [
+    86,
+    88,
+    90,
+    93,
+    95,
+    97,
+    99,
+    101,
+    103,
+    106,
+    108,
+    110
+  ]
+}

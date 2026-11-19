@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 281,
+  "frame_h": 271,
+  "ms_per_frame": 174,
+  "loop": true,
+  "align": "center",
+  "anchor_x": 141,
+  "anchor_y": 136,
+  "source": "clip david swim under crisp.mp4",
+  "video_frames": [
+    71,
+    75,
+    79,
+    83,
+    88,
+    92,
+    96,
+    100,
+    104,
+    109,
+    113,
+    117
+  ]
+}

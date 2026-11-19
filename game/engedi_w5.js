@@ -35,7 +35,7 @@ const G5 = {
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 110, LEAP: 1120, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5,
     // the sheets: treading, swimming along the top, under; the clip's waterline row in each top sheet; how high under
-    LOOK: { TREAD: "david_tread2", SURF: "david_surf", UNDER: "david_breast", TREAD_WL: 50, SURF_WL: 16, UNDER_Y: 60 } },
+    LOOK: { TREAD: "david_tread2", SURF: "david_surf", UNDER: "david_swim_under", TREAD_WL: 50, SURF_WL: 16, UNDER_Y: 60 } },
   // the pool's clip drawn again over whatever's in the water: how strong, px below the surface it starts, its fade in
   WATER_OVER: { A: 0.4, TOP: 0, FADE: 40 },
   POOL_BANK: 330, POOL_LEDGE: 312,   // (Glen 11-18: the ledge on the painted rocks left of the falls, not on the water)
@@ -43,6 +43,8 @@ const G5 = {
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
   // the cave behind the falls: its ledges [column, px, width], bats [column, px], the Truth's shelf [column, px]
   HOLLOW: { LEDGES: [[52, 500, 4], [44, 430, 4], [35, 370, 5], [26, 450, 4], [14, 500, 3]], BATS: [[48, 120], [30, 110], [18, 130]], TRUTH: [37, 370] },
+  // the pool's fish (adullam.js's, its R4.FISH sizes): [kind, from column, to column, px off the middle of the water]
+  FISH: [["tilapia", 12, 30, -40], ["biter", 22, 44, 30], ["perch", 40, 58, -20], ["biter", 56, 76, 20], ["tilapia", 66, 84, -50]],
   CAVE: { WATER_H: 380, AT: 88, FALLS: 93.7, REACH: 72, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
@@ -133,7 +135,7 @@ function g5Build(R) {
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
   for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls2_still.png"]) roomImg(n);
-  g5.swim = null; g5.breath = G5.SWIM.BREATH;
+  g5.swim = null; g5.breath = G5.SWIM.BREATH; g5.fish = [];
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.cave = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
   ["w4_z_hide_rock", "w4_rubble_sand", "w4_tree_acacia", "w4_tree_dead", "w4_tree_oak", ...Object.values(G5_FOOD).map(f => f[1])].forEach(kitImg);
@@ -203,6 +205,7 @@ function g5Build(R) {
    // (inside the cave: found by going in, never lying out on the rocks)
     rRelic("g5_pom_pool", "pomegranate", c + 30, GR - 1);
     g5.entry.pool = X(2);
+    for (const [kind, k0, k1, dy] of G5.FISH) g5FishAt(kind, c, k0, k1, dy);   // (Glen 11-19: "add those killer fish too")
   }
 
   // -- The Cave Behind the Falls (Glen 11-19): tight and dark, in from behind the pool's falls; ledges up and down, bats,
@@ -296,7 +299,8 @@ function g5Enter(r) {
   const d = david;
   // where he came in: being seen sends him back here (the pack kept)
   g5.entry[r.id] = d.x < (r.c0 + r.w / 2) * T ? (r.c0 + 4) * T : (r.c0 + r.w - 5) * T;
-  if (r.id === "pool") { g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
+  if (r.id === "pool") { for (const f of g5.fish) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
+    g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
     if (d.x > (r.c0 + 80) * T) { d.y = G5.POOL_LEDGE; d.vy = 0; d.x = (r.c0 + 87) * T; snapCamera(); }   // (back out of the cave behind the falls: on the rocks)
     g5.swim = null; g5.breath = G5.SWIM.BREATH; g5Tell("swim", "Into the water! A for a stroke up, Up and Down. Watch your breath: come up for air."); }
   if (r.id === "camp" && !g5Has("g5_intro")) {
@@ -359,6 +363,7 @@ function g5Update(dt, r) {
   if (r.id === "pool" && free && !g5.cave && pressed("up") && d.onGround && Math.abs(d.x - g5CaveX()) < G5.CAVE.REACH) {
     g5.cave = { t: 0, x0: d.x, taken: false }; d.vx = 0; }
   if (g5.cave) g5CaveUpdate(dt);
+  if (r.id === "pool" && typeof r4Fish === "function") r4Fish(dt, r, g5.fish, !!g5.swim, G5.SWIM.FLOAT);
   // home: the pack set down by the pile
   if (r.id === "camp" && free && g5.pack.length && d.x < (r.c0 + G5.CAMP_REACH) * T) g5Deliver();
   // the way on is shut till the load before it is home
@@ -484,6 +489,10 @@ function g5Hold(d, dt) {
   if (r && r.id === "pens" && g5Has("g5_cut") && !g5Has("g5_called") && !region.script.length) g5CallScene();
   return false;
 }
+function g5FishAt(kind, c, k0, k1, dy) {
+  const r = roomById("pool"), y = (r.water + G5.SWIM.FLOAT + GR * T) / 2 + dy;
+  g5.fish.push({ room: "pool", kind, x: (c + (k0 + k1) / 2) * T, y, y0: y, x0: (c + k0) * T, x1: (c + k1) * T, dir: (k0 & 1) ? -1 : 1, t: k0 * 0.37, state: "swim", st: 0, turn: 0 });
+}
 const g5CaveX = () => (roomById("pool").c0 + G5.CAVE.AT) * T + T / 2;
 const g5FallsX = () => (roomById("pool").c0 + G5.CAVE.FALLS) * T + T / 2;
 function g5CaveUpdate(dt) {
@@ -527,6 +536,7 @@ function g5Swim(d, dt) {
   d.onGround = d.y >= GR * T - 1; d.fallTop = null; d.shield = false; d.charging = false;
   if (d.y <= top + 6) g5.breath = Math.min(S.BREATH, g5.breath + dt * 4);
   else { g5.breath -= dt; if (g5.breath <= 0) { g5.breath = S.AFTER; hurtDavid(d.x, "", true); toast("Out of breath! Swim up for air."); } }
+  if (typeof updateSword === "function" && regionSword()) updateSword(d, dt, false);   // (Glen 11-19: his swipe in the water, as Adullam's)
   return true;
 }
 // ---- (Glen 11-19: "a couple in motion ... just stand and walk a little") ibex far off on the far picture's ledges: a few
@@ -599,6 +609,7 @@ function g5DrawDavid(d, x, y) {
   if (g5.swim) {   // (Glen's 11-19 clips: treading, the crawl along the top, the breaststroke under; the clips' own waterline on ours)
     const S = G5.SWIM, L = S.LOOK, wy = y - (d.y - region.room.water), up = d.y <= region.room.water + S.FLOAT + 8;
     const atTop = (n, wl) => drawSprite(n, frameOf(n, g5.swim.tt), x, wy + (SPR[n].ay - wl) * SCALE, d.facing);
+    if (d.swordT >= 0 && SPR.david_swim_swipe) { const n = SPR.david_swim_swipe.frames; drawSprite("david_swim_swipe", Math.min(n - 1, Math.floor(d.swordT / W9.SWORD_TIME * n)), x, up ? wy + 60 : y - L.UNDER_Y, d.facing); return true; }   // (Glen 11-19: the sword swiped forward in the water)
     if (up && g5.swim.tread && SPR[L.TREAD]) { atTop(L.TREAD, L.TREAD_WL); return true; }
     if (up && SPR[L.SURF]) { atTop(L.SURF, L.SURF_WL); return true; }
     if (SPR[L.UNDER]) { drawSprite(L.UNDER, frameOf(L.UNDER, g5.swim.t), x, y - L.UNDER_Y, d.facing); return true; }
@@ -720,6 +731,7 @@ function g5DrawFront(camX) {
     if (g5.cave) { const C = g5.cave, K = G5.CAVE, end = K.TURN + K.WALK + K.INSIDE + K.OUT, fade = Math.min(1, C.t / K.TURN, (end - C.t) / K.OUT);
       g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, r.water + 8, G5.CAVE.WATER_H, Math.max(0, fade)); }
   }
+  if (r.id === "pool" && typeof r4DrawFish === "function") r4DrawFish(camX, g5.fish);
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
     const a = o.t > G5.DROP_FOR - 1.2 ? 0.4 + 0.6 * Math.abs(Math.sin(o.t * 12)) : 1; g5DrawFoodAt(f.kind, o.x - camX, o.y + 4, a); }
