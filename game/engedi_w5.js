@@ -237,7 +237,7 @@ function g5Build(R) {
     rLedge(rm, c + 74, 460, 4); rLedge(rm, c + 80, 360, 4);
     g5Pool(rm, c + 86, 5);
     rLedge(rm, c + 110, 450, 5); g5Food(rm, "dates", 112, 450 - 4);
-    rWild("viper", rm, c + 30); rWild("hornet", rm, c + 70, { y: 380, hy: 380 }); rHyrax(rm, c + 118);
+    rWild("viper", rm, c + 30); rWild("hornet", rm, c + 70, { y: 380, hy: 380 }); if (typeof rHyraxFamily === "function") rHyraxFamily(rm, c + 106, 2); else rHyrax(rm, c + 106);   // (Glen 11-19: out from behind the rubble and the olive press, in the open)
     g5Hide(rm, "w4_z_hide_rock", X(22)); g5Hide(rm, "w4_rubble_sand", X(50)); g5Hide(rm, "w4_z_hide_rock", X(72)); g5Hide(rm, "w4_z_hide_rock", X(100)); g5Hide(rm, "w4_rubble_sand", X(116));
     g5Guard(rm, 24, 38, 0); g5Guard(rm, 96, 110, 0, FOOT, -1); g5Guard(rm, 48, 56, 1); g5Guard(rm, 70, 80, 2, FOOT, -1);
     g5.entry.spring = X(4);

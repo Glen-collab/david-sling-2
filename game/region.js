@@ -23,6 +23,7 @@ const RTUNE = {
   EDGE: 10,
   CLIMB_SPEED: 170,  // the rope, px/s
   WALL_SPEED: 150,   // the rock face, px/s
+  BIRD_WAKE: 2.5,   // (Glen 11-19: s after he comes into a room before a perched bird can come at him)
   WALL_STRIDE: 28,   // px climbed per frame of david_wallclimb_side
   FACE_REACH: 46,    // Up this close to a rock face starts the climb
   ROPE_W: 7,         // (Glen 11-03: half to 5/8 of the first 12) how wide the rope is drawn (Glen's rope picture, repeated down its length)
@@ -825,7 +826,7 @@ function updateRegion(dt) {
     region.room = r;
     if (!regionHas("explored", r.id)) { regionAdd("explored", r.id); toast(r.name); }
     for (const b of region.breaks) if (b.room === r.id) { b.broken = false; b.t = 0; }   // come back in: they're whole again
-    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : WILD[b.kind] ? "idle" : "walk", t: Math.random() * 3, dead: false, cool: 0, hp: WILD[b.kind] ? WILD[b.kind].hp || 1 : PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0, gone: false, flash: 0, down: false });   // (wildlife.js: the road animals)
+    for (const b of region.beasts) if (b.room === r.id) Object.assign(b, { x: b.hx, y: b.hy, state: b.kind === "spider" || b.kind === "bat2" ? "hang" : BIRD[b.kind] ? "perch" : b.kind === "phil" ? "wait" : WILD[b.kind] ? "idle" : "walk", t: Math.random() * 3, dead: false, cool: BIRD[b.kind] ? RTUNE.BIRD_WAKE : 0, hp: WILD[b.kind] ? WILD[b.kind].hp || 1 : PHIL.HP, alpha: 1, dropX: undefined, strTaken: false, air: false, vy: 0, gone: false, flash: 0, down: false });   // (wildlife.js: the road animals)
     for (const k of region.crumbles) if (k.room === r.id && k.state !== "whole") { k.state = "whole"; k.t = 0; platAt(k.c, GR * T, k.w); }
     region.drops.length = 0;
     if (REGION.enter) REGION.enter(r);

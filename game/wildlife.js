@@ -27,7 +27,7 @@ const WILD = {
   partridge: { idle: "partridge_idle", run: "partridge_run", k: 1, shy: true, speed: 330, near: 210,
                tell: "A partridge! Saul hunted David “as when one hunts a partridge in the mountains.” (1 Samuel 26:20)" },
   // (Glen's hyrax, 11-17: it walks its patch, stops to sniff and look about (graze: [walk s, sniff s]), runs when he comes)
-  hyrax:     { idle: "hyrax_walk", run: "hyrax_walk", graze: "hyrax_sniff", grazeT: [2.5, 3.2], k: 1, shy: true, walk: 30, speed: 280, near: 190,
+  hyrax:     { idle: "hyrax_walk", run: "hyrax_walk", graze: "hyrax_sniff", grazeT: [2.5, 3.2], k: 1, shy: true, walk: 30, speed: 280, near: 190, flee: 2.8,   // (Glen 11-19: "they disappear quick": a longer run before they fade)
                tell: "Rock hyraxes! “The hyraxes are but a feeble folk, yet make they their houses in the rocks.” (Proverbs 30:26)" },
   hoopoe:    { idle: "hoopoe_walk", run: "hoopoe_walk", k: 1, shy: true, walk: 18, speed: 260, near: 180 },
 };
@@ -36,7 +36,7 @@ const WILD = {
 // BACK: tiles an animal backs off after the shield stops it; BREATHER: seconds before it comes again; LEAP_OVER: its leap
 //  over him when it's boxed in
 // MIN_RUN: tiles off he has to be before a charger charges
-const WILD_TUNE = { BACK: 4, BREATHER: 2.2, LEAP_OVER: 950, MIN_RUN: 3, TREE: { SEE: 330, WATCH: 1.4, PICK: 0.5, DROP: 0.7 }, HOP: { H: 3, W: 5 }, HIT_COOL: 0.3, FLASH: 0.25, REST: 1.4, FLEE: 1.5, LEASH: 16, GRAV: 2200, SWARM_LEASH: 520, AHEAD: 40, SWARM_HURT: 0.8 };
+const WILD_TUNE = { BACK: 4, BREATHER: 2.2, LEAP_OVER: 950, MIN_RUN: 3, TREE: { SEE: 330, WATCH: 1.4, PICK: 0.5, DROP: 0.7 }, HOP: { H: 3, W: 5 }, HIT_COOL: 0.3, FLASH: 0.25, REST: 1.4, FLEE: 1.5, CLIMB_GRACE: 2, LEASH: 16, GRAV: 2200, SWARM_LEASH: 520, AHEAD: 40, SWARM_HURT: 0.8 };
 // a road animal: kind, room, column; o.range: tiles it paces either side of home; o.y: the floor (px) or, for a swarm,
 //  the height it hovers at
 const rWild = (kind, room, c, o = {}) => beast(kind, room, c, Object.assign({ state: "idle", hp: WILD[kind].hp || 1, alpha: 1 }, o, { range: (o.range || 3) * T,
@@ -130,8 +130,8 @@ function updateWild(b, dt, r) {
     if (wildMove(b, b.facing * W_.walk * (b.x < lo || b.x > hi ? 2 : 1), dt).stop) b.facing *= -1;
   };
   if (b.state === "flee") {   // running off, fading
-    b.x += b.facing * (W_.speed || 300) * (W_.shy ? 1 : 1.2) * dt; b.alpha = Math.max(0, 1 - b.t / Tn.FLEE);
-    if (b.t > Tn.FLEE) { b.dead = true; b.gone = true; }
+    b.x += b.facing * (W_.speed || 300) * (W_.shy ? 1 : 1.2) * dt; const fl = W_.flee || Tn.FLEE; b.alpha = Math.max(0, 1 - Math.max(0, b.t - fl * 0.4) / (fl * 0.6));   // (it runs in plain sight, then fades)
+    if (b.t > fl) { b.dead = true; b.gone = true; }
     return;
   }
   if (W_.orbit) { const a = b.t * 2.2 + (b.ph || 0); b.x = b.hx + Math.cos(a) * 46; b.y = b.hy + Math.sin(a * 1.7) * 18; b.facing = Math.sin(a) > 0 ? -1 : 1; return; }   // (round the hive)
@@ -166,6 +166,9 @@ function updateWild(b, dt, r) {
     return;
   }
   // the chargers: ostrich, caracal, ibex
+  // (Glen 11-19: "I am guaranteed to get hit because he charges when I am coming up. I need a second") never while he's
+  //  on a wall, and a moment after he's up over the top
+  if (typeof region !== "undefined" && region.climb && b.state === "idle") b.cool = Math.max(b.cool || 0, Tn.CLIMB_GRACE);
   if (b.state === "idle") {
     // (too close to charge: off a little first. Glen 11-17: "caught in a frame of going right to left and jerks back and
     //  forth": turning away here and back to its patch in pace() every other frame. Now it backs off in one go, past
