@@ -750,6 +750,20 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
 //  the props and the animals
 function g5DrawBack(camX) {
   const r = region.room; if (!r) return;
+  // (Glen 11-19: "the hornet goes behind the waterfall and hits me") the Spring's falls, behind the beasts
+  if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)
+  else if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
+    if (im) { const x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.WATER * F.K, w = im.naturalWidth * F.K, h = im.naturalHeight * F.K;
+      // (Glen 11-19: "the water doesn't move") the same spot cut from the pool's moving clip, in the picture's faded outline
+      const v = g5PoolVideo(), oc = G5_FALLS_CUT;
+      if (v && v.readyState >= 2 && !v.paused && oc && v.videoWidth) {
+        const iw = im.naturalWidth, ih = im.naturalHeight, sx = v.videoWidth / 3600, sy = v.videoHeight / 722, o = oc.getContext("2d");
+        if (oc.width !== iw || oc.height !== ih) { oc.width = iw; oc.height = ih; }
+        o.globalCompositeOperation = "source-over"; o.clearRect(0, 0, iw, ih);
+        o.drawImage(v, F.SRC_X * sx, 0, iw * sx, ih * sy, 0, 0, iw, ih);
+        o.globalCompositeOperation = "destination-in"; o.drawImage(im, 0, 0);
+        ctx.drawImage(oc, x, y, w, h);
+      } else ctx.drawImage(im, x, y, w, h); } }
   if (r.id === "fork") { const F = G5.FORK;   // its two mouths: dark openings in the rock, the far end's light in each
     const now = performance.now() / 1000;
     for (const [k, rgb, fire] of [[F.SPRING, "200,230,170", false], [F.CAMP, "255,170,90", true]]) {
@@ -806,19 +820,6 @@ function g5Draw(camX) {
     }
     if (!g5.crawl && !region.script.length && Math.abs(david.x - camX - mx) < PATH.REACH && david.onGround) { upHint(mx, FOOT - 200); g5Tell("mouth", "The way back into the camp. Up to go in."); }
   }
-  if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)
-  else if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
-    if (im) { const x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.WATER * F.K, w = im.naturalWidth * F.K, h = im.naturalHeight * F.K;
-      // (Glen 11-19: "the water doesn't move") the same spot cut from the pool's moving clip, in the picture's faded outline
-      const v = g5PoolVideo(), oc = G5_FALLS_CUT;
-      if (v && v.readyState >= 2 && !v.paused && oc && v.videoWidth) {
-        const iw = im.naturalWidth, ih = im.naturalHeight, sx = v.videoWidth / 3600, sy = v.videoHeight / 722, o = oc.getContext("2d");
-        if (oc.width !== iw || oc.height !== ih) { oc.width = iw; oc.height = ih; }
-        o.globalCompositeOperation = "source-over"; o.clearRect(0, 0, iw, ih);
-        o.drawImage(v, F.SRC_X * sx, 0, iw * sx, ih * sy, 0, 0, iw, ih);
-        o.globalCompositeOperation = "destination-in"; o.drawImage(im, 0, 0);
-        ctx.drawImage(oc, x, y, w, h);
-      } else ctx.drawImage(im, x, y, w, h); } }
   // the cliffs (Glen's tall picture, as much of it as the cliff is high, from its top shelf down)
   for (const k of g5.cliffs || []) {
     if (k.room !== r.id) continue; const im = kitImg("w4_e_cliff"); if (!im) break;
