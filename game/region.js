@@ -877,6 +877,7 @@ function updateRegion(dt) {
   // a door, a stair, a well: Up
   if (region.climb) return;   // on the rope or the rock face (regionClimbHold)
   if (pressed("up") && d.onGround && regionClimbStart(d)) return;
+  if (pressed("down") && d.onGround && regionClimbDown(d)) return;   // (Glen 11-19: like the well, Down at the edge of a rock face's top)
   if (pressed("up") && d.onGround) {
     const door = region.doors.find(o => o.kind !== "hole" && !o.shut && Math.abs(d.x - o.x) < RTUNE.DOOR_REACH && Math.abs(d.y - (o.y ?? GR * T)) < 30);
     if (door && door.kind === "exit") {   // the locked gate out
@@ -929,6 +930,19 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
   }
   return false;
 }
+function regionClimbDown(d) {   // on top of a rock face, by its edge: over the edge and onto the face, going down
+  const r = roomAt(d.x);
+  for (const w of region.walls) {
+    if (w.room !== r.id || Math.abs(d.y - w.top) > 6 || !hasSkill(w.need)) continue;
+    const face = d.x >= w.x0 - 4 && d.x - w.x0 < RTUNE.FACE_REACH ? { x: w.x0, f: 1 }
+               : d.x <= w.x1 + 4 && w.x1 - d.x < RTUNE.FACE_REACH ? { x: w.x1, f: -1 } : null;
+    if (!face) continue;
+    region.climb = { kind: "wall", wall: w, fx: face.x, f: face.f, dist: 0 }; d.facing = face.f; d.vx = d.vy = 0;
+    d.x = face.x - face.f * RTUNE.FACE_OFF; d.y = w.top + RTUNE.TOP_OUT + 6; d.onGround = false;
+    return true;
+  }
+  return false;
+}
 function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's climbing (no gravity, no walking)
   if (REGION_ON && region.pathWalk) { d.vx = 0; d.vy = 0; d.charging = false; d.swordT = -1; return true; }   // (walking off along a path)
   if (REGION_ON && REGION.holdDavid && REGION.holdDavid(d, dt)) return true;   // (a region's own: nobgath.js's swinging ropes)
@@ -977,7 +991,7 @@ function regionClimbHold(d, dt) {   // main.js updateDavid: true while he's clim
   if (c.kind === "wall") {
     const w = c.wall;
     d.x = c.fx - c.f * RTUNE.FACE_OFF; d.y += v * RTUNE.WALL_SPEED * dt; c.dist += Math.abs(v) * RTUNE.WALL_SPEED * dt;
-    if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; return true; }
+    if (d.y >= GR * T) { d.y = GR * T; d.onGround = true; region.climb = null; d.x = c.fx - c.f * (BODY_W / 2 + 3); return true; }   // (off the face: clear of the rock, or it lifts him onto its top)
     if (d.y <= w.top + RTUNE.TOP_OUT) { d.y = w.top; d.x = c.fx + c.f * 30; d.onGround = true; region.climb = null; return true; }   // over the top
     if (pressed("a")) { region.climb = null; d.vx = -c.f * TUNE.WALK_SPEED * 0.6; d.vy = -TUNE.JUMP_SPEED * 0.5; d.facing = -c.f; setState("jump"); }   // push off
     return true;
