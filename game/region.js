@@ -356,7 +356,7 @@ const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9,
 const BIRD = {
   crow:  { fly: "raven_fly2", perch: "raven_peck", size: 1.7, speed: 230, near: 320, chase: 6 },
   raven: { fly: "raven_fly",  perch: "raven_peck", size: 2.2, speed: 260, near: 360, chase: 7 },
-  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8, reachY: 600, CYCLE: 3.2, DIVE: 1.1, HIGH: 330, dive: "eagle_dive", diveK: 1.8 },   // (eagles dive: a cycle (s), the last part of it the dive; how high over him between)
+  eagle: { fly: "eagle_fly",  perch: "eagle_peck", size: 2.6, speed: 300, near: 420, chase: 8, reachY: 600, CYCLE: 3.2, DIVE: 1.1, HIGH: 330, dive: "eagle_dive", diveK: 2.3 },   // (eagles dive: a cycle (s), the last part of it the dive; how high over him between)
   // (Glen 11-12, his clips: wildlife.js's cutter) the stork on the road to Gath, guarding its patch (Jeremiah 8:7); the
   //  owl in the ruins of Goliath's yard (Psalm 102:6)
   stork: { fly: "stork_fly",  perch: "stork_peck", size: 0.8, speed: 250, near: 300, chase: 5 },

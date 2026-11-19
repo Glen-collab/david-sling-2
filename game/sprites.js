@@ -3242,12 +3242,12 @@ window.SPRITE_DATA = {
  },
  "eagle_dive": {
   "src": "../assets/sprites/eagle_dive.png",
-  "frames": 10,
+  "frames": 12,
   "w": 202,
   "h": 202,
-  "ms": 100,
+  "ms": 90,
   "loop": true,
-  "pingpong": false,
+  "pingpong": true,
   "ax": 101,
   "ay": 101,
   "align": "center"

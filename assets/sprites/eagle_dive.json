@@ -1,11 +1,12 @@
 {
-  "frames": 10,
+  "frames": 12,
   "frame_w": 202,
   "frame_h": 202,
-  "ms_per_frame": 100,
+  "ms_per_frame": 90,
   "loop": true,
   "align": "center",
   "anchor_x": 101,
   "anchor_y": 101,
-  "source": "clip eagle dive.mp4 (video frames 138-162, talons out)"
+  "source": "clip eagle dive magenta.mp4 (4.9 s on, talons out)",
+  "pingpong": true
 }
