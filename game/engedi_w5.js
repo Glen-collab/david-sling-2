@@ -24,7 +24,8 @@ const G5 = {
   // Saul's men (as ziph.js's hills: walk, stop and look, turn); the more loads home, the more of them
   SNEAK: { WALK: 62, LOOK: 2.0, TURN: 0.45, SIGHT: 8, SIGHT_LOW: 2.2, SEEN_T: 0.6, NEAR: 30, CAUGHT_FADE: 1.4 },
   // the cave, at the end: walking upright this close to Saul (px) and he stirs; the sword reaches his robe from this close
-  SAUL_HEAR: 7 * 36, CUT_REACH: 95, SAUL_AT: 48, SAUL_WALK: 80,
+  SAUL_HEAR: 7 * 36, CUT_REACH: 95, SAUL_AT: 27, SAUL_WALK: 80,   // (SAUL_AT: his column in the innermost part)
+  INNER: { IN: 5, DARK: 0.93, LIT: [[230, 100], [210, 110]], GLOW: 170 },   // where David comes in, how dark, the lights on him and the king, the way out's glow
   // Glen's robe-cut two-shot (saul_robe_cut): as engedi.js's #9-1
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
@@ -88,6 +89,10 @@ const ENGEDI = {
       far: "engedi/camp/far", near: "engedi/camp/near.png", nearK: 0.62 },
     // (Glen 11-19: "a break from the camp in the cave to the sheep pens ... David leaving the small cave mouth that looks
     //  hidden", his two pictures, the pens' sky and near strip) back into the camp by Up at the mouth only
+    // (Glen 11-19: "Saul is clearly right there with all the provisions around ... it was super dark like a real cave")
+    //  the robe is cut back here, in the dark (his #9-1 test cave's look), not in the stocked camp; out its right end, the camp
+    { id: "inner", name: "The Innermost Part of the Cave", w: 40, cave: true, mx: 0, my: 0, mw: 2, outR: ["camp", 3],
+      strip: "w4/narrows_strip", floor: "w4/narrows_floor", ledgeDark: 0.5 },
     { id: "hideout", name: "The Hidden Cave Mouth", w: 46, bg: "w4_1", mx: 2, my: 1, mw: 1, right: "pens",
       far: "engedi/pens/far", mid: "engedi/hideout/mid.png", midY: -100, near: "engedi/pens/near.png" },
     { id: "pens", name: "The Sheep Pens by the Way", w: 110, bg: "w4_1", mx: 3, my: 1, mw: 2, left: "hideout", right: "spring",
@@ -184,9 +189,13 @@ function g5Build(R) {
     g5.pileX = X(28);
     campfire(c + 36, GR - 1);
     // (Glen's clips, 11-18) two of the men by the fire: hungry, heads down, till the first load is home; then bread and figs
-    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, G5.SIT_K); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0 && !g5SaulIn(), G5.SIT_K);   // (back in the dark while Saul sits by the fire)
+    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, G5.SIT_K); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0, G5.SIT_K);   // (back in the dark while Saul sits by the fire)
     g5.entry.camp = X(54);
   }
+
+  // -- The Innermost Part of the Cave: only bare rock and the dark
+  c = R("inner");
+  ground(c, c + 39);
 
   // -- The Sheep Pens by the Way (24:3): stone pens on the road, and Saul's men, more of them every run
   // -- The Hidden Cave Mouth (Glen's, 11-19): out of the camp beside it; Up at it to go back in
@@ -374,6 +383,7 @@ function g5Enter(r) {
     if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); g5Tell("backway", "Water all the way across. Swim it: watch your breath, and the fish."); } }
   if (r.id === "hollow" && d.x > (r.c0 + 60) * T) { d.y = FOOT; d.vy = 0; snapCamera(); }
   if (r.id === "backway" && d.x > (r.c0 + 60) * T) { d.y = G5.POOL_LEDGE; d.vy = 0; snapCamera(); }   // (back from the Fork: on the far ledge)
+  if (r.id === "inner") { d.facing = 1; if (g5.saul && g5.saul.step === "wait") g5SaulInner(); }
   if (r.id === "fork") g5Tell("fork", "Two ways on in the dark. One smells of water and palms, the other of smoke.");
   if (r.id === "pool") { for (const f of g5.fish) if (f.room === r.id) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
     g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
@@ -411,7 +421,8 @@ function g5Update(dt, r) {
   if (g5.pose) g5.pose.t += dt;
   const free = !region.script.length && region.wait <= 0 && !region.trans;
   // (the men fed: the storeroom; Glen 11-19: but while Saul's in the cave, the bare cave: "Saul would have noticed")
-  roomById("camp").far = g5Stage() >= 3 && !g5SaulIn() ? "engedi/camp_stocked/far" : "engedi/camp/far";
+  roomById("camp").far = g5Stage() >= 3 ? "engedi/camp_stocked/far" : "engedi/camp/far";
+  roomById("camp").outL = g5SaulIn() ? ["inner", G5.INNER.IN] : null;   // (the way back into the dark: only while Saul's in the cave)
   // the pack: touching a provision picks it up (its room's run open, not already home)
   for (const f of g5.food) {
     f.t += dt;
@@ -451,7 +462,8 @@ function g5Update(dt, r) {
   const wall = (x, ok, say, dir = 1) => { if (!ok && (dir > 0 ? d.x > x : d.x < x)) { d.x = x; d.vx = 0; g5Tell("wall" + x, say); } };
   if (r.id === "spring") wall((r.c0 + r.w - 2) * T, g5Open("rocks"), "The men are waiting for water and food. Take it back to the camp first.");
   if (r.id === "rocks") wall((r.c0 + r.w - 2) * T, g5Open("wild"), "Take the honey and the eggs back to the men first.");
-  if (r.id === "camp" && g5.saul) g5SaulUpdate(dt);
+  if (r.id === "inner" && g5.saul && !g5.saul.outside) g5SaulUpdate(dt);
+  if (r.id === "camp" && g5SaulIn() && g5.saul.step === "wait") g5Tell("goinner", "Saul has gone into the cave. Back into the innermost part, where it's dark: go left.");
 }
 function g5Deliver() {
   const d = david, before = g5Stage(), n = g5.pack.length;
@@ -479,17 +491,24 @@ function g5Deliver() {
 // ---------------------------------------------------------------------------------------------------------------------
 // the end (24:3-22): Saul walks into the cave, alone. Creep up behind him; the sword only cuts the corner of his robe
 function g5SaulComes() {
-  const c = roomById("camp").c0;
+  const c = roomById("inner").c0;
   return [
     { say: ["", "He came to the sheep pens by the way, where there was a cave; and Saul went in. Now David and his men were staying in the innermost parts of the cave. (1 Samuel 24:3)"] },
-    { fn() { g5.saul = { x: (c + G5.SAUL_AT + 8) * T, to: (c + G5.SAUL_AT) * T, y: FOOT, alpha: 0, t: 0, facing: -1, mode: "walk", step: "in" }; }, wait: 2.4 },
-    { say: ["David's men", "“Behold, the day of which the LORD said to you, ‘Behold, I will deliver your enemy into your hand, and you shall do to him as it shall seem good to you.’” (1 Samuel 24:4)"] },
-    { fn() { g5.saul.step = "creep"; toast("Creep up behind Saul (hold Down). The sword (X) can only cut the corner of his robe."); } },
+    { fn() { g5.saul = { x: (c + G5.SAUL_AT + 8) * T, to: (c + G5.SAUL_AT) * T, y: FOOT, alpha: 0, t: 0, facing: -1, mode: "walk", step: "wait" };
+      toast("Saul has gone into the cave. Back into the innermost part, where it's dark: go left."); } },
   ];
+}
+// into the dark: the king comes in from the light and sits, his back to them
+function g5SaulInner() {
+  rPlay([{ wait: 0.6 },
+    { fn() { g5.saul.step = "in"; }, wait: 2.4 },
+    { say: ["David's men", "“Behold, the day of which the LORD said to you, ‘Behold, I will deliver your enemy into your hand, and you shall do to him as it shall seem good to you.’” (1 Samuel 24:4)"] },
+    { fn() { g5.saul.step = "creep"; toast("Creep up behind Saul (hold Down). The sword (X) can only cut the corner of his robe."); } }]);
 }
 const g5SaulIn = () => !!(g5.saul && !g5.saul.outside);
 function g5SaulUpdate(dt) {
   const s = g5.saul, d = david;
+  if (s.step === "wait") return;
   s.t += dt;
   if (s.mode === "walk") {
     s.x += s.facing * G5.SAUL_WALK * dt;
@@ -507,7 +526,7 @@ function g5SaulUpdate(dt) {
   const loud = d.h !== LOW_H && Math.abs(d.vx) > 25 && s.x - d.x < G5.SAUL_HEAR;
   if (loud || d.x > s.x + 20) {
     rPlay([{ say: ["", "Saul stirs... David slips back into the dark. (Creep low: hold Down.)"] },
-      { fn() { d.x = g5.pileX - 2 * T; d.facing = 1; d.vx = 0; snapCamera(); } }]);
+      { fn() { d.x = (roomById("inner").c0 + G5.INNER.IN) * T; d.facing = 1; d.vx = 0; snapCamera(); } }]);
     return;
   }
   if (pressed("b")) g5Tell("notking", "Not at the king.");
@@ -750,6 +769,17 @@ function g5DrawFoodAt(kind, x, y, a = 1, bob = 0) {
 //  the props and the animals
 function g5DrawBack(camX) {
   const r = region.room; if (!r) return;
+  if (r.id === "inner" && typeof CAVE_BG !== "undefined") {   // (his #9-1 test cave: the cave's own three pictures, and its white rock teeth)
+    const rel = camX - r.c0 * T, g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#1c140d"); g.addColorStop(1, "#0b0705");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const far = CAVE_BG.far; if (far.naturalWidth) { const w = far.naturalWidth * H / far.naturalHeight; ctx.drawImage(far, -rel * 0.08 - 40, 0, w, H); }
+    drawLayerRepeating(CAVE_BG.mid, rel, 0.35, H, H, true);
+    drawLayerRepeating(CAVE_BG.near, rel, 0.65, GR * T + 40, 260, true);
+    for (let k = 0, cc = r.c0 + 3; cc < r.c0 + r.w - 2; cc += 5 + (k * 7) % 4, k++) for (const [n, top] of [["stalactite", true], ["stalagmite", false]]) {
+      if (!top && !(k % 2)) continue; const img = ITEM[n]; if (!img || !img.naturalWidth) continue;
+      const h = top ? 60 + (k * 37) % 50 : 50 + (k * 23) % 40, w = img.naturalWidth * h / img.naturalHeight, x = cc * T + (top ? 10 : 50) - camX - w / 2;
+      if (x < W && x + w > 0) ctx.drawImage(img, x, top ? 3 * T - 4 : GR * T + 4 - h, w, h); }
+  }
   // (Glen 11-19: "the hornet goes behind the waterfall and hits me") the Spring's falls, behind the beasts
   if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)
   else if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
@@ -858,11 +888,11 @@ function g5DrawFront(camX) {
     if (p.room !== r.id || (p.show && !p.show())) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     const n = typeof p.spr === "function" ? p.spr() : p.spr;   // (Glen's sitting man: hungry, then eating, 11-18)
-    if (SPR[n]) drawSprite(n, frameOf(n, p.t), x, p.y, p.dir, p.k, 1, r.id === "camp" && g5.saul ? "brightness(0.6)" : "");
+    if (SPR[n]) drawSprite(n, frameOf(n, p.t), x, p.y, p.dir, p.k, 1, "");
   }
   for (const g of g5.guards) if (g.room === r.id && g5Active(g) && typeof z5DrawMan === "function") z5DrawMan(g, camX);
   const s = g5.saul;
-  if (s && (s.outside ? r.id === "pens" : r.id === "camp")) {
+  if (s && s.step !== "wait" && (s.outside ? r.id === "pens" : r.id === "inner")) {
     if (s.outside) { s.t += 1 / 60; if (s.mode === "walk") { s.x += s.facing * G5.SAUL_WALK / 60; if (s.leaving) s.alpha = Math.max(0, s.alpha - 1 / 120); } }
     g5DrawSaul(s, camX);
   }
@@ -976,12 +1006,13 @@ function g5DrawOver() {
       ctx.save(); ctx.textAlign = "right"; hudText("Air", x - 6, y + 9, 14); ctx.restore(); }
   }
   // the dark of the cave while Saul's in it: a little light on David and on the king
-  if (r.id === "camp" && g5.saul && !g5.saul.outside && G5_DARK) {
+  if (r.id === "inner" && G5_DARK) {   // (Glen 11-19: "super dark like a real cave", as his #9-1 test cave)
     // (soft lights cut out of a dark layer, drawn on its own canvas so two lights that overlap add up, not cancel)
-    const L = [[david.x - camX, david.y - 100 - camY, 230], [g5.saul.x - camX, g5.saul.y - 110 - camY, 210]];
+    const I = G5.INNER, s = g5.saul, L = [[david.x - camX, david.y - I.LIT[0][1] - camY, I.LIT[0][0]], [(r.c0 + r.w) * T - camX, FOOT - 70 - camY, I.GLOW]];   // (the way back toward the camp's light)
+    if (s && s.step !== "wait" && s.alpha > 0) L.push([s.x - camX, s.y - I.LIT[1][1] - camY, I.LIT[1][0] * s.alpha]);
     const c = G5_DARK; if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
     const x2 = c.getContext("2d"); x2.globalCompositeOperation = "source-over"; x2.clearRect(0, 0, W, H);
-    x2.fillStyle = "rgba(4,3,2,0.74)"; x2.fillRect(0, 0, W, H); x2.globalCompositeOperation = "destination-out";
+    x2.fillStyle = `rgba(4,3,2,${G5.INNER.DARK})`; x2.fillRect(0, 0, W, H); x2.globalCompositeOperation = "destination-out";
     for (const [x, y, rr] of L) { const g = x2.createRadialGradient(x, y, rr * 0.25, x, y, rr); g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(1, "rgba(0,0,0,0)"); x2.fillStyle = g; x2.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
     ctx.drawImage(c, 0, 0);
   }
