@@ -90,7 +90,7 @@ const TUNE = {
   DROP_POSE: 50, HEAVY_FALL: 4 * 36, LAND_HEAVY_MS: 85,
   // (Glen 11-19: "a super hero landing for David when he free falls") his clip: the fall, arms out, and the landing down on
   //  one knee and a hand; ms a frame, then how long he stays down and rises back into standing (s)
-  LAND_HERO_MS: 70, LAND_HERO_HOLD: 0.15, LAND_HERO_RISE: 0.25,
+  LAND_HERO_MS: 70, LAND_HERO_HOLD: 0.15, LAND_HERO_RISE: 0.25, LAND_RISE_MS: 50, LAND_RISE_BLEND: 0.08,
   LIVES: 5,
   OLIVES_PER_LIFE: 100,   // olives to fill the oil flask = 1 extra life
   HURT_INVINCIBLE: 1.3,   // seconds of flashing after a hit
@@ -2626,7 +2626,9 @@ const RUN_SLING_STONE = [[21, 232], [34, 279], [-28, 278], [-97, 285], [-135, 23
 // the harp clip's camera crept closer as he sat down, so shrink those frames back to his normal size
 function sitHarpScale(i) { const a = TUNE.SIT_HARP_SIZES; return a[Math.min(i, a.length - 1)] ?? 1; }
 const landHero = () => !!(SPR.david_land_hero && SPR.david_land_hero.img.naturalWidth);
-const landHeavyTime = () => landHero() ? SPR.david_land_hero.frames * TUNE.LAND_HERO_MS / 1000 + TUNE.LAND_HERO_HOLD + TUNE.LAND_HERO_RISE
+const landRise = () => !!(SPR.david_land_rise && SPR.david_land_rise.img.naturalWidth);   // (Glen 11-19: his getting-up clip)
+const landRiseTime = () => landRise() ? SPR.david_land_rise.frames * TUNE.LAND_RISE_MS / 1000 + TUNE.LAND_RISE_BLEND : TUNE.LAND_HERO_RISE;
+const landHeavyTime = () => landHero() ? SPR.david_land_hero.frames * TUNE.LAND_HERO_MS / 1000 + TUNE.LAND_HERO_HOLD + landRiseTime()
   : SPR.david_land_heavy.frames * TUNE.LAND_HEAVY_MS / 1000;
 function drawDavid(camX) {
   const d = david, x = d.x - camX, y = d.y;
@@ -2724,6 +2726,11 @@ function drawDavid(camX) {
     case "landHeavy": {
       if (!landHero()) { drawSprite("david_land_heavy", frameOf("david_land_heavy", t, TUNE.LAND_HEAVY_MS), x, y, d.facing); break; }
       const S = SPR.david_land_hero, down = S.frames * TUNE.LAND_HERO_MS / 1000 + TUNE.LAND_HERO_HOLD, u = Math.max(0, Math.min(1, (t - down) / TUNE.LAND_HERO_RISE));
+      if (landRise()) {   // down on one knee, then his own clip of getting up, then a blink of a blend into standing
+        const R = SPR.david_land_rise, up = (t - down) * 1000 / TUNE.LAND_RISE_MS, b = Math.max(0, Math.min(1, (up - R.frames) * TUNE.LAND_RISE_MS / 1000 / TUNE.LAND_RISE_BLEND));
+        if (t < down) drawSprite("david_land_hero", Math.min(S.frames - 1, Math.floor(t * 1000 / TUNE.LAND_HERO_MS)), x, y, d.facing);
+        else { if (b < 1) drawSprite("david_land_rise", Math.min(R.frames - 1, Math.floor(up)), x, y, d.facing, 1, 1 - b); if (b > 0) drawSprite("david_idle", 0, x, y, d.facing, 1, b); }
+        break; }
       if (u < 1) drawSprite("david_land_hero", Math.min(S.frames - 1, Math.floor(t * 1000 / TUNE.LAND_HERO_MS)), x, y, d.facing, 1, 1 - u);   // (down on one knee, then up into standing)
       if (u > 0) drawSprite("david_idle", 0, x, y, d.facing, 1, u);
       break; }

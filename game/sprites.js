@@ -2412,6 +2412,18 @@ window.SPRITE_DATA = {
   "ay": 200,
   "align": "feet"
  },
+ "david_land_rise": {
+  "src": "../assets/sprites/david_land_rise.png",
+  "frames": 14,
+  "w": 212,
+  "h": 245,
+  "ms": 146,
+  "loop": false,
+  "pingpong": false,
+  "ax": 146,
+  "ay": 243,
+  "align": "feet"
+ },
  "david_ledge_climb": {
   "src": "../assets/sprites/david_ledge_climb.png",
   "frames": 16,

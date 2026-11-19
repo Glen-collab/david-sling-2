@@ -1,0 +1,27 @@
+{
+  "frames": 14,
+  "frame_w": 212,
+  "frame_h": 245,
+  "ms_per_frame": 146,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 146,
+  "anchor_y": 243,
+  "source": "david_land_rise (Glen 11-19)",
+  "video_frames": [
+    12,
+    16,
+    19,
+    23,
+    27,
+    30,
+    34,
+    38,
+    42,
+    45,
+    49,
+    53,
+    56,
+    60
+  ]
+}
