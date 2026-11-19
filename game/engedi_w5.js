@@ -93,7 +93,7 @@ const ENGEDI = {
     //  the robe is cut back here, in the dark (his #9-1 test cave's look), not in the stocked camp; out its right end, the camp
     // (Glen 11-19: "Did Saul go that deep in? No ... a second hidden cave mouth ... the one Saul came into", above the
     //  Hidden Cave Mouth) the robe is cut here, near the mouth; in from the camp going right, out its bright end at the pens
-    { id: "inner", name: "The Cave by the Sheep Pens", w: 40, cave: true, mx: 2, my: 0, mw: 1, outL: ["camp", 55], outR: ["pens", 8],
+    { id: "inner", name: "Cave Mouth", w: 40, cave: true, mx: 2, my: 0, mw: 1, outL: ["camp", 55], outR: ["pens", 8],
       strip: "w4/narrows_strip", floor: "w4/narrows_floor", ledgeDark: 0.5 },
     { id: "hideout", name: "The Hidden Cave Mouth", w: 46, bg: "w4_1", mx: 2, my: 1, mw: 1, right: "pens",
       far: "engedi/pens/far", mid: "engedi/hideout/mid.png", midY: -100, near: "engedi/pens/near.png" },
