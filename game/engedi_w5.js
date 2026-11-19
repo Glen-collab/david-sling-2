@@ -28,7 +28,7 @@ const G5 = {
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
   // the Spring's falls and cave mouth (cut from the pool's picture): its size, the falls' middle and the water line (px in the cut)
-  SPRING_FALLS: { K: 0.8, FX: 470, WATER: 372 },
+  SPRING_FALLS: { K: 0.8, FX: 470, WATER: 372, SRC_X: 2900 },   // (SRC_X: where it was cut from the pool's picture, px)
   SIT_K: 0.92, OLD_K: 0.76,   // (Glen 11-18: the sitting men's clips and the old man in blue, heads too big beside David)
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
@@ -224,7 +224,7 @@ function g5Build(R) {
     rRelic("g5_stone_crag", "stone", c + 43, 0);
     // past the crag: down on the ground again, the eggs on a shelf, an eagle
     rLedge(rm, c + 50, 470, 4); g5Food(rm, "eggs", 51, 470 - 4);
-    rLedge(rm, c + 54, 150, 3); bird("eagle", rm, X(55) + T / 2, 150 - 78);   // (its sheet has room under its feet)   // (Glen 11-19: up high on its own perch, not floating)
+    rLedge(rm, c + 54, 150, 3); bird("eagle", rm, X(55) + T / 2, 152);   // (Glen 11-19: up high on its own perch, its feet on the plank: the 78 up was off a flying shot)
     g5Hide(rm, "w4_z_hide_rock", X(26)); g5Hide(rm, "w4_rubble_sand", X(32)); g5Hide(rm, "w4_z_hide_rock", X(48)); g5Hide(rm, "w4_z_hide_rock", X(56));
     g5Guard(rm, 23, 34, 0); g5Guard(rm, 46, 58, 0, FOOT, -1);   // (Glen 11-19: a soldier by the eagle's rocks from the first: they're worth hiding behind)
     g5.goatAt = X(9);
@@ -622,7 +622,17 @@ function g5Draw(camX) {
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
   if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
-    if (im) ctx.drawImage(im, g5.falls - F.FX * F.K - camX, FOOT + 6 - F.WATER * F.K, im.naturalWidth * F.K, im.naturalHeight * F.K); }
+    if (im) { const x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.WATER * F.K, w = im.naturalWidth * F.K, h = im.naturalHeight * F.K;
+      // (Glen 11-19: "the water doesn't move") the same spot cut from the pool's moving clip, in the picture's faded outline
+      const v = g5PoolVideo(), oc = G5_FALLS_CUT;
+      if (v && v.readyState >= 2 && !v.paused && oc && v.videoWidth) {
+        const iw = im.naturalWidth, ih = im.naturalHeight, sx = v.videoWidth / 3600, sy = v.videoHeight / 722, o = oc.getContext("2d");
+        if (oc.width !== iw || oc.height !== ih) { oc.width = iw; oc.height = ih; }
+        o.globalCompositeOperation = "source-over"; o.clearRect(0, 0, iw, ih);
+        o.drawImage(v, F.SRC_X * sx, 0, iw * sx, ih * sy, 0, 0, iw, ih);
+        o.globalCompositeOperation = "destination-in"; o.drawImage(im, 0, 0);
+        ctx.drawImage(oc, x, y, w, h);
+      } else ctx.drawImage(im, x, y, w, h); } }
   // the cliffs (Glen's tall picture, as much of it as the cliff is high, from its top shelf down)
   for (const k of g5.cliffs || []) {
     if (k.room !== r.id) continue; const im = kitImg("w4_e_cliff"); if (!im) break;
@@ -720,6 +730,7 @@ function g5FallsOver(x, bottom, want, alpha) {
   ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = alpha;
   ctx.drawImage(c, Math.round(x - (s.ax - x0) * sc), Math.round(bottom - want)); ctx.restore();
 }
+const G5_FALLS_CUT = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_WATER = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5DrawOver() {

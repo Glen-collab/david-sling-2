@@ -2955,7 +2955,7 @@ window.SPRITE_DATA = {
  "david_walltop": {
   "src": "../assets/sprites/david_walltop.png",
   "frames": 28,
-  "w": 247,
+  "w": 343,
   "h": 586,
   "ms": 95,
   "loop": false,
