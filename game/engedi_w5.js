@@ -35,6 +35,8 @@ const G5 = {
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 110, LEAP: 1120, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5,
     // the sheets: treading, swimming along the top, under; the clip's waterline row in each top sheet; how high under
     LOOK: { TREAD: "david_tread2", SURF: "david_surf", UNDER: "david_breast", TREAD_WL: 50, SURF_WL: 16, UNDER_Y: 60 } },
+  // the pool's clip drawn again over whatever's in the water: how strong, px below the surface it starts, its fade in
+  WATER_OVER: { A: 0.4, TOP: 0, FADE: 40 },
   POOL_BANK: 330, POOL_LEDGE: 312,   // (Glen 11-18: the ledge on the painted rocks left of the falls, not on the water)
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
@@ -718,12 +720,22 @@ function g5FallsOver(x, bottom, want, alpha) {
   ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = alpha;
   ctx.drawImage(c, Math.round(x - (s.ax - x0) * sc), Math.round(bottom - want)); ctx.restore();
 }
+const G5_WATER = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5DrawOver() {
   const r = region.room; if (!r) return;
   // in the pool: the water over him (a light tint below the surface), and his breath over his head
   if (r.id === "pool") {
-    { const y0 = r.water - camY, g = ctx.createLinearGradient(0, y0, 0, y0 + 70);   // (Glen 11-18: the tint's hard top edge was a line across him at the surface: faded in)
+    const v = g5PoolVideo(), O = G5.WATER_OVER;
+    if (v && v.readyState >= 2 && !v.paused && G5_WATER) {   // (Glen 11-19: the pool's own clip again, over him, see-through: anything in it looks in it)
+      const y0 = r.water - camY + O.TOP, oc = G5_WATER, o = oc.getContext("2d");
+      if (oc.width !== W || oc.height !== H) { oc.width = W; oc.height = H; }
+      o.globalCompositeOperation = "source-over"; o.clearRect(0, 0, W, H);
+      o.drawImage(v, r.c0 * T - camX, 0, 3600, 722);
+      const g = o.createLinearGradient(0, y0, 0, y0 + O.FADE); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,1)");
+      o.globalCompositeOperation = "destination-in"; o.fillStyle = g; o.fillRect(0, 0, W, H);
+      ctx.save(); ctx.globalAlpha = O.A; ctx.drawImage(oc, 0, 0); ctx.restore();
+    } else { const y0 = r.water - camY, g = ctx.createLinearGradient(0, y0, 0, y0 + 70);   // (Glen 11-18: the tint's hard top edge was a line across him at the surface: faded in)
       g.addColorStop(0, "rgba(40,150,175,0)"); g.addColorStop(1, "rgba(40,150,175,0.22)");
       ctx.save(); ctx.fillStyle = g; ctx.fillRect(0, y0, W, H); ctx.restore(); }
     // his air, only while it's running down (Glen 11-18: shown full at the surface it read as a stray blue line)
