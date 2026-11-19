@@ -27,6 +27,7 @@ const G5 = {
   // Glen's robe-cut two-shot (saul_robe_cut): as engedi.js's #9-1
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
+  SIT_K: 0.92, OLD_K: 0.76,   // (Glen 11-18: the sitting men's clips and the old man in blue, heads too big beside David)
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 1050, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5 },
@@ -36,7 +37,7 @@ const G5 = {
   CAVE: { WATER_H: 380, AT: 96, FALLS: 94.2, REACH: 190, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
-  SHEEP_K: 2.2,            // the flock in the pens
+  SHEEP_K: 1.35,           // the flock in the pens (Glen 11-18: smaller, about waist high on David)
 };
 // the provisions (stand-ins from Adullam's camp kit till Glen's sheet): name, kit piece
 const G5_FOOD = {
@@ -55,7 +56,7 @@ const ENGEDI = {
     // (Glen's, 11-18: the cave mouth bright on the right, the floor with the fire; "stocked", his storeroom cave, once
     //  every load is home: g5Update)
     { id: "camp", name: "The Camp in the Cave", w: 60, cave: true, mx: 0, my: 1, mw: 2, right: "pens",
-      far: "engedi/camp/far", near: "engedi/camp/near.png" },
+      far: "engedi/camp/far", near: "engedi/camp/near.png", nearK: 0.62 },
     { id: "pens", name: "The Sheep Pens by the Way", w: 110, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "camp", right: "spring",
       far: "engedi/pens/far", mid: "engedi/pens/mid.png", midY: 0, near: "engedi/pens/near.png" },   // (Glen's, 11-18)
     { id: "spring", name: "The Spring", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 4, left: "pens", right: "rocks",
@@ -128,13 +129,13 @@ function g5Build(R) {
   let c = R("camp");
   { const rm = "camp", X = k => (c + k) * T;
     ground(c, c + 59);
-    g5.men = [g5Person(rm, () => g5Stage() > 0 ? "man_eat" : "man_hungry", X(5), 1, null, 1.2), g5Person(rm, "abiathar_stand", X(9), 1), g5Person(rm, "abishai_idle", X(14), 1),
-      g5Person(rm, "asahel_idle", X(19), -1), g5Person(rm, "soldier_talk", X(23), -1)];   // (Glen 11-18: not the same man twice; Abiathar came with the ephod at Keilah, 23:6)
+    g5.men = [g5Person(rm, () => g5Stage() > 0 ? "man_eat" : "man_hungry", X(5), 1, null, G5.SIT_K), g5Person(rm, "abiathar_stand", X(9), 1), g5Person(rm, "abishai_idle", X(14), 1),
+      g5Person(rm, "asahel_idle", X(19), -1), g5Person(rm, "soldier_talk", X(23), -1, null, G5.OLD_K)];   // (Glen 11-18: not the same man twice; Abiathar came with the ephod at Keilah, 23:6)
     g5.abishai = g5.men[2];
     g5.pileX = X(28);
     campfire(c + 36, GR - 1);
     // (Glen's clips, 11-18) two of the men by the fire: hungry, heads down, till the first load is home; then bread and figs
-    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, 1.2); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0, 1.2);
+    g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, G5.SIT_K); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0, G5.SIT_K);
     g5.entry.camp = X(54);
   }
 

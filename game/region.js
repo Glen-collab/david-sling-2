@@ -1206,7 +1206,8 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
     tile(far, 0.12, fy, H);
     if (mid) tile(mid, r.midP ?? 0.45, r.midY || 0, mid.naturalHeight, r.midX || 0);   // (r.midX: px the picture starts in from the room's left: Gath's painted gate on its door)   // (r.midP: a town's own wall, nearly with the room: World 3)
     const near = roomImg(r.near);   // (Glen 11-10: "far, mid and near ground", as Part One) a third layer, nearer and faster, its bottom at nearY (default: the ground line)
-    if (near) tile(near, 0.75, (r.nearY ?? GR * T + 20) - near.naturalHeight, near.naturalHeight);
+    if (near) { const nh = near.naturalHeight * (r.nearK || 1);   // (r.nearK: the strip smaller, Glen 11-18: En-Gedi's camp pots and mats were as tall as David)
+      tile(near, 0.75, (r.nearY ?? GR * T + 20) - nh, nh); }
     return true;
   }
   if (r.tower) { drawTowerWall(r, camX); return true; }
