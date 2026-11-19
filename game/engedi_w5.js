@@ -28,6 +28,7 @@ const G5 = {
   SCENE_MS: 160, SCENE_START: 6, SCENE_END: 20, SCENE_DAVID: [198, 196],
   NPC_K: 0.9,
   // the Spring's falls and cave mouth (cut from the pool's picture): its size, the falls' middle and the water line (px in the cut)
+  SPRING_FALLS2: { K: 0.85, W: 742, H: 420, FX: 419, BASE: 371 },   // (his clip's size, its falls' middle and the foot of its rocks, px)
   SPRING_FALLS: { K: 0.8, FX: 470, WATER: 372, SRC_X: 2900 },   // (SRC_X: where it was cut from the pool's picture, px)
   SIT_K: 0.92, OLD_K: 0.76,   // (Glen 11-18: the sitting men's clips and the old man in blue, heads too big beside David)
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
@@ -40,6 +41,8 @@ const G5 = {
   POOL_BANK: 330, POOL_LEDGE: 312,   // (Glen 11-18: the ledge on the painted rocks left of the falls, not on the water)
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
+  // the cave behind the falls: its ledges [column, px, width], bats [column, px], the Truth's shelf [column, px]
+  HOLLOW: { LEDGES: [[52, 500, 4], [44, 430, 4], [35, 370, 5], [26, 450, 4], [14, 500, 3]], BATS: [[48, 120], [30, 110], [18, 130]], TRUTH: [37, 370] },
   CAVE: { WATER_H: 380, AT: 88, FALLS: 93.7, REACH: 72, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
@@ -71,6 +74,10 @@ const ENGEDI = {
     //  his long pool, the falls and the cave at its far end; Up at the Spring's falls, swim across, out at the cave
     { id: "pool", name: "The Pool Below the Falls", w: 100, bg: "w4_1", mx: 6, my: 2, mw: 3, outL: ["spring", 58], water: 361,
       far: "engedi/spring/far" },
+    // (Glen 11-19: "go behind the waterfall and enter another cave to find the truth ... a tighter and smaller cave and it
+    //  can double back in our map to go back to the camp") in behind the pool's falls (its right end), out at the camp
+    { id: "hollow", name: "The Cave Behind the Falls", w: 72, cave: true, mx: 1, my: 2, mw: 5, outL: ["camp", 6], outR: ["pool", 87],
+      strip: "w4/narrows_strip", floor: "w4/narrows_floor" },
     { id: "rocks", name: "The Rocks of the Wild Goats", w: 64, up: 40, bg: "w4_1", mx: 9, my: 0, mw: 2, mh: 2, left: "spring", right: "wild",
       far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0, near: "engedi/rocks/near.png" },   // (Glen's, 11-18)
     { id: "wild", name: "The Wilderness of En-Gedi", w: 150, bg: "w4_1", mx: 11, my: 1, mw: 4, left: "rocks",
@@ -125,7 +132,7 @@ function g5Build(R) {
   Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
-  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png"]) roomImg(n);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls2_still.png"]) roomImg(n);
   g5.swim = null; g5.breath = G5.SWIM.BREATH;
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.cave = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
@@ -193,9 +200,19 @@ function g5Build(R) {
     rLedge(rm, c, G5.POOL_BANK, 4);
     rLedge(rm, c + 84, G5.POOL_LEDGE, 6);   // (the rocks just left of the falls, columns 84-89)
     g5Food(rm, "water", 52, GR * T - 4);   // (the Spring's third skin, down on the bottom)
-    rRelic("g5_truth_falls", "truth", c + G5.CAVE.AT, onTop(G5.POOL_LEDGE), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)", "g5_never");   // (inside the cave: found by going in, never lying out on the rocks)
+   // (inside the cave: found by going in, never lying out on the rocks)
     rRelic("g5_pom_pool", "pomegranate", c + 30, GR - 1);
     g5.entry.pool = X(2);
+  }
+
+  // -- The Cave Behind the Falls (Glen 11-19): tight and dark, in from behind the pool's falls; ledges up and down, bats,
+  //  the Truth on the high shelf; at its far (left) end the way through into the camp
+  c = R("hollow");
+  { const rm = "hollow", L = G5.HOLLOW;
+    ground(c, c + 71);
+    for (const [k, y, w] of L.LEDGES) rLedge(rm, c + k, y, w);
+    for (const [k, y] of L.BATS) rBat(rm, c + k, y);
+    rRelic("g5_truth_falls", "truth", c + L.TRUTH[0], onTop(L.TRUTH[1]), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
   }
 
   // -- The Rocks of the Wild Goats (24:2): tall. The ibex go straight up the rock; David learns the wall climb from them
@@ -280,6 +297,7 @@ function g5Enter(r) {
   // where he came in: being seen sends him back here (the pack kept)
   g5.entry[r.id] = d.x < (r.c0 + r.w / 2) * T ? (r.c0 + 4) * T : (r.c0 + r.w - 5) * T;
   if (r.id === "pool") { g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
+    if (d.x > (r.c0 + 80) * T) { d.y = G5.POOL_LEDGE; d.vy = 0; d.x = (r.c0 + 87) * T; snapCamera(); }   // (back out of the cave behind the falls: on the rocks)
     g5.swim = null; g5.breath = G5.SWIM.BREATH; g5Tell("swim", "Into the water! A for a stroke up, Up and Down. Watch your breath: come up for air."); }
   if (r.id === "camp" && !g5Has("g5_intro")) {
     regionAdd("taken", "g5_intro");
@@ -338,7 +356,7 @@ function g5Update(dt, r) {
   }
   g5.drops = g5.drops.filter(o => o.t < G5.DROP_FOR);
   // the cave behind the falls (the pool): Up at its mouth and he goes in
-  if (r.id === "pool" && free && !g5.cave && pressed("up") && d.onGround && Math.abs(d.x - g5CaveX()) < G5.CAVE.REACH && !g5Has("g5_truth_falls")) {
+  if (r.id === "pool" && free && !g5.cave && pressed("up") && d.onGround && Math.abs(d.x - g5CaveX()) < G5.CAVE.REACH) {
     g5.cave = { t: 0, x0: d.x, taken: false }; d.vx = 0; }
   if (g5.cave) g5CaveUpdate(dt);
   // home: the pack set down by the pile
@@ -474,12 +492,11 @@ function g5CaveUpdate(dt) {
   C.t += dt;
   const walkEnd = K.TURN + K.WALK, inEnd = walkEnd + K.INSIDE;
   if (C.t > K.TURN && C.t <= walkEnd) d.x = C.x0 + (g5FallsX() - C.x0) * Math.min(1, (C.t - K.TURN) / K.WALK);   // (in under the falling water itself)
-  if (C.t > walkEnd && !C.taken) {
-    C.taken = true; const f = region.relics.find(o => o.id === "g5_truth_falls");
-    if (f) takeRelic(f);
+  if (C.t > walkEnd && !C.gone) {   // (Glen 11-19: on in, behind the falls, into the cave there)
+    C.gone = true; const n = roomById("hollow");
+    regionGo((n.c0 + n.w - 4) * T, -1, () => { g5.cave = null; david.y = FOOT; david.vy = 0; david.facing = -1; });
   }
-  if (C.t > inEnd && !C.back) { C.back = true; d.x = C.x0; }   // (out again onto the rock he went in from)
-  if (C.t > inEnd + K.OUT) { g5.cave = null; d.facing = -1; }
+  if (C.gone) C.t = Math.min(C.t, walkEnd + 0.01);
 }
 // ---- the pool: below the waterline he swims (as adullam.js's r4Hold, without its rock lids)
 function g5Swim(d, dt) {
@@ -621,7 +638,8 @@ function g5Draw(camX) {
   }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
-  if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
+  if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)
+  else if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
     if (im) { const x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.WATER * F.K, w = im.naturalWidth * F.K, h = im.naturalHeight * F.K;
       // (Glen 11-19: "the water doesn't move") the same spot cut from the pool's moving clip, in the picture's faded outline
       const v = g5PoolVideo(), oc = G5_FALLS_CUT;
@@ -695,7 +713,7 @@ function g5DrawFront(camX) {
   // the cave behind the falls: an Up arrow at its mouth; while he goes in, the falling water in front of him
   if (r.id === "pool") {
     g5Video("falls");   // (loaded and running while he's in the pool room, ready for the cave)
-    if (!g5.cave && !g5Has("g5_truth_falls") && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) {   // (Glen 11-18: lost in the white water: over the dark of the mouth, left of the falls, ringed dark)
+    if (!g5.cave && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) {   // (Glen 11-18: lost in the white water: over the dark of the mouth, left of the falls, ringed dark)
       const ax = (r.c0 + 91) * T - camX, ay = G5.POOL_LEDGE - 60;
       ctx.save(); ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.beginPath(); ctx.roundRect(ax - 27, ay - 29 + Math.sin(performance.now() / 180) * 4, 54, 44, 13); ctx.fill(); ctx.restore();
       upHint(ax, ay); }
@@ -729,6 +747,13 @@ function g5FallsOver(x, bottom, want, alpha) {
   cx.fillStyle = gy; cx.fillRect(0, 0, w, h);
   ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = alpha;
   ctx.drawImage(c, Math.round(x - (s.ax - x0) * sc), Math.round(bottom - want)); ctx.restore();
+}
+// Glen's falls among mossy rocks (11-19, keyed, steadied and looped: falls2.webm), at the Spring where he goes into the pool
+function g5SpringFalls2(r) {
+  const F = G5.SPRING_FALLS2, v = g5Video("falls2"), still = roomImg("engedi/spring/falls2_still.png");
+  const playing = v && v.readyState >= 2 && !v.paused && v.videoWidth, src = playing ? v : still; if (!src) return false;
+  const w = F.W * F.K, h = F.H * F.K, x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.BASE * F.K;
+  ctx.drawImage(src, x, y, w, h); return true;
 }
 const G5_FALLS_CUT = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_WATER = typeof document !== "undefined" ? document.createElement("canvas") : null;
