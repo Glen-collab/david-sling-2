@@ -16,6 +16,7 @@
 
 const G5 = {
   PACK_REACH: 44,          // px: touching a provision picks it up
+  SPARE: 1,                // provisions each load can do without (one dropped on the way home is all right)
   DROP_FOR: 3.5,           // s a dropped provision waits to be picked back up (then it's back where it was found)
   DROP_AFTER: 0.5,         // s before a dropped one can be picked up again (not straight back into the pack)
   ITEM_W: 74,              // px wide, a provision lying about (stand-in kit pieces)
@@ -44,6 +45,9 @@ const G5 = {
   // the cave behind the falls: its ledges [column, px, width], bats [column, px], the Truth's shelf [column, px]
   //  (Glen 11-19: "no topsoil ... one big death pit": solid only at its two ends, water down below: GROUND [left, right]
   //  columns of rock, WATER px its surface, DIE: px under it he's gone)
+  // the back way: the crack's column in the Wilderness, its picture (Glen's hidden mouth, smaller: K, the crack across it,
+  //  its floor px in it), the flooded cave's fish
+  BACK: { MOUTH: 146, K: 0.45, MID: 0.53, FLOOR: 766, FISH: [["biter", 14, 30, 20], ["tilapia", 24, 44, -40], ["biter", 36, 56, 30], ["perch", 46, 60, -20]] },
   HOLLOW: { LEDGES: [[56, 520, 4], [48, 460, 4], [40, 410, 4], [33, 370, 5], [25, 430, 4], [17, 480, 4]], BATS: [[50, 120], [36, 110], [22, 130]], TRUTH: [35, 370],
     GROUND: [11, 63], WATER: 628, DIE: 40 },
   // the pool's fish (adullam.js's, its R4.FISH sizes): [kind, from column, to column, px off the middle of the water]
@@ -96,6 +100,11 @@ const ENGEDI = {
     //  can double back in our map to go back to the camp") in behind the pool's falls (its right end), out at the camp
     { id: "hollow", name: "The Cave Behind the Falls", w: 72, cave: true, mx: 1, my: 2, mw: 5, outL: ["camp", 6], outR: ["pool", 87],
       strip: "w4/narrows_strip", floor: "w4/narrows_floor", ledgeDark: 0.5 },
+    // (Glen 11-19: "from the wilderness have another cave ... with a swim ... a room that goes to another cave above water room
+    //  that just happens to go back to camp") in at a hidden crack at the Wilderness's far end, swim the flooded cave, out on
+    //  its far ledge into the Cave Behind the Falls (its right end), and through it to the camp: the back way home
+    { id: "backway", name: "The Flooded Cave", w: 70, cave: true, mx: 11, my: 2, mw: 3, water: 361, outL: ["wild", 145], outR: ["hollow", 64],
+      strip: "w4/flooded_strip", floor: "w4/flooded_floor", ledgeDark: 0.5 },
     { id: "rocks", name: "The Rocks of the Wild Goats", w: 64, up: 40, bg: "w4_1", mx: 9, my: 0, mw: 2, mh: 2, left: "spring", right: "wild",
       far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0, near: "engedi/rocks/near.png" },   // (Glen's, 11-18)
     { id: "wild", name: "The Wilderness of En-Gedi", w: 150, bg: "w4_1", mx: 11, my: 1, mw: 4, left: "rocks",
@@ -137,7 +146,10 @@ function g5Food(room, kind, c, y = FOOT - 4) {   // a provision lying at column 
 const G5_RUN_OF = { pool: "spring" };   // (the pool's water skin is part of the Spring's load)
 const g5RunOf = room => G5_RUN_OF[room] || room;
 const g5RoomFood = room => g5.food.filter(f => g5RunOf(f.room) === room);
-const g5Done = room => g5RoomFood(room).every(f => g5Has(f.id));
+// (Glen 11-19: "a surplus so if I do drop some on the last trip that is ok") each load has SPARE more than it needs
+const g5Need = room => Math.max(1, g5RoomFood(room).length - G5.SPARE);
+const g5Home = room => g5RoomFood(room).filter(f => g5Has(f.id)).length;
+const g5Done = room => g5Home(room) >= g5Need(room);
 const g5Stage = () => G5_RUNS.filter(g5Done).length;   // loads home (0-3)
 const g5Open = room => { const i = G5_RUNS.indexOf(room); return i <= 0 || g5Done(G5_RUNS[i - 1]); };
 const g5Active = g => g5Stage() >= g.run && !g5Has("g5_cut");
@@ -290,6 +302,16 @@ function g5Build(R) {
     g5Hide(rm, "w4_rubble_sand", X(100)); g5Hide(rm, "w4_z_hide_rock", X(112)); g5Hide(rm, "w4_z_hide_rock", X(132));
     g5Guard(rm, 24, 40, 0); g5Guard(rm, 70, 86, 0, FOOT, -1); g5Guard(rm, 104, 124, 0);
     g5.entry.wild = X(4);
+    rPath(rm, c + G5.BACK.MOUTH, "backway", 2, "A crack in the rocks, half hidden. Cool air comes out of it. Up to go in.", "none");
+  }
+
+  // -- The Flooded Cave (Glen 11-19): the back way from the Wilderness; in on the left bank, the fish, out on the far ledge
+  c = R("backway");
+  { const rm = "backway", B = G5.BACK;
+    ground(c, c + 69);
+    rLedge(rm, c, G5.POOL_BANK, 4);
+    rLedge(rm, c + 62, G5.POOL_LEDGE, 8);
+    for (const [kind, k0, k1, dy] of B.FISH) g5FishAt(kind, c, k0, k1, dy, rm);
   }
   // trees (Glen's, from Ziph), behind David
   const tree = (rm, n, k, sink = 10) => { const kk = KIT[n]; if (kk) region.props.push({ room: rm, n, x: (roomById(rm).c0 + k) * T - kk.w / 2, y: FOOT - kk.h + sink, back: true }); };
@@ -326,7 +348,11 @@ function g5Enter(r) {
   if (r.id === "hideout" && from === "camp") { const v = g5Video("crawl_out"); if (v) { v.loop = false; try { v.currentTime = 0; } catch (e) {} } g5.crawl = { t: 0, clip: "crawl_out" }; }
   // where he came in: being seen sends him back here (the pack kept)
   g5.entry[r.id] = d.x < (r.c0 + r.w / 2) * T ? (r.c0 + 4) * T : (r.c0 + r.w - 5) * T;
-  if (r.id === "pool") { for (const f of g5.fish) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
+  if (r.id === "backway") { for (const f of g5.fish) if (f.room === r.id) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
+    g5.swim = null; g5.breath = G5.SWIM.BREATH;
+    if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); g5Tell("backway", "Water all the way across. Swim it: watch your breath, and the fish."); } }
+  if (r.id === "hollow" && d.x > (r.c0 + 60) * T) { d.y = FOOT; d.vy = 0; snapCamera(); }
+  if (r.id === "pool") { for (const f of g5.fish) if (f.room === r.id) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
     g5.entry.pool = (r.c0 + 2) * T; if (d.x < (r.c0 + 5) * T) { d.y = G5.POOL_BANK; d.vy = 0; snapCamera(); }
     if (d.x > (r.c0 + 80) * T) { d.y = G5.POOL_LEDGE; d.vy = 0; d.x = (r.c0 + 87) * T; snapCamera(); }   // (back out of the cave behind the falls: on the rocks)
     g5.swim = null; g5.breath = G5.SWIM.BREATH; g5Tell("swim", "Into the water! A for a stroke up, Up and Down. Watch your breath: come up for air."); }
@@ -368,8 +394,9 @@ function g5Update(dt, r) {
     if (f.room !== r.id || g5Has(f.id) || g5.pack.includes(f.id) || g5.drops.some(o => o.id === f.id) || !g5Open(g5RunOf(f.room))) continue;
     if (Math.abs(d.x - f.x) < G5.PACK_REACH && d.y > f.y - 90 && d.y - d.h < f.y + 10 && d.deadT <= 0) {
       g5.pack.push(f.id); sfx("pickup", f.x, 0.6);
-      const run = g5RunOf(f.room), left = g5RoomFood(run).filter(o => !g5Has(o.id) && !g5.pack.includes(o.id)).length;
-      toast(`David picks up ${G5_FOOD[f.kind][0]}. ${left ? left + " more for this load (" + roomById(run).name + ")." : "That's the whole load: back to the camp!"}`);
+      const run = g5RunOf(f.room), got = g5RoomFood(run).filter(o => g5Has(o.id) || g5.pack.includes(o.id)).length, left = Math.max(0, g5Need(run) - got);
+      const all = got >= g5RoomFood(run).length;
+      toast(`David picks up ${G5_FOOD[f.kind][0]}. ${left ? left + " more for this load (" + roomById(run).name + ")." : all ? "That's all of it, the spare too: back to the camp!" : "That's enough for this load: back to the camp! (One more is out there, a spare.)"}`);
     }
   }
   // a hit: one provision falls out and bounces (a few seconds to grab it back); a death: the pack's gone, all back in place
@@ -393,7 +420,7 @@ function g5Update(dt, r) {
   if (r.id === "hollow" && d.deadT <= 0 && d.y > G5.HOLLOW.WATER + G5.HOLLOW.DIE) {   // (the dark water under the cave: a death)
     for (let i = 0; i < 14; i++) bits.push({ x: d.x, y: G5.HOLLOW.WATER, vx: (Math.random() - 0.5) * 260, vy: -Math.random() * 320, life: 0.8, color: i % 2 ? "#9fc4d0" : "#3d6470" });
     d.hearts = 0.01; d.inv = 0; hurtDavid(d.x, "", true); }
-  if (r.id === "pool" && typeof r4Fish === "function") r4Fish(dt, r, g5.fish, !!g5.swim, G5.SWIM.FLOAT);
+  if (r.water && typeof r4Fish === "function") r4Fish(dt, r, g5.fish, !!g5.swim, G5.SWIM.FLOAT);
   // home: the pack set down by the pile
   if (r.id === "camp" && free && g5.pack.length && d.x < (r.c0 + G5.CAMP_REACH) * T) g5Deliver();
   // the way on is shut till the load before it is home
@@ -418,7 +445,7 @@ function g5Deliver() {
     if (after < 3) steps.push({ fn() { g5.pose = null; toast(`${["", "Next: the Rocks of the Wild Goats, past the Spring.", "Last: the Wilderness, past the Rocks."][after]} Saul's men are closer now: more of them search the way.`); } });
     else steps.push({ fn() { g5.pose = null; } }, { wait: 1.2 }, ...g5SaulComes());
   } else {
-    const room = G5_RUNS.find(rm => !g5Done(rm)), left = g5RoomFood(room).filter(o => !g5Has(o.id)).length;
+    const room = G5_RUNS.find(rm => !g5Done(rm)), left = g5Need(room) - g5Home(room);
     steps.push({ say: ["Abishai", `Thank you. ${n === 1 ? "That's one more." : "That helps."} There's more out there: ${left} still to find in ${roomById(room).name}.`] });
     steps.push({ fn() { g5.pose = null; } });
   }
@@ -537,9 +564,9 @@ function g5Hold(d, dt) {
   if (r && r.id === "pens" && g5Has("g5_cut") && !g5Has("g5_called") && !region.script.length) g5CallScene();
   return false;
 }
-function g5FishAt(kind, c, k0, k1, dy) {
-  const r = roomById("pool"), y = (r.water + G5.SWIM.FLOAT + GR * T) / 2 + dy;
-  g5.fish.push({ room: "pool", kind, x: (c + (k0 + k1) / 2) * T, y, y0: y, x0: (c + k0) * T, x1: (c + k1) * T, dir: (k0 & 1) ? -1 : 1, t: k0 * 0.37, state: "swim", st: 0, turn: 0 });
+function g5FishAt(kind, c, k0, k1, dy, room = "pool") {
+  const r = roomById(room), y = (r.water + G5.SWIM.FLOAT + GR * T) / 2 + dy;
+  g5.fish.push({ room, kind, x: (c + (k0 + k1) / 2) * T, y, y0: y, x0: (c + k0) * T, x1: (c + k1) * T, dir: (k0 & 1) ? -1 : 1, t: k0 * 0.37, state: "swim", st: 0, turn: 0 });
 }
 const g5CaveX = () => (roomById("pool").c0 + G5.CAVE.AT) * T + T / 2;
 const g5FallsX = () => (roomById("pool").c0 + G5.CAVE.FALLS) * T + T / 2;
@@ -701,6 +728,8 @@ function g5Draw(camX) {
   }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
+  if (r.id === "wild") { const im = roomImg("engedi/hideout/mouth.png"), B = G5.BACK, K = G5.HIDEOUT;   // (the back way's crack: Glen's hidden mouth)
+    if (im) { const w = K.W * B.K, h = K.H * B.K; g5DrawFaded(G5_CRACK, im, (r.c0 + B.MOUTH) * T + T / 2 - B.MID * w - camX, FOOT + 4 - B.FLOOR * B.K, w, h, 0.14); } }
   if (r.id === "hollow") {   // the dark water down in the pit, between the rock at its ends
     const L = G5.HOLLOW, x0 = (r.c0 + L.GROUND[0] + 1) * T - camX, x1 = (r.c0 + L.GROUND[1]) * T - camX, y = L.WATER - camY;
     const g = ctx.createLinearGradient(0, y, 0, y + 120); g.addColorStop(0, "rgba(40,78,92,0.95)"); g.addColorStop(1, "rgba(4,14,20,1)");
@@ -809,7 +838,7 @@ function g5DrawFront(camX) {
     if (g5.cave) { const C = g5.cave, K = G5.CAVE, end = K.TURN + K.WALK + K.INSIDE + K.OUT, fade = Math.min(1, C.t / K.TURN, (end - C.t) / K.OUT);
       g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, r.water + 8, G5.CAVE.WATER_H, Math.max(0, fade)); }
   }
-  if (r.id === "pool" && typeof r4DrawFish === "function") r4DrawFish(camX, g5.fish);
+  if (r.water && typeof r4DrawFish === "function") r4DrawFish(camX, g5.fish);
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
     const a = o.t > G5.DROP_FOR - 1.2 ? 0.4 + 0.6 * Math.abs(Math.sin(o.t * 12)) : 1; g5DrawFoodAt(f.kind, o.x - camX, o.y + 4, a); }
@@ -846,14 +875,31 @@ function g5SpringFalls2(r) {
   ctx.drawImage(src, x, y, w, h); return true;
 }
 const G5_FALLS_CUT = typeof document !== "undefined" ? document.createElement("canvas") : null;
+// a picture with its left and right sides faded out (fade: part of its width), through canvas oc
+function g5DrawFaded(oc, src, x, y, w, h, fade) {
+  if (!oc) return; w = Math.round(w); h = Math.round(h);
+  if (oc.width !== w || oc.height !== h) { oc.width = w; oc.height = h; }
+  const o = oc.getContext("2d"); o.globalCompositeOperation = "source-over"; o.clearRect(0, 0, w, h); o.drawImage(src, 0, 0, w, h);
+  const g = o.createLinearGradient(0, 0, w, 0); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(fade, "#000"); g.addColorStop(1 - fade, "#000"); g.addColorStop(1, "rgba(0,0,0,0)");
+  o.globalCompositeOperation = "destination-in"; o.fillStyle = g; o.fillRect(0, 0, w, h);
+  ctx.drawImage(oc, Math.round(x), Math.round(y));
+}
+const G5_CRACK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_MOUTH = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_WATER = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5DrawOver() {
   const r = region.room; if (!r) return;
   // in the pool: the water over him (a light tint below the surface), and his breath over his head
-  if (r.id === "pool") {
-    const v = g5PoolVideo(), O = G5.WATER_OVER;
+  if (r.water) {
+    const v = r.id === "pool" ? g5PoolVideo() : null, O = G5.WATER_OVER;
+    if (r.id !== "pool") {   // (the flooded cave: no picture of its water, so its water drawn: dark green-blue, a glint along the top)
+      const y0 = r.water - camY + 6, g = ctx.createLinearGradient(0, y0, 0, H);
+      g.addColorStop(0, "rgba(40,110,120,0.5)"); g.addColorStop(1, "rgba(6,30,38,0.8)");
+      ctx.save(); ctx.fillStyle = g; ctx.fillRect(0, y0, W, H); ctx.globalAlpha = 0.5; ctx.fillStyle = "#bfe6ea";
+      const t = performance.now() / 1000; for (let x = -((camX * 0.5) % 24); x < W; x += 24) ctx.fillRect(x, y0 + Math.sin(t * 2 + (x + camX) * 0.04) * 1.5, 13, 2);
+      ctx.restore();
+    } else
     if (v && v.readyState >= 2 && !v.paused && G5_WATER) {   // (Glen 11-19: the pool's own clip again, over him, see-through: anything in it looks in it)
       const y0 = r.water - camY + O.TOP, oc = G5_WATER, o = oc.getContext("2d");
       if (oc.width !== W || oc.height !== H) { oc.width = W; oc.height = H; }
@@ -882,19 +928,20 @@ function g5DrawOver() {
   }
   // the pack, and what's home
   if (!g5Has("g5_load_wild") || g5.pack.length) {
-    const room = G5_RUNS.find(rm => !g5Done(rm)) || "wild", need = g5RoomFood(room).length;
+    const room = G5_RUNS.find(rm => !g5Done(rm)) || "wild", need = g5Need(room);
     const have = g5RoomFood(room).filter(f => g5Has(f.id) || g5.pack.includes(f.id)).length;
     // (bottom left: the top is the controls and the hearts)
-    const line1 = `Pack: ${g5.pack.length}    ${roomById(room).name}: ${have} / ${need}`;
+    const line1 = `Pack: ${g5.pack.length}    ${roomById(room).name}: ${Math.min(have, need)} / ${need}${have > need ? " +" + (have - need) : ""}`;
     ctx.save(); ctx.font = "bold 16px Georgia, serif";   // (Glen 11-19: the box as wide as its words)
-    const bx = 16, by = H - 92, bw = Math.max(340, Math.ceil(ctx.measureText(line1).width) + 36);
+    const home = g5.food.filter(f => g5Has(f.id)).length, line2 = `Food home at the camp: ${home} / ${G5_RUNS.reduce((a, rm) => a + g5Need(rm), 0)}  (a spare in each load)`;
+    const w1 = ctx.measureText(line1).width; ctx.font = "14px Georgia, serif"; const w2 = ctx.measureText(line2).width; ctx.font = "bold 16px Georgia, serif";
+    const bx = 16, by = H - 92, bw = Math.max(340, Math.ceil(Math.max(w1, w2)) + 36);
     ctx.fillStyle = "rgba(20,12,6,0.72)"; ctx.fillRect(bx, by, bw, 58);
     ctx.strokeStyle = "#ffe08a"; ctx.lineWidth = 1.5; ctx.strokeRect(bx, by, bw, 58);
     ctx.fillStyle = "#ffe08a"; ctx.font = "bold 16px Georgia, serif"; ctx.textAlign = "center";
     ctx.fillText(line1, bx + bw / 2, by + 23);
     ctx.font = "14px Georgia, serif"; ctx.fillStyle = "#f3e6c8";
-    const home = g5.food.filter(f => g5Has(f.id)).length;
-    ctx.fillText(`Food home at the camp: ${home} / ${g5.food.length}`, bx + bw / 2, by + 45);
+    ctx.fillText(line2, bx + bw / 2, by + 45);
     ctx.restore();
   }
 }

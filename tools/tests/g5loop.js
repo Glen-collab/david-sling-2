@@ -13,7 +13,7 @@ const steps = [
   { n: 1, fn() { const o = g5.drops[0]; if (o) { david.x = o.x; david.y = o.floor; } } }, { keys: [], n: 4 },
   { n: 1, fn() { log("pack after grabbing it back: " + g5.pack.length); } },
   // seen: keeps the pack
-  { n: 1, fn() { g5.caughtTo = david.x; g5.caughtT = G5.SNEAK.CAUGHT_FADE; } }, { keys: [], n: 100 },
+  { n: 1, fn() { quiet(); david.inv = 99; g5.caughtTo = david.x; g5.caughtT = G5.SNEAK.CAUGHT_FADE; } }, { keys: [], n: 100 },
   { n: 1, fn() { log("pack after being seen: " + g5.pack.length); } },
   // the way on is shut: walk off the Spring's right end
   { n: 1, fn() { clear(); at("spring", 126); } }, { keys: ["ArrowRight"], n: 40 },
@@ -21,7 +21,7 @@ const steps = [
   // home
   { n: 1, fn() { clear(); at("camp", 36); } }, { keys: ["ArrowLeft"], n: 70 },
   { keys: [], n: 10, snap: true }, { keys: ["KeyZ"], n: 2 }, { keys: [], n: 20 }, { keys: ["KeyZ"], n: 2 }, { keys: [], n: 20 },
-  { n: 1, fn() { clear(); g5.pose = null; log("stage after the spring load: " + g5Stage() + ", open rocks " + g5Open("rocks")); } },
+  { n: 1, fn() { clear(); david.inv = 0; g5.pose = null; log("stage after the spring load: " + g5Stage() + ", open rocks " + g5Open("rocks")); } },
   // death empties the pack
   { n: 1, fn() { at("rocks", 10); clear(); takeAll("rocks"); log("pack in the rocks: " + g5.pack.length); david.deadT = 1; } }, { keys: [], n: 2 },
   { n: 1, fn() { log("pack after dying: " + g5.pack.length); david.deadT = 0; david.hearts = david.maxHearts; } }, { keys: [], n: 20 },
