@@ -31,10 +31,10 @@ const G5 = {
   // the pool (as adullam.js's swimming, Glen's own swim sheets): sideways speed, a stroke (A), Up/Down, sinking, the most
   //  speed, how far under the surface his head is, the leap out (A at the surface), breath (s), and after running out
   SWIM: { X: 170, STROKE: 230, PUSH: 420, SINK: 160, MAXV: 260, FLOAT: 70, LEAP: 1050, LEAP_NEAR: 30, BREATH: 10, AFTER: 3, TREAD: 0.35, FLOAT_NEAR: 60, K: 0.5 },
-  POOL_BANK: 330, POOL_LEDGE: 352,
+  POOL_BANK: 330, POOL_LEDGE: 312,   // (Glen 11-18: the ledge on the painted rocks left of the falls, not on the water)
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
-  CAVE: { WATER_H: 380, AT: 96, FALLS: 94.2, REACH: 190, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
+  CAVE: { WATER_H: 380, AT: 88, FALLS: 93.7, REACH: 72, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
   SHEEP_K: 1.35,           // the flock in the pens (Glen 11-18: smaller, about waist high on David)
@@ -185,7 +185,7 @@ function g5Build(R) {
   { const rm = "pool", X = k => (c + k) * T;
     ground(c, c + 99);
     rLedge(rm, c, G5.POOL_BANK, 4);
-    rLedge(rm, c + 87, G5.POOL_LEDGE, 13);
+    rLedge(rm, c + 84, G5.POOL_LEDGE, 6);   // (the rocks just left of the falls, columns 84-89)
     g5Food(rm, "water", 52, GR * T - 4);   // (the Spring's third skin, down on the bottom)
     rRelic("g5_truth_falls", "truth", c + G5.CAVE.AT, onTop(G5.POOL_LEDGE), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)", "g5_never");   // (inside the cave: found by going in, never lying out on the rocks)
     rRelic("g5_pom_pool", "pomegranate", c + 30, GR - 1);
@@ -202,7 +202,7 @@ function g5Build(R) {
       for (let i = 0; i < w; i++) for (let r_ = topRow; r_ < GR; r_++) artSolid.add((c + k + i) + "," + r_);
       g5.cliffs.push({ room: rm, x: (c + k) * T, w: w * T, top: topRow * T });
       region.walls.push({ room: rm, x0: (c + k) * T, x1: (c + k + w) * T, top: topRow * T, need: "wallClimb" }); };
-    cliff(14, 7, 6);
+    cliff(13, 9, 6);   // (Glen 11-18: a little wider, over the painted rock behind it)
     rWild("ibex", rm, c + 17, { y: 6 * T, hy: 6 * T, range: 2 });
     // up from its top, ledge to ledge into the sky
     rLedge(rm, c + 22, 70, 4); g5Food(rm, "eggs", 23, 70 - 4);
@@ -264,7 +264,7 @@ function g5Talk() {
 // (Glen's pool, 11-18) a pit with his pool drawn over it, in front of David: till swimming, falling in costs a heart
 function g5Pool(rm, c, w) {
   const n0 = region.props.length; rHole(rm, c, w); region.props.splice(n0);   // (no pit rims: the pool's own walls)
-  g5.pools.push({ room: rm, x: (c + w / 2) * T });
+  g5.pools.push({ room: rm, x: (c + w / 2) * T, x0: c * T, x1: (c + w) * T });
 }
 function rHyrax(rm, c, o = {}) { if (typeof WILD !== "undefined" && WILD.hyrax) rWild("hyrax", rm, c, o); }
 
@@ -472,6 +472,7 @@ function g5CaveUpdate(dt) {
     C.taken = true; const f = region.relics.find(o => o.id === "g5_truth_falls");
     if (f) takeRelic(f);
   }
+  if (C.t > inEnd && !C.back) { C.back = true; d.x = C.x0; }   // (out again onto the rock he went in from)
   if (C.t > inEnd + K.OUT) { g5.cave = null; d.facing = -1; }
 }
 // ---- the pool: below the waterline he swims (as adullam.js's r4Hold, without its rock lids)
@@ -479,7 +480,9 @@ function g5Swim(d, dt) {
   const r = region.room, S = G5.SWIM;
   if (!r || !r.water || r !== roomAt(d.x) || d.deadT > 0 || region.trans) { g5.swim = null; return false; }
   const wy = r.water, top = wy + S.FLOAT;
-  if (g5.leapT > 0) { g5.leapT -= dt; if (d.vy < 0) return false; }
+  if (g5.leapT > 0) { g5.leapT -= dt;   // (the leap out is always a full one: letting go of A doesn't cut it short, Glen 11-18: up onto the rocks)
+    if (g5.leapV != null) { g5.leapV += TUNE.GRAVITY * dt; if (g5.leapV < 0 && d.vy > g5.leapV + 40) d.vy = g5.leapV; }
+    if (d.vy < 0) return false; }
   if (!g5.swim) {
     if (d.y < wy + 40 || d.onGround && d.y < wy + S.FLOAT) { g5.breath = Math.min(S.BREATH, g5.breath + dt * 4); return false; }
     g5.swim = { t: 0 }; d.vy = Math.min(d.vy, 120); setState("idle");
@@ -488,7 +491,7 @@ function g5Swim(d, dt) {
   sw.t += dt * (still ? S.TREAD : 1); sw.tt = (sw.tt || 0) + dt;
   d.vx = dir * S.X; if (dir) d.facing = dir;
   d.vy += S.SINK * dt;
-  if (pressed("a")) { if (d.y <= top + S.LEAP_NEAR) { g5.swim = null; g5.leapT = 0.5; d.vy = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
+  if (pressed("a")) { if (d.y <= top + S.LEAP_NEAR) { g5.swim = null; g5.leapT = 0.5; d.vy = g5.leapV = -S.LEAP; d.onGround = false; setState("jump"); return false; } d.vy = -S.STROKE; }
   if (held("up")) d.vy -= S.PUSH * dt; if (held("down")) d.vy += S.PUSH * dt;
   d.vy = Math.max(-S.MAXV, Math.min(S.MAXV, d.vy));
   d.x = Math.max(r.c0 * T + 20, Math.min((r.c0 + r.w) * T - 20, d.x + d.vx * dt));
@@ -637,16 +640,24 @@ function g5DrawFront(camX) {
   if (r.id === "spring" && SPR.waterfall) { const want = 210, k = want / (SPR.waterfall.h * SCALE * (TUNE.SPRITE_SIZE.waterfall || 1));
     drawSprite("waterfall", frameOf("waterfall", performance.now() / 1000), g5.falls - camX, FOOT + 6 - want, 1, k, 0.75); }
   // the pools (Glen's), over their pits, in front of him: in the water, not behind it
-  for (const o of g5.pools || []) if (o.room === r.id) { const im = kitImg("w4_e_pool"), k = KIT.w4_e_pool; if (im) {
-    const x = o.x - k.w / 2 - camX, y = GR * T - k.h * 0.34, wx = x + k.w * 0.17, ww = k.w * 0.66;   // (the deep water under it, down out of sight: no black pit)
-    const g = ctx.createLinearGradient(0, y + k.h * 0.8, 0, y + k.h + 160); g.addColorStop(0, "rgba(52,150,160,0.95)"); g.addColorStop(1, "rgba(10,40,52,1)");
-    ctx.fillStyle = g; ctx.fillRect(wx, y + k.h * 0.8, ww, H - (y + k.h * 0.8) + 400); ctx.drawImage(im, x, y, k.w, k.h); } }
+  // (Glen 11-18: not his pool piece, its painted bottom looked goofy over a pit) just water, filling the pit to the brim and
+  //  on down, out of sight: a bright surface, deeper and darker below
+  for (const o of g5.pools || []) if (o.room === r.id) {
+    const x = o.x0 - camX, w = o.x1 - o.x0, y = GR * T + 10 - camY; if (x > W || x + w < 0) continue;
+    const g = ctx.createLinearGradient(0, y, 0, y + 220); g.addColorStop(0, "rgba(70,170,180,0.96)"); g.addColorStop(0.35, "rgba(30,105,120,0.98)"); g.addColorStop(1, "rgba(8,34,46,1)");
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, H - y + 400);
+    const t = performance.now() / 1000; ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = "#cdeff0";   // (the surface, a little ripple of light)
+    for (let i = 0; i < w; i += 18) ctx.fillRect(x + i, y + 1 + Math.sin(t * 2 + i * 0.15) * 1.5, 11, 3);
+    ctx.restore(); }
   // the cave behind the falls: an Up arrow at its mouth; while he goes in, the falling water in front of him
   if (r.id === "pool") {
     g5Video("falls");   // (loaded and running while he's in the pool room, ready for the cave)
-    if (!g5.cave && !g5Has("g5_truth_falls") && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) upHint(g5CaveX() - camX, G5.POOL_LEDGE - 115);   // (in the dark of the mouth: higher, it was under the hearts)
+    if (!g5.cave && !g5Has("g5_truth_falls") && !region.script.length && Math.abs(david.x - g5CaveX()) < G5.CAVE.REACH && david.y < r.water) {   // (Glen 11-18: lost in the white water: over the dark of the mouth, left of the falls, ringed dark)
+      const ax = (r.c0 + 91) * T - camX, ay = G5.POOL_LEDGE - 60;
+      ctx.save(); ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.beginPath(); ctx.roundRect(ax - 27, ay - 29 + Math.sin(performance.now() / 180) * 4, 54, 44, 13); ctx.fill(); ctx.restore();
+      upHint(ax, ay); }
     if (g5.cave) { const C = g5.cave, K = G5.CAVE, end = K.TURN + K.WALK + K.INSIDE + K.OUT, fade = Math.min(1, C.t / K.TURN, (end - C.t) / K.OUT);
-      g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, G5.POOL_LEDGE + 14, G5.CAVE.WATER_H, Math.max(0, fade)); }
+      g5FallsOver((r.c0 + G5.CAVE.FALLS) * T + T / 2 - camX, r.water + 8, G5.CAVE.WATER_H, Math.max(0, fade)); }
   }
   // dropped provisions, bouncing, flashing as their time runs out
   for (const o of g5.drops) { const f = g5.food.find(q => q.id === o.id); if (!f) continue;
@@ -681,9 +692,13 @@ function g5DrawOver() {
   const r = region.room; if (!r) return;
   // in the pool: the water over him (a light tint below the surface), and his breath over his head
   if (r.id === "pool") {
-    ctx.save(); ctx.fillStyle = "rgba(40,150,175,0.22)"; ctx.fillRect(0, r.water + 10 - camY, W, H); ctx.restore();
-    if (g5.swim || g5.breath < G5.SWIM.BREATH - 0.05) { const k = Math.max(0, g5.breath / G5.SWIM.BREATH), x = david.x - camX - 40, y = david.y - 150 - camY;
-      ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(x - 2, y - 2, 84, 12); ctx.fillStyle = k > 0.3 ? "#7fd8ff" : "#ff6a5a"; ctx.fillRect(x, y, 80 * k, 8); }
+    { const y0 = r.water - camY, g = ctx.createLinearGradient(0, y0, 0, y0 + 70);   // (Glen 11-18: the tint's hard top edge was a line across him at the surface: faded in)
+      g.addColorStop(0, "rgba(40,150,175,0)"); g.addColorStop(1, "rgba(40,150,175,0.22)");
+      ctx.save(); ctx.fillStyle = g; ctx.fillRect(0, y0, W, H); ctx.restore(); }
+    // his air, only while it's running down (Glen 11-18: shown full at the surface it read as a stray blue line)
+    if (g5.breath < G5.SWIM.BREATH - 0.05) { const k = Math.max(0, g5.breath / G5.SWIM.BREATH), x = david.x - camX - 40, y = david.y - 150 - camY;
+      ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(x - 2, y - 2, 84, 12); ctx.fillStyle = k > 0.3 ? "#7fd8ff" : "#ff6a5a"; ctx.fillRect(x, y, 80 * k, 8);
+      ctx.save(); ctx.textAlign = "right"; hudText("Air", x - 6, y + 9, 14); ctx.restore(); }
   }
   // the dark of the cave while Saul's in it: a little light on David and on the king
   if (r.id === "camp" && g5.saul && !g5.saul.outside && G5_DARK) {

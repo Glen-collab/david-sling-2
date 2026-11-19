@@ -9,5 +9,5 @@ testRun([{ n: 1, fn() { region.crawl = null; } }, { keys: [], n: 30 },
   { n: 1, fn() { clear(); log("room " + region.room.id + " y " + Math.round(david.y)); } }, { keys: [], n: 10, snap: true },
   { keys: ["ArrowRight"], n: 60 }, { keys: ["ArrowRight", "ArrowDown"], n: 60 }, { n: 1, fn() { log("swim " + !!g5.swim + " y " + Math.round(david.y) + " breath " + g5.breath.toFixed(1)); } }, { keys: [], n: 5, snap: true },
   { n: 1, fn() { const f = g5.food.find(q => q.room === "pool"); david.x = f.x; david.y = f.y; } }, { keys: [], n: 5 }, { n: 1, fn() { log("pack " + g5.pack.length); clear(); } },
-  { n: 1, fn() { at("pool", 90, G5.POOL_LEDGE); g5.swim = null; } }, { keys: [], n: 30 }, { n: 1, fn() { clear(); log("on ledge y " + Math.round(david.y) + " swim " + !!g5.swim); } }, { keys: [], n: 10, snap: true },
+  { n: 1, fn() { at("pool", 87, G5.POOL_LEDGE); g5.swim = null; } }, { keys: [], n: 30 }, { n: 1, fn() { clear(); log("on ledge y " + Math.round(david.y) + " swim " + !!g5.swim); } }, { keys: [], n: 10, snap: true },
 ]);

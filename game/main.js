@@ -652,6 +652,7 @@ const SKILL_NAMES = { aimUp: "Aim up: hold Up as you throw", harpCall: "The harp
   quick: "Quick release: tap B twice, quick, for two stones",
   leap: "The scout's leap: press A again in the air to jump again",
   rope: "Michal's rope: climb ropes, and go down wells (Up at one)",   // (Part Two, World 2)
+  wallClimb: "The wall climb: Up at a sheer rock face to climb it",   // (Part Two, World 5: from the ibex; Glen 11-18 saw "New skill: undefined")
   heavySword: "Goliath's sword: Up by a cracked wall, then mash A and B",   // (Part Two, World 3)
   courage: "Courage: Jonathan strengthened your hand in God (one more heart)",   // (Part Two, Ziph: 1 Samuel 23:16)
   ask: "Ask the LORD: kneel at a prayer stone (Up)",   // (Part Two, Keilah: Abiathar's ephod, 1 Samuel 23:9)
