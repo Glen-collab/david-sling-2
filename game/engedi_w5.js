@@ -42,7 +42,10 @@ const G5 = {
   // (Glen 11-18: "have David go into the cave for the truth ... an up arrow and have him disappear behind the falls") the
   //  cave mouth (column in the pool room), how near for Up; his turn, his walk in (s), inside, and back out
   // the cave behind the falls: its ledges [column, px, width], bats [column, px], the Truth's shelf [column, px]
-  HOLLOW: { LEDGES: [[52, 500, 4], [44, 430, 4], [35, 370, 5], [26, 450, 4], [14, 500, 3]], BATS: [[48, 120], [30, 110], [18, 130]], TRUTH: [37, 370] },
+  //  (Glen 11-19: "no topsoil ... one big death pit": solid only at its two ends, water down below: GROUND [left, right]
+  //  columns of rock, WATER px its surface, DIE: px under it he's gone)
+  HOLLOW: { LEDGES: [[56, 520, 4], [48, 460, 4], [40, 410, 4], [33, 370, 5], [25, 430, 4], [17, 480, 4]], BATS: [[50, 120], [36, 110], [22, 130]], TRUTH: [35, 370],
+    GROUND: [11, 63], WATER: 628, DIE: 40 },
   // the pool's fish (adullam.js's, its R4.FISH sizes): [kind, from column, to column, px off the middle of the water]
   FISH: [["tilapia", 12, 30, -40], ["biter", 22, 44, 30], ["perch", 40, 58, -20], ["biter", 56, 76, 20], ["tilapia", 66, 84, -50]],
   // the hidden mouth: Glen's picture over the room (its size, how much smaller, its floor px in it), the mouth's column
@@ -85,7 +88,7 @@ const ENGEDI = {
     // (Glen 11-19: "go behind the waterfall and enter another cave to find the truth ... a tighter and smaller cave and it
     //  can double back in our map to go back to the camp") in behind the pool's falls (its right end), out at the camp
     { id: "hollow", name: "The Cave Behind the Falls", w: 72, cave: true, mx: 1, my: 2, mw: 5, outL: ["camp", 6], outR: ["pool", 87],
-      strip: "w4/narrows_strip", floor: "w4/narrows_floor" },
+      strip: "w4/narrows_strip", floor: "w4/narrows_floor", ledgeDark: 0.5 },
     { id: "rocks", name: "The Rocks of the Wild Goats", w: 64, up: 40, bg: "w4_1", mx: 9, my: 0, mw: 2, mh: 2, left: "spring", right: "wild",
       far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0, near: "engedi/rocks/near.png" },   // (Glen's, 11-18)
     { id: "wild", name: "The Wilderness of En-Gedi", w: 150, bg: "w4_1", mx: 11, my: 1, mw: 4, left: "rocks",
@@ -226,7 +229,7 @@ function g5Build(R) {
   //  the Truth on the high shelf; at its far (left) end the way through into the camp
   c = R("hollow");
   { const rm = "hollow", L = G5.HOLLOW;
-    ground(c, c + 71);
+    ground(c, c + L.GROUND[0]); ground(c + L.GROUND[1], c + 71);
     for (const [k, y, w] of L.LEDGES) rLedge(rm, c + k, y, w);
     for (const [k, y] of L.BATS) rBat(rm, c + k, y);
     rRelic("g5_truth_falls", "truth", c + L.TRUTH[0], onTop(L.TRUTH[1]), "A poem by David, when he fled from Saul, in the cave. Be merciful to me, God, be merciful to me, for my soul takes refuge in you. (Psalm 57, heading and verse 1)");
@@ -377,6 +380,9 @@ function g5Update(dt, r) {
   if (r.id === "pool" && free && !g5.cave && pressed("up") && d.onGround && Math.abs(d.x - g5CaveX()) < G5.CAVE.REACH) {
     g5.cave = { t: 0, x0: d.x, taken: false }; d.vx = 0; }
   if (g5.cave) g5CaveUpdate(dt);
+  if (r.id === "hollow" && d.deadT <= 0 && d.y > G5.HOLLOW.WATER + G5.HOLLOW.DIE) {   // (the dark water under the cave: a death)
+    for (let i = 0; i < 14; i++) bits.push({ x: d.x, y: G5.HOLLOW.WATER, vx: (Math.random() - 0.5) * 260, vy: -Math.random() * 320, life: 0.8, color: i % 2 ? "#9fc4d0" : "#3d6470" });
+    d.hearts = 0.01; d.inv = 0; hurtDavid(d.x, "", true); }
   if (r.id === "pool" && typeof r4Fish === "function") r4Fish(dt, r, g5.fish, !!g5.swim, G5.SWIM.FLOAT);
   // home: the pack set down by the pile
   if (r.id === "camp" && free && g5.pack.length && d.x < (r.c0 + G5.CAMP_REACH) * T) g5Deliver();
@@ -663,6 +669,13 @@ function g5Draw(camX) {
   }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
+  if (r.id === "hollow") {   // the dark water down in the pit, between the rock at its ends
+    const L = G5.HOLLOW, x0 = (r.c0 + L.GROUND[0] + 1) * T - camX, x1 = (r.c0 + L.GROUND[1]) * T - camX, y = L.WATER - camY;
+    const g = ctx.createLinearGradient(0, y, 0, y + 120); g.addColorStop(0, "rgba(40,78,92,0.95)"); g.addColorStop(1, "rgba(4,14,20,1)");
+    ctx.fillStyle = g; ctx.fillRect(x0, y, x1 - x0, H - y + 200);
+    ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#a8d4e0";
+    for (let x = x0; x < x1; x += 22) ctx.fillRect(x, y + Math.sin(now * 2 + x * 0.05) * 1.5, 12, 2);
+    ctx.restore(); }
   if (r.id === "hideout") { const im = roomImg("engedi/hideout/mouth.png"), K = G5.HIDEOUT;
     if (im) ctx.drawImage(im, r.c0 * T - camX, FOOT + 4 - K.FLOOR * K.K, K.W * K.K, K.H * K.K); }
   if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)

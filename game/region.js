@@ -1367,6 +1367,7 @@ function drawTallWall(r, camX) {
 }
 function drawLedges(camX) {
   ctx.save(); ctx.translate(-Math.round(camX), 0);
+  if (region.room && region.room.ledgeDark) ctx.filter = `brightness(${region.room.ledgeDark})`;   // (Glen 11-19: a dark cave's ledges, darker)
   for (const l of region.ledges) { const x0 = l.c * T, x1 = (l.c + l.w) * T; if (x1 < camX - 50 || x0 > camX + W + 50 || l.y < camY - 100 || l.y > camY + H + 100) continue; drawLedgeRun(x0, x1, l.y - 4); }
   ctx.restore();
 }
