@@ -51,6 +51,11 @@ const G5 = {
   // the hidden mouth: Glen's picture over the room (its size, how much smaller, its floor px in it), the mouth's column
   // his crawl out of the hidden mouth (crawl_out.webm): its length (s), the fade back to play, how long to wait for it to load
   CRAWL: { LEN: 6.0, FADE: 0.5, WAIT: 2.5 },
+  // his clean picture of the mouth (16:9, the clips' own framing): drawn this wide (px: David in the clips 423 of 540 tall
+  //  becomes David's 112), MID: the mouth's middle across it, FEET: his feet's line down it, SINK px into the ground;
+  //  ALIGN: each clip on it [scale, x, y as parts of the picture] (measured: the climb in is framed the same, the crawl out a
+  //  little closer)
+  MOUTH_PIC: { W: 254, FADE: 0.16, MID: 0.51, FEET: 0.885, SINK: 4, ALIGN: { crawl_in: [1, 0, 0], crawl_out: [1.07, -17 / 480, -1 / 270] } },
   HIDEOUT: { W: 2736, H: 912, K: 0.6, FLOOR: 766, MOUTH: 24 },
   CAVE: { WATER_H: 380, AT: 88, FALLS: 93.7, REACH: 72, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
@@ -145,7 +150,7 @@ function g5Build(R) {
   Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
-  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png", "engedi/hideout/mouth.png", "engedi/hideout/mid.png"]) roomImg(n);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png", "engedi/hideout/mouth.png", "engedi/hideout/mid.png", "engedi/hideout/mouth_small.png"]) roomImg(n);
   g5.swim = null; g5.breath = G5.SWIM.BREATH; g5.fish = [];
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.cave = null; g5.crawl = null; g5.prevRoom = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
@@ -170,7 +175,6 @@ function g5Build(R) {
   c = R("hideout");
   { const rm = "hideout", H5 = G5.HIDEOUT;
     ground(c, c + 45);
-    rPath(rm, c + H5.MOUTH, "camp", 55, "The way back into the camp. Up to go in.", "none");
     g5.entry.hideout = (c + H5.MOUTH + 2) * T;
   }
 
@@ -319,7 +323,7 @@ function g5Enter(r) {
   // (Glen 11-19: "this cave is pretty cool and has a great effect coming out") out of the camp: his clip of David
   //  squeezing out of the hidden mouth, then play from there
   const from = g5.prevRoom; g5.prevRoom = r.id;
-  if (r.id === "hideout" && from === "camp") { const v = g5Video("crawl_out"); if (v) { v.loop = false; try { v.currentTime = 0; } catch (e) {} } g5.crawl = { t: 0 }; }
+  if (r.id === "hideout" && from === "camp") { const v = g5Video("crawl_out"); if (v) { v.loop = false; try { v.currentTime = 0; } catch (e) {} } g5.crawl = { t: 0, clip: "crawl_out" }; }
   // where he came in: being seen sends him back here (the pack kept)
   g5.entry[r.id] = d.x < (r.c0 + r.w / 2) * T ? (r.c0 + 4) * T : (r.c0 + r.w - 5) * T;
   if (r.id === "pool") { for (const f of g5.fish) Object.assign(f, { gone: false, x: (f.x0 + f.x1) / 2, y: f.y0, state: "swim" });
@@ -495,12 +499,22 @@ function g5CallScene() {
 
 // ---------------------------------------------------------------------------------------------------------------------
 function g5Hold(d, dt) {
-  if (g5.crawl) {   // his clip of coming out of the hidden mouth
-    const C = g5.crawl, K = G5.CRAWL, v = g5Video("crawl_out"); C.t += dt; d.vx = d.vy = 0; d.facing = 1;
-    const ready = v && v.readyState >= 2 && v.videoWidth;
-    if (!C.end && ((ready && (v.ended || v.currentTime > K.LEN - K.FADE)) || C.t > K.LEN + 1 || (!ready && C.t > K.WAIT) || pressed("a"))) C.end = C.t;
-    region.cutIn = !C.end;
-    if (C.end && C.t > C.end + K.FADE) { g5.crawl = null; region.cutIn = false; }
+  // (Glen 11-19: "David climbing into the rocks ... it can replace the walking with his back to us just for this cave")
+  //  Up at the hidden mouth: his clip of crawling in, then into the camp
+  const hr = region.room;
+  if (hr && hr.id === "hideout" && !g5.crawl && !region.trans && d.onGround && d.deadT <= 0 && pressed("up") && Math.abs(d.x - (hr.c0 + G5.HIDEOUT.MOUTH) * T - T / 2) < PATH.REACH) {
+    const v = g5Video("crawl_in"); if (v) { v.loop = false; try { v.currentTime = 0; } catch (e) {} }
+    g5.crawl = { t: 0, clip: "crawl_in" }; d.vx = 0; return true;
+  }
+  if (g5.crawl) {   // his clips of coming out of the hidden mouth, and going back in
+    const C = g5.crawl, K = G5.CRAWL, v = g5Video(C.clip), going = C.clip === "crawl_in"; d.vx = d.vy = 0; d.facing = 1;
+    const ready = v && v.readyState >= 2 && v.videoWidth; C.w = (C.w || 0) + dt; if (ready) C.t += dt;   // (its time from when it's playing)
+    if (!C.end && ((ready && (v.ended || v.currentTime > K.LEN - 0.1)) || C.t > K.LEN + 1 || (!ready && C.w > K.WAIT) || pressed("a"))) {
+      C.end = C.t;
+      if (going) { const n = roomById("camp"); regionGo((n.c0 + 55) * T, -1, () => { g5.crawl = null; region.cutIn = false; }); }
+    }
+    region.cutIn = !C.end || going;
+    if (!going && C.end) { g5.crawl = null; region.cutIn = false; }   // (straight into play: his clip ends where he stands)
     return true;
   }
   // seen by Saul's men: a fade, then back where he came into the room. The pack is kept (Glen 11-18)
@@ -634,7 +648,8 @@ function g5StoneHits(s) {
 // ---------------------------------------------------------------------------------------------------------------------
 // drawing
 function g5DrawDavid(d, x, y) {
-  if (g5.crawl && !g5.crawl.end) return true;   // (he's in the clip)
+  if (g5.crawl) { const v = g5Video(g5.crawl.clip), on = v && v.readyState >= 2 && v.videoWidth;   // (he's in the clip, once it's playing)
+    if (g5.crawl.clip === "crawl_in" ? on || g5.crawl.end : on && !g5.crawl.end) return true; }
   if (g5.pose && g5.pose.hide) return true;   // (in the two-shot with Saul)
   if (g5.cave) {   // his back to us, then into the dark behind the falls, smaller and fading; then out again
     const C = g5.cave, K = G5.CAVE, walkEnd = K.TURN + K.WALK, inEnd = walkEnd + K.INSIDE;
@@ -696,8 +711,22 @@ function g5Draw(camX) {
   if (r.id === "hideout") { const im = roomImg("engedi/hideout/mouth.png"), K = G5.HIDEOUT;
     if (im) ctx.drawImage(im, r.c0 * T - camX, FOOT + 4 - K.FLOOR * K.K, K.W * K.K, K.H * K.K); }
   if (r.id === "camp" && !g5.crawl) g5Video("crawl_out");   // (loading in the camp, ready for the way out)
-  if (g5.crawl && r.id === "hideout") { const C = g5.crawl, v = g5Video("crawl_out");
-    if (v && v.readyState >= 2 && v.videoWidth) { ctx.save(); ctx.globalAlpha = C.end ? Math.max(0, 1 - (C.t - C.end) / G5.CRAWL.FADE) : Math.min(1, C.t / 0.25); ctx.drawImage(v, 0, 0, W, H); ctx.restore(); } }
+  if (r.id === "hideout" && !g5.crawl) g5Video("crawl_in");   // (and at the mouth, ready for the way back in)
+  if (r.id === "hideout") {   // (Glen 11-19: his clean picture of the mouth, at the size that makes David in his clips David's size;
+    //  the clips play on it in place, his crawling in and out; its sides faded into the rocks behind)
+    const M = G5.MOUTH_PIC, im = roomImg("engedi/hideout/mouth_small.png"), mx = (r.c0 + G5.HIDEOUT.MOUTH) * T + T / 2 - camX;
+    const w = Math.round(M.W), h = Math.round(w * 9 / 16), x = mx - M.MID * w, y = FOOT + M.SINK - M.FEET * h;
+    const C = g5.crawl, v = C && g5Video(C.clip), on = v && v.readyState >= 2 && v.videoWidth && !(C.end && C.clip === "crawl_out");
+    const oc = G5_MOUTH; if (oc && (im || on)) {
+      if (oc.width !== w || oc.height !== h) { oc.width = w; oc.height = h; }
+      const o = oc.getContext("2d"); o.globalCompositeOperation = "source-over"; o.clearRect(0, 0, w, h);
+      if (on) { const A = M.ALIGN[C.clip]; o.drawImage(v, A[1] * w, A[2] * h, w * A[0], h * A[0]); } else o.drawImage(im, 0, 0, w, h);
+      const g = o.createLinearGradient(0, 0, w, 0), f = M.FADE; g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(f, "#000"); g.addColorStop(1 - f, "#000"); g.addColorStop(1, "rgba(0,0,0,0)");
+      o.globalCompositeOperation = "destination-in"; o.fillStyle = g; o.fillRect(0, 0, w, h);
+      ctx.drawImage(oc, Math.round(x), Math.round(y));
+    }
+    if (!g5.crawl && !region.script.length && Math.abs(david.x - camX - mx) < PATH.REACH && david.onGround) { upHint(mx, FOOT - 200); g5Tell("mouth", "The way back into the camp. Up to go in."); }
+  }
   if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)
   else if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
     if (im) { const x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.WATER * F.K, w = im.naturalWidth * F.K, h = im.naturalHeight * F.K;
@@ -817,6 +846,7 @@ function g5SpringFalls2(r) {
   ctx.drawImage(src, x, y, w, h); return true;
 }
 const G5_FALLS_CUT = typeof document !== "undefined" ? document.createElement("canvas") : null;
+const G5_MOUTH = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_WATER = typeof document !== "undefined" ? document.createElement("canvas") : null;
 const G5_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function g5DrawOver() {
