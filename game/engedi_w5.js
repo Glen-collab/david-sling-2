@@ -45,6 +45,8 @@ const G5 = {
   HOLLOW: { LEDGES: [[52, 500, 4], [44, 430, 4], [35, 370, 5], [26, 450, 4], [14, 500, 3]], BATS: [[48, 120], [30, 110], [18, 130]], TRUTH: [37, 370] },
   // the pool's fish (adullam.js's, its R4.FISH sizes): [kind, from column, to column, px off the middle of the water]
   FISH: [["tilapia", 12, 30, -40], ["biter", 22, 44, 30], ["perch", 40, 58, -20], ["biter", 56, 76, 20], ["tilapia", 66, 84, -50]],
+  // the hidden mouth: Glen's picture over the room (its size, how much smaller, its floor px in it), the mouth's column
+  HIDEOUT: { W: 2736, H: 912, K: 0.6, FLOOR: 766, MOUTH: 24 },
   CAVE: { WATER_H: 380, AT: 88, FALLS: 93.7, REACH: 72, TURN: 0.5, WALK: 1.0, INSIDE: 0.7, OUT: 0.7, RISE: 40, SHRINK: 0.35 },   // px: the bank he comes in on (left), the rocks at the cave mouth (right)
   PALM_TOP: 270,           // px: the crown of a date palm, where David stands among the dates
   FALLS_K: 1.6,            // the waterfall's size
@@ -66,9 +68,13 @@ const ENGEDI = {
   rooms: [
     // (Glen's, 11-18: the cave mouth bright on the right, the floor with the fire; "stocked", his storeroom cave, once
     //  every load is home: g5Update)
-    { id: "camp", name: "The Camp in the Cave", w: 60, cave: true, mx: 0, my: 1, mw: 2, right: "pens",
+    { id: "camp", name: "The Camp in the Cave", w: 60, cave: true, mx: 0, my: 1, mw: 2, outR: ["hideout", 25],   // (out of its bright end: at the hidden mouth outside)
       far: "engedi/camp/far", near: "engedi/camp/near.png", nearK: 0.62 },
-    { id: "pens", name: "The Sheep Pens by the Way", w: 110, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "camp", right: "spring",
+    // (Glen 11-19: "a break from the camp in the cave to the sheep pens ... David leaving the small cave mouth that looks
+    //  hidden", his two pictures, the pens' sky and near strip) back into the camp by Up at the mouth only
+    { id: "hideout", name: "The Hidden Cave Mouth", w: 46, bg: "w4_1", mx: 2, my: 1, mw: 1, right: "pens",
+      far: "engedi/pens/far", mid: "engedi/hideout/mid.png", midY: -100, near: "engedi/pens/near.png" },
+    { id: "pens", name: "The Sheep Pens by the Way", w: 110, bg: "w4_1", mx: 3, my: 1, mw: 2, left: "hideout", right: "spring",
       far: "engedi/pens/far", mid: "engedi/pens/mid.png", midY: 0, near: "engedi/pens/near.png" },   // (Glen's, 11-18)
     { id: "spring", name: "The Spring", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 4, left: "pens", right: "rocks",
       far: "engedi/spring/far", mid: "engedi/spring/mid.png", midY: 0 },   // (Glen's, 11-18: the oasis; palm fronds hanging over, the pool's edge)
@@ -134,7 +140,7 @@ function g5Build(R) {
   Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg);
   g5.cliffs = []; g5.pools = [];
   for (const pl of ["engedi/pens", "engedi/spring", "engedi/rocks", "engedi/wild"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
-  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png"]) roomImg(n);
+  for (const n of ["engedi/camp/far", "engedi/camp/near.png", "engedi/camp_stocked/far", "engedi/pool/pool.png", "engedi/spring/falls_cave.png", "engedi/spring/falls3_still.png", "engedi/hideout/mouth.png", "engedi/hideout/mid.png"]) roomImg(n);
   g5.swim = null; g5.breath = G5.SWIM.BREATH; g5.fish = [];
   for (const k of ["people", "guards", "hides", "food", "pack", "drops"]) g5[k].length = 0;
   g5.saul = null; g5.pose = null; g5.cave = null; g5.caughtT = 0; g5.entry = {}; g5.lastHearts = null;
@@ -155,6 +161,14 @@ function g5Build(R) {
   }
 
   // -- The Sheep Pens by the Way (24:3): stone pens on the road, and Saul's men, more of them every run
+  // -- The Hidden Cave Mouth (Glen's, 11-19): out of the camp beside it; Up at it to go back in
+  c = R("hideout");
+  { const rm = "hideout", H5 = G5.HIDEOUT;
+    ground(c, c + 45);
+    rPath(rm, c + H5.MOUTH, "camp", 55, "The way back into the camp. Up to go in.", "none");
+    g5.entry.hideout = (c + H5.MOUTH + 2) * T;
+  }
+
   c = R("pens");
   { const rm = "pens", X = k => (c + k) * T;
     ground(c, c + 109);
@@ -649,6 +663,8 @@ function g5Draw(camX) {
   }
   // the falls and the cave behind them (Glen's, 11-18), down to the water's surface: the pool under it is the ground
   //  (Glen 11-19: the pool room's own falls and cave mouth, cut from its picture, a little bigger: its falls painted in)
+  if (r.id === "hideout") { const im = roomImg("engedi/hideout/mouth.png"), K = G5.HIDEOUT;
+    if (im) ctx.drawImage(im, r.c0 * T - camX, FOOT + 4 - K.FLOOR * K.K, K.W * K.K, K.H * K.K); }
   if (r.id === "spring" && g5SpringFalls2(r)) {}   // (Glen 11-19: "the view to go into the pool": his moving falls)
   else if (r.id === "spring") { const im = roomImg("engedi/spring/falls_cave.png"), F = G5.SPRING_FALLS;
     if (im) { const x = g5.falls - F.FX * F.K - camX, y = FOOT + 6 - F.WATER * F.K, w = im.naturalWidth * F.K, h = im.naturalHeight * F.K;

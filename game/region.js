@@ -1880,7 +1880,7 @@ const TRAIL = { SINK: 34,   // (each picture's size; SINK: px its foot goes into
 function drawPathTrails(camX) {
   const r = region.room; if (!r) return;
   for (const p of region.paths) {
-    if (p.room !== r.id) continue;
+    if (p.room !== r.id || p.trail === "none") continue;   // (none: the picture has its own way in, Glen's hidden cave mouth)
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     const im = kitImg(p.trail), k = TRAIL[p.trail];
     if (im && k) { ctx.drawImage(im, x - k.w / 2, FOOT - k.h + TRAIL.SINK, k.w, k.h); continue; }
