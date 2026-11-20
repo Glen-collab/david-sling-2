@@ -109,33 +109,50 @@ function c6Build(R) {
     c6Talk();
   }
 
-  // -- The Fields of Carmel: the fold on the left, the strays all over, two jackals
+  // -- The Fields of Carmel (Glen 11-20: "more pits or cliffs or up and down ... going back to the sheepfold every time
+  //  is kind of monotonous": the fold in the middle) strays out both ways, past pits and up ledges; two jackals
   c = R("fields");
   { const rm = "fields", X = k => (c + k) * T;
     ground(c, c + 139);
-    campfire(c + 3, GR - 1);
-    c6.folds[rm] = { x: X(14), n: 9 };
-    c6.shepherd = rTalker(c6Person(rm, "villager_staffman_stand", X(8), 1), () => c6ShepherdLines("fields"));
-    rLedge(rm, c + 46, 470, 4);
-    c6Stray(rm, 32); c6Stray(rm, 48, 470); c6Stray(rm, 66); c6Stray(rm, 90); c6Stray(rm, 120);
-    rHole(rm, c + 104, 3);
-    c6Hunter("jackal", rm, 76, 7); c6Hunter("jackal", rm, 128, 6);
-    region.props.push({ room: rm, n: "w4_tree_oak", x: X(58) - (KIT.w4_tree_oak ? KIT.w4_tree_oak.w / 2 : 0), y: FOOT - (KIT.w4_tree_oak ? KIT.w4_tree_oak.h : 0) + 10, back: true });
+    campfire(c + 67, GR - 1);
+    c6.folds[rm] = { x: X(70), n: 9 };
+    c6.shepherd = rTalker(c6Person(rm, "villager_staffman_stand", X(63), 1), () => c6ShepherdLines("fields"));
+    // west: a pit, a lamb up a two-step rise, another pit, one at the far end
+    rHole(rm, c + 52, 3);
+    rLedge(rm, c + 38, 480, 4); rLedge(rm, c + 32, 390, 4); c6Stray(rm, 33, 390);
+    c6Stray(rm, 24);
+    rHole(rm, c + 14, 4);
+    c6Stray(rm, 6);
+    // east: a pit, a three-step climb to a lamb on top, a wide pit, one beyond it
+    rHole(rm, c + 86, 3);
+    rLedge(rm, c + 96, 480, 4); rLedge(rm, c + 101, 390, 4); rLedge(rm, c + 106, 300, 4); c6Stray(rm, 107, 300);
+    c6Stray(rm, 116);
+    rHole(rm, c + 122, 4);
+    c6Stray(rm, 133);
+    c6Hunter("jackal", rm, 28, 7); c6Hunter("jackal", rm, 114, 6);
+    region.props.push({ room: rm, n: "w4_tree_oak", x: X(79) - (KIT.w4_tree_oak ? KIT.w4_tree_oak.w / 2 : 0), y: FOOT - (KIT.w4_tree_oak ? KIT.w4_tree_oak.h : 0) + 10, back: true });
   }
 
-  // -- The Hill Pastures: higher, rockier; lambs up on the ledges, a sheep in the thorns, the lion
+  // -- The Hill Pastures: higher, rockier; the fold in the middle, lambs up on the ledges both ways, a sheep in the
+  //  thorns, the lion
   c = R("hills");
   { const rm = "hills", X = k => (c + k) * T;
     ground(c, c + 109);
-    campfire(c + 3, GR - 1);
-    c6.folds[rm] = { x: X(12), n: 7 };
-    rTalker(c6Person(rm, "villager_staffman_stand", X(7), 1), () => c6ShepherdLines("hills"));
-    rLedge(rm, c + 26, 470, 4); rLedge(rm, c + 31, 380, 4); rLedge(rm, c + 36, 290, 4);
-    c6Stray(rm, 37, 290); c6Stray(rm, 48); c6Stray(rm, 64, FOOT, true);
-    rLedge(rm, c + 76, 450, 4); rLedge(rm, c + 82, 350, 3); c6Stray(rm, 83, 350);
-    c6Stray(rm, 100);
-    rHole(rm, c + 90, 3);
-    c6Hunter("lion", rm, 70, 8);
+    campfire(c + 52, GR - 1);
+    c6.folds[rm] = { x: X(55), n: 7 };
+    rTalker(c6Person(rm, "villager_staffman_stand", X(48), 1), () => c6ShepherdLines("hills"));
+    // west: a pit, a tall climb, a lamb at the top; one past a second pit
+    rHole(rm, c + 40, 3);
+    rLedge(rm, c + 30, 480, 4); rLedge(rm, c + 25, 390, 4); rLedge(rm, c + 20, 300, 4); c6Stray(rm, 21, 300);
+    rHole(rm, c + 12, 4);
+    c6Stray(rm, 5);
+    // east: the sheep in the thorns, a pit, ledges up to a lamb, the far one
+    c6Stray(rm, 66, FOOT, true);
+    rHole(rm, c + 72, 3);
+    rLedge(rm, c + 80, 470, 4); rLedge(rm, c + 86, 370, 3); c6Stray(rm, 87, 370);
+    rHole(rm, c + 94, 4);
+    c6Stray(rm, 103);
+    c6Hunter("lion", rm, 84, 8);
   }
 
   // -- Nabal's Shearing (25:2-11): seen only when the young men go (David stays behind)
@@ -183,7 +200,7 @@ function c6Enter(r) {
   if (r.id === "camp" && c6Has("c6_night") && !c6Has("c6_insult") && !c6.sent) { c6.sent = true; c6SendMen(); }   // (home from the night watch: shearing time)
   if (r.id === "fields" && c6Night() && !c6.night) c6NightStart();
   c6.inT = 0;
-  if (r.id === "fields") c6Tell("fields", "The Fields of Carmel. Lambs have wandered off all over. The fold is by the shepherd.");
+  if (r.id === "fields") c6Tell("fields", "The Fields of Carmel. Lambs have wandered off both ways. The fold is in the middle, by the shepherd.");
   if (r.id === "hills" && !c6Has("c6_fields")) c6Tell("hillsearly", "Bring the fields' lambs home first.");
 }
 function c6NightStart() {
