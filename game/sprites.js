@@ -1875,13 +1875,13 @@ window.SPRITE_DATA = {
  "david_carry_lamb_walk": {
   "src": "../assets/sprites/david_carry_lamb_walk.png",
   "frames": 12,
-  "w": 148,
-  "h": 248,
-  "ms": 80,
+  "w": 140,
+  "h": 247,
+  "ms": 101,
   "loop": true,
   "pingpong": false,
-  "ax": 75,
-  "ay": 245,
+  "ax": 69,
+  "ay": 244,
   "align": "feet"
  },
  "david_climb": {
