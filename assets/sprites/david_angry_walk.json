@@ -1,0 +1,23 @@
+{
+  "frames": 10,
+  "frame_w": 162,
+  "frame_h": 228,
+  "ms_per_frame": 62,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 115,
+  "anchor_y": 225,
+  "source": "clip david sword on angry walk.mp4",
+  "video_frames": [
+    120,
+    122,
+    123,
+    124,
+    126,
+    128,
+    129,
+    130,
+    132,
+    134
+  ]
+}

@@ -29,6 +29,7 @@ const C6 = {
     wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80 },
   },
   FLEE: 1.3,               // s a driven-off hunter runs, fading
+  STORM_T: 2.2, STORM_V: 150,   // his angry walk off after 25:13: how long (s), how fast (px/s)
   SHEARERS: [[24, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
   //  lights (David, the fold's fire)
@@ -200,7 +201,7 @@ function c6Folded(s) {
 function c6Update(dt, r) {
   const d = david;
   for (const p of c6.people) p.t += dt;
-  if (c6.pose) c6.pose.t += dt;
+  if (c6.pose) { c6.pose.t += dt; if (c6.pose.walk) david.x += C6.STORM_V * dt; }
   c6.inT = (c6.inT || 0) + dt;
   const free = !region.script.length && region.wait <= 0 && !region.trans;
   // carrying: Down beside a stray picks it up (main.js's pickup); set down (main.js's putdown), it's home if by the fold
@@ -356,8 +357,10 @@ function c6SendMen() {
     { say: ["", "So David's young men turned on their way and went back, and came and told him all these words. (1 Samuel 25:12)"] },
     { fn() { c6.pose = { angry: true, t: 0 }; } },
     { say: ["David", "“Surely in vain I have kept all that this fellow has in the wilderness, so that nothing was missed of all that pertained to him. He has returned me evil for good.” (1 Samuel 25:21)"] },
+    { fn() { c6.pose = { sword: true, t: 0 }; } },
     { say: ["David", "“Every man put on his sword!” (1 Samuel 25:13)"] },
     { say: ["", "Every man put on his sword. David also put on his sword. About four hundred men followed David, and two hundred stayed by the baggage. (1 Samuel 25:13)"] },
+    { fn() { david.facing = 1; c6.pose = { walk: true, t: 0 }; }, wait: C6.STORM_T },   // (Glen's clip) he storms off
     { fn() { c6.pose = null; regionAdd("taken", "c6_insult"); toast("(First pass ends here. Next: Abigail, and the gifts.)"); } },
   ]);
 }
@@ -366,7 +369,10 @@ function c6SendMen() {
 // drawing
 function c6DrawDavid(d, x, y) {
   if (c6.pose && c6.pose.hide) return true;
-  if (c6.pose && c6.pose.angry) { const sh = Math.sin(c6.pose.t * 30) * 1.5; drawSprite("david_idle", 0, x + sh, y, d.facing); return true; }   // (till Glen's clip of him pacing)
+  // (Glen's clip, 11-20) he stews, head down (25:21); draws his sword, holds it up and sheathes it (25:13); storms off
+  if (c6.pose && c6.pose.angry) { drawSprite("david_stew", frameOf("david_stew", c6.pose.t), x, y, d.facing); return true; }
+  if (c6.pose && c6.pose.sword) { drawSprite("david_sword_on", frameOf("david_sword_on", c6.pose.t), x, y, d.facing); return true; }
+  if (c6.pose && c6.pose.walk) { drawSprite("david_angry_walk", frameOf("david_angry_walk", c6.pose.t), x, y, d.facing); return true; }
   return false;
 }
 function c6Draw(camX) {

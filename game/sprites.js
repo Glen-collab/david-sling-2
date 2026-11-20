@@ -1656,6 +1656,18 @@ window.SPRITE_DATA = {
   "ay": 293,
   "align": "feet"
  },
+ "david_angry_walk": {
+  "src": "../assets/sprites/david_angry_walk.png",
+  "frames": 10,
+  "w": 162,
+  "h": 228,
+  "ms": 62,
+  "loop": true,
+  "pingpong": false,
+  "ax": 115,
+  "ay": 225,
+  "align": "feet"
+ },
  "david_anoint_sheep": {
   "src": "../assets/sprites/david_anoint_sheep.png",
   "frames": 12,
@@ -2724,6 +2736,18 @@ window.SPRITE_DATA = {
   "ay": 194,
   "align": "feet"
  },
+ "david_stew": {
+  "src": "../assets/sprites/david_stew.png",
+  "frames": 14,
+  "w": 127,
+  "h": 247,
+  "ms": 226,
+  "loop": false,
+  "pingpong": false,
+  "ax": 75,
+  "ay": 245,
+  "align": "feet"
+ },
  "david_stop": {
   "src": "../assets/sprites/david_stop.png",
   "frames": 6,
@@ -2830,6 +2854,18 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 70,
   "ay": 241,
+  "align": "feet"
+ },
+ "david_sword_on": {
+  "src": "../assets/sprites/david_sword_on.png",
+  "frames": 14,
+  "w": 327,
+  "h": 308,
+  "ms": 128,
+  "loop": false,
+  "pingpong": false,
+  "ax": 137,
+  "ay": 306,
   "align": "feet"
  },
  "david_sword_overhead": {
@@ -7167,13 +7203,13 @@ window.SPRITE_DATA = {
  "servants_donkeys": {
   "src": "../assets/sprites/servants_donkeys.png",
   "frames": 12,
-  "w": 504,
-  "h": 247,
-  "ms": 69,
+  "w": 715,
+  "h": 249,
+  "ms": 101,
   "loop": true,
   "pingpong": false,
-  "ax": 256,
-  "ay": 245,
+  "ax": 368,
+  "ay": 246,
   "align": "feet"
  },
  "shadow_wisp": {
