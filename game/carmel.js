@@ -16,7 +16,11 @@ const C6 = {
   NPC_K: 0.9,
   PICK: 80,                // px: Down this close to a stray lamb picks it up
   FOLD_R: 150,             // px either side of the fold's middle: a lamb set down in here is home
-  FOLD_WALL: 0.42,         // David 1's fold wall pictures, how big
+  FOLD_WALL: 0.42,         // (David 1's fold wall pictures, how big: no longer drawn, Glen's fold below)
+  // Glen's fold (assets/rooms/carmel/kit): the back wall's height and how far up (farther off), the front walls' height,
+  //  how far below the ground line their foot sits, how far out past FOLD_R, how far they overlap the inside; the sheep
+  //  inside: how far they roam (px), how fast
+  FOLD_ART: { BACK_H: 92, BACK_UP: 16, SIDE_H: 165, SIDE_DOWN: 8, SIDE_IN: 30, OVER: 26, ROAM: 40, PACE: 0.22 },
   SHEEP_K: 1.35, LAMB_K: 1.6, // the flock and the lambs (lamb sheets are 0.75 in TUNE.SPRITE_SIZE)
   GRACE: 4,                // s after he comes into a room before a hunter goes for a lamb
   WANDER: 22,              // px/s a stray ambles about its spot
@@ -114,9 +118,9 @@ function c6Build(R) {
   c = R("fields");
   { const rm = "fields", X = k => (c + k) * T;
     ground(c, c + 139);
-    campfire(c + 67, GR - 1);
+    campfire(c + 56, GR - 1);
     c6.folds[rm] = { x: X(70), n: 9 };
-    c6.shepherd = rTalker(c6Person(rm, "villager_staffman_stand", X(63), 1), () => c6ShepherdLines("fields"));
+    c6.shepherd = rTalker(c6Person(rm, "villager_staffman_stand", X(60), 1), () => c6ShepherdLines("fields"));
     // west: a pit, a lamb up a two-step rise, another pit, one at the far end
     rHole(rm, c + 52, 3);
     rLedge(rm, c + 38, 480, 4); rLedge(rm, c + 32, 390, 4); c6Stray(rm, 33, 390);
@@ -138,9 +142,9 @@ function c6Build(R) {
   c = R("hills");
   { const rm = "hills", X = k => (c + k) * T;
     ground(c, c + 109);
-    campfire(c + 52, GR - 1);
+    campfire(c + 63, GR - 1);
     c6.folds[rm] = { x: X(55), n: 7 };
-    rTalker(c6Person(rm, "villager_staffman_stand", X(48), 1), () => c6ShepherdLines("hills"));
+    rTalker(c6Person(rm, "villager_staffman_stand", X(46), 1), () => c6ShepherdLines("hills"));
     // west: a pit, a tall climb, a lamb at the top; one past a second pit
     rHole(rm, c + 40, 3);
     rLedge(rm, c + 30, 480, 4); rLedge(rm, c + 25, 390, 4); rLedge(rm, c + 20, 300, 4); c6Stray(rm, 21, 300);
@@ -401,13 +405,20 @@ function c6Draw(camX) {
   // the fold: the flock grazing, the lambs brought home, the wall in front of them
   const F = c6Fold(r.id);
   if (F) {
-    for (let i = 0; i < F.n; i++) { const n = i % 3 === 0 ? "sheep_stand" : "sheep_graze", x = F.x - 110 + i * 26 + (i % 2) * 8; if (SPR[n]) drawSprite(n, frameOf(n, now + i * 0.37), x - camX, FOOT - 6 - (i % 2) * 4, i % 2 ? -1 : 1, C6.SHEEP_K); }
-    for (const s of c6RoomStrays(r.id)) if (s.state === "folded") { const n = s.slot % 3 === 1 ? "lamb_graze" : "lamb_stand"; drawSprite(n, frameOf(n, now + s.slot * 0.3), s.x - camX, FOOT - 2, s.slot % 2 ? -1 : 1, C6.LAMB_K); }
-    // (David 1's sheepfold walls, assets/items) its two ends, the flock between
-    for (const [n, dx] of [["fold_wall_end_l", -C6.FOLD_R - 30], ["fold_wall_end_r", C6.FOLD_R + 30]]) {
-      const im = typeof ITEM !== "undefined" && ITEM[n], w = (WALL_PIECES[n] || [340, 218])[0] * C6.FOLD_WALL, h = (WALL_PIECES[n] || [340, 218])[1] * C6.FOLD_WALL;
-      if (im && im.naturalWidth) ctx.drawImage(im, F.x + dx - w / 2 - camX, FOOT - h + 14, w, h);
+    // (Glen's fold, 11-20: "piece them together ... to make it look nice and 3d") his back wall, farther off (smaller,
+    //  higher), across the inside; his sheep walking and grazing in there; his two front walls (the gate on the right)
+    const A = C6.FOLD_ART, back = roomImg("carmel/kit/fold_back.png"), L = roomImg("carmel/kit/fold_left.png"), Rt = roomImg("carmel/kit/fold_right.png");
+    if (back) { const bw = back.naturalWidth * A.BACK_H / back.naturalHeight, x0 = F.x - C6.FOLD_R - A.SIDE_IN, x1 = F.x + C6.FOLD_R + A.SIDE_IN;
+      for (let x = x0; x < x1; x += bw - 2) ctx.drawImage(back, Math.round(x - camX), FOOT - A.BACK_UP - A.BACK_H, Math.min(bw, x1 - x + 2), A.BACK_H); }
+    for (let i = 0; i < F.n; i++) {
+      const u = now * A.PACE + i * 1.7, v = Math.cos(u), walking = Math.abs(v) > 0.55;
+      const x = F.x - 120 + i * 30 + (i % 2) * 8 + Math.sin(u) * A.ROAM;
+      const n = walking ? "sheep_walk" : i % 3 === 0 ? "sheep_stand" : "sheep_graze";
+      if (SPR[n]) drawSprite(n, frameOf(n, now + i * 0.37), x - camX, FOOT - 8 - (i % 2) * 4, walking ? Math.sign(v) : i % 2 ? -1 : 1, C6.SHEEP_K);
     }
+    for (const s of c6RoomStrays(r.id)) if (s.state === "folded") { const n = s.slot % 3 === 1 ? "lamb_graze" : "lamb_stand"; drawSprite(n, frameOf(n, now + s.slot * 0.3), s.x - camX, FOOT - 2, s.slot % 2 ? -1 : 1, C6.LAMB_K); }
+    if (L) { const w = L.naturalWidth * A.SIDE_H / L.naturalHeight; ctx.drawImage(L, Math.round(F.x - C6.FOLD_R - A.SIDE_IN - w + A.OVER - camX), FOOT + A.SIDE_DOWN - A.SIDE_H, w, A.SIDE_H); }
+    if (Rt) { const w = Rt.naturalWidth * A.SIDE_H / Rt.naturalHeight; ctx.drawImage(Rt, Math.round(F.x + C6.FOLD_R + A.SIDE_IN - A.OVER - camX), FOOT + A.SIDE_DOWN - A.SIDE_H, w, A.SIDE_H); }
   }
   // the strays
   for (const s of c6.strays) {
