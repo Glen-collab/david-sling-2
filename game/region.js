@@ -13,7 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
-const REGION_KEY = location.hash === "#9-11" ? "engedi" : location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
+const REGION_KEY = location.hash === "#9-12" ? "carmel" : location.hash === "#9-11" ? "engedi" : location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
 const REGION_UP = 130;   // (Glen 11-13: 130 for World 4's Old Well Shaft, 124 rows up; was 110)
 //   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
@@ -113,7 +113,7 @@ const REGION_GIBEAH = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
-const REGION = REGION_KEY === "engedi" && typeof ENGEDI !== "undefined" ? ENGEDI : REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
+const REGION = REGION_KEY === "carmel" && typeof CARMEL !== "undefined" ? CARMEL : REGION_KEY === "engedi" && typeof ENGEDI !== "undefined" ? ENGEDI : REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -2193,6 +2193,14 @@ const CRAWLS = {
     "And then the king walks into the very cave", "where David is hiding. Alone.", "",
     "David's men whisper: this is the day.", "But David will not lift his hand", "against the LORD's anointed.", "",
     "Mercy is stronger than a sword."],
+  carmel: ["# World 6: Carmel", "",   // (draft, 11-20: SERMONS_DRAFT.md's World 6)
+    "Samuel is dead, and all Israel mourns him.", "David goes down into the wilderness.", "(1 Samuel 25:1)", "",
+    "Out in the fields of Carmel, David and his men", "keep a rich man's shepherds safe,", "by night and by day.", "",
+    "Now it is shearing time, a feast day,", "and David asks Nabal for a little food.", "",
+    "“Who is David?", "Who is the son of Jesse?”", "(1 Samuel 25:10)", "",
+    "David is furious.", "“Every man put on his sword!”", "(1 Samuel 25:13)", "",
+    "The man who would not strike the king", "is about to strike a fool.", "",
+    "But Nabal's wife Abigail is wise.", "", "Even a good man needs someone to stop him."],
 };
 const regionCrawlStart = () => { region.crawl = { t: 0 }; };
 function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has the screen

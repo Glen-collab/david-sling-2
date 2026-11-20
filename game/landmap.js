@@ -15,7 +15,7 @@ const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself
   { id: "keilah", name: "Keilah", world: "World 4", x: 512, y: 350, stage: "9-9", key: "keilah", room: "hereth", after: "adullam" },   // (11-14: keilah.js)
   { id: "ziph", name: "Ziph", world: "World 5", x: 610, y: 565, stage: "9-10", key: "ziph", room: "hills", after: "keilah" },   // (11-15: ziph.js)
   { id: "engedi", name: "En-Gedi", world: "World 5", x: 1012, y: 269, stage: "9-11", key: "engedi", room: "camp", after: "ziph" },   // (11-18: engedi_w5.js)
-  { id: "carmel", name: "Carmel", world: "World 6", x: 762, y: 450, stage: null, after: "engedi" },
+  { id: "carmel", name: "Carmel", world: "World 6", x: 762, y: 450, stage: "9-12", key: "carmel", room: "camp", after: "engedi" },   // (11-20: carmel.js)
   { id: "ziklag", name: "Ziklag", world: "World 7", x: 656, y: 512, stage: null, after: "carmel" },
   { id: "hebron", name: "Hebron", world: "World 8", x: 887, y: 168, stage: null, after: "ziklag" },
   { id: "jerusalem", name: "Jerusalem", world: "World 8", x: 688, y: 34, stage: null, after: "hebron" },
