@@ -416,7 +416,7 @@ function c6SendMen() {
     { say: ["David", "“Every man put on his sword!” (1 Samuel 25:13)"] },
     { say: ["", "Every man put on his sword. David also put on his sword. About four hundred men followed David, and two hundred stayed by the baggage. (1 Samuel 25:13)"] },
     { fn() { david.facing = 1; c6.pose = { walk: true, t: 0 }; }, wait: C6.STORM_T },   // (Glen's clip) he storms off
-    { fn() { c6.pose = null; regionAdd("taken", "c6_insult"); toast("(First pass ends here. Next: Abigail, and the gifts.)"); } },
+    { fn() { c6.pose = null; regionAdd("taken", "c6_insult"); } },   // (then Abigail: carmel_abigail.js, c7Begin)
   ]);
 }
 
