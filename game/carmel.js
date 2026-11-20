@@ -294,7 +294,13 @@ function c6Hunt(h, dt, r) {
   if (h.state === "dazed") { if (h.t > 1.0) { h.state = "prowl"; h.t = 0; h.cool = 1.5; } return; }
   const touch = () => {
     if (Math.abs(dx) >= H_.box * 0.6 || Math.abs(d.y - h.y) >= 80 || d.inv > 0) return false;
-    const was = d.hearts; hurtDavid(h.x);
+    const was = d.hearts, held = d.carrying && c6.carry && d.onGround ? c6.carry : null;
+    if (held) { d.carrying = false; lamb.carried = false; setState("idle"); }   // (Glen 11-20: bitten, he drops the lamb...)
+    hurtDavid(h.x);
+    if (held) {   // ...it runs off a little way, and he can drive the animal off and pick it up again
+      c6.carry = null; Object.assign(held, { state: "stray", x: d.x, y: d.y, hx: d.x, room: r.id, dir: Math.sign(d.x - h.x) || 1, runT: C6.SCATTER.FOR * 0.5 });
+      c6Tell("bitdrop", "You dropped the lamb! Drive it off, then pick the lamb up again.");
+    }
     if (d.hearts < was) { d.hearts = Math.max(0.01, d.hearts - Math.max(0, H_.hurt - (was - d.hearts))); return true; }   // (a lion bites harder)
     return false;
   };
@@ -305,7 +311,7 @@ function c6Hunt(h, dt, r) {
     return;
   }
   if (h.state === "prowl") {
-    if (h.atkCool <= 0 && c6.inT > C6.GRACE && !c6.carry && Math.abs(dx) < H_.atk && Math.abs(d.y - h.y) < 80) { h.state = "lunge"; h.t = 0; h.facing = Math.sign(dx) || 1; c6Tell("bites", "Careful: they'll go for you too. Sling it before it gets close."); return; }
+    if (h.atkCool <= 0 && c6.inT > C6.GRACE && Math.abs(dx) < H_.atk && Math.abs(d.y - h.y) < 80) { h.state = "lunge"; h.t = 0; h.facing = Math.sign(dx) || 1; c6Tell("bites", "Careful: they'll go for you too. Sling it before it gets close."); return; }
     h.x += h.facing * H_.walk * dt; touch();
     if (h.x < h.hx - h.range) h.facing = 1; else if (h.x > h.hx + h.range) h.facing = -1;
     if (h.cool <= 0 && c6.inT > C6.GRACE) {
