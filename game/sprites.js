@@ -5724,6 +5724,18 @@ window.SPRITE_DATA = {
   "ay": 159,
   "align": "feet"
  },
+ "men_march": {
+  "src": "../assets/sprites/men_march.png",
+  "frames": 12,
+  "w": 342,
+  "h": 254,
+  "ms": 73,
+  "loop": true,
+  "pingpong": false,
+  "ax": 177,
+  "ay": 252,
+  "align": "feet"
+ },
  "messenger_dismount": {
   "src": "../assets/sprites/messenger_dismount.png",
   "frames": 14,

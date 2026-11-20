@@ -35,7 +35,7 @@ keyed out) and **near** (a strip along the bottom, everything above it keyed out
 Use your David, Abigail and Nabal from the other clips, in the same clothes.
 1. **(done, 11-20: david_stew)** **David, frustrated:** `...pacing two steps, stopping, clenching his fists and shaking his head, angry.` (After the insult, 25:21.)
 2. **(done, 11-20: david_sword_on, david_angry_walk)** **David putting on his sword:** `...strapping a sword belt around his waist, hard and angry, then gripping the hilt.` (25:13.)
-3. **David's men marching:** `Three bearded men of David's band in worn robes, swords at their belts, marching fast in a line, grim.` (Repeated for the 400.)
+3. **(done, 11-20: men_march)** **David's men marching:** `Three bearded men of David's band in worn robes, swords at their belts, marching fast in a line, grim.` (Repeated for the 400.)
 4. **David listening:** `...standing, his anger fading, lowering his head, then reaching out a hand as if helping someone up.` (25:32-35.)
 5. **(done, 11-20: in the shearing room)** **A shearer at work:** `A shepherd of ancient Israel kneeling and shearing a white sheep with iron shears, wool falling.`
 6. **(done, 11-20: abigail_load)** **Abigail loading a donkey:** `...lifting a basket of bread up onto a donkey's back and tying it on, in a hurry.`

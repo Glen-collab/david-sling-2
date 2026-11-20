@@ -29,7 +29,7 @@ const C6 = {
     wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80 },
   },
   FLEE: 1.3,               // s a driven-off hunter runs, fading
-  STORM_T: 2.2, STORM_V: 150,   // his angry walk off after 25:13: how long (s), how fast (px/s)
+  STORM_T: 3, STORM_V: 150, MARCH_N: 4, MARCH_GAP: 300,   // and his men behind: how many groups of three, px apart   // his angry walk off after 25:13: how long (s), how fast (px/s)
   SHEARERS: [[24, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
   //  lights (David, the fold's fire)
@@ -372,7 +372,9 @@ function c6DrawDavid(d, x, y) {
   // (Glen's clip, 11-20) he stews, head down (25:21); draws his sword, holds it up and sheathes it (25:13); storms off
   if (c6.pose && c6.pose.angry) { drawSprite("david_stew", frameOf("david_stew", c6.pose.t), x, y, d.facing); return true; }
   if (c6.pose && c6.pose.sword) { drawSprite("david_sword_on", frameOf("david_sword_on", c6.pose.t), x, y, d.facing); return true; }
-  if (c6.pose && c6.pose.walk) { drawSprite("david_angry_walk", frameOf("david_angry_walk", c6.pose.t), x, y, d.facing); return true; }
+  if (c6.pose && c6.pose.walk) {   // (Glen's clip) the 400 behind him: his three men, again and again
+    if (SPR.men_march) for (let i = 1; i <= C6.MARCH_N; i++) drawSprite("men_march", frameOf("men_march", c6.pose.t + i * 0.3), x - d.facing * (C6.MARCH_GAP * i - 60), y, d.facing);
+    drawSprite("david_angry_walk", frameOf("david_angry_walk", c6.pose.t), x, y, d.facing); return true; }
   return false;
 }
 function c6Draw(camX) {

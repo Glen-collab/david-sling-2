@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 342,
+  "frame_h": 254,
+  "ms_per_frame": 73,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 177,
+  "anchor_y": 252,
+  "source": "clip men marching.mp4",
+  "video_frames": [
+    39,
+    41,
+    43,
+    44,
+    46,
+    48,
+    49,
+    51,
+    53,
+    55,
+    57,
+    58
+  ]
+}
