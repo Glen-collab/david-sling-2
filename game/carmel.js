@@ -23,7 +23,11 @@ const C6 = {
   FOLD_ART: { BACK_H: 92, BACK_UP: 16, SIDE_H: 165, SIDE_DOWN: 8, SIDE_IN: 30, OVER: 26, ROAM: 40, PACE: 0.22 },
   SHEEP_K: 1.35, LAMB_K: 1.6, // the flock and the lambs (lamb sheets are 0.75 in TUNE.SPRITE_SIZE)
   GRACE: 4,                // s after he comes into a room before a hunter goes for a lamb
-  WANDER: 22,              // px/s a stray ambles about its spot
+  WANDER: 12,              // px/s a stray ambles about its spot (was 22; Glen 11-20: slower)
+  STEPS: [0.9, 1.4],       // s a stray walks each time (about 2-3 steps)
+  REST: [2.5, 5],          // s it stops between walks
+  GRAZE: 0.7,              // chance it grazes (not just stands) when it stops
+  WALK_MS: 95,             // ms per frame of its walk (the sprite's own is 66)
   THORNS_WALK: 110,         // px/s a sheep cut out of the thorns walks home
   // the hunters: walk and run speeds, how far they see a lamb, how close David can be before they won't try, how long
   //  before they try again, back after being driven off (s), how big
@@ -33,9 +37,8 @@ const C6 = {
     wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80 },
   },
   FLEE: 1.3,               // s a driven-off hunter runs, fading
-  STILL: 0.7,   // how much a stray stands still (the wander's sine must pass this to walk: 0.2 was 40% walking, 0.7 is about 25%)
   STORM_T: 3, STORM_V: 150, MARCH_N: 4, MARCH_GAP: 300,   // and his men behind: how many groups of three, px apart   // his angry walk off after 25:13: how long (s), how fast (px/s)
-  SHEARERS: [[24, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
+  SHEARERS: [[34, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
   //  lights (David, the fold's fire)
   NIGHT: { LEN: 50, WAVE: [4.5, 7], DARK: 0.55, LIT: 260, FIRE: 320 },
@@ -102,6 +105,7 @@ function c6Build(R) {
   Object.assign(TUNE.SPRITE_SIZE, { wolf_walk: 1.25, wolf_run: 1.25, wolf_howl: 1.25, wolf_sit: 1.25 });   // (as world2.js, not loaded in Part Two)
   for (const k of ["people", "strays", "hunters"]) c6[k].length = 0;
   c6.folds = {}; c6.carry = null; c6.night = null; c6.pose = null; c6.men = null; c6.sent = false; c6.cut = false;
+  ["fold_back", "fold_left", "fold_right"].forEach(n => roomImg("carmel/kit/" + n + ".png"));   // (load the fold before it comes on screen)
   ["w4_z_hide_rock", "w4_tree_oak", "w4_tree_acacia"].forEach(kitImg);
 
   // -- David's Camp in the Wilderness of Paran (25:1): the men, Abishai at the fire
@@ -164,7 +168,8 @@ function c6Build(R) {
   { const rm = "shearing", X = k => (c + k) * T;
     ground(c, c + 59);
     c6.nabal = c6Person(rm, "nabal_stand", X(27), -1, null, 1);   // (in one frame with the young men: the camera's on col 18)
-    c6.young = [c6Person(rm, "asahel_idle", X(20), 1, () => !!c6.cut), c6Person(rm, "armorbearer_idle", X(16), 1, () => !!c6.cut), c6Person(rm, "boy_idle", X(12), 1, () => !!c6.cut)];
+    // (Glen 11-20: "the same young men talking to Nabal that are talking to David") the camp's own men go
+    c6.young = [c6Person(rm, "abishai_idle", X(20), 1, () => !!c6.cut), c6Person(rm, "asahel_idle", X(16), 1, () => !!c6.cut), c6Person(rm, "soldier_talk", X(12), 1, () => !!c6.cut, 0.76)];
     c6.flock = [[X(33), 1], [X(37), -1], [X(41), 1], [X(6), -1], [X(9), 1]];
   }
 }
@@ -245,7 +250,14 @@ function c6Update(dt, r) {
     s.t += dt;
     if (s.state === "stray") {
       if (s.runT > 0) { s.runT -= dt; s.x += s.dir * C6.SCATTER.RUN * dt; s.hx = s.x; }
-      else if (Math.abs(s.y - FOOT) < 10) { s.x += s.dir * C6.WANDER * dt * (Math.sin(s.t * 0.7) > C6.STILL ? 1 : 0); if (Math.abs(s.x - s.hx) > 60) s.dir = Math.sign(s.hx - s.x); }
+      else if (Math.abs(s.y - FOOT) < 10) {
+        // (Glen 11-20) a few slow steps, then a long stop to graze or stand
+        if (s.walkT > 0) { s.walkT -= dt; s.x += s.dir * C6.WANDER * dt; if (s.walkT <= 0) { s.restT = C6.REST[0] + Math.random() * (C6.REST[1] - C6.REST[0]); s.graze = Math.random() < C6.GRAZE; } }
+        else if ((s.restT = (s.restT ?? Math.random() * C6.REST[1]) - dt) <= 0) {
+          s.walkT = C6.STEPS[0] + Math.random() * (C6.STEPS[1] - C6.STEPS[0]);
+          if (Math.abs(s.x - s.hx) > 40) s.dir = Math.sign(s.hx - s.x); else if (Math.random() < 0.5) s.dir *= -1;
+        }
+      }
       s.x = Math.max((r.c0 + 1) * T, Math.min((r.c0 + r.w - 1) * T, s.x));
       if (holeAt && holeAt(s.x)) { s.x -= s.dir * 40; s.dir *= -1; }
     } else if (s.state === "free") {   // cut out of the thorns: walks home by itself
@@ -427,9 +439,8 @@ function c6Draw(camX) {
     if (s.state === "thorns") { drawSprite("sheep_thorns", frameOf("sheep_thorns", s.t), x, s.y, 1, C6.SHEEP_K); continue; }
     if (s.state === "free") { drawSprite("sheep_walk", frameOf("sheep_walk", s.t), x, s.y, s.dir, C6.SHEEP_K); continue; }
     // (Glen 11-20: "use more of the standing one") a stray mostly stands; now and then it grazes or wanders a step
-    const moving = s.runT > 0 || Math.sin(s.t * 0.7) > C6.STILL;
-    const n = s.runT > 0 ? "lamb_run" : moving ? "lamb_walk" : Math.sin(s.t * 0.23 + s.x) > 0.55 ? "lamb_graze" : "lamb_stand";
-    drawSprite(n, frameOf(n, s.t), x, s.y, s.dir, C6.LAMB_K);
+    const n = s.runT > 0 ? "lamb_run" : s.walkT > 0 ? "lamb_walk" : s.graze ? "lamb_graze" : "lamb_stand";
+    drawSprite(n, frameOf(n, s.t, n === "lamb_walk" ? C6.WALK_MS : 0), x, s.y, s.dir, C6.LAMB_K);
   }
   // the hunters
   for (const h of c6.hunters) {
@@ -466,8 +477,7 @@ function c6DrawOver() {
       x2.fillStyle = g; x2.fillRect(lx - rad, ly - rad, rad * 2, rad * 2);
     }
     ctx.drawImage(C6_DARK, 0, 0);
-    // the wolves' eyes in the dark
-    for (const h of c6.hunters) if (h.room === "fields" && h.night && h.state === "run") { const ex = h.x - camX + h.facing * 52, ey = FOOT - 72 - camY; ctx.fillStyle = "rgba(255,220,120,0.9)"; ctx.beginPath(); ctx.arc(ex, ey, 3, 0, 7); ctx.arc(ex - h.facing * 9, ey, 3, 0, 7); ctx.fill(); }
+    // (Glen 11-20: the wolves' glowing eyes didn't work, so they're gone)
   }
   // the count (bottom left: the top is the controls and the hearts)
   let line = null;
