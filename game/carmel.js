@@ -9,13 +9,14 @@
 //   at the fold till morning) -> back at the camp: ten young men go to Nabal at the shearing (25:5-11), the insult, and
 //   David's anger (25:21, 25:13).
 //
-// Half two, Abigail's gift run and the anger meter, comes next. First pass (11-20): stand-in pictures (Keilah's road,
-// Ziph's hills and Maon, En-Gedi's sheep pens) till Glen's own (ART_PROMPTS_CARMEL.md).
+// Half two, Abigail's gift run and the anger meter, comes next. First pass (11-20): David 1's pastures and camp till
+// Glen's own (ART_PROMPTS_CARMEL.md).
 
 const C6 = {
   NPC_K: 0.9,
   PICK: 80,                // px: Down this close to a stray lamb picks it up
   FOLD_R: 150,             // px either side of the fold's middle: a lamb set down in here is home
+  FOLD_WALL: 0.42,         // David 1's fold wall pictures, how big
   SHEEP_K: 1.35, LAMB_K: 1.6, // the flock and the lambs (lamb sheets are 0.75 in TUNE.SPRITE_SIZE)
   GRACE: 4,                // s after he comes into a room before a hunter goes for a lamb
   WANDER: 22,              // px/s a stray ambles about its spot
@@ -30,7 +31,7 @@ const C6 = {
   FLEE: 1.3,               // s a driven-off hunter runs, fading
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
   //  lights (David, the fold's fire)
-  NIGHT: { LEN: 50, WAVE: [4.5, 7], DARK: 0.82, LIT: 260, FIRE: 320 },
+  NIGHT: { LEN: 50, WAVE: [4.5, 7], DARK: 0.55, LIT: 260, FIRE: 320 },
   SCATTER: { RUN: 260, FOR: 1.4 },   // a lamb a wolf scatters out of the fold: its run (px/s, s)
 };
 
@@ -38,14 +39,13 @@ const CARMEL = {
   key: "carmel", name: "Carmel", start: "camp", carry: ["gibeah", "ramah", "nobgath", "adullam", "keilah", "ziph", "engedi"],
   strCap: 9,
   rooms: [
-    { id: "camp", name: "David's Camp in Paran", w: 60, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "fields",
-      far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },   // (stand-in: Ziph's Maon)
-    { id: "fields", name: "The Fields of Carmel", w: 140, bg: "w4_1", mx: 2, my: 1, mw: 4, left: "camp", right: "hills",
-      far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },   // (stand-in: Keilah's road)
-    { id: "hills", name: "The Hill Pastures", w: 110, bg: "w4_1", mx: 6, my: 1, mw: 3, left: "fields",
-      far: "ziph/hills/far", mid: "ziph/hills/mid.png", midY: 0, near: "ziph/hills/near.png" },   // (stand-in: Ziph's hills)
-    { id: "shearing", name: "Nabal's Shearing", w: 60, bg: "w4_1", mx: 9, my: 1, mw: 2,
-      far: "engedi/pens/far", mid: "engedi/pens/mid.png", midY: 0, near: "engedi/pens/near.png" },   // (stand-in: En-Gedi's sheep pens)
+    // (Glen 11-20: "check the art from David 1 for any assets and backgrounds we can use") his World 1 pastures and his
+    //  camp, till the Carmel pictures (ART_PROMPTS_CARMEL.md)
+    { id: "camp", name: "David's Camp in Paran", w: 60, bg: "w6_1", mx: 0, my: 1, mw: 2, right: "fields" },   // (David 1's camp of Israel, 6-1)
+    { id: "fields", name: "The Fields of Carmel", w: 140, mx: 2, my: 1, mw: 4, left: "camp", right: "hills",
+      get bg() { return c6.night ? "w1_4" : "w1_2"; } },   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
+    { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields" },   // (David 1's Rocky Pastures, 1-3)
+    { id: "shearing", name: "Nabal's Shearing", w: 60, bg: "w3_2", mx: 9, my: 1, mw: 2 },   // (David 1's Far Pasture, 3-2: a town on the hill)
   ],
   // the Journal: Glen's song, Verse 3, its second half (SONG_PSALM57.md, his words exactly)
   steps: ["c6_fields", "c6_hills", "c6_night", "c6_insult"],
@@ -91,7 +91,6 @@ function c6Build(R) {
   if (typeof Z5_KIT !== "undefined") Object.assign(KIT, Z5_KIT);
   if (typeof G5_KIT !== "undefined") { Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg); }   // (En-Gedi's sheep pen wall: the fold, till Glen's)
   Object.assign(TUNE.SPRITE_SIZE, { wolf_walk: 1.25, wolf_run: 1.25, wolf_howl: 1.25, wolf_sit: 1.25 });   // (as world2.js, not loaded in Part Two)
-  for (const pl of ["ziph/maon", "keilah/road", "ziph/hills", "engedi/pens"]) for (const f of ["far", "mid.png", "near.png"]) roomImg(pl + "/" + f);
   for (const k of ["people", "strays", "hunters"]) c6[k].length = 0;
   c6.folds = {}; c6.carry = null; c6.night = null; c6.pose = null; c6.men = null; c6.sent = false; c6.cut = false;
   ["w4_z_hide_rock", "w4_tree_oak", "w4_tree_acacia"].forEach(kitImg);
@@ -375,8 +374,11 @@ function c6Draw(camX) {
   if (F) {
     for (let i = 0; i < F.n; i++) { const n = i % 3 === 0 ? "sheep_stand" : "sheep_graze", x = F.x - 110 + i * 26 + (i % 2) * 8; if (SPR[n]) drawSprite(n, frameOf(n, now + i * 0.37), x - camX, FOOT - 6 - (i % 2) * 4, i % 2 ? -1 : 1, C6.SHEEP_K); }
     for (const s of c6RoomStrays(r.id)) if (s.state === "folded") drawSprite("lamb_graze", frameOf("lamb_graze", now + s.slot * 0.3), s.x - camX, FOOT - 2, s.slot % 2 ? -1 : 1, C6.LAMB_K);
-    const k = KIT.w4_e_penwall, im = k && kitImg("w4_e_penwall");
-    if (im && im.naturalWidth) for (const dx of [-C6.FOLD_R - 40, C6.FOLD_R + 40]) ctx.drawImage(im, F.x + dx - k.w * 0.3 - camX, FOOT - k.h * 0.6 + 8, k.w * 0.6, k.h * 0.6);   // (its two ends, the flock between)
+    // (David 1's sheepfold walls, assets/items) its two ends, the flock between
+    for (const [n, dx] of [["fold_wall_end_l", -C6.FOLD_R - 30], ["fold_wall_end_r", C6.FOLD_R + 30]]) {
+      const im = typeof ITEM !== "undefined" && ITEM[n], w = (WALL_PIECES[n] || [340, 218])[0] * C6.FOLD_WALL, h = (WALL_PIECES[n] || [340, 218])[1] * C6.FOLD_WALL;
+      if (im && im.naturalWidth) ctx.drawImage(im, F.x + dx - w / 2 - camX, FOOT - h + 14, w, h);
+    }
   }
   // the strays
   for (const s of c6.strays) {
