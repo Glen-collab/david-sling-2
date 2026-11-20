@@ -2535,13 +2535,13 @@ window.SPRITE_DATA = {
  "david_pickup_lamb": {
   "src": "../assets/sprites/david_pickup_lamb.png",
   "frames": 16,
-  "w": 182,
-  "h": 247,
+  "w": 184,
+  "h": 251,
   "ms": 159,
   "loop": false,
   "pingpong": false,
-  "ax": 118,
-  "ay": 245,
+  "ax": 78,
+  "ay": 249,
   "align": "feet"
  },
  "david_play_harp": {
