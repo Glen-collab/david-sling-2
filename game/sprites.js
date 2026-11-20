@@ -2568,6 +2568,18 @@ window.SPRITE_DATA = {
   "ay": 185,
   "align": "feet"
  },
+ "david_relent": {
+  "src": "../assets/sprites/david_relent.png",
+  "frames": 18,
+  "w": 126,
+  "h": 247,
+  "ms": 292,
+  "loop": false,
+  "pingpong": false,
+  "ax": 73,
+  "ay": 245,
+  "align": "feet"
+ },
  "david_rip_page": {
   "src": "../assets/sprites/david_rip_page.png",
   "frames": 6,

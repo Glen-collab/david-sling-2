@@ -1,0 +1,31 @@
+{
+  "frames": 18,
+  "frame_w": 126,
+  "frame_h": 247,
+  "ms_per_frame": 292,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 73,
+  "anchor_y": 245,
+  "source": "clip david relents.mp4",
+  "video_frames": [
+    20,
+    27,
+    35,
+    42,
+    49,
+    57,
+    64,
+    71,
+    79,
+    86,
+    94,
+    101,
+    108,
+    116,
+    123,
+    130,
+    138,
+    145
+  ]
+}
