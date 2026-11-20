@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 504,
+  "frame_h": 247,
+  "ms_per_frame": 69,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 256,
+  "anchor_y": 245,
+  "source": "clip servants donkeys.mp4",
+  "video_frames": [
+    19,
+    21,
+    22,
+    24,
+    26,
+    27,
+    29,
+    31,
+    32,
+    34,
+    36,
+    37
+  ]
+}

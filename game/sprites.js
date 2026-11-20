@@ -7164,6 +7164,18 @@ window.SPRITE_DATA = {
   "ay": 92,
   "align": "feet"
  },
+ "servants_donkeys": {
+  "src": "../assets/sprites/servants_donkeys.png",
+  "frames": 12,
+  "w": 504,
+  "h": 247,
+  "ms": 69,
+  "loop": true,
+  "pingpong": false,
+  "ax": 256,
+  "ay": 245,
+  "align": "feet"
+ },
  "shadow_wisp": {
   "src": "../assets/sprites/shadow_wisp.png",
   "frames": 4,
