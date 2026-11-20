@@ -89,9 +89,19 @@ rides out with her five maids to become his wife. The Journal page; Psalm 57:7, 
 - Sprites: shearers at work; Nabal's shepherds; Abigail's young men leading the loaded donkeys; David's 400 marching
   (a few men, repeated); David angry, then David listening.
 
-## Questions for Glen
-1. Is the mission right: David guards the flock (nothing missing), then Abigail's gift run?
-2. How much of the world is Abigail? (a proposal: the last three rooms)
-3. The boss: gifts only, or gifts and words (choices)?
-4. Nabal's death: the two verses (37-38) as plain text, or left out?
-5. The end: Abigail becomes David's wife (25:42) as the end card, or stop at 25:35?
+## Glen's answers (11-20)
+- "I like the set up": the mission as above. Abigail plays the last three rooms; the boss is her gifts and her words.
+- **Nabal's death, and David's frustration: in.** David's anger is played, not just told: after the insult he paces
+  and stews (25:21, "He has returned me evil for good"), then "Every man put on his sword!" At the end, 25:37-38 told
+  plainly (Nabal "became as a stone"; ten days later the LORD struck him), then David's answer (25:39).
+- **The end: Abigail becomes David's wife** (25:39-42): his messengers come to Carmel, she bows, and rides out after
+  them on her donkey with her five maids. 25:43-44 (Ahinoam; Michal given to Palti) are left out.
+- 25:21 (in, for the frustration): "Surely in vain I have kept all that this fellow has in the wilderness, so that
+  nothing was missed of all that pertained to him. He has returned me evil for good."
+- 25:39: "Blessed is the LORD, who has pleaded the cause of my reproach from the hand of Nabal, and has kept back his
+  servant from evil. The LORD has returned the evildoing of Nabal on his own head." David sent and spoke concerning
+  Abigail, to take her to himself as wife.
+- 25:40-41: "David has sent us to you, to take you to him as wife." She arose and bowed herself with her face to the
+  earth, and said, "Behold, your servant is a servant to wash the feet of the servants of my lord."
+
+The art prompts are in ART_PROMPTS_CARMEL.md.
