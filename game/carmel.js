@@ -29,6 +29,7 @@ const C6 = {
     wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80 },
   },
   FLEE: 1.3,               // s a driven-off hunter runs, fading
+  STILL: 0.7,   // how much a stray stands still (the wander's sine must pass this to walk: 0.2 was 40% walking, 0.7 is about 25%)
   STORM_T: 3, STORM_V: 150, MARCH_N: 4, MARCH_GAP: 300,   // and his men behind: how many groups of three, px apart   // his angry walk off after 25:13: how long (s), how fast (px/s)
   SHEARERS: [[24, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
@@ -223,7 +224,7 @@ function c6Update(dt, r) {
     s.t += dt;
     if (s.state === "stray") {
       if (s.runT > 0) { s.runT -= dt; s.x += s.dir * C6.SCATTER.RUN * dt; s.hx = s.x; }
-      else if (Math.abs(s.y - FOOT) < 10) { s.x += s.dir * C6.WANDER * dt * (Math.sin(s.t * 0.7) > 0.2 ? 1 : 0); if (Math.abs(s.x - s.hx) > 60) s.dir = Math.sign(s.hx - s.x); }
+      else if (Math.abs(s.y - FOOT) < 10) { s.x += s.dir * C6.WANDER * dt * (Math.sin(s.t * 0.7) > C6.STILL ? 1 : 0); if (Math.abs(s.x - s.hx) > 60) s.dir = Math.sign(s.hx - s.x); }
       s.x = Math.max((r.c0 + 1) * T, Math.min((r.c0 + r.w - 1) * T, s.x));
       if (holeAt && holeAt(s.x)) { s.x -= s.dir * 40; s.dir *= -1; }
     } else if (s.state === "free") {   // cut out of the thorns: walks home by itself
@@ -384,7 +385,7 @@ function c6Draw(camX) {
   const F = c6Fold(r.id);
   if (F) {
     for (let i = 0; i < F.n; i++) { const n = i % 3 === 0 ? "sheep_stand" : "sheep_graze", x = F.x - 110 + i * 26 + (i % 2) * 8; if (SPR[n]) drawSprite(n, frameOf(n, now + i * 0.37), x - camX, FOOT - 6 - (i % 2) * 4, i % 2 ? -1 : 1, C6.SHEEP_K); }
-    for (const s of c6RoomStrays(r.id)) if (s.state === "folded") drawSprite("lamb_graze", frameOf("lamb_graze", now + s.slot * 0.3), s.x - camX, FOOT - 2, s.slot % 2 ? -1 : 1, C6.LAMB_K);
+    for (const s of c6RoomStrays(r.id)) if (s.state === "folded") { const n = s.slot % 3 === 1 ? "lamb_graze" : "lamb_stand"; drawSprite(n, frameOf(n, now + s.slot * 0.3), s.x - camX, FOOT - 2, s.slot % 2 ? -1 : 1, C6.LAMB_K); }
     // (David 1's sheepfold walls, assets/items) its two ends, the flock between
     for (const [n, dx] of [["fold_wall_end_l", -C6.FOLD_R - 30], ["fold_wall_end_r", C6.FOLD_R + 30]]) {
       const im = typeof ITEM !== "undefined" && ITEM[n], w = (WALL_PIECES[n] || [340, 218])[0] * C6.FOLD_WALL, h = (WALL_PIECES[n] || [340, 218])[1] * C6.FOLD_WALL;
@@ -397,8 +398,9 @@ function c6Draw(camX) {
     const x = s.x - camX; if (x < -200 || x > W + 200) continue;
     if (s.state === "thorns") { drawSprite("sheep_thorns", frameOf("sheep_thorns", s.t), x, s.y, 1, C6.SHEEP_K); continue; }
     if (s.state === "free") { drawSprite("sheep_walk", frameOf("sheep_walk", s.t), x, s.y, s.dir, C6.SHEEP_K); continue; }
-    const moving = s.runT > 0 || Math.sin(s.t * 0.7) > 0.2;
-    const n = s.runT > 0 ? "lamb_run" : moving ? "lamb_walk" : "lamb_graze";
+    // (Glen 11-20: "use more of the standing one") a stray mostly stands; now and then it grazes or wanders a step
+    const moving = s.runT > 0 || Math.sin(s.t * 0.7) > C6.STILL;
+    const n = s.runT > 0 ? "lamb_run" : moving ? "lamb_walk" : Math.sin(s.t * 0.23 + s.x) > 0.55 ? "lamb_graze" : "lamb_stand";
     drawSprite(n, frameOf(n, s.t), x, s.y, s.dir, C6.LAMB_K);
   }
   // the hunters
