@@ -124,7 +124,7 @@ function c6Build(R) {
     ground(c, c + 139);
     campfire(c + 56, GR - 1);
     c6.folds[rm] = { x: X(70), n: 9 };
-    c6.shepherd = rTalker(c6Person(rm, "villager_staffman_stand", X(60), 1), () => c6ShepherdLines("fields"));
+    c6.shepherd = rTalker(c6Person(rm, "shepherd_stand", X(60), 1), () => c6ShepherdLines("fields"));
     // west: a pit, a lamb up a two-step rise, another pit, one at the far end
     rHole(rm, c + 52, 3);
     rLedge(rm, c + 38, 480, 4); rLedge(rm, c + 32, 390, 4); c6Stray(rm, 33, 390);
@@ -148,7 +148,7 @@ function c6Build(R) {
     ground(c, c + 109);
     campfire(c + 63, GR - 1);
     c6.folds[rm] = { x: X(55), n: 7 };
-    rTalker(c6Person(rm, "villager_staffman_stand", X(46), 1), () => c6ShepherdLines("hills"));
+    rTalker(c6Person(rm, "shepherd_stand", X(46), 1), () => c6ShepherdLines("hills"));
     // west: a pit, a tall climb, a lamb at the top; one past a second pit
     rHole(rm, c + 40, 3);
     rLedge(rm, c + 30, 480, 4); rLedge(rm, c + 25, 390, 4); rLedge(rm, c + 20, 300, 4); c6Stray(rm, 21, 300);

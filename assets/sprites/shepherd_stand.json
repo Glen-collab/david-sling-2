@@ -1,0 +1,29 @@
+{
+  "frames": 16,
+  "frame_w": 103,
+  "frame_h": 246,
+  "ms_per_frame": 143,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 37,
+  "anchor_y": 244,
+  "source": "shepherd.mp4",
+  "video_frames": [
+    3,
+    6,
+    10,
+    13,
+    17,
+    20,
+    24,
+    27,
+    31,
+    34,
+    37,
+    41,
+    44,
+    48,
+    51,
+    55
+  ]
+}

@@ -7536,6 +7536,18 @@ window.SPRITE_DATA = {
   "ay": 108,
   "align": "feet"
  },
+ "shepherd_stand": {
+  "src": "../assets/sprites/shepherd_stand.png",
+  "frames": 16,
+  "w": 103,
+  "h": 246,
+  "ms": 143,
+  "loop": true,
+  "pingpong": false,
+  "ax": 37,
+  "ay": 244,
+  "align": "feet"
+ },
  "signal_fire": {
   "src": "../assets/sprites/signal_fire.png",
   "frames": 5,

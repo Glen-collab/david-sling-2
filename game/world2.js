@@ -125,6 +125,7 @@ TUNE.SPRITE_SIZE.abigail_load = 1.1;   // (Glen's clip, 11-20) loading the donke
 TUNE.SPRITE_SIZE.servants_donkeys = 0.95;   // (Glen's clip, 11-20) her young servants leading the loaded donkeys (25:19, "Go on before me")
 TUNE.SPRITE_SIZE.nabal_stone = 0.7;   // (Glen's clip, 11-20) "his heart died within him, and he became as a stone" (25:37): sitting, as his feast
 TUNE.SPRITE_SIZE.maids = 0.95;   // (Glen's clip, 11-20) her five maids who followed her (25:42), Abigail's height
+TUNE.SPRITE_SIZE.shepherd_stand = 1.45;   // (Glen's clip, 11-20) Nabal's shepherd at the fold
 TUNE.SPRITE_SIZE.donkey_trot = 0.8;   // her loaded donkey on its own (in her clip it stands about 0.84 of her height)
 Object.assign(TUNE.SPRITE_SIZE, { nabal_idle: 0.92, nabal_stand: 0.92, nabal_talk: 0.92, nabal_shock: 0.92, nabal_feast: 0.65, nabal_feast_front: 0.9 });   // Part Two: Nabal (1 Samuel 25), by head size; the feasts are sitting
 Object.assign(TUNE.SPRITE_SIZE, Object.fromEntries(["idle", "walk", "talk", "give_bread", "give_sword"].map(n => ["ahimelech_" + n, 0.95])));   // Part Two: Ahimelech the priest at Nob (1 Samuel 21)
