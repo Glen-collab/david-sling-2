@@ -32,10 +32,13 @@ const C6 = {
   // the hunters: walk and run speeds, how far they see a lamb, how close David can be before they won't try, how long
   //  before they try again, back after being driven off (s), how big
   HUNT: {
-    jackal: { walk: 60, run: 330, carry: 260, see: 760, shy: 170, cool: [6, 10], back: 14, hp: 1, k: 1, walkS: "jackal_run", runS: "jackal_run", carryS: "jackal_carry_lamb", box: 70 },
-    lion:   { walk: 45, run: 300, carry: 210, see: 820, shy: 200, cool: [4, 7], back: 12, hp: 2, k: 1, walkS: "lion_prowl", runS: "lion_run", carryS: "lion_carry_lamb", dazedS: "lion_dazed", box: 95 },
-    wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80 },
+    jackal: { walk: 60, run: 330, carry: 260, see: 760, shy: 170, cool: [6, 10], back: 14, hp: 1, k: 1, walkS: "jackal_run", runS: "jackal_run", carryS: "jackal_carry_lamb", box: 70, atkS: "jackal_bite", atk: 240, lunge: 340, hurt: 10 },
+    lion:   { walk: 45, run: 300, carry: 210, see: 820, shy: 200, cool: [4, 7], back: 12, hp: 2, k: 1, walkS: "lion_prowl", runS: "lion_run", carryS: "lion_carry_lamb", dazedS: "lion_dazed", box: 95, atkS: "lion_pounce", atk: 300, lunge: 380, hurt: 18 },
+    wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80, atkS: "wolf_run", atk: 220, lunge: 340, hurt: 10 },
   },
+  // (Glen 11-20: "they should hurt David") atk: how near he gets before it turns on him (px); lunge: how fast it comes
+  //  (px/s); hurt: what a bite takes off (his meter is 64); it backs off ATK_REST s after
+  ATK_T: 0.9, ATK_REST: 2.5,
   FLEE: 1.3,               // s a driven-off hunter runs, fading
   STORM_T: 3, STORM_V: 150, MARCH_N: 4, MARCH_GAP: 300,   // and his men behind: how many groups of three, px apart   // his angry walk off after 25:13: how long (s), how fast (px/s)
   SHEARERS: [[34, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
@@ -289,9 +292,21 @@ function c6Hunt(h, dt, r) {
   if (h.state === "gone") { if (h.night) return; if (h.t > H_.back && !c6.night) Object.assign(h, { state: "prowl", x: h.hx, alpha: 1, t: 0, cool: 2, hp: H_.hp }); return; }
   if (h.state === "flee") { h.x += h.facing * H_.run * 1.1 * dt; h.alpha = Math.max(0, 1 - h.t / C6.FLEE); if (h.t > C6.FLEE) { h.state = "gone"; h.t = 0; } return; }
   if (h.state === "dazed") { if (h.t > 1.0) { h.state = "prowl"; h.t = 0; h.cool = 1.5; } return; }
-  const touch = () => { if (Math.abs(dx) < H_.box * 0.6 && Math.abs(d.y - h.y) < 80) hurtDavid(h.x); };
+  const touch = () => {
+    if (Math.abs(dx) >= H_.box * 0.6 || Math.abs(d.y - h.y) >= 80 || d.inv > 0) return false;
+    const was = d.hearts; hurtDavid(h.x);
+    if (d.hearts < was) { d.hearts = Math.max(0.01, d.hearts - Math.max(0, H_.hurt - (was - d.hearts))); return true; }   // (a lion bites harder)
+    return false;
+  };
+  h.atkCool = (h.atkCool || 0) - dt;
+  if (h.state === "lunge") {   // it turns on David: a lunge, a bite, then it backs off
+    h.x += h.facing * H_.lunge * dt;
+    if (touch() || h.t > C6.ATK_T) { h.state = "prowl"; h.t = 0; h.atkCool = C6.ATK_REST; h.facing = Math.sign(h.x - d.x) || 1; }
+    return;
+  }
   if (h.state === "prowl") {
-    h.x += h.facing * H_.walk * dt;
+    if (h.atkCool <= 0 && c6.inT > C6.GRACE && !c6.carry && Math.abs(dx) < H_.atk && Math.abs(d.y - h.y) < 80) { h.state = "lunge"; h.t = 0; h.facing = Math.sign(dx) || 1; c6Tell("bites", "Careful: they'll go for you too. Sling it before it gets close."); return; }
+    h.x += h.facing * H_.walk * dt; touch();
     if (h.x < h.hx - h.range) h.facing = 1; else if (h.x > h.hx + h.range) h.facing = -1;
     if (h.cool <= 0 && c6.inT > C6.GRACE) {
       const t = c6.strays.filter(s => s.room === r.id && s.state === "stray" && s.runT <= 0 && Math.abs(s.y - FOOT) < 10 && Math.abs(s.x - h.x) < H_.see && Math.abs(s.x - d.x) > H_.shy).sort((a, b) => Math.abs(a.x - h.x) - Math.abs(b.x - h.x))[0];
@@ -446,7 +461,7 @@ function c6Draw(camX) {
   for (const h of c6.hunters) {
     if (h.room !== r.id || h.state === "gone") continue;
     const H_ = C6.HUNT[h.kind], x = h.x - camX; if (x < -300 || x > W + 300) continue;
-    const n = h.state === "carry" ? H_.carryS : h.state === "dazed" ? H_.dazedS : h.state === "prowl" ? H_.walkS : H_.runS;
+    const n = h.state === "lunge" ? H_.atkS : h.state === "carry" ? H_.carryS : h.state === "dazed" ? H_.dazedS : h.state === "prowl" ? H_.walkS : H_.runS;
     const ms = h.state === "prowl" && n === H_.runS ? SPR[n] && SPR[n].ms * 2.5 : undefined;
     if (SPR[n]) drawSprite(n, frameOf(n, h.t, ms), x, h.y, h.facing, H_.k, h.alpha);
   }
