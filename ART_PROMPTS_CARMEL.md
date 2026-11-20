@@ -41,4 +41,4 @@ Use your David, Abigail and Nabal from the other clips, in the same clothes.
 6. **(done, 11-20: abigail_load)** **Abigail loading a donkey:** `...lifting a basket of bread up onto a donkey's back and tying it on, in a hurry.`
 7. **(done, 11-20: servants_donkeys)** **Abigail's young men with the donkeys:** `Two young servants of ancient Israel leading loaded donkeys at a fast walk.` (25:19, "Go on before me.")
 8. **(done, 11-20: nabal_stone, for his cut scene)** **Nabal, as a stone:** `...a heavy rich man of ancient Israel sitting at a table, his face going pale, freezing still in shock.` (25:37. Optional: his shock sprite from before can do for now.)
-9. **Abigail's maids:** `Five young women of ancient Israel in simple robes and headscarves walking in a line behind, as if following someone.` (25:42, the end.)
+9. **(done, 11-20: maids)** **Abigail's maids:** `Five young women of ancient Israel in simple robes and headscarves walking in a line behind, as if following someone.` (25:42, the end.)

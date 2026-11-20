@@ -1,0 +1,25 @@
+{
+  "frames": 12,
+  "frame_w": 457,
+  "frame_h": 248,
+  "ms_per_frame": 111,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 239,
+  "anchor_y": 245,
+  "source": "clip maids.mp4",
+  "video_frames": [
+    71,
+    74,
+    76,
+    79,
+    82,
+    84,
+    87,
+    90,
+    92,
+    95,
+    98,
+    100
+  ]
+}

@@ -5664,6 +5664,18 @@ window.SPRITE_DATA = {
   "ay": 348,
   "align": "feet"
  },
+ "maids": {
+  "src": "../assets/sprites/maids.png",
+  "frames": 12,
+  "w": 457,
+  "h": 248,
+  "ms": 111,
+  "loop": true,
+  "pingpong": false,
+  "ax": 239,
+  "ay": 245,
+  "align": "feet"
+ },
  "man_eat": {
   "src": "../assets/sprites/man_eat.png",
   "frames": 4,
