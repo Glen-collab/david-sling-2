@@ -10,8 +10,8 @@ Most of Carmel can use David 1's art, already in Part Two. So **only two rooms n
 | Nabal's Storerooms (Abigail loads the gifts) | The Day Before (3-1): the jars, baskets and grain | no |
 | The Mountain Road (her ride down) | Down to Elah (5-4): the road winding down at dawn | no |
 | The Valley (where she meets David) | Home (8-4): the terraced hills at sunset | no |
-| **Nabal's House and the Shearing** | The Far Pasture (3-2) for now: there's no rich house, feast or shearing floor in David 1 | **yes, the most needed** |
-| **David's Camp in Paran** | The Camp of Fear (6-1) for now: that's Israel's whole army with banners, not a band of outlaws | yes, when you can |
+| Nabal's House and the Shearing | Glen's, 11-20 (in) | done |
+| David's Camp in Paran | Glen's, 11-20 (in) | done |
 
 From David 1's items: the sheepfold walls (in already), and the gifts: bread, raisins, fig cakes, roasted grain and
 grain sacks (gift_bread, raisins, fig_cake, roasted_grain, grain_sack). The olive tree, oak and fig tree too.
@@ -37,7 +37,7 @@ Use your David, Abigail and Nabal from the other clips, in the same clothes.
 2. **David putting on his sword:** `...strapping a sword belt around his waist, hard and angry, then gripping the hilt.` (25:13.)
 3. **David's men marching:** `Three bearded men of David's band in worn robes, swords at their belts, marching fast in a line, grim.` (Repeated for the 400.)
 4. **David listening:** `...standing, his anger fading, lowering his head, then reaching out a hand as if helping someone up.` (25:32-35.)
-5. **A shearer at work:** `A shepherd of ancient Israel kneeling and shearing a white sheep with iron shears, wool falling.`
+5. **(done, 11-20: in the shearing room)** **A shearer at work:** `A shepherd of ancient Israel kneeling and shearing a white sheep with iron shears, wool falling.`
 6. **Abigail loading a donkey:** `...lifting a basket of bread up onto a donkey's back and tying it on, in a hurry.`
 7. **Abigail's young men with the donkeys:** `Two young servants of ancient Israel leading loaded donkeys at a fast walk.` (25:19, "Go on before me.")
 8. **Nabal, as a stone:** `...a heavy rich man of ancient Israel sitting at a table, his face going pale, freezing still in shock.` (25:37. Optional: his shock sprite from before can do for now.)

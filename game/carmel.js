@@ -29,6 +29,7 @@ const C6 = {
     wolf:   { walk: 70, run: 300, see: 2000, shy: 0, cool: [0, 0], back: 0, hp: 1, k: 1, walkS: "wolf_walk", runS: "wolf_run", box: 80 },
   },
   FLEE: 1.3,               // s a driven-off hunter runs, fading
+  SHEARERS: [[24, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
   //  lights (David, the fold's fire)
   NIGHT: { LEN: 50, WAVE: [4.5, 7], DARK: 0.55, LIT: 260, FIRE: 320 },
@@ -41,11 +42,13 @@ const CARMEL = {
   rooms: [
     // (Glen 11-20: "check the art from David 1 for any assets and backgrounds we can use") his World 1 pastures and his
     //  camp, till the Carmel pictures (ART_PROMPTS_CARMEL.md)
-    { id: "camp", name: "David's Camp in Paran", w: 60, bg: "w6_1", mx: 0, my: 1, mw: 2, right: "fields" },   // (David 1's camp of Israel, 6-1)
+    { id: "camp", name: "David's Camp in Paran", w: 60, mx: 0, my: 1, mw: 2, right: "fields",   // (Glen's, 11-20: the black tents in the hollow)
+      far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 110, near: "carmel/camp/near.png", nearK: 0.4 },
     { id: "fields", name: "The Fields of Carmel", w: 140, mx: 2, my: 1, mw: 4, left: "camp", right: "hills",
       get bg() { return c6.night ? "w1_4" : "w1_2"; } },   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
     { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields" },   // (David 1's Rocky Pastures, 1-3)
-    { id: "shearing", name: "Nabal's Shearing", w: 60, bg: "w3_2", mx: 9, my: 1, mw: 2 },   // (David 1's Far Pasture, 3-2: a town on the hill)
+    { id: "shearing", name: "Nabal's Shearing", w: 60, mx: 9, my: 1, mw: 2,   // (Glen's, 11-20: the estate, the feast under the awning, the pens)
+      far: "carmel/nabal/far", mid: "carmel/nabal/mid.png", midY: -20, near: "carmel/nabal/near.png", nearK: 0.5 },
   ],
   // the Journal: Glen's song, Verse 3, its second half (SONG_PSALM57.md, his words exactly)
   steps: ["c6_fields", "c6_hills", "c6_night", "c6_insult"],
@@ -400,6 +403,8 @@ function c6Draw(camX) {
   }
   // Nabal's shearing: his flock waiting
   if (r.id === "shearing" && c6.flock) for (const [x, f] of c6.flock) drawSprite("sheep_graze", frameOf("sheep_graze", now + x * 0.001), x - camX, FOOT, f, C6.SHEEP_K);
+  // (Glen's clip, 11-20) his shearers at work on the shearing floor (25:2, "he was shearing his sheep in Carmel")
+  if (r.id === "shearing" && SPR.shearer) for (const [k, f, t] of C6.SHEARERS) drawSprite("shearer", frameOf("shearer", now + t), (r.c0 + k) * T - camX, FOOT, f, C6.SHEARER_K);
 }
 function c6DrawFront(camX) {
   const r = region.room; if (!r) return;

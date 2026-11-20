@@ -7248,6 +7248,18 @@ window.SPRITE_DATA = {
   "ay": 272,
   "align": "feet"
  },
+ "shearer": {
+  "src": "../assets/sprites/shearer.png",
+  "frames": 24,
+  "w": 263,
+  "h": 185,
+  "ms": 95,
+  "loop": true,
+  "pingpong": false,
+  "ax": 109,
+  "ay": 184,
+  "align": "feet"
+ },
  "sheep2_graze": {
   "src": "../assets/sprites/sheep2_graze.png",
   "frames": 7,
