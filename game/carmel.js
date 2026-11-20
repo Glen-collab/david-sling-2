@@ -52,7 +52,7 @@ const CARMEL = {
     // (Glen 11-20: "check the art from David 1 for any assets and backgrounds we can use") his World 1 pastures and his
     //  camp, till the Carmel pictures (ART_PROMPTS_CARMEL.md)
     { id: "camp", name: "David's Camp in Paran", w: 60, mx: 0, my: 1, mw: 2, right: "fields",   // (Glen's, 11-20: the black tents in the hollow)
-      far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 110, near: "carmel/camp/near.png", nearK: 0.4 },
+      far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 224, near: "carmel/camp/near.png", nearK: 0.4 },
     { id: "fields", name: "The Fields of Carmel", w: 140, mx: 2, my: 1, mw: 4, left: "camp", right: "hills",
       get bg() { return c6.night ? "w1_4" : "w1_2"; } },   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
     { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields" },   // (David 1's Rocky Pastures, 1-3)
