@@ -5976,6 +5976,18 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "nabal_stone": {
+  "src": "../assets/sprites/nabal_stone.png",
+  "frames": 24,
+  "w": 181,
+  "h": 247,
+  "ms": 252,
+  "loop": false,
+  "pingpong": false,
+  "ax": 90,
+  "ay": 245,
+  "align": "feet"
+ },
  "nabal_talk": {
   "src": "../assets/sprites/nabal_talk.png",
   "frames": 12,

@@ -1,0 +1,11 @@
+{
+  "frames": 24,
+  "frame_w": 181,
+  "frame_h": 247,
+  "ms_per_frame": 252,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 90,
+  "anchor_y": 245,
+  "source": "clip nabal stone.mp4"
+}
