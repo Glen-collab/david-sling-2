@@ -23,21 +23,27 @@ const C7 = {
   TABLE_K: 0.4,            // (Glen 11-21) his feast table, drawn in front of Nabal: its size
   TABLE_AT: 1050,          // px into the table picture where Nabal sits (the low dishes, so his head and cup show)
   FEAST_LIFT: 45,          // px Nabal sits up off the ground: on a bench behind the table
+  // (Glen 11-21) the road's scorpions: where they live (cols), how far each side they walk (cols), px/s, size; STOMP: px
+  //  either side a landing squashes one; REACH: px either side it stings. Any hit on the road slows the donkey (or David)
+  //  to SLOW.K of its speed for SLOW.T s. EAGLES: [col, perch y] on the road's ledges
+  SCORP: { AT: [27, 42, 57, 73, 88, 102, 118, 133], PATROL: 2, WALK: 40, K: 1.9, STOMP: 70, REACH: 56 },
+  SLOW: { K: 0.5, T: 2 },
+  EAGLES: [[55.5, 480], [100.5, 470], [131.5, 480]],
   BOW_REACH: 260,          // px: Down this close to David, she gets off and bows
   DAVID_WALK: 45,          // px/s David's band comes on while she hasn't bowed
 };
 let C7_BASE = null;   // (her own speeds: read from main.js's TUNE when Carmel's built, main.js loads after this)
 
 CARMEL.rooms.push(
-  { id: "stores", name: "Nabal's Storerooms", w: 70, bg: "w3_1", mx: 9, my: 2, mw: 2 },   // (David 1's The Day Before, 3-1: the jars and the grain)
-  { id: "road", name: "The Mountain Road", w: 160, bg: "w5_4", mx: 5, my: 2, mw: 4 },     // (David 1's Down to Elah, 5-4: the road down at dawn)
-  { id: "valley", name: "The Valley", w: 60, bg: "w8_4", mx: 3, my: 2, mw: 2 },            // (David 1's Home, 8-4: the hills at sunset)
+  { id: "stores", name: "Nabal's Storerooms", w: 70, bg: "w3_1", mx: 9, my: 2, mw: 2, get left() { return c6Has("c6_end") ? "shearing" : null; }, get right() { return c6Has("c6_end") ? "road" : null; }, },   // (David 1's The Day Before, 3-1: the jars and the grain)
+  { id: "road", name: "The Mountain Road", w: 160, bg: "w5_4", mx: 5, my: 2, mw: 4, get left() { return c6Has("c6_end") ? "stores" : null; }, get right() { return c6Has("c6_end") ? "valley" : null; }, },     // (David 1's Down to Elah, 5-4: the road down at dawn)
+  { id: "valley", name: "The Valley", w: 60, bg: "w8_4", mx: 3, my: 2, mw: 2, get left() { return c6Has("c6_end") ? "road" : null; }, },            // (David 1's Home, 8-4: the hills at sunset)
 );
 CARMEL.steps.push("c6_meeting");
 CARMEL.entries.push(["Abigail came down the mountain to meet me with bread and figs. The LORD sent her, and kept me from blood.", "1 Samuel 25:32–33"]);
 CARMEL.sword = () => !c7.on;   // (no sword for Abigail)
 
-const c7 = { on: false, gifts: [], got: 0, watch: [], hides: [], anger: 0, round: -1, choice: null, bowed: false, ride: false };
+const c7 = { on: false, gifts: [], got: 0, watch: [], hides: [], anger: 0, round: -1, choice: null, bowed: false, ride: false, scorps: [], slowT: 0, hearts: null };
 const C7_ROOMS = ["stores", "road", "valley"];
 const c7Abi = () => c7.on && !(c6.pose && c6.pose.hide);
 
@@ -78,6 +84,8 @@ function c7Build(R) {
     campfire(c + 3, GR - 1);
     for (const [k, w] of [[18, 4], [32, 5], [47, 4], [62, 6], [78, 5], [93, 4], [108, 6], [123, 5], [138, 6]]) rHole(rm, c + k, w);
     rLedge(rm, c + 54, 480, 4); rLedge(rm, c + 85, 480, 4); rLedge(rm, c + 99, 470, 3); rLedge(rm, c + 130, 480, 4);
+    c7.scorps = C7.SCORP.AT.map(k => ({ hx: (c + k) * T, x: (c + k) * T, dir: Math.random() < 0.5 ? -1 : 1, t: Math.random() * 3, dead: false, fade: 0 }));
+    for (const [k, y] of C7.EAGLES) bird("eagle", rm, (c + k) * T, y);
   }
 
   // -- The Valley (25:20-35): David's band comes down toward her
@@ -106,6 +114,7 @@ function c7Begin() {
 
 function c7Enter(r) {
   c7.on = C7_ROOMS.includes(r.id) && !c6Has("c6_end") && !c7.ending;
+  if (r.id === "road") for (const sc of c7.scorps) Object.assign(sc, { x: sc.hx, dead: false, fade: 0 });
   if (r.id === "road" && c7.on) { c7.ride = true; if (!c7.anger) c7.anger = C7.ANGER.START; c6Tell("road", "The Mountain Road. Ride down fast: David's anger grows while you ride. Jump the gaps (the donkey jumps wide)."); }
   if (r.id === "valley" && c7.on && c7.round < 0) c7ValleyStart();
   if (r.id === "stores" && c7.on) c6Tell("stores", "Nabal's Storerooms: bread, raisins, fig cakes, parched grain.");
@@ -117,7 +126,13 @@ function c7Update(dt, r) {
   if (!C7_ROOMS.includes(r.id) && c7.on && !c6Has("c6_end") && !region.trans && !region.script.length) c7.on = false;
   // riding: the donkey's speed and jump; off it, hers
   const ride = c7.on && c7.ride && r.id !== "stores";
-  if (C7_BASE) Object.assign(TUNE, ride ? C7.RIDE : C7_BASE);
+  if (r.id === "road" && c7.hearts != null && d.hearts < c7.hearts && d.deadT <= 0) {   // hurt on the road: slowed a while
+    c7.slowT = C7.SLOW.T; c6Tell("slow", ride ? "Ouch! The donkey slows down for a moment." : "Ouch! That slows you down for a moment.");
+  }
+  c7.hearts = d.hearts; c7.slowT = r.id === "road" ? Math.max(0, (c7.slowT || 0) - dt) : 0;
+  if (C7_BASE) { Object.assign(TUNE, ride ? C7.RIDE : C7_BASE);
+    if (c7.slowT > 0) { TUNE.WALK_SPEED *= C7.SLOW.K; TUNE.RUN_SPEED *= C7.SLOW.K; } }
+  if (r.id === "road") c7Scorps(dt, d);
   if (!c7.on) return;
   d.charging = false; d.throwT = -1;   // (no sling for Abigail)
   for (const g of c7.gifts) g.t += dt;
@@ -132,6 +147,24 @@ function c7Update(dt, r) {
     }
   }
   if (r.id === "valley") c7Valley(dt, r, d, free);
+}
+
+// the road's scorpions: they walk their patch; land on one and it's squashed (a bounce up); touch one and it stings
+function c7Scorps(dt, d) {
+  const S = C7.SCORP;
+  for (const sc of c7.scorps) {
+    sc.t += dt;
+    if (sc.dead) { sc.fade = Math.max(0, sc.fade - dt); continue; }
+    sc.x += sc.dir * S.WALK * dt;
+    if (Math.abs(sc.x - sc.hx) > S.PATROL * T) sc.dir = Math.sign(sc.hx - sc.x);
+    if (region.script.length || region.trans || d.deadT > 0) continue;
+    const dx = Math.abs(d.x - sc.x);
+    if (dx < S.STOMP && !d.onGround && d.vy > 0 && d.y > GR * T - 70) {
+      sc.dead = true; sc.fade = 0.5; d.vy = -620;
+      if (typeof sfx === "function") sfx("pickup", sc.x, 0.4);
+      c6Tell("stomp", "Squashed it! Jump on a scorpion, or jump over it.");
+    } else if (dx < S.REACH && d.onGround && d.inv <= 0) hurtDavid(sc.x, "A scorpion's sting.");
+  }
 }
 
 function c7Fail(text, rm) {
@@ -305,6 +338,8 @@ function c7DrawAbi(d, x, y) {
 function c7Draw(camX) {
   const r = region.room; if (!r) return;
   for (const g of c7.gifts) if (g.room === r.id && !g.got) drawItem(g.kind, g.x - camX, g.y - 4 + Math.sin(g.t * 2.5) * 4, C7.GIFT_K);
+  if (r.id === "road") for (const sc of c7.scorps) if (!sc.dead || sc.fade > 0)
+    drawSprite("scorpion_walk", sc.dead ? 0 : frameOf("scorpion_walk", sc.t), sc.x - camX, FOOT, sc.dir, C7.SCORP.K, sc.dead ? sc.fade / 0.5 : 1);
 }
 function c7DrawFront(camX) {
   const r = region.room; if (!r) return;
@@ -314,7 +349,7 @@ function c7DrawFront(camX) {
   if (c7.nabalScene && r.id === "shearing") {   // Nabal at his feast, behind Glen's table
     const im = roomImg("carmel/kit/feast_table.png");
     if (im) { const k = C7.TABLE_K, w = im.naturalWidth * k, h = im.naturalHeight * k;
-      ctx.drawImage(im, Math.round(c6.nabal.x - camX - C7.TABLE_AT * k), Math.round(FOOT - h - camY), w, h); }
+      ctx.drawImage(im, Math.round(c6.nabal.x - camX - C7.TABLE_AT * k), Math.round(FOOT - h), w, h); }
   }
 }
 function c7DrawOver() {
@@ -368,7 +403,8 @@ function c7MovePeople(dt) { for (const p of c6.people) if (p.vx) p.x += p.vx * d
 {
   const B = CARMEL.build, E = CARMEL.enter, U = CARMEL.update, DD = CARMEL.drawDavid, D = CARMEL.draw, DF = CARMEL.drawFront, DO = CARMEL.drawOver;
   CARMEL.build = R => { B(R); c7Build(R);
-    for (const p of region.props) if (p.n === "p_left" || p.n === "p_right") p.n = p.n === "p_left" ? "cm_pit_left" : "cm_pit_right"; };   // (Glen's pit edges, 11-21: Carmel only)
+    for (const p of region.props) if (p.n === "p_left" || p.n === "p_right") p.n = p.n === "p_left" ? "cm_pit_left" : "cm_pit_right";
+    kitImg("cm_pit_left"); kitImg("cm_pit_right"); };   // (asked for now: kitImg loads lazily)   // (Glen's pit edges, 11-21: Carmel only)
   CARMEL.enter = r => { E(r); c7Enter(r); };
   CARMEL.update = (dt, r) => { U(dt, r); c7Update(dt, r); c7MovePeople(dt);
     if (c6Has("c6_insult") && !c6Has("c7_begin") && !region.script.length && region.wait <= 0 && !region.trans) c7Begin(); };

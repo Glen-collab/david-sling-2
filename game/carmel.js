@@ -58,8 +58,10 @@ const CARMEL = {
       far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 224, near: "carmel/camp/near.png", nearK: 0.4 },
     { id: "fields", name: "The Fields of Carmel", w: 140, mx: 2, my: 1, mw: 4, left: "camp", right: "hills",
       get bg() { return c6.night ? "w1_4" : "w1_2"; } },   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
-    { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields" },   // (David 1's Rocky Pastures, 1-3)
-    { id: "shearing", name: "Nabal's Shearing", w: 60, mx: 9, my: 1, mw: 2,   // (Glen's, 11-20: the estate, the feast under the awning, the pens)
+    { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields",
+      get right() { return c6Has("c6_end") ? "shearing" : null; } },   // (Glen 11-21: after the story, all of Carmel walks through: the story's rooms were joined only by its scenes)   // (David 1's Rocky Pastures, 1-3)
+    { id: "shearing", name: "Nabal's Shearing", w: 60, mx: 9, my: 1, mw: 2,
+      get left() { return c6Has("c6_end") ? "hills" : null; }, get right() { return c6Has("c6_end") ? "stores" : null; },   // (Glen's, 11-20: the estate, the feast under the awning, the pens)
       far: "carmel/nabal/far", mid: "carmel/nabal/mid.png", midY: 210, near: "carmel/nabal/near.png", nearK: 0.5 },
   ],
   // the Journal: Glen's song, Verse 3, its second half (SONG_PSALM57.md, his words exactly)
