@@ -367,7 +367,8 @@ function c7MovePeople(dt) { for (const p of c6.people) if (p.vx) p.x += p.vx * d
 // wrap carmel.js's hooks
 {
   const B = CARMEL.build, E = CARMEL.enter, U = CARMEL.update, DD = CARMEL.drawDavid, D = CARMEL.draw, DF = CARMEL.drawFront, DO = CARMEL.drawOver;
-  CARMEL.build = R => { B(R); c7Build(R); };
+  CARMEL.build = R => { B(R); c7Build(R);
+    for (const p of region.props) if (p.n === "p_left" || p.n === "p_right") p.n = p.n === "p_left" ? "cm_pit_left" : "cm_pit_right"; };   // (Glen's pit edges, 11-21: Carmel only)
   CARMEL.enter = r => { E(r); c7Enter(r); };
   CARMEL.update = (dt, r) => { U(dt, r); c7Update(dt, r); c7MovePeople(dt);
     if (c6Has("c6_insult") && !c6Has("c7_begin") && !region.script.length && region.wait <= 0 && !region.trans) c7Begin(); };

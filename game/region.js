@@ -167,7 +167,7 @@ const KIT = {
   c_crates: { w: 168, h: 199 }, c_steps: { w: 188, h: 159, steps: [109, 72, 28, 0, 0] }, c_jars: { w: 191, h: 127 }, c_basin: { w: 129, h: 107 },
   // (Glen 11-05) the pit kit: the floor's edge either side of a hole, planks across one, a floor that crumbles, the
   // ring and rope in the ceiling
-  p_left: { w: 242, h: 177 }, p_right: { w: 243, h: 177 }, p_crumble: { w: 205, h: 102 }, p_broken: { w: 203, h: 132 },
+  p_left: { w: 242, h: 177 }, p_right: { w: 243, h: 177 }, cm_pit_left: { w: 242, h: 177 }, cm_pit_right: { w: 243, h: 177 },   // (Glen 11-21: Carmel's own, blended into its soil) p_crumble: { w: 205, h: 102 }, p_broken: { w: 203, h: 132 },
   p_planks: { w: 211, h: 98 }, p_ring: { w: 86, h: 175 },
   // (Glen 11-05) the throne room kit, assets/rooms/gibeah/kit_harp
   hr_throne: { w: 238, h: 196 }, hr_banner: { w: 61, h: 309 }, hr_brazier: { w: 115, h: 124 }, hr_column: { w: 104, h: 373 },
@@ -197,7 +197,7 @@ const KIT = {
 const KIT_IMG = {};
 function kitImg(n) {
   let im = KIT_IMG[n];
-  if (!im) { im = KIT_IMG[n] = new Image(); im.src = n.startsWith("w3_") ? "../assets/rooms/w3/kit/" + n + ".png" : n.startsWith("w4_") ? "../assets/rooms/w4/kit/" + n + ".png" : "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
+  if (!im) { im = KIT_IMG[n] = new Image(); im.src = n.startsWith("cm_") ? "../assets/rooms/carmel/kit/" + n + ".png" : n.startsWith("w3_") ? "../assets/rooms/w3/kit/" + n + ".png" : n.startsWith("w4_") ? "../assets/rooms/w4/kit/" + n + ".png" : "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }
   return im.complete && im.naturalWidth ? im : null;
 }
 function rWalk(room, x, deckY, nMid) {   // a walkway from x (px), its deck's top at deckY; returns where it ends
