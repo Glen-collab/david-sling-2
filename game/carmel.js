@@ -44,7 +44,11 @@ const C6 = {
   SHEARERS: [[34, 1, 0], [52, -1, 1.1]], SHEARER_K: 1,   // [column in the room, facing, start in the loop (s)]; their size
   // the night at the fold: how long till morning (s), a wolf every WAVE s (from either end, in turn), how dark, the
   //  lights (David, the fold's fire)
-  NIGHT: { LEN: 50, WAVE: [4.5, 7], DARK: 0.55, LIT: 260, FIRE: 320 },
+  NIGHT: { LEN: 50, WAVE: [4.5, 7], DARK: 0.55, LIT: 260, FIRE: 320,
+    // (Glen 11-21: "not just a light switch") DUSK: how dark (of DARK) the Hill Pastures get by their left end, heading
+    //  back to the fields; IN: s the night deepens on into full dark in the fields; PRE: s it goes a shade darker before
+    //  dawn (the day picture comes in under it); DAWN: s the morning takes to come up
+    DUSK: 0.75, IN: 4, PRE: 1.2, DAWN: 7 },
   SCATTER: { RUN: 260, FOR: 1.4 },   // a lamb a wolf scatters out of the fold: its run (px/s, s)
 };
 
@@ -57,7 +61,7 @@ const CARMEL = {
     { id: "camp", name: "David's Camp in Paran", w: 60, mx: 0, my: 1, mw: 2, right: "fields",   // (Glen's, 11-20: the black tents in the hollow)
       far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 224, near: "carmel/camp/near.png", nearK: 0.4 },
     { id: "fields", name: "The Fields of Carmel", w: 140, mx: 2, my: 1, mw: 4, left: "camp", right: "hills",
-      get bg() { return c6.night ? "w1_4" : "w1_2"; } },   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
+      get bg() { return c6.night && (c6.dawn ? c6.dawn.t < C6.NIGHT.PRE : !c6.night.done) ? "w1_4" : "w1_2"; } },   // (morning: the day picture comes in under the pre-dawn dark, and stays)   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
     { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields",
       get right() { return c6Has("c6_end") ? "shearing" : null; } },   // (Glen 11-21: after the story, all of Carmel walks through: the story's rooms were joined only by its scenes)   // (David 1's Rocky Pastures, 1-3)
     { id: "shearing", name: "Nabal's Shearing", w: 60, mx: 9, my: 1, mw: 2,
@@ -109,7 +113,7 @@ function c6Build(R) {
   if (typeof G5_KIT !== "undefined") { Object.assign(KIT, G5_KIT); Object.keys(G5_KIT).forEach(kitImg); }   // (En-Gedi's sheep pen wall: the fold, till Glen's)
   Object.assign(TUNE.SPRITE_SIZE, { wolf_walk: 1.25, wolf_run: 1.25, wolf_howl: 1.25, wolf_sit: 1.25 });   // (as world2.js, not loaded in Part Two)
   for (const k of ["people", "strays", "hunters"]) c6[k].length = 0;
-  c6.folds = {}; c6.carry = null; c6.night = null; c6.pose = null; c6.men = null; c6.sent = false; c6.cut = false;
+  c6.folds = {}; c6.carry = null; c6.night = null; c6.dawn = null; c6.pose = null; c6.men = null; c6.sent = false; c6.cut = false;
   ["fold_back", "fold_left", "fold_right"].forEach(n => roomImg("carmel/kit/" + n + ".png"));   // (load the fold before it comes on screen)
   ["w4_z_hide_rock", "w4_tree_oak", "w4_tree_acacia"].forEach(kitImg);
 
@@ -274,6 +278,7 @@ function c6Update(dt, r) {
   // the hunters
   for (const h of c6.hunters) if (h.room === r.id) c6Hunt(h, dt, r);
   if (r.id === "fields" && c6.night) c6NightUpdate(dt, r);
+  if (c6.dawn) { c6.dawn.t += dt; if (c6.dawn.t > C6.NIGHT.PRE + C6.NIGHT.DAWN) c6.dawn = null; }
 }
 const holeAt = x => region.holes && region.holes.some(o => x > o.x0 && x < o.x1);
 // a lamb set down in the fold
@@ -389,7 +394,7 @@ function c6NightUpdate(dt, r) {
   for (let i = c6.hunters.length - 1; i >= 0; i--) if (c6.hunters[i].night && c6.hunters[i].state === "gone") c6.hunters.splice(i, 1);
   if (!N.done && N.t >= C6.NIGHT.LEN) {
     if (!c6.hunters.some(h => h.night && h.state !== "gone" && h.state !== "flee") && c6AllHome("fields") && !c6.carry) {
-      N.done = true; regionAdd("taken", "c6_night");
+      N.done = true; regionAdd("taken", "c6_night"); c6.dawn = { t: 0 };
       for (const h of c6.hunters) if (h.room === "fields" && !h.night) Object.assign(h, { state: "gone", t: 0 });
       rPlay([{ say: ["", "Morning."] },
         { say: ["One of Nabal's shepherds", "“The men were very good to us, and we were not harmed, and we didn't miss anything as long as we went with them, when we were in the fields.” (1 Samuel 25:15)"] },
@@ -490,11 +495,22 @@ const C6_DARK = typeof document !== "undefined" ? document.createElement("canvas
 function c6DrawOver() {
   const r = region.room; if (!r) return;
   // the night at the fold: dark, a light round David and the fold's fire
-  if (r.id === "fields" && c6.night && C6_DARK) {
+  const N = C6.NIGHT;
+  if (r.id === "hills" && c6Night()) {   // dusk, deepening the farther he goes back toward the fields
+    const f = N.DUSK * Math.max(0, Math.min(1, 1 - (david.x - r.c0 * T) / (r.w * T)));
+    ctx.fillStyle = `rgba(255,120,50,${0.14 * f})`; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = `rgba(6,10,28,${N.DARK * f})`; ctx.fillRect(0, 0, W, H);
+  }
+  // how dark the fields are: from the dusk on into full night; at morning a little darker, then the sun comes up
+  const nf = !(r.id === "fields" && (c6.night || c6.dawn)) ? 0 : c6.dawn
+    ? (c6.dawn.t < N.PRE ? 1 + 0.4 * c6.dawn.t / N.PRE : 1.4 * Math.max(0, 1 - (c6.dawn.t - N.PRE) / N.DAWN))
+    : c6.night.done ? 0 : N.DUSK + (1 - N.DUSK) * Math.min(1, c6.night.t / N.IN);
+  if (nf > 0 && C6_DARK) {
     if (C6_DARK.width !== W || C6_DARK.height !== H) { C6_DARK.width = W; C6_DARK.height = H; }
-    const x2 = C6_DARK.getContext("2d"), N = C6.NIGHT, F = c6Fold("fields");
+    const x2 = C6_DARK.getContext("2d"), F = c6Fold("fields");
     x2.globalCompositeOperation = "source-over"; x2.clearRect(0, 0, W, H);
-    x2.fillStyle = `rgba(6,10,28,${N.DARK})`; x2.fillRect(0, 0, W, H); x2.globalCompositeOperation = "destination-out";
+    if (c6.dawn && c6.dawn.t >= N.PRE) { x2.fillStyle = `rgba(255,140,70,${0.18 * Math.min(1, nf)})`; x2.fillRect(0, 0, W, H); }   // (the dawn's warm light)
+    x2.fillStyle = `rgba(6,10,28,${Math.min(0.95, N.DARK * nf)})`; x2.fillRect(0, 0, W, H); x2.globalCompositeOperation = "destination-out";
     for (const [lx, ly, rad] of [[david.x - camX, david.y - 90 - camY, N.LIT], [F.x - camX, FOOT - 60 - camY, N.FIRE]]) {
       const g = x2.createRadialGradient(lx, ly, rad * 0.25, lx, ly, rad); g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(1, "rgba(0,0,0,0)");
       x2.fillStyle = g; x2.fillRect(lx - rad, ly - rad, rad * 2, rad * 2);

@@ -22,6 +22,7 @@ const C7 = {
   ANGER: { START: 40, ROAD: 0.75, WAIT: 5, WRONG: 18, AGAIN: 70 },
   TABLE_K: 0.4,            // (Glen 11-21) his feast table, drawn in front of Nabal: its size
   TABLE_AT: 1050,          // px into the table picture where Nabal sits (the low dishes, so his head and cup show)
+  FEAST_ABI: 230,          // px right of Nabal that Abigail stands, in front of his table, facing him
   FEAST_LIFT: 45,          // px Nabal sits up off the ground: on a bench behind the table
   // (Glen 11-21) the road's scorpions: where they live (cols), how far each side they walk (cols), px/s, size; STOMP: px
   //  either side a landing squashes one; REACH: px either side it stings. Any hit on the road slows the donkey (or David)
@@ -94,6 +95,7 @@ function c7Build(R) {
     ground(c, c + 59);
     c7.david = c6Person(rm, "david_idle", X(44), -1, () => c7.on, 1);
     c7.band = [c6Person(rm, "abishai_idle", X(49), -1, () => c7.on), c6Person(rm, "asahel_idle", X(53), -1, () => c7.on), c6Person(rm, "soldier_talk", X(57), -1, () => c7.on, 0.76)];
+    c7.vdonkey = c6Person(rm, "donkey_idle", X(10), -1, () => c7.vdonkey.on, 0.9);   // (Glen 11-21: she gets off; the donkey stays by her)
     c7.servants = c6Person(rm, "servants_donkeys", X(20), 1, () => c7.on && c7.round >= 4, 0.95);
   }
   kitImg("t_jars");
@@ -245,6 +247,7 @@ function c7Valley(dt, r, d, free) {
       if (c7.anger >= 100) { c7Fail("David's anger burns. Get to him quickly, and bow.", "valley"); c7.round = -1; return; }
       if (pressed("down") && d.onGround && Math.abs(c7.david.x - d.x) < C7.BOW_REACH) {
         c7.bowed = true; c7.ride = false; d.vx = 0; d.facing = Math.sign(c7.david.x - d.x) || 1;
+        Object.assign(c7.vdonkey, { on: true, x: d.x - d.facing * 130, dir: d.facing });   // (facing David too)
         c7.david.spr = "david_idle"; c7.david.t = 0;
         rPlay([{ fn() { c7.pose = { kneel: true, t: 0 }; } }, { wait: 1.2 },
           { say: ["", "When Abigail saw David, she hurried and got off her donkey, and fell before David on her face and bowed herself to the ground. (1 Samuel 25:23)"] },
@@ -287,9 +290,9 @@ function c7Relent() {
     { say: ["David", "“Go up in peace to your house. Behold, I have listened to your voice and have granted your request.” (1 Samuel 25:35)"] },
     { fn() { regionAdd("taken", "c6_meeting"); c7.anger = 0; } },
     // Nabal (25:36-38): at his feast, then in the morning, as a stone
-    { fn() { c7.on = false; c7.nabalScene = true; c6.pose = { hide: true, t: 0 }; c6.cut = false; c6.nabal.spr = "nabal_feast"; c6.nabal.t = 0; c6.nabal.dir = 1; c6.nabal.y = FOOT - C7.FEAST_LIFT; regionGo((sh.c0 + 18) * T, 1); }, wait: 1.4 },
+    { fn() { c7.on = false; c7.nabalScene = true; c7.vdonkey.on = false; c7.feastAbi = "abigail_idle"; c6.pose = { hide: true, t: 0 }; c6.cut = false; c6.nabal.spr = "nabal_feast"; c6.nabal.t = 0; c6.nabal.dir = 1; c6.nabal.y = FOOT - C7.FEAST_LIFT; regionGo((sh.c0 + 18) * T, 1); }, wait: 1.4 },
     { say: ["", "Abigail came to Nabal; and behold, he held a feast in his house, like the feast of a king. Nabal's heart was merry within him, for he was very drunk. Therefore she told him nothing until the morning light. (1 Samuel 25:36)"] },
-    { fn() { c6.nabal.spr = "nabal_stone"; c6.nabal.t = 0; } }, { wait: 2.5 },
+    { fn() { c6.nabal.spr = "nabal_stone"; c6.nabal.t = 0; c7.feastAbi = "abigail_talk"; } }, { wait: 2.5 },
     { say: ["", "In the morning, when the wine had gone out of Nabal, his wife told him these things; and his heart died within him, and he became as a stone. (1 Samuel 25:37)"] },
     { say: ["", "About ten days later, the LORD struck Nabal, so that he died. (1 Samuel 25:38)"] },
     // David hears (25:39), at the camp
@@ -350,6 +353,9 @@ function c7DrawFront(camX) {
     const im = roomImg("carmel/kit/feast_table.png");
     if (im) { const k = C7.TABLE_K, w = im.naturalWidth * k, h = im.naturalHeight * k;
       ctx.drawImage(im, Math.round(c6.nabal.x - camX - C7.TABLE_AT * k), Math.round(FOOT - h), w, h); }
+    // Abigail in front of the table, come home to him (25:36), then telling him (25:37)
+    const a = c7.feastAbi || "abigail_idle";
+    drawSprite(a, frameOf(a, performance.now() / 1000), c6.nabal.x - camX + C7.FEAST_ABI, FOOT, -1, C6.NPC_K);
   }
 }
 function c7DrawOver() {
