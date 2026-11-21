@@ -106,7 +106,10 @@ Each place's Journal page writes the next part of the song, in order:
 4. Adullam (World 4): the Chorus
 5. Keilah (World 4): the Bridge ("Awake, my glory... I will awaken the dawn"), out of Keilah by night toward the dawn
 
-Still to come, six places and two parts of the song left (a first idea, for Glen):
-- Ziph and En-Gedi (World 5): the Final Chorus, its two halves ("Be exalted..." / "My heart is steadfast...")
-- Carmel (World 6) and Ziklag (World 7): a new verse from Glen, if he'd like to write one (or the Chorus again)
-- Hebron and Jerusalem (World 8): the Outro, then the whole song plays at the very end
+6. Ziph (World 5): the Final Chorus, "Be exalted..." (11-15)
+7. En-Gedi (World 5): the Final Chorus, "My heart is steadfast..." (11-18)
+8. Carmel (World 6): Verse 3's second half again ("My heart is steadfast still") (11-20)
+
+Left: only the Outro. Four places to go: the Hill of Hachilah and Ziklag (World 7), Hebron and Jerusalem (World 8).
+The idea (11-21): the song goes on with new verses from Glen (Hachilah's from Psalm 54, the Ziphites' psalm: see
+WORLD7_PLAN.md), and the Outro is kept for Jerusalem, when the whole song plays.

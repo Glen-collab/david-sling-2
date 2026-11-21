@@ -68,7 +68,7 @@ Ziklag in the second stop, and the burning thornbushes ITEMS_PLAN.md lists for o
 - 26:16 This thing isn't good that you have done. As the LORD lives, you are worthy to die, because you have not kept watch over your lord, the LORD's anointed. Now see where the king's spear is, and the jar of water that was at his head."
 - 26:17 Saul recognized David's voice, and said, "Is this your voice, my son David?" David said, "It is my voice, my lord, O king."
 - 26:18 He said, "Why does my lord pursue his servant? For what have I done? What evil is in my hand?
-- 26:19 (Left out or cut short, Glen decides: "Go, serve other gods!" needs explaining for kids.)
+- 26:19 Now therefore, please let my lord the king hear the words of his servant. If it is so that the LORD has stirred you up against me, let him accept an offering. But if it is the children of men, they are cursed before the LORD; for they have driven me out today that I shouldn't cling to the LORD's inheritance, saying, 'Go, serve other gods!' (in: Glen 11-21)
 - 26:20 Now therefore, don't let my blood fall to the earth away from the presence of the LORD; for the king of Israel has come out to seek a flea, as when one hunts a partridge in the mountains."
 - 26:21 Then Saul said, "I have sinned. Return, my son David; for I will no more do you harm, because my life was precious in your eyes today. Behold, I have played the fool, and have erred exceedingly."
 - 26:22 David answered, "Behold the spear, O king! Let one of the young men come over and get it.
@@ -99,9 +99,24 @@ Ziklag in the second stop, and the burning thornbushes ITEMS_PLAN.md lists for o
 - Clips: soldiers asleep (two or three poses, turning over), Abner asleep, David creeping with Abishai, David taking the
   spear and the jar, David walking with them, a young man of Saul's coming for the spear, Saul waking and standing.
 
-## Questions for Glen
-1. The camp: no guards awake (26:12, the LORD's deep sleep), so the challenge is the maze, not being seen. OK?
-2. The choice at Saul's head: show Abishai's offer as a choice the game won't let you take (David always answers), or
-   just play 26:8-11 as a scene and then you pick up the spear and the jar?
-3. 26:19 ("Go, serve other gods!"): in, or left out?
-4. The Journal: a new verse of the song for World 7, or the chorus again (SONG_PSALM57.md's note)?
+## Glen's answers (11-21)
+1. **The camp is a maze; no guards wake** (26:12). The challenge is the way through the place of the wagons.
+2. **At Saul's head, the scene just plays** (26:7-12): no choice box. Then David takes the spear and the jar.
+3. **26:19 is in**, "Go, serve other gods!" with it.
+4. The Journal's song: see below.
+
+## The Journal's song for World 7 and 8
+Psalm 57's song is all used but its Outro (11-21, from the code: Gibeah Verse 1, Ramah Verse 2, Nob and Gath
+Verse 3, Adullam the Chorus, Keilah the Bridge, Ziph and En-Gedi the Final Chorus's two halves, Carmel Verse 3's second
+half again). Four stops are left: Hachilah, Ziklag, Hebron, Jerusalem. The idea: **the song goes on**, Glen writes new
+verses, and the Outro stays for the very end (Jerusalem), when the whole song plays.
+
+For Hachilah, **Psalm 54** fits as nothing else does: its heading is this night. "A contemplation by David, when the
+Ziphites came and said to Saul, 'Isn't David hiding himself among us?'" (Psalm 54, WEB, checked 11-21):
+- 54:1 Save me, God, by your name. Vindicate me in your might.
+- 54:2 Hear my prayer, God. Listen to the words of my mouth.
+- 54:3 For strangers have risen up against me. Violent men have sought after my soul. They haven't set God before them.
+- 54:4 Behold, God is my helper. The Lord is the one who sustains my soul.
+- 54:6 With a free will offering, I will sacrifice to you. I will give thanks to your name, the LORD, for it is good.
+- 54:7 For he has delivered me out of all trouble. My eye has seen triumph over my enemies.
+(54:5, "Destroy them in your truth," is the one David doesn't do to Saul that night.)
