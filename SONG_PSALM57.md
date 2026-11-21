@@ -113,3 +113,18 @@ Each place's Journal page writes the next part of the song, in order:
 Left: only the Outro. Four places to go: the Hill of Hachilah and Ziklag (World 7), Hebron and Jerusalem (World 8).
 The idea (11-21): the song goes on with new verses from Glen (Hachilah's from Psalm 54, the Ziphites' psalm: see
 WORLD7_PLAN.md), and the Outro is kept for Jerusalem, when the whole song plays.
+
+## Verse 4 (a first draft by Claude, 11-21, for Glen to change): the Hill of Hachilah, from Psalm 54 and 1 Samuel 26
+```
+[Verse 4]
+Save me, O God, by Your great name
+Listen when I pray
+For strangers rise to seek my soul
+And will not walk Your way
+
+The spear stood waiting at his head
+But I would not strike the king
+You are my helper, You sustain me
+To You my thanks I'll bring
+```
+First half: Psalm 54:1-3. Second half: 1 Samuel 26:7-11, Psalm 54:4 and 54:6.
