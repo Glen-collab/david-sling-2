@@ -60,7 +60,7 @@ const CARMEL = {
       get bg() { return c6.night ? "w1_4" : "w1_2"; } },   // (David 1's Wandering Flock, 1-2; by night his Lion's Territory, 1-4)
     { id: "hills", name: "The Hill Pastures", w: 110, bg: "w1_3", mx: 6, my: 1, mw: 3, left: "fields" },   // (David 1's Rocky Pastures, 1-3)
     { id: "shearing", name: "Nabal's Shearing", w: 60, mx: 9, my: 1, mw: 2,   // (Glen's, 11-20: the estate, the feast under the awning, the pens)
-      far: "carmel/nabal/far", mid: "carmel/nabal/mid.png", midY: -20, near: "carmel/nabal/near.png", nearK: 0.5 },
+      far: "carmel/nabal/far", mid: "carmel/nabal/mid.png", midY: 210, near: "carmel/nabal/near.png", nearK: 0.5 },
   ],
   // the Journal: Glen's song, Verse 3, its second half (SONG_PSALM57.md, his words exactly)
   steps: ["c6_fields", "c6_hills", "c6_night", "c6_insult"],

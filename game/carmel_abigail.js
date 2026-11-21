@@ -19,6 +19,9 @@ const C7 = {
   // David's anger (0-100): where it is when she sets off, how fast it climbs on the road (per s), and in the valley
   //  before she bows; a wrong word adds WRONG; a full meter sends her back to the start of the road (or of her words)
   ANGER: { START: 40, ROAD: 0.75, WAIT: 5, WRONG: 18, AGAIN: 70 },
+  TABLE_K: 0.4,            // (Glen 11-21) his feast table, drawn in front of Nabal: its size
+  TABLE_AT: 1050,          // px into the table picture where Nabal sits (the low dishes, so his head and cup show)
+  FEAST_LIFT: 45,          // px Nabal sits up off the ground: on a bench behind the table
   BOW_REACH: 260,          // px: Down this close to David, she gets off and bows
   DAVID_WALK: 45,          // px/s David's band comes on while she hasn't bowed
 };
@@ -40,6 +43,7 @@ const c7Abi = () => c7.on && !(c6.pose && c6.pose.hide);
 // ---------------------------------------------------------------------------------------------------------------------
 // building
 function c7Build(R) {
+  roomImg("carmel/kit/feast_table.png");   // (loaded ahead: roomImg loads lazily, and the feast scene is short)
   c7.ending = false; c7.gifts.length = 0; c7.watch.length = 0; c7.hides.length = 0; c7.got = 0; c7.round = -1; c7.choice = null; c7.bowed = false; c7.ride = false;
   if (!C7_BASE) C7_BASE = { WALK_SPEED: TUNE.WALK_SPEED, RUN_SPEED: TUNE.RUN_SPEED, JUMP_SPEED: TUNE.JUMP_SPEED };
   Object.assign(TUNE, C7_BASE);
@@ -249,7 +253,7 @@ function c7Relent() {
     { say: ["David", "“Go up in peace to your house. Behold, I have listened to your voice and have granted your request.” (1 Samuel 25:35)"] },
     { fn() { regionAdd("taken", "c6_meeting"); c7.anger = 0; } },
     // Nabal (25:36-38): at his feast, then in the morning, as a stone
-    { fn() { c7.on = false; c7.nabalScene = true; c6.pose = { hide: true, t: 0 }; c6.cut = false; c6.nabal.spr = "nabal_feast"; c6.nabal.t = 0; c6.nabal.dir = 1; regionGo((sh.c0 + 18) * T, 1); }, wait: 1.4 },
+    { fn() { c7.on = false; c7.nabalScene = true; c6.pose = { hide: true, t: 0 }; c6.cut = false; c6.nabal.spr = "nabal_feast"; c6.nabal.t = 0; c6.nabal.dir = 1; c6.nabal.y = FOOT - C7.FEAST_LIFT; regionGo((sh.c0 + 18) * T, 1); }, wait: 1.4 },
     { say: ["", "Abigail came to Nabal; and behold, he held a feast in his house, like the feast of a king. Nabal's heart was merry within him, for he was very drunk. Therefore she told him nothing until the morning light. (1 Samuel 25:36)"] },
     { fn() { c6.nabal.spr = "nabal_stone"; c6.nabal.t = 0; } }, { wait: 2.5 },
     { say: ["", "In the morning, when the wine had gone out of Nabal, his wife told him these things; and his heart died within him, and he became as a stone. (1 Samuel 25:37)"] },
@@ -307,6 +311,11 @@ function c7DrawFront(camX) {
     const walking = w.look <= 0;
     drawSprite("steward", walking ? frameOf("steward", w.t) : 0, w.x - camX, FOOT, w.dir, 1);
     if (!walking) { ctx.save(); ctx.font = "bold 26px Georgia, serif"; ctx.fillStyle = "#ffe9a8"; ctx.textAlign = "center"; ctx.fillText("👁", w.x - camX, FOOT - 270 * C7.WATCH.K); ctx.restore(); }
+  }
+  if (c7.nabalScene && r.id === "shearing") {   // Nabal at his feast, behind Glen's table
+    const im = roomImg("carmel/kit/feast_table.png");
+    if (im) { const k = C7.TABLE_K, w = im.naturalWidth * k, h = im.naturalHeight * k;
+      ctx.drawImage(im, Math.round(c6.nabal.x - camX - C7.TABLE_AT * k), Math.round(FOOT - h - camY), w, h); }
   }
 }
 function c7DrawOver() {
