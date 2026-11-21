@@ -307,7 +307,7 @@ function c7Relent() {
     { fn() { c7.endAbi.spr = "abigail_ride"; c7.endAbi.t = 0; c7.endAbi.dir = 1; c7.endAbi.vx = 120; c7.maids.vx = 120; c7.maids.show = () => true; } }, { wait: 1 },
     { say: ["", "Abigail hurriedly arose and rode on a donkey with her five maids who followed her; and she went after the messengers of David, and became his wife. (1 Samuel 25:42)"] },
     { wait: 2 },
-    { fn() { regionAdd("taken", "c6_end"); c6.pose = null; jsceneOpen(true); } },
+    { fn() { regionAdd("taken", "c6_end"); regionAdd("taken", "g_exit_open"); c6.pose = null; jsceneOpen(true); } },   // (g_exit_open: Carmel done on the land map)
   ]);
 }
 function c7End(st) {

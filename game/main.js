@@ -483,7 +483,8 @@ const STAGE_INFO = {
   "9-7": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Nob and Gath" },
   "9-8": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Cave of Adullam" },
   "9-10": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Ziph" },
-  "9-12": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Carmel" },               // Part Two: World 6 (carmel.js on region.js)
+  "9-12": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Carmel" },
+  "9-13": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Hachilah" },              // Part Two: World 7 (w7.js on region.js: Hachilah, then Ziklag)               // Part Two: World 6 (carmel.js on region.js)
   "9-11": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "En-Gedi" },            // Part Two: World 5, part two (engedi_w5.js on region.js)            // Part Two: World 5, part one (ziph.js on region.js)
   "9-9": { cols: REGION_COLS, bg: "w4_1", ter: "w2s", name: "Keilah" },          // Part Two: World 4, part two (keilah.js on region.js)          // Part Two: World 4 (adullam.js on region.js)          // Part Two: World 3 (nobgath.js on region.js)
   "9-6": { cols: REGION_COLS, bg: "w4_4", ter: "w2s", name: "The Window" },           // Part Two: World 2, the second region (ramah.js on region.js)              // Part Two test: the first region, Castlevania-style (region.js)
@@ -1178,7 +1179,7 @@ if (LEVEL_NAME === "test") {
   gourd(147, 6, true); gourd(152, 5, true); gourd(157, 7, true);
   campfire(170, GR - 1);
   setPiece("p2end", 186);
-} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" || LEVEL_NAME === "9-8" || LEVEL_NAME === "9-9" || LEVEL_NAME === "9-10" || LEVEL_NAME === "9-11" || LEVEL_NAME === "9-12") {
+} else if (LEVEL_NAME === "9-5" || LEVEL_NAME === "9-6" || LEVEL_NAME === "9-7" || LEVEL_NAME === "9-8" || LEVEL_NAME === "9-9" || LEVEL_NAME === "9-10" || LEVEL_NAME === "9-11" || LEVEL_NAME === "9-12" || LEVEL_NAME === "9-13") {
   buildRegion();   // Gibeah, the first region: rooms, doors, seals and finds (region.js)
 } else if (LEVEL_NAME === "9-4") {
   // ---- 9-4 The Window (1 Samuel 19:11-13; the Part Two test of the D-pad drills, drill.js): Michal warns David, lets
