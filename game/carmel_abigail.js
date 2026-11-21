@@ -310,12 +310,6 @@ function c7DrawFront(camX) {
   const r = region.room; if (!r) return;
   for (const w of c7.watch) if (w.room === r.id && !c7.ending) {
     drawSprite("steward", 0, w.x - camX, FOOT, -w.dir, 1);   // (Glen's art faces left)
-    if (Math.sign(david.x - w.x) === w.dir && Math.abs(david.x - w.x) < C7.WATCH.SEE) {   // (the eye: he's looking her way)
-      const ex = w.x - camX, ey = FOOT - 180 - camY;   // (just over his head)
-      ctx.save(); ctx.fillStyle = "rgba(20,14,8,0.6)"; ctx.beginPath(); ctx.ellipse(ex, ey, 22, 14, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#fff6dc"; ctx.beginPath(); ctx.ellipse(ex, ey, 17, 9, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#2a1a0c"; ctx.beginPath(); ctx.arc(ex + w.dir * 5, ey, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    }
   }
   if (c7.nabalScene && r.id === "shearing") {   // Nabal at his feast, behind Glen's table
     const im = roomImg("carmel/kit/feast_table.png");
