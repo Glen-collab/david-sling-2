@@ -278,7 +278,7 @@ function c7End(st) {
   const X = k => (st.c0 + k) * T;
   c6.pose = { hide: true, t: 0 }; c7.ending = true; c7.on = false;
   c7.endAbi = c6Person("stores", "abigail_idle", X(30), -1, () => true);
-  c7.maids = c6Person("stores", "maids", X(22), 1, () => false, 0.95);
+  c7.maids = c6Person("stores", "maids", X(22), -1, () => false, 0.95);   // (-1: Glen's clip faces left; they walk off right)
   c6Person("stores", "abishai_idle", X(36), -1, () => !c6Has("c6_end")); c6Person("stores", "soldier_talk", X(40), -1, () => !c6Has("c6_end"), 0.76);
   regionGo(X(30), 1);
 }
