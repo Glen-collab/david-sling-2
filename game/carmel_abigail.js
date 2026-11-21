@@ -12,8 +12,9 @@
 const C7 = {
   GIFT_K: 0.42,            // the gift pictures (David 1's items), how big
   GIFT_REACH: 60,          // px: this close picks a gift up
-  // the steward in the storerooms: how far he sees (px), his walk (px/s), how long he stands and looks at each end (s)
-  WATCH: { SEE: 400, WALK: 55, LOOK: 2.2, HIDE: 80, K: 0.85 },
+  // the steward in the storerooms: how far he sees (px); he stands at his post and turns round every TURN s (a random time
+  //  between the two: Glen 11-21, his clip has no walk, so he doesn't patrol); HIDE: px from a jar that hides her crouched
+  WATCH: { SEE: 400, TURN: [2.2, 3.8], HIDE: 80, K: 0.85 },
   // the donkey on the road: faster, jumps higher (TUNE while she rides; put back after)
   RIDE: { WALK_SPEED: 380, RUN_SPEED: 600, JUMP_SPEED: 1180 },
   // David's anger (0-100): where it is when she sets off, how fast it climbs on the road (per s), and in the valley
@@ -65,9 +66,9 @@ function c7Build(R) {
     gift("raisins", 48); gift("fig_cake", 52);
     rLedge(rm, c + 55, 480, 4); gift("roasted_grain", 57, 480);
     gift("gift_bread", 61);
-    c7.watch.push({ room: rm, x: X(30), x0: X(26), x1: X(36), dir: 1, look: 0, t: 0 }, { room: rm, x: X(52), x0: X(46), x1: X(60), dir: -1, look: 0, t: 0 });
+    c7.watch.push({ room: rm, x: X(31), dir: 1, look: 2, t: 0 }, { room: rm, x: X(53), dir: -1, look: 3, t: 0 });
     c7.donkey = c6Person(rm, "donkey_idle", X(66), -1, () => !c7.loading, 0.9);
-    rTalker(c6Person(rm, "villager_boy_stand", X(6), 1, () => c7.on), () => [["One of Nabal's young men", c7.got < c7.gifts.length ? "Hurry! The bread, the raisins, the fig cakes, the parched grain. Keep out of the steward's sight: crouch behind the jars when he looks your way." : "That's all of it. Load the donkey, at the end of the storerooms: Up beside it."]]);
+    rTalker(c6Person(rm, "villager_boy_stand", X(6), 1, () => c7.on, 0.55), () => [["One of Nabal's young men", c7.got < c7.gifts.length ? "Hurry! The bread, the raisins, the fig cakes, the parched grain. Keep out of the steward's sight: crouch behind the jars when he looks your way." : "That's all of it. Load the donkey, at the end of the storerooms: Up beside it."]]);
   }
 
   // -- The Mountain Road (25:20): the ride down, wide gaps the donkey jumps, rocks to hop up
@@ -151,8 +152,8 @@ function c7Stores(dt, r, d, free) {
   for (const w of c7.watch) {
     if (w.room !== r.id) continue;
     w.t += dt;
-    if (w.look > 0) { w.look -= dt; if (w.look <= 0) w.dir *= -1; }
-    else { w.x += w.dir * C7.WATCH.WALK * dt; if ((w.dir > 0 && w.x >= w.x1) || (w.dir < 0 && w.x <= w.x0)) w.look = C7.WATCH.LOOK; }
+    w.look -= dt;
+    if (w.look <= 0) { const [a, b] = C7.WATCH.TURN; w.dir *= -1; w.look = a + Math.random() * (b - a); }
     const dx = d.x - w.x;
     if (free && !w.saw && Math.sign(dx) === w.dir && Math.abs(dx) < C7.WATCH.SEE && Math.abs(d.y - FOOT) < 140 && !hidden && d.deadT <= 0) {
       w.saw = true;
@@ -308,9 +309,13 @@ function c7Draw(camX) {
 function c7DrawFront(camX) {
   const r = region.room; if (!r) return;
   for (const w of c7.watch) if (w.room === r.id && !c7.ending) {
-    const walking = w.look <= 0;
-    drawSprite("steward", walking ? frameOf("steward", w.t) : 0, w.x - camX, FOOT, w.dir, 1);
-    if (!walking) { ctx.save(); ctx.font = "bold 26px Georgia, serif"; ctx.fillStyle = "#ffe9a8"; ctx.textAlign = "center"; ctx.fillText("👁", w.x - camX, FOOT - 270 * C7.WATCH.K); ctx.restore(); }
+    drawSprite("steward", 0, w.x - camX, FOOT, -w.dir, 1);   // (Glen's art faces left)
+    if (Math.sign(david.x - w.x) === w.dir && Math.abs(david.x - w.x) < C7.WATCH.SEE) {   // (the eye: he's looking her way)
+      const ex = w.x - camX, ey = FOOT - 180 - camY;   // (just over his head)
+      ctx.save(); ctx.fillStyle = "rgba(20,14,8,0.6)"; ctx.beginPath(); ctx.ellipse(ex, ey, 22, 14, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff6dc"; ctx.beginPath(); ctx.ellipse(ex, ey, 17, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#2a1a0c"; ctx.beginPath(); ctx.arc(ex + w.dir * 5, ey, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
   }
   if (c7.nabalScene && r.id === "shearing") {   // Nabal at his feast, behind Glen's table
     const im = roomImg("carmel/kit/feast_table.png");
