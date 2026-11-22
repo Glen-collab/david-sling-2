@@ -79,7 +79,7 @@ const h7Ember = (room, c) => h7.embers.push({ room, x: c * T + T / 2, t: Math.ra
 
 function h7Build(R) {
   for (const k of ["people", "sleepers", "carts", "beds", "embers"]) h7[k].length = 0;
-  h7.dawn = null; h7.call = null; h7.saul = null;
+  h7.dawn = null; h7.call = null; h7.saul = null; h7.spearDown = false;
   h7.abi = { x: 0, y: GR * T, t: 0, on: false, moving: false };
 
   // -- The Wilderness of Ziph (26:3-6): David's men; the spies come back; Abishai
@@ -219,7 +219,7 @@ function h7Call() {
     H7_SAY("David", "“Now therefore, don't let my blood fall to the earth away from the presence of the LORD; for the king of Israel has come out to seek a flea, as when one hunts a partridge in the mountains.” (1 Samuel 26:20)"),
     H7_SAY("Saul", "“I have sinned. Return, my son David; for I will no more do you harm, because my life was precious in your eyes today. Behold, I have played the fool, and have erred exceedingly.” (1 Samuel 26:21)"),
     H7_SAY("David", "“Behold the spear, O king! Let one of the young men come over and get it.” (1 Samuel 26:22)"),
-    { fn() { h7.spearDown = true; } },
+    { fn() { h7.spearDown = true; h7.spearX = david.x + david.facing * 60; h7.spearY = david.y; } },   // (out of his pack, stuck in the ground for Saul's young man)
     H7_SAY("David", "“The LORD will give to every man his righteousness and his faithfulness; because the LORD delivered you into my hand today, and I wouldn't stretch out my hand against the LORD's anointed. Behold, as your life was respected today in my eyes, so let my life be respected in the LORD's eyes, and let him deliver me out of all oppression.” (1 Samuel 26:23-24)"),
     H7_SAY("Saul", "“You are blessed, my son David. You will both do mightily, and will surely prevail.” (1 Samuel 26:25)"),
     H7_SAY("", "So David went his way, and Saul returned to his place. (1 Samuel 26:25)"),
@@ -279,16 +279,12 @@ function h7DrawFront(camX) {
       ctx.fillStyle = "#2a1c10"; ctx.beginPath(); ctx.arc(wx, FOOT - 40, 8, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
   }
-  // David with the spear over his shoulder and Saul's jar in his hand (Glen's, 11-21)
-  if (h7Has("h7_taken") && !h7Has("h7_end") || h7.call && !h7.spearDown) {
-    const d = david, low = d.h === LOW_H, x = d.x - camX, sp = ITEM.saul_spear;
-    if (!h7.spearDown && sp && sp.naturalWidth) {
-      const L = H7.SPEAR_L, w = sp.naturalWidth * L / sp.naturalHeight * 0.65;   // (a bit slimmer than the picture, as the spear by sleeping Saul)
-      ctx.save(); ctx.translate(x - d.facing * 16, d.y - (low ? 50 : 104)); ctx.rotate(-d.facing * (low ? 1.2 : 0.42));
-      ctx.drawImage(sp, -w / 2, -L / 2, w, L); ctx.restore();
-    }
-    const jar = ITEM.saul_jar;
-    if (jar && jar.naturalWidth) drawItem("saul_jar", x + d.facing * 24, d.y - (low ? 2 : 22), H7.JAR_H / jar.naturalHeight);
+  // (Glen 11-21: David keeps the spear and the jar in his pack, so they aren't drawn on him. At 26:22 the spear comes out
+  //  and stands in the ground at the mountaintop for Saul's young man.)
+  const sp = ITEM.saul_spear;
+  if (r.id === "mountain" && h7.call && h7.spearDown && sp && sp.naturalWidth) {
+    const L = H7.SPEAR_L, w = sp.naturalWidth * L / sp.naturalHeight * 0.65;
+    ctx.drawImage(sp, h7.spearX - camX - w / 2, h7.spearY + 8 - L, w, L);   // (its foot a little into the ground)
   }
   // across the valley, at the call: Saul and Abner far off and small, by the camp
   if (r.id === "mountain" && h7.call) {
