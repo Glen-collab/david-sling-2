@@ -8,8 +8,8 @@
 //   climb across the carts) -> Saul's Fire (the spear and the jar, 26:7-12) -> the Far Mountain (the climb; the call
 //   across the valley at dawn, 26:13-25). The Journal: Glen's song, Verse 4 (draft, from Psalm 54).
 //
-// Stand-ins (11-21) till Glen's art (ART_PROMPTS_W7.md): Ziph's pictures darkened to night; the sleepers are Saul's
-// lying-down sheet, tinted. The Place of the Wagons is Glen's (11-21): far/mid/near and the kit (w7_cart, w7_box, the baggage).
+// Stand-ins (11-21) till Glen's art (ART_PROMPTS_W7.md): Ziph's pictures darkened to night; the sleepers are
+// Glen's sleeping soldier (11-21). The Place of the Wagons is Glen's (11-21): far/mid/near and the kit (w7_cart, w7_box, the baggage).
 
 const H7 = {
   NPC_K: 0.9,
@@ -235,12 +235,16 @@ function h7Call() {
 
 // ---------------------------------------------------------------------------------------------------------------------
 // drawing
-function h7DrawSleeper(s, camX) {
-  const n = "saul_lie", S = SPR[n]; if (!S) return;
-  const k = H7.SLEEP_L / (S.w * h7Sc(n)), sc = h7Sc(n) * k, x0 = s.x0 + s.off - camX;
+function h7DrawSleeper(s, camX) {   // (Glen's sleeping soldier, 11-21: head to the left, or to the right; turning over onto his back)
+  const A = SPR.soldier_sleep; if (!A) return;
+  const k = H7.SLEEP_L / (A.w * h7Sc("soldier_sleep")), x0 = s.x0 + s.off - camX;
   if (x0 > W + 50 || x0 + H7.SLEEP_L < -50) return;
-  const x = s.dir > 0 ? x0 + S.ax * sc : x0 + (S.w - S.ax) * sc;
-  drawSprite(n, 0, x, FOOT, s.dir, k, 1, H7.SLEEP_FILTER);
+  const p = Math.min(1, Math.abs(s.off) / H7.ROLL);   // how far over he's turned (0: asleep on his side)
+  let n, face, f;
+  if (p > 0.02 && SPR.soldier_roll) { n = "soldier_roll"; face = s.dir; f = Math.round(p * (SPR[n].frames - 1)); }
+  else { n = s.dir > 0 ? "soldier_sleep" : "soldier_sleep_b"; face = 1; f = frameOf(n, performance.now() / 1000 + s.x0 * 0.01); }
+  const S = SPR[n], sc = h7Sc(n) * k;
+  drawSprite(n, f, face > 0 ? x0 + S.ax * sc : x0 + (S.w - S.ax) * sc, FOOT + 2, face, k);
 }
 function h7Draw(camX) {
   const r = region.room; if (!r) return;
