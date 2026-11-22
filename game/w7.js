@@ -64,7 +64,10 @@ const h7Sc = n => SCALE * (TUNE.SPRITE_SIZE[n] || 1);
 // ---------------------------------------------------------------------------------------------------------------------
 // building
 // a man asleep on the ground from px x0 (one sleeper's length); roll: he turns over now and then, ROLL px that way (+1/-1)
-function h7Sleeper(room, x0, dir = 1, roll = 0) { h7.sleepers.push({ room, x0, dir, roll, off: 0, to: 0, t: 1 + Math.random() * 3 }); }
+function h7Sleeper(room, x0, dir = 1, roll = 0) {
+  const i = h7.sleepers.length, man = roll ? 2 + (i % 2) : H7_STILL[i % H7_STILL.length];
+  h7.sleepers.push({ room, x0, dir, roll, man, off: 0, to: 0, t: 1 + Math.random() * 3 });
+}
 // a cart tipped on its end to climb onto (Glen's w7_box, 11-21): solid, its top 3 rows up, 4 columns wide
 function h7Cart(room, c) {
   block(c, GR - 3, 4, 3, 6);   // (material 6: solid, no tiles drawn: the cart picture is what shows) for (let x = c; x < c + 4; x++) for (let r = GR - 3; r < GR; r++) artSolid.add(x + "," + r);
@@ -235,16 +238,26 @@ function h7Call() {
 
 // ---------------------------------------------------------------------------------------------------------------------
 // drawing
-function h7DrawSleeper(s, camX) {   // (Glen's sleeping soldier, 11-21: head to the left, or to the right; turning over onto his back)
-  const A = SPR.soldier_sleep; if (!A) return;
-  const k = H7.SLEEP_L / (A.w * h7Sc("soldier_sleep")), x0 = s.x0 + s.off - camX;
+// Glen's three sleeping soldiers (11-21): asleep on his side; turning over onto his back; asleep on his back.
+// (ref: the sheet his size comes from, so a man is the same size in every pose)
+const H7_MEN = [
+  { side: "soldier_sleep", ref: "soldier_sleep" }, { side: "soldier_sleep_b", ref: "soldier_sleep" },
+  { side: "soldier2_side", roll: "soldier2_roll", back: "soldier2_back", ref: "soldier2_side" },
+  { side: "soldier3_side", roll: "soldier3_roll", back: "soldier3_back", ref: "soldier3_side" },
+  { side: "soldier2_back", ref: "soldier2_side" }, { side: "soldier3_back", ref: "soldier3_side" },
+];
+const H7_STILL = [0, 4, 1, 5, 3, 2];   // the men who don't turn over, in turn; the ones who do are men 2 and 3
+function h7DrawSleeper(s, camX) {
+  const M = H7_MEN[s.man], R = SPR[M.ref]; if (!R) return;
+  const k = H7.SLEEP_L / (R.w * h7Sc(M.ref)), x0 = s.x0 + s.off - camX;
   if (x0 > W + 50 || x0 + H7.SLEEP_L < -50) return;
   const p = Math.min(1, Math.abs(s.off) / H7.ROLL);   // how far over he's turned (0: asleep on his side)
-  let n, face, f;
-  if (p > 0.02 && SPR.soldier_roll) { n = "soldier_roll"; face = s.dir; f = Math.round(p * (SPR[n].frames - 1)); }
-  else { n = s.dir > 0 ? "soldier_sleep" : "soldier_sleep_b"; face = 1; f = frameOf(n, performance.now() / 1000 + s.x0 * 0.01); }
+  let n = M.side, f;
+  if (M.roll && p > 0.98 && SPR[M.back]) { n = M.back; f = frameOf(n, performance.now() / 1000 + s.x0 * 0.01); }
+  else if (M.roll && p > 0.02 && SPR[M.roll]) { n = M.roll; f = Math.round(p * (SPR[n].frames - 1)); }
+  else { if (!SPR[n]) return; f = frameOf(n, performance.now() / 1000 + s.x0 * 0.01); }
   const S = SPR[n], sc = h7Sc(n) * k;
-  drawSprite(n, f, face > 0 ? x0 + S.ax * sc : x0 + (S.w - S.ax) * sc, FOOT + 2, face, k);
+  drawSprite(n, f, s.dir > 0 ? x0 + S.ax * sc : x0 + (S.w - S.ax) * sc, FOOT + 2, s.dir, k);
 }
 function h7Draw(camX) {
   const r = region.room; if (!r) return;

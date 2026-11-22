@@ -21,6 +21,7 @@ usage:
   --pad P   add P pixels of empty space on the left, right and top of every frame (room in Photoshop to paint back a
             spear, bow or sling the video cut off). The feet stay on the bottom line; the anchors move to match.
   --fixed X a scene with two characters (one moving): keep the camera still, anchored at video x = X (the still one).
+  --green-min F  skip frames with less than F green (default 0.4; lower it when the man fills the frame)
   --green   also write <out_prefix>_green.png: the same frames, same layout, straight from the video (green screen
             and all), for borrowing parts in Photoshop.
 
@@ -36,6 +37,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("clip"); ap.add_argument("out")
 ap.add_argument("--once", action="store_true"); ap.add_argument("--loop", action="store_true")
 ap.add_argument("--frames", type=int, default=12); ap.add_argument("--height", type=int, default=240)
+ap.add_argument("--green-min", type=float, default=0.4)   # (a frame with less green screen than this is skipped; a close-up man: lower it)
 ap.add_argument("--start", type=int, default=1); ap.add_argument("--end", type=int, default=0)
 ap.add_argument("--align", choices=["feet", "center", "ground"], default="feet")
 ap.add_argument("--mirror", action="store_true", help="flip left-right so the character faces right (the game's convention)")
@@ -98,7 +100,7 @@ def key(path):
 # skip frames that aren't on the green screen (e.g. a reference screenshot at the start)
 def on_green(path):
     if args.white: return True
-    return green_mask(np.asarray(Image.open(path).convert("RGB")).astype(int)).mean() > 0.4
+    return green_mask(np.asarray(Image.open(path).convert("RGB")).astype(int)).mean() > args.green_min
 files = [f for f in files if on_green(f)]
 
 def body(m):   # the mask without thin things (spear, bow) when --thin is set

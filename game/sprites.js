@@ -7596,6 +7596,18 @@ window.SPRITE_DATA = {
   "ay": 272,
   "align": "feet"
  },
+ "soldier2_back": {
+  "src": "../assets/sprites/soldier2_back.png",
+  "frames": 12,
+  "w": 270,
+  "h": 94,
+  "ms": 150,
+  "loop": true,
+  "pingpong": true,
+  "ax": 135,
+  "ay": 92,
+  "align": "ground"
+ },
  "soldier2_fear": {
   "src": "../assets/sprites/soldier2_fear.png",
   "frames": 12,
@@ -7620,6 +7632,42 @@ window.SPRITE_DATA = {
   "ay": 238,
   "align": "feet"
  },
+ "soldier2_roll": {
+  "src": "../assets/sprites/soldier2_roll.png",
+  "frames": 12,
+  "w": 270,
+  "h": 107,
+  "ms": 58,
+  "loop": false,
+  "pingpong": false,
+  "ax": 135,
+  "ay": 106,
+  "align": "ground"
+ },
+ "soldier2_side": {
+  "src": "../assets/sprites/soldier2_side.png",
+  "frames": 12,
+  "w": 270,
+  "h": 104,
+  "ms": 150,
+  "loop": true,
+  "pingpong": true,
+  "ax": 135,
+  "ay": 102,
+  "align": "ground"
+ },
+ "soldier3_back": {
+  "src": "../assets/sprites/soldier3_back.png",
+  "frames": 12,
+  "w": 249,
+  "h": 78,
+  "ms": 150,
+  "loop": true,
+  "pingpong": true,
+  "ax": 124,
+  "ay": 77,
+  "align": "ground"
+ },
  "soldier3_fear": {
   "src": "../assets/sprites/soldier3_fear.png",
   "frames": 12,
@@ -7643,6 +7691,30 @@ window.SPRITE_DATA = {
   "ax": 149,
   "ay": 244,
   "align": "feet"
+ },
+ "soldier3_roll": {
+  "src": "../assets/sprites/soldier3_roll.png",
+  "frames": 12,
+  "w": 266,
+  "h": 102,
+  "ms": 58,
+  "loop": false,
+  "pingpong": false,
+  "ax": 133,
+  "ay": 100,
+  "align": "ground"
+ },
+ "soldier3_side": {
+  "src": "../assets/sprites/soldier3_side.png",
+  "frames": 12,
+  "w": 266,
+  "h": 98,
+  "ms": 150,
+  "loop": true,
+  "pingpong": true,
+  "ax": 133,
+  "ay": 97,
+  "align": "ground"
  },
  "soldier4_fear": {
   "src": "../assets/sprites/soldier4_fear.png",

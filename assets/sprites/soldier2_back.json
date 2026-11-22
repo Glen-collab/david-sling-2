@@ -1,0 +1,26 @@
+{
+ "frames": 12,
+ "frame_w": 270,
+ "frame_h": 94,
+ "ms_per_frame": 150,
+ "loop": true,
+ "align": "ground",
+ "anchor_x": 135,
+ "anchor_y": 92,
+ "source": "soldier asleep 2.mp4",
+ "video_frames": [
+  80,
+  86,
+  92,
+  97,
+  103,
+  109,
+  115,
+  121,
+  127,
+  132,
+  138,
+  144
+ ],
+ "pingpong": true
+}
