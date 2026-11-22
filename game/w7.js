@@ -9,7 +9,7 @@
 //   across the valley at dawn, 26:13-25). The Journal: Glen's song, Verse 4 (draft, from Psalm 54).
 //
 // Stand-ins (11-21) till Glen's art (ART_PROMPTS_W7.md): Ziph's pictures darkened to night; the sleepers are Saul's
-// lying-down sheet, tinted; the carts are Part One's jar wagon; the loaded wagons are drawn here.
+// lying-down sheet, tinted. The Place of the Wagons is Glen's (11-21): far/mid/near and the kit (w7_cart, w7_box, the baggage).
 
 const H7 = {
   NPC_K: 0.9,
@@ -18,7 +18,7 @@ const H7 = {
   // the sleepers: how long one is (px); a sleeper that turns over moves ROLL px, taking ROLL_T s, every [a, b] s
   SLEEP_L: 150, ROLL: 64, ROLL_T: 0.7, ROLL_EVERY: [3, 5.5],
   SLEEP_FILTER: "sepia(0.7) hue-rotate(-12deg) saturate(0.8) brightness(1.15)",   // (stand-in: Saul's sheet as a soldier)
-  CART_H: 150, SPEAR_L: 200, JAR_H: 34,             // px the jar cart's drawn (its solid top is 4 rows up)
+  CART_H: 150, BED_W: 17, BED_H: 290, FIRE_H: 74, SPEAR_L: 200, JAR_H: 34,             // px the jar cart's drawn (its solid top is 4 rows up)
   ABI_GAP: 95, ABI_K: 4,   // Abishai behind David (px), how quickly he catches up
   SAUL_NEAR: 170,          // px: this close to Saul, the scene plays
 };
@@ -32,10 +32,10 @@ const W7 = {
     { id: "hill", name: "The Hill of Hachilah", w: 90, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "wild", right: "wagons",
       far: "ziph/hachilah/far", mid: "ziph/hachilah/mid.png", midY: 0, near: "ziph/hachilah/near.png" },
     { id: "wagons", name: "The Place of the Wagons", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 4, left: "hill", right: "fire",
-      far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },   // (stand-in till Glen's)
+      far: "w7/wagons/far", mid: "w7/wagons/mid.png", midY: 330, near: "w7/wagons/near.png", nearK: 0.5 },   // (Glen's, 11-21)
     { id: "fire", name: "Saul's Fire", w: 50, bg: "w4_1", mx: 9, my: 1, mw: 2, left: "wagons",
       get right() { return h7Has("h7_taken") ? "mountain" : null; },
-      far: "ziph/maon/far", mid: "ziph/maon/mid.png", midY: 0, near: "ziph/maon/near.png" },
+      far: "w7/wagons/far", mid: "w7/wagons/mid.png", midY: 330, near: "w7/wagons/near.png", nearK: 0.5 },
     { id: "mountain", name: "The Far Mountain", w: 70, bg: "w4_1", mx: 11, my: 0, mw: 2, left: "fire",
       far: "ziph/mountain/far", mid: "ziph/mountain/mid.png", midY: 0, near: "ziph/mountain/near.png" },
   ],
@@ -55,7 +55,7 @@ const W7 = {
   draw: camX => h7Draw(camX), drawFront: camX => h7DrawFront(camX), drawOver: () => h7DrawOver(),
 };
 
-const h7 = { told: {}, people: [], sleepers: [], carts: [], beds: [], embers: [], abi: null, saul: null, dawn: null, call: null };
+const h7 = { told: {}, people: [], sleepers: [], carts: [], beds: [], embers: [], props: [], abi: null, saul: null, dawn: null, call: null };
 const h7Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function h7Tell(k, text) { if (!h7.told[k]) { h7.told[k] = true; toast(text); } }
 function h7Person(room, spr, x, dir = 1, show = null, k = H7.NPC_K) { const p = { room, spr, x, y: FOOT, dir, show, k, t: Math.random() * 3 }; h7.people.push(p); return p; }
@@ -65,20 +65,21 @@ const h7Sc = n => SCALE * (TUNE.SPRITE_SIZE[n] || 1);
 // building
 // a man asleep on the ground from px x0 (one sleeper's length); roll: he turns over now and then, ROLL px that way (+1/-1)
 function h7Sleeper(room, x0, dir = 1, roll = 0) { h7.sleepers.push({ room, x0, dir, roll, off: 0, to: 0, t: 1 + Math.random() * 3 }); }
-// a jar cart to climb onto: solid, its top 4 rows up, 4 columns wide
+// a cart tipped on its end to climb onto (Glen's w7_box, 11-21): solid, its top 3 rows up, 4 columns wide
 function h7Cart(room, c) {
-  block(c, GR - 4, 4, 4, 6);   // (material 6: solid, no tiles drawn: the cart picture is what shows) for (let x = c; x < c + 4; x++) for (let r = GR - 4; r < GR; r++) artSolid.add(x + "," + r);
+  block(c, GR - 3, 4, 3, 6);   // (material 6: solid, no tiles drawn: the cart picture is what shows) for (let x = c; x < c + 4; x++) for (let r = GR - 3; r < GR; r++) artSolid.add(x + "," + r);
   h7.carts.push({ room, x: (c + 2) * T });
 }
-// a loaded wagon to crawl under: its bed 3 rows up, its load piled high on top (too high to climb), w columns long
+// a loaded wagon to crawl under (Glen's w7_cart, 11-21): its bed 2 rows up, its load piled high (too high to climb), w columns long
 function h7Bed(room, c, w) {
   block(c, GR - 8, w, 6, 6); for (let x = c; x < c + w; x++) for (let r = GR - 8; r < GR - 2; r++) artSolid.add(x + "," + r);
   h7.beds.push({ room, x0: c * T, x1: (c + w) * T });
 }
+const h7Prop = (room, name, x, h, dir = 1) => h7.props.push({ room, name, x, h, dir });
 const h7Ember = (room, c) => h7.embers.push({ room, x: c * T + T / 2, t: Math.random() * 5 });
 
 function h7Build(R) {
-  for (const k of ["people", "sleepers", "carts", "beds", "embers"]) h7[k].length = 0;
+  for (const k of ["people", "sleepers", "carts", "beds", "embers", "props"]) h7[k].length = 0;
   h7.dawn = null; h7.call = null; h7.saul = null; h7.spearDown = false;
   h7.abi = { x: 0, y: GR * T, t: 0, on: false, moving: false };
 
@@ -109,13 +110,17 @@ function h7Build(R) {
     campfire(c + 3, GR - 1);
     h7Sleeper(rm, X(10), 1);                                       // one to step over
     h7Sleeper(rm, X(18), -1); h7Sleeper(rm, X(18) + L + 110, 1, -1); // a gap that closes when he turns over
-    h7Bed(rm, c + 32, 7);                                           // crawl under the loaded wagon
-    h7Cart(rm, c + 44); h7Sleeper(rm, X(48), 1); h7Sleeper(rm, X(48) + L, -1);      // too many in a row: across the carts
-    h7Cart(rm, c + 57); h7Sleeper(rm, X(61), -1); h7Sleeper(rm, X(61) + L, 1);
-    h7Cart(rm, c + 70);
-    h7Bed(rm, c + 80, 8);
-    h7Sleeper(rm, X(94), 1); h7Sleeper(rm, X(94) + L + 110, -1, -1); h7Sleeper(rm, X(94) + 2 * L + 220, 1, -1);   // gaps that open and close
-    h7Ember(rm, c + 27); h7Ember(rm, c + 76); h7Ember(rm, c + 120);
+    h7Bed(rm, c + 30, H7.BED_W);                                    // crawl under the loaded wagon
+    h7Cart(rm, c + 52); h7Sleeper(rm, X(56), 1); h7Sleeper(rm, X(56) + L, -1);      // too many in a row: across the carts
+    h7Cart(rm, c + 65); h7Sleeper(rm, X(69), -1); h7Sleeper(rm, X(69) + L, 1);
+    h7Cart(rm, c + 78);
+    h7Bed(rm, c + 85, H7.BED_W);
+    h7Sleeper(rm, X(106), 1); h7Sleeper(rm, X(106) + L + 110, -1, -1); h7Sleeper(rm, X(106) + 2 * L + 220, 1, -1);   // gaps that open and close
+    h7Ember(rm, c + 25); h7Ember(rm, c + 49); h7Ember(rm, c + 126);
+    // (Glen's kit, 11-21: the camp's baggage, not solid)
+    h7Prop(rm, "w7_baggage", X(8), 110, -1); h7Prop(rm, "w7_amphora", X(21.5), 62); h7Prop(rm, "w7_sack", X(49.5), 46);
+    h7Prop(rm, "w7_yoke", X(63.5), 54); h7Prop(rm, "w7_hay", X(76), 44); h7Prop(rm, "w7_rope", X(103.5), 34);
+    h7Prop(rm, "w7_sack3", X(104.5), 48); h7Prop(rm, "w7_wheel", X(118), 62);
   }
 
   // -- Saul's Fire (26:7-12): the king asleep, the spear stuck in the ground at his head, the jar; Abner by him
@@ -244,9 +249,13 @@ function h7Draw(camX) {
     const g = ctx.createRadialGradient(x, FOOT - 6, 2, x, FOOT - 6, 46);
     g.addColorStop(0, `rgba(255,190,90,${0.95 * f})`); g.addColorStop(0.4, `rgba(230,90,30,${0.7 * f})`); g.addColorStop(1, "rgba(120,30,10,0)");
     ctx.fillStyle = g; ctx.fillRect(x - 50, FOOT - 56, 100, 60);
-    ctx.fillStyle = "#3a2a20"; for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.ellipse(x + i * 13, FOOT - 2, 8, 5, 0, 0, Math.PI * 2); ctx.fill(); }
+    const fr = ITEM.w7_firering;   // (Glen's, 11-21)
+    if (fr && fr.naturalWidth) drawItem("w7_firering", x, FOOT + 4, H7.FIRE_H / fr.naturalHeight);
   }
-  for (const c of h7.carts) if (c.room === r.id) { const im = ITEM.wagon_jars; if (im && im.naturalWidth) drawItem("wagon_jars", c.x - camX, FOOT, H7.CART_H / im.naturalHeight); }
+  for (const p of h7.props) if (p.room === r.id) { const im = ITEM[p.name]; if (!im || !im.naturalWidth) continue;
+    const k = p.h / im.naturalHeight, w = im.naturalWidth * k, x = p.x - camX; if (x < -w || x > W + w) continue;
+    ctx.save(); ctx.translate(x, FOOT + 3); ctx.scale(p.dir, 1); ctx.drawImage(im, -w / 2, -p.h, w, p.h); ctx.restore(); }
+  for (const c of h7.carts) if (c.room === r.id) { const im = ITEM.w7_box; if (im && im.naturalWidth) drawItem("w7_box", c.x - camX, FOOT + 4, (4 * T + 10) / im.naturalWidth); }   // (Glen's tipped cart, 11-21)
   for (const s of h7.sleepers) if (s.room === r.id) h7DrawSleeper(s, camX);
   if (h7.saul && h7.saul.room === r.id) {   // Saul asleep; once they're taken, without the spear and the jar (stand-in: clipped off)
     const n = "saul_sleep", S = SPR[n];
@@ -263,21 +272,11 @@ function h7Draw(camX) {
 }
 function h7DrawFront(camX) {
   const r = region.room; if (!r) return;
-  for (const b of h7.beds) if (b.room === r.id) {   // the loaded wagon (stand-in): its bed, wheels, the load piled under a cloth
-    const x0 = b.x0 - camX, x1 = b.x1 - camX, by = GR * T - 3 * T;
-    if (x1 < -60 || x0 > W + 60) continue;
-    ctx.save();
-    ctx.fillStyle = "#4b3420"; ctx.fillRect(x0 - 6, by - 6, x1 - x0 + 12, 22);
-    ctx.fillStyle = "#6b4a2c"; for (let x = x0; x < x1; x += 36) ctx.fillRect(x + 2, by - 4, 32, 6);
-    const lg = ctx.createLinearGradient(0, by - 200, 0, by);
-    lg.addColorStop(0, "#7d6a52"); lg.addColorStop(1, "#5b4a38");
-    ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(x0, by - 6);
-    ctx.quadraticCurveTo(x0 + 10, by - 190, (x0 + x1) / 2, by - 200); ctx.quadraticCurveTo(x1 - 10, by - 190, x1, by - 6); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = "#3a2c1e"; ctx.lineWidth = 3; for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x0 + 10, by - 50 * i); ctx.lineTo(x1 - 10, by - 50 * i + 8); ctx.stroke(); }
-    for (const wx of [x0 + 28, x1 - 28]) { ctx.fillStyle = "#3e2a18"; ctx.beginPath(); ctx.arc(wx, FOOT - 40, 40, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#5e4128"; ctx.beginPath(); ctx.arc(wx, FOOT - 40, 30, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#2a1c10"; ctx.beginPath(); ctx.arc(wx, FOOT - 40, 8, 0, Math.PI * 2); ctx.fill(); }
-    ctx.restore();
+  for (const b of h7.beds) if (b.room === r.id) {   // the loaded wagon (Glen's, 11-21), in front: David crawls under its bed
+    const im = ITEM.w7_cart; if (!im || !im.naturalWidth) continue;
+    const w = im.naturalWidth * H7.BED_H / im.naturalHeight, x = (b.x0 + b.x1) / 2 - camX;
+    if (x + w / 2 < 0 || x - w / 2 > W) continue;
+    ctx.drawImage(im, x - w / 2, FOOT + 4 - H7.BED_H, w, H7.BED_H);
   }
   // (Glen 11-21: David keeps the spear and the jar in his pack, so they aren't drawn on him. At 26:22 the spear comes out
   //  and stands in the ground at the mountaintop for Saul's young man.)

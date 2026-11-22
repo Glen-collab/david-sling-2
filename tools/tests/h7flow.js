@@ -13,11 +13,11 @@ steps.push({ n: 1, fn() { at("hill", 36); } }, run(60), { keys: [], n: 2, snap: 
 // the wagons: walk into the first sleeper
 steps.push({ n: 1, fn() { at("wagons", 6); } }); for (let i = 0; i < 8; i++) steps.push(run(10));
 steps.push({ keys: ["ArrowRight"], n: 60 }, { n: 1, fn() { log("walked at a sleeper: " + where()); } }, { keys: [], n: 2, snap: true });
-// crawl under the first loaded wagon (cols 32-39)
-steps.push({ n: 1, fn() { at("wagons", 30); } }, run(10), { keys: ["ArrowRight"], n: 40 }, { n: 1, fn() { log("standing at the wagon: " + where()); } },
-  { keys: ["ArrowDown", "ArrowRight"], n: 90 }, { n: 1, fn() { log("crawled: " + where()); } }, { keys: ["ArrowDown"], n: 2, snap: true });
+// crawl under the first loaded wagon (cols 30-46)
+steps.push({ n: 1, fn() { at("wagons", 27); } }, run(10), { keys: ["ArrowRight"], n: 40 }, { n: 1, fn() { log("standing at the wagon: " + where()); } },
+  { keys: ["ArrowDown", "ArrowRight"], n: 110 }, { n: 1, fn() { log("under: " + where()); } }, { keys: ["ArrowDown"], n: 2, snap: true }, { keys: ["ArrowDown", "ArrowRight"], n: 200 }, { n: 1, fn() { log("crawled: " + where()); } }, { keys: ["ArrowDown"], n: 2, snap: true });
 // on a cart
-steps.push({ n: 1, fn() { at("wagons", 45, GR * T - 4 * T - 2); } }, run(30), { n: 1, fn() { log("on the cart: " + where() + " ground " + david.onGround); } }, { keys: [], n: 2, snap: true });
+steps.push({ n: 1, fn() { at("wagons", 53, GR * T - 3 * T - 2); } }, run(30), { n: 1, fn() { log("on the cart: " + where() + " ground " + david.onGround); } }, { keys: [], n: 2, snap: true });
 // Saul's fire
 steps.push({ n: 1, fn() { at("fire", 18); } }, run(20), { keys: [], n: 2, snap: true }, { keys: ["ArrowRight"], n: 20 });
 for (let i = 0; i < 4; i++) steps.push(run(10));
