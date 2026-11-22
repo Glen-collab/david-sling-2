@@ -18,7 +18,7 @@ const H7 = {
   // the sleepers: how long one is (px); a sleeper that turns over moves ROLL px, taking ROLL_T s, every [a, b] s
   SLEEP_L: 150, ROLL: 64, ROLL_T: 0.7, ROLL_EVERY: [3, 5.5],
   SLEEP_FILTER: "sepia(0.7) hue-rotate(-12deg) saturate(0.8) brightness(1.15)",   // (stand-in: Saul's sheet as a soldier)
-  CART_H: 150,             // px the jar cart's drawn (its solid top is 4 rows up)
+  CART_H: 150, SPEAR_L: 200, JAR_H: 34,             // px the jar cart's drawn (its solid top is 4 rows up)
   ABI_GAP: 95, ABI_K: 4,   // Abishai behind David (px), how quickly he catches up
   SAUL_NEAR: 170,          // px: this close to Saul, the scene plays
 };
@@ -279,11 +279,16 @@ function h7DrawFront(camX) {
       ctx.fillStyle = "#2a1c10"; ctx.beginPath(); ctx.arc(wx, FOOT - 40, 8, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
   }
-  // David with the spear and the jar (stand-ins: Glen's spear, the water pitcher)
+  // David with the spear over his shoulder and Saul's jar in his hand (Glen's, 11-21)
   if (h7Has("h7_taken") && !h7Has("h7_end") || h7.call && !h7.spearDown) {
-    const d = david, x = d.x - camX, y = d.y - (d.h === LOW_H ? 30 : 70);
-    if (!h7.spearDown && ITEM.saul_spear) { ctx.save(); ctx.translate(x, y); ctx.scale(d.facing, 1); ctx.drawImage(ITEM.saul_spear, -95, -45, 190, 110); ctx.restore(); }
-    if (ITEM.water_pitcher) drawItem("water_pitcher", x + d.facing * 26, d.y - (d.h === LOW_H ? 14 : 40), 0.04);
+    const d = david, low = d.h === LOW_H, x = d.x - camX, sp = ITEM.saul_spear;
+    if (!h7.spearDown && sp && sp.naturalWidth) {
+      const L = H7.SPEAR_L, w = sp.naturalWidth * L / sp.naturalHeight * 0.65;   // (a bit slimmer than the picture, as the spear by sleeping Saul)
+      ctx.save(); ctx.translate(x - d.facing * 16, d.y - (low ? 50 : 104)); ctx.rotate(-d.facing * (low ? 1.2 : 0.42));
+      ctx.drawImage(sp, -w / 2, -L / 2, w, L); ctx.restore();
+    }
+    const jar = ITEM.saul_jar;
+    if (jar && jar.naturalWidth) drawItem("saul_jar", x + d.facing * 24, d.y - (low ? 2 : 22), H7.JAR_H / jar.naturalHeight);
   }
   // across the valley, at the call: Saul and Abner far off and small, by the camp
   if (r.id === "mountain" && h7.call) {

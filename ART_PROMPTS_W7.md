@@ -36,3 +36,13 @@ Use your David, Abishai, Saul and Abner from the other clips, in the same clothe
 5. **David walking with them:** `...David walking, carrying a long spear over his shoulder and a clay water jar in his other hand.`
 6. **The young man for the spear:** `A young soldier of Saul's army running forward, then stopping and bending to pick up a spear from the ground.` (26:22)
 7. **Saul waking:** `...King Saul waking up on the ground, sitting up, looking around in alarm for his spear.` (Optional: for the morning in the camp, before David calls.)
+
+## 4. Saul's water jar (the item, 26:12) (Glen asked 11-21)
+It should be the jug already in `saul_sleep`: plain unglazed terracotta, a round belly, a short narrow neck, a flared
+lip, one loop handle, no paint. David keeps it in his pack like the bow: it shows only when he fills or pours. (Drawing
+it in his hand all the time would mean redrawing every move he has.)
+1. **The jar, empty:** `A single plain clay water jar of ancient Israel about 1000 BC: unglazed reddish-brown terracotta, a round full belly, a short narrow neck with a flared lip, one loop handle on the side, slightly worn and dusty, no paint or pattern. Seen straight from the side. Stylized 3D animated-film look, soft warm light. Alone on solid flat bright green (#00FF00). No hands, no text.`
+2. **The jar, full:** `The same plain terracotta water jar, now full: darker damp clay, beads of water running down its side, a little water spilling over the lip. Seen straight from the side. Stylized 3D animated-film look. Alone on solid flat bright green (#00FF00). No hands, no text.`
+3. **Clip, filling it:** `...David kneeling at the edge of a spring, dipping a plain terracotta water jar into the water, lifting it out full and dripping, then standing.` (2-3 seconds; the water can be green too: just David and the jar)
+4. **Clip, pouring it:** `...David standing, tipping a plain terracotta water jar forward with both hands, a stream of water pouring out in front of him onto the ground, then lowering the jar.`
+5. **Kit, the burning thornbush:** `A dry thornbush of the Judean wilderness on fire, bright orange flames and sparks, seen from the side.` and `The same thornbush just put out: blackened, wet, a little white steam rising, no flames.` (each alone on green)
