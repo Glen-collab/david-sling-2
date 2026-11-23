@@ -14,7 +14,7 @@ const WILD = {
   ostrich:   { idle: "ostrich_walk", run: "ostrich_run", k: 0.85, hp: 2, walk: 55, speed: 470, near: 520, box: [-60, 70, 260], runFor: 2.4 },
   wildass:   { idle: "wildass_walk", act: "wildass_kick", k: 1.6, hp: 2, walk: 40, near: 200, box: [-110, 110, 180], kick: [-260, -40], actFrames: [4, 8], kicks: 3, fleeSheet: "wildass_walk" },
   caracal:   { idle: "caracal_walk", run: "caracal_run", k: 2, hp: 1, walk: 60, speed: 380, near: 380, box: [-80, 80, 100], leap: 640, runFor: 1.6 },
-  ibex:      { idle: "ibex_walk", run: "ibex_run", k: 1.7, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3 },
+  ibex:      { idle: "ibex_walk", run: "ibex_run", k: 1.7, tough: true, walk: 40, speed: 520, near: 560, box: [-100, 100, 170], runFor: 3, bounds: true, flee: 1.4 },   // (Glen 11-23: "when it bounds away have it disappear": one charge, then off and gone)
   // (Glen 11-12: "put the swarm in there and add a bunch of the single ones so it looks more natural") his swarm picture
   //  (three frames) in the middle, single bugs darting round it; a hit and they scatter (cut_w3_swarms.py)
   locusts:   { idle: "locusts_fly", k: 1, hp: 1, swarm: true, speed: 85, box: [-230, 230, 120],
@@ -130,7 +130,9 @@ function updateWild(b, dt, r) {
     if (wildMove(b, b.facing * W_.walk * (b.x < lo || b.x > hi ? 2 : 1), dt).stop) b.facing *= -1;
   };
   if (b.state === "flee") {   // running off, fading
-    b.x += b.facing * (W_.speed || 300) * (W_.shy ? 1 : 1.2) * dt; const fl = W_.flee || Tn.FLEE; b.alpha = Math.max(0, 1 - Math.max(0, b.t - fl * 0.4) / (fl * 0.6));   // (it runs in plain sight, then fades)
+    if (W_.bounds) wildMove(b, b.facing * W_.speed, dt);   // (the ibex: on along the ground, off a ledge's end if it comes to one)
+    else b.x += b.facing * (W_.speed || 300) * (W_.shy ? 1 : 1.2) * dt;
+    const fl = W_.flee || Tn.FLEE; b.alpha = Math.max(0, 1 - Math.max(0, b.t - fl * 0.4) / (fl * 0.6));   // (it runs in plain sight, then fades)
     if (b.t > fl) { b.dead = true; b.gone = true; }
     return;
   }
@@ -180,13 +182,19 @@ function updateWild(b, dt, r) {
       if (m.stop && b.cool <= 0) { b.retreat = false; b.state = "run"; b.t = 0; b.facing = dx > 0 ? 1 : -1; }   // (backed up against something: it comes anyway)
       else if (Math.abs(dx) > (Tn.MIN_RUN + 1) * T || Math.abs(dy) >= 150 || Math.abs(b.x - b.hx) > far) b.retreat = false;
     } else pace();
-    if (b.cool <= 0 && !b.air && Math.abs(dx) < W_.near && Math.abs(dx) >= Tn.MIN_RUN * T && Math.abs(dy) < 150) {
+    // (o.patient: seconds he's stood on its level before it comes. Glen 11-23, Hachilah's ridge: not the moment he lands)
+    //  o.level: how far above or below it he can be and still be on its level (px; 150)
+    const lv = b.level || 150;
+    b.seen = d.onGround && Math.abs(dy) < lv ? (b.seen || 0) + dt : 0;
+    if (b.cool <= 0 && !b.air && Math.abs(dx) < W_.near && Math.abs(dx) >= Tn.MIN_RUN * T && Math.abs(dy) < lv && b.seen >= (b.patient || 0)) {
       b.state = "run"; b.t = 0; b.facing = dx > 0 ? 1 : -1;
       if (W_.leap) { b.vy = -W_.leap; b.air = true; }
     }
   } else if (b.state === "run") {
     const m = wildMove(b, b.facing * W_.speed, dt), past = b.facing > 0 ? b.x - d.x : d.x - b.x;
-    if (!b.air && (b.t > W_.runFor || past > 320 || m.stop || Math.abs(b.x - b.hx) > far)) { b.state = "idle"; b.t = 0; b.cool = Tn.REST; b.facing *= -1; }
+    if (!b.air && (b.t > W_.runFor || past > 320 || m.stop || Math.abs(b.x - b.hx) > far)) {
+      if (W_.bounds && past > 0) { b.state = "flee"; b.t = 0; }   // (past him: it bounds on and fades away)
+      else { b.state = "idle"; b.t = 0; b.cool = Tn.REST; b.facing *= -1; } }
   }
   if (b.state === "run" && touchesDavid(wildBox(b))) wildHurt(b);
 }

@@ -170,7 +170,7 @@ function h7Build(R) {
     h7Rock(rm, "pale", "m", 21, 180, true); h7Rock(rm, "red", "s", 27, 72);
     h7Rock(rm, "sand", "l", 31.5, -36); critter("scorpion", c + 35, -2, 2);
     h7Rock(rm, "pale", "m", 41.5, -36, true);
-    h7Rock(rm, "red", "l", 48.5, -144); h7Rock(rm, "red", "l", 55.8, -144); rWild("ibex", rm, c + 59, { y: -144, hy: -144, range: 2 });
+    h7Rock(rm, "red", "l", 48.5, -144); h7Rock(rm, "red", "l", 55.8, -144); platAt(c + 55, -144, 2);   /* (Glen 11-23: "these two ledges David falls between walking": they touch, so one walk) */ rWild("ibex", rm, c + 59, { y: -144, hy: -144, range: 2, patient: 1, level: 40 });
     h7Rock(rm, "sand", "s", 65, -36); h7Rock(rm, "pale", "m", 69, 108, true); critter("scorpion", c + 72, 2, 1);
     h7Rock(rm, "sand", "s", 75.5, 324);
     h7Ember(rm, c + 84);
