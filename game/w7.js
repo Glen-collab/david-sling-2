@@ -14,12 +14,14 @@
 const H7 = {
   NPC_K: 0.9,
   // the night: how dark each room is; the lights round David and the embers (px); the dawn at the call (s)
-  DARK: { wild: 0.5, hill: 0.64, wagons: 0.72, fire: 0.72, mountain: 0.66 }, LIT: 240, EMBER: 230, DAWN: 8,
+  DARK: { wild: 0.5, hill: 0.55, wagons: 0.72, fire: 0.72, mountain: 0.66 }, LIT: 240, EMBER: 230, DAWN: 8,
   // the sleepers: how long one is (px); a sleeper that turns over moves ROLL px, taking ROLL_T s, every [a, b] s
   SLEEP_L: 150, ROLL: 64, ROLL_T: 0.7, ROLL_EVERY: [3, 5.5],
   SLEEP_FILTER: "sepia(0.7) hue-rotate(-12deg) saturate(0.8) brightness(1.15)",   // (stand-in: Saul's sheet as a soldier)
   CART_H: 150, BED_W: 17, BED_H: 290, FIRE_H: 74, SPEAR_L: 200, JAR_H: 34,             // px the jar cart's drawn (its solid top is 4 rows up)
   ABI_GAP: 95, ABI_K: 4,   // Abishai behind David (px), how quickly he catches up
+  CRUMBLE: { SHAKE: 0.7, BACK: 4 },   // a crumbly ledge: shakes this long under him, then falls; back this long after
+  STIR: { NEAR: 10, HOLD: 4 },        // land on a sleeper: he shoves you off, and the men within NEAR columns roll over and lie there HOLD s
   SAUL_NEAR: 70,           // px: this close to the spear at Saul's head, the scene plays
   // Glen's clips (11-23). Saul's head is to the left (David comes in from the left); the taking is his clip, flipped:
   SAUL_K: 0.83,            // saul_sleep drawn this size, so the clip of the taking (at David's size) lines up with it
@@ -35,16 +37,16 @@ const W7 = {
   key: "w7", name: "Hachilah", start: "wild", strCap: 10,
   carry: ["gibeah", "ramah", "nobgath", "adullam", "keilah", "ziph", "engedi", "carmel"],
   rooms: [
-    { id: "wild", name: "The Wilderness of Ziph", w: 60, bg: "w4_1", mx: 0, my: 1, mw: 2, right: "hill",
+    { id: "wild", name: "The Wilderness of Ziph", w: 96, bg: "w4_1", mx: 0, my: 1, mw: 3, right: "hill",
       far: "ziph/hills/far", mid: "ziph/hills/mid.png", midY: 0, near: "ziph/hills/near.png" },   // (stand-in: Glen's Ziph, by night)
-    { id: "hill", name: "The Hill of Hachilah", w: 90, bg: "w4_1", mx: 2, my: 1, mw: 3, left: "wild", right: "wagons",
+    { id: "hill", name: "The Hill of Hachilah", w: 90, up: 16, bg: "w4_1", mx: 3, my: 0, mw: 3, mh: 2, left: "wild", right: "wagons",   /* (Glen 11-23: up ridges, like Gibeah's tower: rock ledges, long and short, some crumbly) */
       far: "ziph/hachilah/far", mid: "ziph/hachilah/mid.png", midY: 0, near: "ziph/hachilah/near.png" },
-    { id: "wagons", name: "The Place of the Wagons", w: 130, bg: "w4_1", mx: 5, my: 1, mw: 4, left: "hill", right: "fire",
+    { id: "wagons", name: "The Place of the Wagons", w: 130, bg: "w4_1", mx: 6, my: 1, mw: 4, left: "hill", right: "fire",
       far: "w7/wagons/far", mid: "w7/wagons/mid.png", midY: 330, near: "w7/wagons/near.png", nearK: 0.5 },   // (Glen's, 11-21)
-    { id: "fire", name: "Saul's Fire", w: 50, bg: "w4_1", mx: 9, my: 1, mw: 2, left: "wagons",
+    { id: "fire", name: "Saul's Fire", w: 50, bg: "w4_1", mx: 10, my: 1, mw: 2, left: "wagons",
       get right() { return h7Has("h7_taken") ? "mountain" : null; },
       far: "w7/wagons/far", mid: "w7/wagons/mid.png", midY: 330, near: "w7/wagons/near.png", nearK: 0.5 },
-    { id: "mountain", name: "The Far Mountain", w: 70, bg: "w4_1", mx: 11, my: 0, mw: 2, left: "fire",
+    { id: "mountain", name: "The Far Mountain", w: 70, bg: "w4_1", mx: 12, my: 0, mw: 2, left: "fire",
       far: "ziph/mountain/far", mid: "ziph/mountain/mid.png", midY: 0, near: "ziph/mountain/near.png" },
   ],
   // the Journal: Glen's song, Verse 4 (SONG_PSALM57.md: a first draft, for Glen to change)
@@ -67,10 +69,46 @@ const W7 = {
   draw: camX => h7Draw(camX), drawFront: camX => h7DrawFront(camX), drawOver: () => h7DrawOver(),
 };
 
-const h7 = { told: {}, people: [], sleepers: [], carts: [], beds: [], embers: [], props: [], abi: null, saul: null, abner: null, dawn: null, call: null, take: null, young: null, wake: null };
+const h7 = { told: {}, people: [], sleepers: [], carts: [], beds: [], embers: [], props: [], rocks: [], abi: null, saul: null, abner: null, dawn: null, call: null, take: null, young: null, wake: null };
 const h7Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function h7Tell(k, text) { if (!h7.told[k]) { h7.told[k] = true; toast(text); } }
 function h7Person(room, spr, x, dir = 1, show = null, k = H7.NPC_K) { const p = { room, spr, x, y: FOOT, dir, show, k, t: Math.random() * 3 }; h7.people.push(p); return p; }
+// a rock ledge of Glen's (adullam.js's kit: rock sand/red/pale/dark/moss, size s/m/l) from column k of the room, its
+//  walking surface at sy (px); crumbly: it shakes when he stands on it, falls, and comes back
+function h7Rock(room, rock, size, k, sy, crumbly = false) {
+  const c0r = roomById(room).c0, x = (c0r + k) * T;
+  if (!crumbly) return r4L(room, rock, size, x, sy);
+  const n = `w4_ledge_${rock}_${size}`, K = KIT[n], y = sy - K.top - Math.round(K.h * R4.STAND);
+  const c0 = Math.ceil((x + 10) / T), c1 = Math.floor((x + K.w - 10) / T);
+  platAt(c0, sy, Math.max(1, c1 - c0));
+  h7.rocks.push({ room, n, x, y, sy, c0, w: Math.max(1, c1 - c0), state: "whole", t: 0 });
+}
+function h7RockUpdate(dt, r) {
+  const d = david, C = H7.CRUMBLE;
+  for (const k of h7.rocks) {
+    if (k.room !== r.id) continue;
+    const on = d.onGround && Math.abs(d.y - k.sy) < 3 && d.x > k.c0 * T - 12 && d.x < (k.c0 + k.w) * T + 12;
+    if (k.state === "whole" && on) { k.state = "shake"; k.t = 0; h7Tell("crumble", "That rock's crumbling! Keep moving."); }
+    else if (k.state === "shake") { k.t += dt; if (k.t > C.SHAKE) {
+      k.state = "gone"; k.t = 0; const row = Math.floor(k.sy / T);
+      for (let x = k.c0; x < k.c0 + k.w; x++) { oneway[row][x] = false; onewayTop.delete(row * COLS + x); }
+      for (let i = 0; i < 12; i++) bits.push({ x: k.x + Math.random() * KIT[k.n].w, y: k.sy, vx: (Math.random() - 0.5) * 220, vy: -Math.random() * 180, life: 0.9, color: i % 2 ? "#7b6a55" : "#b09a7c" });
+    } }
+    else if (k.state === "gone") { k.t += dt; if (k.t > C.BACK && !(d.x > k.x - 20 && d.x < k.x + KIT[k.n].w + 20 && Math.abs(d.y - k.sy) < 60)) { k.state = "whole"; k.t = 0; platAt(k.c0, k.sy, k.w); } }
+  }
+}
+function h7RockDraw(camX) {
+  for (const k of h7.rocks) {
+    if (k.room !== region.room.id) continue;
+    const im = kitImg(k.n), K = KIT[k.n]; if (!im) continue;
+    const x = k.x - camX; if (x > W + 50 || x + K.w < -50) continue;
+    let dy = 0, a = 1, j = 0;
+    if (k.state === "shake") j = (Math.random() - 0.5) * 6 * Math.min(1, k.t / 0.3 + 0.3);
+    if (k.state === "gone") { if (k.t > 1) continue; dy = k.t * k.t * 700; a = 1 - k.t; }
+    else if (k.state === "whole" && k.t === 0 && k.back) a = 1;
+    ctx.save(); ctx.globalAlpha = a; ctx.drawImage(im, Math.round(x + j), Math.round(k.y + dy), K.w, K.h); ctx.restore();
+  }
+}
 const h7Now = () => performance.now() / 1000;   // (real time: the stage holds still while a line waits for A, these clips don't)
 const h7Sc = n => SCALE * (TUNE.SPRITE_SIZE[n] || 1);
 
@@ -95,7 +133,8 @@ const h7Prop = (room, name, x, h, dir = 1) => h7.props.push({ room, name, x, h, 
 const h7Ember = (room, c) => h7.embers.push({ room, x: c * T + T / 2, t: Math.random() * 5 });
 
 function h7Build(R) {
-  for (const k of ["people", "sleepers", "carts", "beds", "embers", "props"]) h7[k].length = 0;
+  for (const k of ["people", "sleepers", "carts", "beds", "embers", "props", "rocks"]) h7[k].length = 0;
+  if (typeof R4_KIT !== "undefined") Object.assign(KIT, R4_KIT);   // (adullam.js's rock ledges, Glen's)
   h7.dawn = null; h7.call = null; h7.saul = null; h7.spearDown = false; h7.take = null; h7.young = null; h7.wake = null; h7.abner = null;
   h7.abi = { x: 0, y: GR * T, t: 0, on: false, moving: false };
 
@@ -108,14 +147,32 @@ function h7Build(R) {
     rTalker(h7.abiCamp, () => [["Abishai", h7Has("h7_start") ? "I'm with you. Let's go down to the camp." : "The Ziphites told Saul where we are. He's come with three thousand men."]]);
     rTalker(h7Person(rm, "soldier_talk", X(38), -1, null, 0.76), () => [["Ahimelech the Hittite", "Saul's camp is on the hill of Hachilah, by the road. They've parked the wagons all round him."]]);
     h7Person(rm, "asahel_idle", X(44), -1);
+    // (Glen 11-23: "no scorpions, no ibex ... an easy stroll") out of the camp toward the hill: the wilderness bites
+    critter("scorpion", c + 54, GR - 1, 2);
+    h7Rock(rm, "sand", "m", 58, 504); critter("scorpion", c + 60, 13, 1);
+    rWild("viper", rm, c + 66);
+    rHole(rm, c + 70, 3);
+    rBoulder(rm, c + 76); rWild("ibex", rm, c + 86, { range: 3 });
+    h7Rock(rm, "sand", "s", 81, 468);
+    critter("scorpion", c + 92, GR - 1, 2);
   }
 
   // -- The Hill of Hachilah by night (26:3, 26:5): down toward the camp's fires; two gaps
   c = R("hill");
   { const rm = "hill";
+    // (Glen 11-23: "go up ridges like the tower was in Gibeah ... ledges and rocks. Long and short, some crumbly some
+    //  not") up the hill a rock at a time, over a gully (fall in: a heart, and back), along the ridge past an ibex, and
+    //  down toward the camp's fires. Surfaces on whole rows (px): 504 396 288 180 72 -36 -144. *: crumbly
     ground(c, c + 89);
-    rHole(rm, c + 28, 4); rHole(rm, c + 56, 5);
-    rLedge(rm, c + 40, GR * T - 120, 4); rLedge(rm, c + 70, GR * T - 120, 3);
+    campfire(c + 3, GR - 1);
+    rHole(rm, c + 14, 62);
+    h7Rock(rm, "sand", "m", 10, 504); h7Rock(rm, "sand", "s", 17.5, 396); h7Rock(rm, "red", "l", 12, 288);
+    h7Rock(rm, "pale", "m", 21, 180, true); h7Rock(rm, "red", "s", 27, 72);
+    h7Rock(rm, "sand", "l", 31.5, -36); critter("scorpion", c + 35, -2, 2);
+    h7Rock(rm, "pale", "m", 41.5, -36, true);
+    h7Rock(rm, "red", "l", 48.5, -144); h7Rock(rm, "red", "l", 55.8, -144); rWild("ibex", rm, c + 59, { y: -144, hy: -144, range: 2 });
+    h7Rock(rm, "sand", "s", 65, -36); h7Rock(rm, "pale", "m", 69, 108, true); critter("scorpion", c + 72, 2, 1);
+    h7Rock(rm, "sand", "s", 75.5, 324);
     h7Ember(rm, c + 84);
   }
 
@@ -177,12 +234,17 @@ function h7Update(dt, r) {
   const d = david, free = !region.script.length && region.wait <= 0 && !region.trans && !(dialog.t > 0);
   for (const p of h7.people) p.t += dt;
   for (const e of h7.embers) e.t += dt;
+  h7RockUpdate(dt, r);
   // the start (after the crawl): 26:1-6
   if (!h7Has("h7_start") && !h7.started && free && r.id === "wild") { h7.started = true; h7Start(); }
   // Abishai comes behind
   const A = h7.abi;
   if (A.on && h7.call && !h7Has("h7_end")) { A.x = d.x - d.facing * H7.ABI_GAP; A.y = d.y; A.moving = false; A.face = d.facing; }   // (Glen 11-23: at the call he stands behind David, still)
   else if (A.on) {
+    // (on the hill's rocks he'd float beside David: he takes his own way up, out of sight, and is behind him again on the ground)
+    const away = r.id === "hill" && d.y < GR * T - 8;
+    A.a = Math.max(0, Math.min(1, (A.a ?? 1) + (away ? -dt * 4 : dt * 2.5)));
+    if (away || A.a < 0.05) { A.x = d.x - d.facing * H7.ABI_GAP; A.y = Math.max(d.y, GR * T - 2); }
     const tx = d.x - d.facing * H7.ABI_GAP, was = A.x;
     A.x += (tx - A.x) * Math.min(1, dt * H7.ABI_K); A.y += (d.y - A.y) * Math.min(1, dt * H7.ABI_K * 1.5);
     A.moving = Math.abs(A.x - was) > 30 * dt; A.face = Math.sign(tx - was) || A.face || 1; A.t += dt;
@@ -190,9 +252,13 @@ function h7Update(dt, r) {
   // the sleepers: they turn over now and then; nobody can walk through one (step over)
   for (const s of h7.sleepers) {
     if (s.room !== r.id) continue;
-    if (s.roll) { s.t -= dt; if (s.t <= 0) { s.to = s.to ? 0 : s.roll * H7.ROLL; const [a, b] = H7.ROLL_EVERY; s.t = a + Math.random() * (b - a); }
+    if (s.roll && !(s.hold > 0)) { s.t -= dt; if (s.t <= 0) { s.to = s.to ? 0 : s.roll * H7.ROLL; const [a, b] = H7.ROLL_EVERY; s.t = a + Math.random() * (b - a); }
       s.off += Math.sign(s.to - s.off) * Math.min(Math.abs(s.to - s.off), H7.ROLL / H7.ROLL_T * dt); }
     const x0 = s.x0 + s.off, x1 = x0 + H7.SLEEP_L, half = BODY_W / 2;
+    if (s.hold > 0) s.hold -= dt; if (s.stir > 0) s.stir -= dt;
+    // (Glen 11-23: "I could jump on Saul's men all day and nothing happened") land on one: he cries out in his sleep and
+    //  shoves you off, and the men round him toss and roll over, closing the gaps a while. Nobody wakes (26:12)
+    if (h7.air && d.onGround && Math.abs(d.y - GR * T) < 4 && d.x > x0 + 12 && d.x < x1 - 12 && d.inv <= 0) h7Stir(s, x0, x1);   // (just landed on him)
     if (d.onGround && d.y >= GR * T - 2 && d.x + half > x0 && d.x - half < x1) {
       d.x = d.x < (x0 + x1) / 2 ? x0 - half - 1 : x1 + half + 1; d.vx = 0;
       h7Tell("step", "Shh! Don't step on him. Jump over.");
@@ -204,8 +270,20 @@ function h7Update(dt, r) {
   if (r.id === "mountain" && h7Has("h7_taken") && !h7Has("h7_end") && !h7.call && free && d.onGround && d.y <= h7.top.y + 4 && d.x > h7.top.x) h7Call();
   if (h7.dawn) h7.dawn.t += dt;
   if (h7.take) h7.take.t += dt;
+  h7.air = !d.onGround;
 }
 
+function h7Stir(s, x0, x1) {
+  const d = david, S = H7.STIR;
+  hurtDavid((x0 + x1) / 2, "");
+  s.stir = 0.8;
+  for (const o of h7.sleepers) if (o.room === s.room && Math.abs(o.x0 - s.x0) < S.NEAR * T) {
+    o.stir = 0.5 + Math.random() * 0.6;
+    if (o.roll) { o.to = o.roll * H7.ROLL; o.hold = S.HOLD; o.t = 0.5; }
+  }
+  toast(h7.told.stir ? "Mmph... he shoves you off in his sleep." : "He cries out in his sleep and shoves you off! The men round him toss and turn, but nobody wakes: a deep sleep from the LORD is on them (26:12).");
+  h7.told.stir = true;
+}
 const H7_SAY = (who, text) => ({ say: [who, text] });
 function h7Start() {
   rPlay([
@@ -275,11 +353,12 @@ function h7DrawSleeper(s, camX) {
   if (M.roll && p > 0.98 && SPR[M.back]) { n = M.back; f = frameOf(n, performance.now() / 1000 + s.x0 * 0.01); }
   else if (M.roll && p > 0.02 && SPR[M.roll]) { n = M.roll; f = Math.round(p * (SPR[n].frames - 1)); }
   else { if (!SPR[n]) return; f = frameOf(n, performance.now() / 1000 + s.x0 * 0.01); }
-  const S = SPR[n], sc = h7Sc(n) * k;
-  drawSprite(n, f, s.dir > 0 ? x0 + S.ax * sc : x0 + (S.w - S.ax) * sc, FOOT + 2, s.dir, k);
+  const S = SPR[n], sc = h7Sc(n) * k, j = s.stir > 0 ? Math.sin(performance.now() / 28) * 3 * Math.min(1, s.stir * 2) : 0;   // (stirring)
+  drawSprite(n, f, (s.dir > 0 ? x0 + S.ax * sc : x0 + (S.w - S.ax) * sc) + j, FOOT + 2, s.dir, k);
 }
 function h7Draw(camX) {
   const r = region.room; if (!r) return;
+  h7RockDraw(camX);
   for (const e of h7.embers) if (e.room === r.id) {   // a fire burned down to embers
     const x = e.x - camX, f = 0.75 + 0.25 * Math.sin(e.t * 3.1) * Math.sin(e.t * 1.7);
     const g = ctx.createRadialGradient(x, FOOT - 6, 2, x, FOOT - 6, 46);
@@ -310,7 +389,7 @@ function h7Draw(camX) {
   const A = h7.abi;
   if (A.on) {
     const crouch = david.h === LOW_H, n = h7.abiPose || (A.moving ? (crouch ? "abishai_sneak" : "abishai_walk") : (crouch ? "abishai_sneak" : "abishai_idle"));
-    drawSprite(n, A.moving || h7.abiPose ? frameOf(n, A.t) : 0, A.x - camX, Math.min(FOOT, A.y + 4), h7.abiPose ? 1 : A.face, 1);
+    if ((A.a ?? 1) > 0.02) drawSprite(n, A.moving || h7.abiPose ? frameOf(n, A.t) : 0, A.x - camX, Math.min(FOOT, A.y + 4), h7.abiPose ? 1 : A.face, 1, A.a ?? 1);
   }
 }
 function h7DrawFront(camX) {
