@@ -141,7 +141,7 @@ function h7Build(R) {
   // -- The Wilderness of Ziph (26:3-6): David's men; the spies come back; Abishai
   let c = R("wild");
   { const rm = "wild", X = k => (c + k) * T;
-    ground(c, c + 59);
+    ground(c, c + 95);
     campfire(c + 3, GR - 1); h7Ember(rm, c + 24);
     h7.abiCamp = h7Person(rm, "abishai_idle", X(30), -1, () => !h7.abi.on);
     rTalker(h7.abiCamp, () => [["Abishai", h7Has("h7_start") ? "I'm with you. Let's go down to the camp." : "The Ziphites told Saul where we are. He's come with three thousand men."]]);
