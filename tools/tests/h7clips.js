@@ -22,6 +22,6 @@ steps.push({ keys: ["ArrowRight"], n: 40 }, { keys: ["ArrowRight"], n: 2, snap: 
 steps.push({ n: 1, fn() { at("mountain", 52, GR * T - 400 - 2); } }, run(20), { n: 1, fn() { log("call " + !!h7.call); } });
 for (let i = 0; i < 2; i++) steps.push(run(10));
 steps.push({ keys: [], n: 400 }, { keys: [], n: 2, snap: true });
-steps.push({ n: 1, fn() { while (region.script.length && !h7.young) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; log("young " + JSON.stringify(h7.young) + " facing " + david.facing); } });
+steps.push({ n: 1, fn() { while (region.script.length && !h7.young) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; log("young " + JSON.stringify(h7.young) + " facing " + david.facing + " abi-david " + Math.round(h7.abi.x - david.x)); } });
 steps.push({ keys: [], n: 150 }, { keys: [], n: 2, snap: true }, { keys: [], n: 280 }, { keys: [], n: 2, snap: true });
 testRun(steps);

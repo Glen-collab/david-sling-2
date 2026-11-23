@@ -27,6 +27,7 @@ const H7 = {
   CREEP_RATE: 1.6,         // david_creep's steps, sped up to his walking speed
   ABNER_H: 76,             // px: Abner asleep against a cart wheel (Glen's still)
   FAR_K: 0.45,             // Saul and Abner across the valley, at the call
+  FAR_GLOW: [185, 30, 120],   // the light round them: screen x, px above the ground, radius
   YOUNG_K: 1, YOUNG_SPEAR: [81, 314, 231], YOUNG_WAIT: 0.8,   // the young man for the spear (26:22): the spear in his sheet (x0, x1, y)
 };
 
@@ -180,7 +181,8 @@ function h7Update(dt, r) {
   if (!h7Has("h7_start") && !h7.started && free && r.id === "wild") { h7.started = true; h7Start(); }
   // Abishai comes behind
   const A = h7.abi;
-  if (A.on) {
+  if (A.on && h7.call && !h7Has("h7_end")) { A.x = d.x - d.facing * H7.ABI_GAP; A.y = d.y; A.moving = false; A.face = d.facing; }   // (Glen 11-23: at the call he stands behind David, still)
+  else if (A.on) {
     const tx = d.x - d.facing * H7.ABI_GAP, was = A.x;
     A.x += (tx - A.x) * Math.min(1, dt * H7.ABI_K); A.y += (d.y - A.y) * Math.min(1, dt * H7.ABI_K * 1.5);
     A.moving = Math.abs(A.x - was) > 30 * dt; A.face = Math.sign(tx - was) || A.face || 1; A.t += dt;
@@ -333,6 +335,10 @@ function h7DrawFront(camX) {
   }
   // across the valley, at the call: Saul and Abner far off and small, by the camp (Saul wakes when David calls: Glen's clip)
   if (r.id === "mountain" && h7.call) {
+    { const [gx, gy, gr] = H7.FAR_GLOW, f = 0.85 + 0.15 * Math.sin(h7Now() * 2.3);   // (Glen 11-23: a light round them, so you see them)
+      const g = ctx.createRadialGradient(gx, FOOT - gy, 4, gx, FOOT - gy, gr);
+      g.addColorStop(0, `rgba(255,200,120,${0.5 * f})`); g.addColorStop(0.5, `rgba(255,160,80,${0.22 * f})`); g.addColorStop(1, "rgba(255,140,60,0)");
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = g; ctx.fillRect(gx - gr, FOOT - gy - gr, 2 * gr, 2 * gr); ctx.restore(); }
     const n = SPR.saul_wake ? "saul_wake" : "saul_talk";
     drawSprite(n, h7.wake && SPR.saul_wake ? frameOf(n, h7Now() - h7.wake.t0) : 0, 150, FOOT, 1, H7.FAR_K * H7.SAUL_K, 0.85);
     const ai = ITEM.w7_abner_sleep;   // (Abner asleep against his wheel till David calls him)
@@ -370,6 +376,7 @@ function h7DrawOver() {
   x2.fillStyle = `rgba(6,10,28,${dark})`; x2.fillRect(0, 0, W, H); x2.globalCompositeOperation = "destination-out";
   const lights = [[david.x - camX, david.y - 90 - camY, H7.LIT]];
   for (const e of h7.embers) if (e.room === r.id) lights.push([e.x - camX, FOOT - 30 - camY, H7.EMBER]);
+  if (r.id === "mountain" && h7.call) lights.push([H7.FAR_GLOW[0], FOOT - H7.FAR_GLOW[1] - camY, H7.FAR_GLOW[2] * 1.4]);   // (Saul and Abner, across the valley)
   for (const [lx, ly, rad] of lights) {
     const g = x2.createRadialGradient(lx, ly, rad * 0.2, lx, ly, rad); g.addColorStop(0, "rgba(0,0,0,0.85)"); g.addColorStop(1, "rgba(0,0,0,0)");
     x2.fillStyle = g; x2.fillRect(lx - rad, ly - rad, rad * 2, rad * 2);
