@@ -58,7 +58,9 @@ const W7 = {
     ["I called across the valley. Saul said, “I have sinned. Return, my son David.”", "1 Samuel 26:21"],
   ],
   end: ["The LORD will give to every man his righteousness and his faithfulness.", "1 Samuel 26:23"],
-  build: R => h7Build(R), enter: r => h7Enter(r), update: (dt, r) => h7Update(dt, r),
+  build: R => { h7Build(R);   // (Glen 11-23: Hachilah's own pit edges, assets/rooms/w7/kit; started from Carmel's, which match this soil)
+    for (const p of region.props) if (p.n === "p_left" || p.n === "p_right") p.n = p.n === "p_left" ? "h7_pit_left" : "h7_pit_right";
+    kitImg("h7_pit_left"); kitImg("h7_pit_right"); }, enter: r => h7Enter(r), update: (dt, r) => h7Update(dt, r),
   drawDavid: (d, x, y) => h7DrawDavid(d, x, y),
   dialogY: h => region.room && region.room.id === "mountain" && h7.call ? H - 24 - h : null,   // (at the call, the lines go low: the mountaintop is up where they'd be)
   draw: camX => h7Draw(camX), drawFront: camX => h7DrawFront(camX), drawOver: () => h7DrawOver(),
