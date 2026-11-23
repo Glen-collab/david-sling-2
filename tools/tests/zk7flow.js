@@ -9,15 +9,20 @@ const where = () => region.room.id + " col " + (david.x / T - region.room.c0).to
 const drain = () => ({ n: 1, fn() { let i = 0; while (region.script.length && i++ < 60) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } });
 const up = () => [{ n: 1, fn() { log(`before up: ${where()} free ${zkFree()} act ${zk.act && zk.act.kind} jar ${zk.jar} script ${region.script.length} wait ${region.wait} dialog ${dialog.t}`); } }, { keys: ["ArrowUp"], n: 1 }, { keys: [], n: 1 }, { n: 1, fn() { log(`after up: act ${zk.act && zk.act.kind}`); } }];
 const steps = [{ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^z7_/.test(k)); region.script.length = 0; } }];
-// 1 Aphek
-steps.push({ n: 1, fn() { at("aphek", 8); } }, run(20), { keys: [], n: 2, snap: true }, run(30), { n: 1, fn() { log("aphek start " + zkHas("z7_start") + " script " + region.script.length); } }, drain());
-steps.push({ keys: ["ArrowRight"], n: 110 }, { n: 1, fn() { log("by Achish: " + where() + " script " + region.script.length); } }, run(5), { keys: [], n: 2, snap: true }, drain(), { n: 1, fn() { log("sent " + zkHas("z7_sent") + " right " + roomById("aphek").right); } });
+// 1 Aphek: the cut scene, then the road and the Journal's first page (turned back to Hachilah's, and forward again)
+const closeJ = { n: 1, fn() { log("jscene " + (region.jscene ? "page " + (region.jscene.view + 1) + " of " + region.jscene.pages.length : "none")); region.jscene = null; } };
+const jFinish = { n: 1, fn() { if (region.jscene) region.jscene.t = region.jscene.done + 0.1; } };
+steps.push({ n: 1, fn() { region.save.jSp = []; at("aphek", 8); } }, { keys: [], n: 30 }, { keys: [], n: 2, snap: true }, { n: 1, fn() { log("cine " + !!zk.cine + " " + where()); } },
+  { n: 1, fn() { while (region.script.length && !(region.script[0].say && /29:3\)/.test(region.script[0].say[1]))) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } }, { keys: [], n: 3 }, { keys: [], n: 2, snap: true },
+  { n: 1, fn() { while (region.script.length) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } }, { keys: [], n: 90 },
+  { n: 1, fn() { log("after aphek: " + where() + " sent " + zkHas("z7_sent") + " cine " + !!zk.cine + " jscene " + !!region.jscene); } }, { keys: [], n: 2, snap: true }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true },
+  { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, { keys: ["ArrowRight"], n: 1 }, { keys: [], n: 3 }, closeJ, drain());
 // 2 the road
 steps.push({ n: 1, fn() { at("road", 40); } }, run(30), { keys: [], n: 2, snap: true });
 // 3 Ziklag
 steps.push({ n: 1, fn() { at("ziklag", 8); } }, run(20), { keys: [], n: 2, snap: true }, drain());
 steps.push({ keys: ["ArrowRight"], n: 110 }, { n: 1, fn() { log("ziklag: " + where() + " stones " + zkHas("z7_stones")); } }, run(3), { keys: [], n: 2, snap: true });
-steps.push({ n: 1, fn() { while (region.script.length && !zk.pray) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; } }, { keys: [], n: 30 }, { keys: [], n: 2, snap: true }, drain(), { n: 1, fn() { log("pursue " + zkHas("z7_pursue")); } }, run(10), { keys: [], n: 2, snap: true });
+steps.push({ n: 1, fn() { while (region.script.length && !zk.pray) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; } }, { keys: [], n: 30 }, { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 3 }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, closeJ, { n: 1, fn() { log("pursue " + zkHas("z7_pursue")); } }, run(10), { keys: [], n: 2, snap: true });
 steps.push({ n: 1, fn() { at("ziklag", 52); } }, run(10), ...up(), { keys: [], n: 70 }, { n: 1, fn() { log("jar " + zk.jar); at("ziklag", 58.5); david.facing = 1; } }, run(10), ...up(), { keys: [], n: 50 }, { keys: [], n: 2, snap: true }, { keys: [], n: 120 },
   { n: 1, fn() { log("fire out " + zk.fires[0].out + " jar " + zk.jar); } }, { keys: [], n: 2, snap: true });
 // 4 the Negev, 5 Besor
@@ -25,13 +30,14 @@ steps.push({ n: 1, fn() { for (const f of zk.fires) { f.out = true; for (let r =
 steps.push({ n: 1, fn() { at("besor", 20); } }, run(20), { keys: [], n: 2, snap: true }, drain(), { n: 1, fn() { at("besor", 24.5); david.facing = 1; } }, run(5), ...up(), { keys: [], n: 70 }, { n: 1, fn() { log("besor jar " + zk.jar); } });
 // 6 the field: the food, the Egyptian
 steps.push({ n: 1, fn() { for (const o of zk.foods) { o.got = true; regionAdd("taken", "z7_" + o.name); } at("field", 54); } }, run(20), { keys: [], n: 2, snap: true }, ...up(), run(2),
-  { n: 1, fn() { log("egy feed script " + region.script.length + " st " + zk.egy.st); } }, { n: 1, fn() { while (region.script.length && zk.egy.st !== "revive") { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } }, { keys: [], n: 30 }, { keys: [], n: 2, snap: true }, drain(),
+  { n: 1, fn() { log("egy feed script " + region.script.length + " st " + zk.egy.st); } }, { n: 1, fn() { while (region.script.length && zk.egy.st !== "revive") { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } }, { keys: [], n: 30 }, { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 3 }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, closeJ,
   { keys: ["ArrowRight"], n: 40 }, { keys: [], n: 2, snap: true }, { n: 1, fn() { log("egypt " + zkHas("z7_egypt") + " egy x-david " + Math.round(zk.egy.x - david.x) + " right " + roomById("field").right); } });
 // 7 the camp
 steps.push({ n: 1, fn() { at("camp", 6); } }, run(20), drain(), { keys: [], n: 2, snap: true }, { keys: ["ArrowRight"], n: 40 }, { keys: [], n: 20 }, { keys: [], n: 2, snap: true },
   { n: 1, fn() { log("raiders " + region.beasts.filter(b => b.room === "camp").map(b => b.state).join(",") + " hearts " + david.hearts); } });
 steps.push({ n: 1, fn() { for (const b of region.beasts) if (b.room === "camp") b.dead = true; at("camp", 22); } }, run(5), ...up(), run(10), { keys: [], n: 2, snap: true },
-  { n: 1, fn() { for (const q of zk.captives) if (!q.free) { q.free = true; q.t = 0; } zkWon(); } }, { keys: [], n: 40 }, { keys: [], n: 2, snap: true }, drain());
+  { n: 1, fn() { for (const q of zk.captives) if (!q.free) { q.free = true; q.t = 0; } zkWon(); } }, { keys: [], n: 40 }, { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 3 }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, closeJ);
 // 8 the sharing
-steps.push({ n: 1, fn() { at("besor", 12); zkEnter(roomById("besor")); log("share script " + region.script.length); } }, run(10), { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 60 }, { n: 1, fn() { log("end " + zkHas("z7_end") + " jscene " + !!region.jscene); } }, { keys: [], n: 2, snap: true });
+steps.push({ n: 1, fn() { at("besor", 12); zkEnter(roomById("besor")); log("share script " + region.script.length); } }, run(10), { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 60 }, { n: 1, fn() { log("end " + zkHas("z7_end") + " jscene " + !!region.jscene); } }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true },
+  { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, closeJ);
 testRun(steps);

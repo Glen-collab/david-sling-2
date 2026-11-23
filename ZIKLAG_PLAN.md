@@ -136,3 +136,25 @@ hundred.
   top; all free: the rest flee, four camels ride off, 30:17-19.
 - Back at Besor: 30:21-25, then the Journal (its Truth: 30:6). Ziklag adds two Journal entries (30:6; 30:19, 24): the
   page has room for six.
+
+## Glen's answers, 11-23 (second round), and what changed
+- **"I want the whole story, so let's include Aphek ... in the crawl and as the cut scene to make it dramatic. We can
+  get to the meat of it."** Ziklag has its own crawl (region.js `CRAWLS.ziklag`, once per save, flag `crawl_ziklag`,
+  chosen by `W7.crawlKey` when David starts in a Ziklag room): 27:1, the move to Gath, Ziklag, the double life
+  (27:12), the call to war (28:1), the trap. Kid-clean: 27:9 and 27:11 (no one left alive) are not quoted. Then Aphek is
+  a cut scene, not played: letterboxed, "Aphek" named, the Philistine armies marching behind, 29:1-11 with Achish's
+  poses, then a fade to the start of the Road Home.
+- **Benaiah stays in.** Player 2 picks Benaiah or Asahel (player2.js already has both, and Abishai). Two-player play in
+  Ziklag is for after the building.
+- **The Journal, a page at a time.** After each beat David writes a new page (`W7.spreads`, region.js
+  `jsSpreadLayout`): his words on the left and a psalm of David's for what he's living through on the right. Left /
+  Right turns back through every page (Hachilah's too), and David's card has "A: read the Journal". The last page has
+  his last entry, Psalm 133:1, what he's found, and the whole song (the same song as before).
+  | Page | Written when | The psalm (WEB, "the LORD") |
+  |---|---|---|
+  | Aphek | sent home (z7_sent) | Psalm 25:4-5, 15 ("he will pluck my feet out of the net") |
+  | Ziklag | "Pursue" (z7_pursue) | Psalm 62:5-6, 8 ("Pour out your heart before him") |
+  | The Field | the Egyptian leads (z7_egypt) | Psalm 41:1-2 ("Blessed is he who considers the poor") |
+  | The Raiders' Camp | all freed (z7_won) | Psalm 18:28-29 ("by you, I advance through a troop") |
+  | The Brook Besor | the sharing (z7_end) | Psalm 133:1, and the song |
+  None of these psalms is titled as written at Ziklag; they're David's, picked for the moment. David's words are drafts.

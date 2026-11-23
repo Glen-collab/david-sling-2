@@ -40,19 +40,39 @@ W7.rooms.push(
   { id: "camp", name: "The Raiders' Camp", w: 120, bg: "w4_1", mx: 15, my: 4, mw: 3, left: "field",
     far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 224, near: "carmel/camp/near.png", nearK: 0.4 },   // (stand-in: Carmel's camp, at dusk)
 );
-// (the Journal: Hachilah's page has four; two more fit)
-W7.steps.push("z7_pursue", "z7_end");
-W7.entries.push(
-  ["Ziklag was burned, and our wives and children taken. The men spoke of stoning me. But I strengthened myself in the LORD my God.", "1 Samuel 30:6"],
-  ["The LORD gave back all of it, small and great. They shall share alike, who went down to the battle and who stayed.", "1 Samuel 30:19, 24"],
-);
-const ZK_END = ["David strengthened himself in the LORD his God.", "1 Samuel 30:6"];   // (the Truth of the stop: the Journal's last page)
-{ const H = { build: W7.build, enter: W7.enter, update: W7.update, drawDavid: W7.drawDavid, draw: W7.draw, drawFront: W7.drawFront, drawOver: W7.drawOver };
+// (Glen 11-23) Ziklag's own crawl (region.js CRAWLS.ziklag: 27:1-28:2, the double life, the march to Aphek), once
+const ZK_ROOMS = ["aphek", "road", "ziklag", "negev", "besor", "field", "camp"];
+W7.crawlKey = () => { const c = david.x / T, r = W7.rooms.find(o => c >= o.c0 && c < o.c0 + o.w); return r && ZK_ROOMS.includes(r.id) ? "ziklag" : null; };
+// (Glen 11-23: "after each room or two, david can write in his journal and just build on that until the end for his last
+//  entry. then the user can flip through them all ... start writing the pertinent psalms for what david is discovering
+//  and enduring") a page after each beat, a psalm of David's beside it (WEB, "the LORD"; draft words for Glen); the last
+//  page has the whole song. region.js jsSpreadLayout
+W7.spreads = [
+  { id: "zs_aphek", when: "z7_sent", title: "Aphek",
+    entry: ["I marched with the Philistines, against my own people. I had walked into a net I made myself, and I could not see the way out. Then the lords of the Philistines sent me home. The LORD got me out.", "1 Samuel 29:6-11"],
+    psalm: { ref: "Psalm 25", text: ["Show me your ways, LORD. Teach me your paths. Guide me in your truth, and teach me, for you are the God of my salvation. I wait for you all day long. (25:4-5)",
+      "My eyes are ever on the LORD, for he will pluck my feet out of the net. (25:15)"] } },
+  { id: "zs_ziklag", when: "z7_pursue", title: "Ziklag",
+    entry: ["Ziklag is ashes. Abigail and Ahinoam are gone, and every wife and child. We wept until we could not weep any more, and my own men spoke of stoning me. I had nothing left but the LORD, so I went to Him. He said, Pursue.", "1 Samuel 30:3-8"],
+    psalm: { ref: "Psalm 62", text: ["My soul, wait in silence for God alone, for my expectation is from him. He alone is my rock and my salvation, my fortress. I will not be shaken. (62:5-6)",
+      "Trust in him at all times, you people. Pour out your heart before him. God is a refuge for us. (62:8)"] } },
+  { id: "zs_field", when: "z7_egypt", title: "The Field",
+    entry: ["A young Egyptian, left in a field to die because he got sick. We gave him bread and water, figs and raisins, and his spirit came back to him. The one his master threw away is the one showing us the way.", "1 Samuel 30:11-15"],
+    psalm: { ref: "Psalm 41", text: ["Blessed is he who considers the poor. The LORD will deliver him in the day of evil. The LORD will preserve him, and keep him alive. (41:1-2)"] } },
+  { id: "zs_camp", when: "z7_won", title: "The Raiders' Camp",
+    entry: ["From the twilight to the evening of the next day. Every wife, every son and daughter, nothing lacking, small or great. Abigail and Ahinoam are safe. The LORD recovered all, just as He said He would.", "1 Samuel 30:17-19"],
+    psalm: { ref: "Psalm 18", text: ["For you will light my lamp, LORD. My God will light up my darkness. For by you, I advance through a troop. By my God, I leap over a wall. (18:28-29)"] } },
+  { id: "zs_end", when: "z7_end", title: "The Brook Besor", final: true,
+    entry: ["Some of my men would not share the plunder with the two hundred who stayed by the brook. No. It is the LORD who gave it. They shall share alike.", "1 Samuel 30:23-24"],
+    psalm: { ref: "Psalm 133:1", text: "See how good and how pleasant it is for brothers to live together in unity!" } },
+];
+const zkWrite = id => ({ fn() { jsceneOpen(false, id); } });   // (David sits down and writes the page)
+{ const H = { holdDavid: W7.holdDavid, build: W7.build, enter: W7.enter, update: W7.update, drawDavid: W7.drawDavid, draw: W7.draw, drawFront: W7.drawFront, drawOver: W7.drawOver };
   Object.assign(W7, {
     build: R => { H.build(R); zkBuild(R); },
     enter: r => { H.enter(r); zkEnter(r); },
     update: (dt, r) => { H.update(dt, r); zkUpdate(dt, r); },
-    holdDavid: (d, dt) => zkHold(d, dt),
+    holdDavid: (d, dt) => zkHold(d, dt) || (H.holdDavid ? H.holdDavid(d, dt) : false),
     drawDavid: (d, x, y) => zkDrawDavid(d, x, y) || H.drawDavid(d, x, y),
     draw: camX => { H.draw(camX); zkDraw(camX); },
     drawFront: camX => { H.drawFront(camX); zkDrawFront(camX); },
@@ -75,9 +95,9 @@ function zkBuild(R) {
   let c = R("aphek");
   { const rm = "aphek", X = k => (c + k) * T;
     ground(c, c + 69);
-    P(rm, "gath_guard_idle", X(12), 1); P(rm, "gath_elite_idle", X(18), 1); P(rm, "gath_guard_idle", X(24), -1);
-    zk.achish = P(rm, "achish_idle", X(44), -1, null, 1);
-    zk.lords = [P(rm, "gath_elite_idle", X(50), -1), P(rm, "gath_elite_idle", X(55), -1)];
+    P(rm, "gath_guard_idle", X(30), 1); P(rm, "gath_elite_idle", X(32.5), 1);
+    zk.achish = P(rm, "achish_idle", X(40), -1, null, 1);
+    zk.lords = [P(rm, "gath_elite_idle", X(43), -1), P(rm, "gath_elite_idle", X(45.5), -1)];
     rTalker(zk.achish, () => [["Achish", zkHas("z7_sent") ? "Rise up early in the morning and depart, as soon as you have light." : "Come, David."]]);
   }
 
@@ -193,9 +213,10 @@ function zkUpdate(dt, r) {
   const d = david, free = zkFree();
   for (const f of zk.fires) { f.t += dt; if (f.steam > 0) f.steam -= dt; }
   for (const o of zk.foods) o.t += dt;
-  // the start (Aphek): 27:1-7 told, then 29:1-2
-  if (r.id === "aphek" && !zkHas("z7_start") && !zk.started && free) { zk.started = true; zkStart(); }
-  if (r.id === "aphek" && zkHas("z7_start") && !zkHas("z7_sent") && free && Math.abs(d.x - zk.achish.x) < 160) zkAphek();
+  // the start (Aphek, after the crawl): the cut scene (29), then home
+  if (zk.cine) zk.cine.t += dt;
+  if (zk.march) for (const m of zk.march) { m.x += 70 * dt; m.t += dt; }
+  if (r.id === "aphek" && !zkHas("z7_sent") && !zk.cine && free) zkAphek();
   // Ziklag: past the weeping men, they turn on him (30:6)
   if (r.id === "ziklag" && zkHas("z7_burned") && !zkHas("z7_stones") && free && d.x > (roomById("ziklag").c0 + 40) * T) zkStones();
   // the jar: fill it, pour it
@@ -216,7 +237,7 @@ function zkUpdate(dt, r) {
   zkCamp(dt, r, free);
 }
 // David filling or pouring the jar (held still while he does)
-function zkHold(d) { if (zk.act || zk.pray) { d.vx = 0; return true; } return false; }
+function zkHold(d) { if (zk.act || zk.pray || zk.cine) { d.vx = 0; return true; } return false; }
 function zkAct(dt) {
   const A = zk.act, d = david; A.t += dt;
   if (A.kind === "fill") { if (A.t > 0.9) { zk.act = null; zk.jar = true; regionAdd("taken", "z7_jar"); toast("Saul's jar: full of water."); } return; }
@@ -228,16 +249,17 @@ function zkAct(dt) {
   if (A.t > dur) zk.act = null;
 }
 
-function zkStart() {
-  rPlay([
-    ZK_SAY("", "David said in his heart, “I will now perish one day by the hand of Saul. There is nothing better for me than that I should escape into the land of the Philistines.” David arose and passed over, he and the six hundred men who were with him, to Achish the son of Maoch, king of Gath. (1 Samuel 27:1-2)"),
-    ZK_SAY("", "Saul was told that David had fled to Gath, so he stopped looking for him. Then Achish gave him Ziklag that day. The number of the days that David lived in the country of the Philistines was a full year and four months. (1 Samuel 27:4, 6-7)"),
-    ZK_SAY("", "Now the Philistines gathered together all their armies to Aphek. The lords of the Philistines passed on by hundreds and by thousands; and David and his men passed on in the rear with Achish. (1 Samuel 29:1-2)"),
-    { fn() { regionAdd("taken", "z7_start"); toast("Go up to Achish (right)."); } },
-  ]);
-}
+// (Glen 11-23: "i never knew that side so we can play that in the crawl and as the cut scene to make it dramatic. we can
+//  get to the meat of it") Aphek isn't played: the armies march past, the lords and Achish argue over David, and he's
+//  sent home; then the road
 function zkAphek() {
+  const d = david, c = roomById("aphek").c0;
+  zk.cine = { t: 0 }; d.x = (c + 36) * T; d.vx = 0; d.facing = 1; snapCamera();
+  zk.march = [];   // the Philistine armies passing behind, by hundreds and by thousands (29:2)
+  for (let i = 0; i < 34; i++) zk.march.push({ row: i % 2, x: (c + 14) * T + i * 70 + (i % 2) * 30, spr: i % 3 ? "gath_guard_walk" : "gath_elite_walk", t: i * 0.13 });
   rPlay([
+    { wait: 3.2 },
+    ZK_SAY("", "Now the Philistines gathered together all their armies to Aphek; and the Israelites encamped by the spring which is in Jezreel. The lords of the Philistines passed on by hundreds and by thousands; and David and his men passed on in the rear with Achish. (1 Samuel 29:1-2)"),
     ZK_SAY("A lord of the Philistines", "“What about these Hebrews?” (1 Samuel 29:3)"),
     ZK_SAY("Achish", "“Isn't this David, the servant of Saul the king of Israel, who has been with me these days, or rather these years? I have found no fault in him since he fell away until today.” (1 Samuel 29:3)"),
     ZK_SAY("A lord of the Philistines", "“Make the man return, that he may go back to his place where you have appointed him, and let him not go down with us to battle, lest in the battle he become an adversary to us. Isn't this David, of whom people sang to one another in dances, saying, ‘Saul has slain his thousands, and David his ten thousands’?” (1 Samuel 29:4-5)"),
@@ -248,7 +270,9 @@ function zkAphek() {
     ZK_SAY("Achish", "“I know that you are good in my sight, as an angel of God. Notwithstanding, the princes of the Philistines have said, ‘He shall not go up with us to the battle.’ Therefore now rise up early in the morning with the servants of your lord who have come with you; and as soon as you are up early in the morning and have light, depart.” (1 Samuel 29:9-10)"),
     { fn() { zk.achish.spr = "achish_idle"; } },
     ZK_SAY("", "So David rose up early, he and his men, to depart in the morning, to return into the land of the Philistines; and the Philistines went up to Jezreel. (1 Samuel 29:11)"),
-    { fn() { regionAdd("taken", "z7_sent"); toast("Home to Ziklag (right)."); } },
+    { fn() { regionAdd("taken", "z7_sent");
+      regionGo((roomById("road").c0 + 3) * T, 1, () => { zk.cine = null; zk.march = null; zk.told.road = true;
+        rPlay([{ wait: 0.9 }, zkWrite("zs_aphek"), { wait: 0.3 }, { fn() { toast("Three days south, home to Ziklag."); } }]); }); } },
   ]);
 }
 function zkStones() {
@@ -265,7 +289,8 @@ function zkStones() {
     ZK_SAY("", "Abiathar brought the ephod to David. (1 Samuel 30:7)"),
     ZK_SAY("David", "“If I pursue after this troop, will I overtake them?” (1 Samuel 30:8)"),
     ZK_SAY("The LORD", "“Pursue, for you will surely overtake them, and will without fail recover all.” (1 Samuel 30:8)"),
-    { fn() { zk.abiathar.spr = "abiathar_stand"; regionAdd("taken", "z7_pursue"); toast("After them (right)!"); } },
+    { fn() { zk.abiathar.spr = "abiathar_stand"; regionAdd("taken", "z7_pursue"); } }, zkWrite("zs_ziklag"), { wait: 0.3 },
+    { fn() { toast("After them (right)!"); } },
   ]);
 }
 
@@ -300,7 +325,7 @@ function zkFeed() {
     ZK_SAY("The Egyptian", "“I am a young man of Egypt, servant to an Amalekite; and my master left me, because three days ago I got sick. We made a raid on the South of the Cherethites, and on that which belongs to Judah, and on the South of Caleb; and we burned Ziklag with fire.” (1 Samuel 30:13-14)"),
     ZK_SAY("David", "“Will you bring me down to this troop?” (1 Samuel 30:15)"),
     ZK_SAY("The Egyptian", "“Swear to me by God that you will not kill me and not deliver me up into the hands of my master, and I will bring you down to this troop.” (1 Samuel 30:15)"),
-    { fn() { E.st = "lead"; regionAdd("taken", "z7_egypt"); toast("Follow him (right)."); } },
+    { fn() { E.st = "lead"; regionAdd("taken", "z7_egypt"); } }, zkWrite("zs_field"), { wait: 0.3 }, { fn() { toast("Follow him (right)."); } },
   ]);
 }
 
@@ -330,6 +355,7 @@ function zkWon() {
     { wait: 1 },
     ZK_SAY("", "David struck them from the twilight even to the evening of the next day. Not a man of them escaped from there, except four hundred young men who rode on camels and fled. (1 Samuel 30:17)"),
     ZK_SAY("", "David recovered all that the Amalekites had taken, and David rescued his two wives. There was nothing lacking to them, neither small nor great, neither sons nor daughters, neither plunder, nor anything that they had taken. David brought them all back. (1 Samuel 30:18-19)"),
+    { wait: 1.5 }, zkWrite("zs_camp"), { wait: 0.3 },
     { fn() { toast("Back to the brook Besor (left), where the two hundred wait."); } },
   ]);
 }
@@ -339,8 +365,8 @@ function zkShare() {
     ZK_SAY("A worthless fellow", "“Because they didn't go with us, we will not give them anything of the plunder that we have recovered, except to every man his wife and his children, that he may lead them away and depart.” (1 Samuel 30:22)"),
     ZK_SAY("David", "“Do not do so, my brothers, with that which the LORD has given to us, who has preserved us, and delivered the troop that came against us into our hand. Who will listen to you in this matter? For as his share is who goes down to the battle, so shall his share be who stays with the baggage. They shall share alike.” (1 Samuel 30:23-24)"),
     ZK_SAY("", "It was so from that day forward that he made it a statute and an ordinance for Israel to this day. (1 Samuel 30:25)"),
-    { fn() { regionAdd("taken", "z7_end"); JSCENE.END = ZK_END; } }, { wait: 1.2 },
-    { fn() { jsceneOpen(true); } },
+    { fn() { regionAdd("taken", "z7_end"); } }, { wait: 1.2 },
+    { fn() { jsceneOpen(true, "zs_end"); } },   // (his last page; then the card, and the road)
   ]);
 }
 
@@ -355,6 +381,9 @@ function zkDrawDavid(d, x, y) {
 function zkDraw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
+  if (zk.march && r.id === "aphek") for (const row of [1, 0]) for (const m of zk.march) if (m.row === row && SPR[m.spr]) {   // the armies passing behind (the far row smaller, darker)
+    const x = m.x - camX; if (x < -80 || x > W + 80) continue;
+    drawSprite(m.spr, frameOf(m.spr, m.t), x, FOOT - (row ? 92 : 58), 1, row ? 0.42 : 0.55, row ? 0.55 : 0.75); }
   for (const w of zk.waters) if (w.room === r.id && w.kind === "well") { const im = ITEM.town_well; if (im && im.naturalWidth) drawItem("town_well", w.x - camX, FOOT + 4, ZK.WELL_H / im.naturalHeight); }   // (the town's well: Glen's)
   if (zk.brook && zk.brook.room === r.id) {   // the brook: water in the gap (stand-in)
     const x0 = zk.brook.c0 * T - camX, x1 = zk.brook.c1 * T - camX;
@@ -404,6 +433,15 @@ function zkDrawFront(camX) {
 }
 function zkDrawOver() {
   const r = region.room; if (!r) return;
+  if (zk.cine) {   // the cut scene: the picture letterboxed, and the place named
+    const t = zk.cine.t, bar = 64 * Math.min(1, t / 0.8);
+    ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, bar); ctx.fillRect(0, H - bar * 0.5, W, bar * 0.5);
+    const a = Math.max(0, Math.min(1, t / 0.8, (3.4 - t) / 0.6));
+    if (a > 0) { ctx.globalAlpha = a; ctx.textAlign = "center"; ctx.fillStyle = "rgba(0,0,0,0.45)"; ctx.fillRect(0, H * 0.3 - 60, W, 104);
+      ctx.fillStyle = "#ffe08a"; ctx.font = "bold 54px Georgia, serif"; ctx.fillText("Aphek", W / 2, H * 0.3);
+      ctx.fillStyle = "#e9dcc0"; ctx.font = "italic 22px Georgia, serif"; ctx.fillText("The Philistines gather for war against Israel", W / 2, H * 0.3 + 32); }
+    ctx.restore();
+  }
   const tn = ZK.TINT[r.id]; if (!tn) return;
   ctx.save(); ctx.fillStyle = `rgba(${tn[0]},${tn[1]},${tn[2]},${tn[3]})`; ctx.fillRect(0, 0, W, H); ctx.restore();
   if (r.id === "ziklag") {   // smoke over the town

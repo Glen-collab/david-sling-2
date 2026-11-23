@@ -2204,6 +2204,18 @@ const CRAWLS = {
     "The king lies asleep,", "his spear stuck in the ground at his head.", "David could end it with one blow.", "",
     "“The LORD forbid that I should stretch out", "my hand against the LORD's anointed.”", "(1 Samuel 26:11)", "",
     "He takes only the spear and the jar of water,", "and goes."],
+  ziklag: ["# World 7: Ziklag", "",   // (draft, 11-23: Glen, "i want the whole story so lets include aphek ... in the crawl and as the cut scene")
+    "David is tired of running.", "", "“I will now perish one day by the hand of Saul.", "There is nothing better for me than that I should",
+    "escape into the land of the Philistines.”", "(1 Samuel 27:1)", "",
+    "So he goes over to the enemy:", "to Achish, the king of Gath, Goliath's own city,", "with six hundred men and all their families.",
+    "And Saul stops looking for him.", "Achish gives David a town of his own: Ziklag.", "",
+    "For a year and four months, David lives a double life.", "He raids Israel's old enemies in the desert,", "and tells Achish he has been raiding Judah.",
+    "Achish believes every word:", "“He has made his people Israel", "utterly to abhor him.", "Therefore he will be my servant forever.”", "(1 Samuel 27:12)", "",
+    "Then the Philistines gather their armies", "to fight against Israel, against King Saul.", "Achish says to David,",
+    "“Know assuredly that you will go out with me", "in the army, you and your men.”", "(1 Samuel 28:1)", "",
+    "The lie has caught up with him.", "Will David march against his own people?", "Against Saul, the LORD's anointed?", "Against his friend Jonathan?", "",
+    "The armies gather at Aphek,", "and David and his men march at the back,", "beside the king of Gath.", "",
+    "He has walked into a trap", "he cannot get himself out of.", "", "But the LORD can."],
   carmel: ["# World 6: Carmel", "",   // (draft, 11-20: SERMONS_DRAFT.md's World 6)
     "Samuel is dead, and all Israel mourns him.", "David goes down into the wilderness.", "(1 Samuel 25:1)", "",
     "Out in the fields of Carmel, David and his men", "keep a rich man's shepherds safe,", "by night and by day.", "",
@@ -2213,12 +2225,13 @@ const CRAWLS = {
     "The man who would not strike the king", "is about to strike a fool.", "",
     "But Nabal's wife Abigail is wise.", "", "Even a good man needs someone to stop him."],
 };
-const regionCrawlStart = () => { region.crawl = { t: 0 }; };
+// (Glen 11-23) a second stop on the same stage (Ziklag, on Hachilah's): REGION.crawlKey() names its crawl, seen once too
+const regionCrawlStart = (key = REGION.key) => { region.crawl = { t: 0, key, flag: key === REGION.key ? "crawl" : "crawl_" + key }; };
 function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has the screen
-  const C = region.crawl, L = CRAWLS[REGION.key] || [];
+  const C = region.crawl, L = CRAWLS[C.key || REGION.key] || [];
   C.t += dt;
   const end = L.length * CRAWL.SPACE / CRAWL.SPEED + CRAWL.TAIL;
-  if (C.t > end || (C.t > 1.5 && (pressed("a") || pressed("start")))) { region.crawl = null; regionAdd("taken", "crawl"); return; }
+  if (C.t > end || (C.t > 1.5 && (pressed("a") || pressed("start")))) { region.crawl = null; regionAdd("taken", C.flag || "crawl"); return; }
   ctx.fillStyle = `rgba(8,5,2,${Math.min(0.94, 0.75 + C.t * 0.2)})`; ctx.fillRect(0, 0, W, H);
   ctx.save(); ctx.textAlign = "center";
   const top = H * 0.1;
@@ -2240,7 +2253,9 @@ function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has th
 function regionMapFrame(dt) {   // true while the map (or the card, or the Journal) has the screen
   if (!REGION_ON) return false;
   // (11-15) the crawl, once, before the region's first play (not in the tests' copy, simgame/: a test can start one)
-  if (!region.crawlChecked && region.save && !setup.active) { region.crawlChecked = true; if (CRAWLS[REGION.key] && !regionHas("taken", "crawl") && !/simgame/.test(location.pathname)) regionCrawlStart(); }
+  if (!region.crawlChecked && region.save && !setup.active) { region.crawlChecked = true;
+    const ck = (REGION.crawlKey && REGION.crawlKey()) || REGION.key, flag = ck === REGION.key ? "crawl" : "crawl_" + ck;
+    if (CRAWLS[ck] && !regionHas("taken", flag) && !/simgame/.test(location.pathname)) regionCrawlStart(ck); }
   if (region.crawl) { regionCrawlFrame(dt); return true; }
   if (region.jscene) { jsceneFrame(dt); return true; }
   if (!region.mapOpen) {
@@ -2250,6 +2265,7 @@ function regionMapFrame(dt) {   // true while the map (or the card, or the Journ
     const back = pressed("select") || pressed("b") || pressed("start") || (region.page === 0 && pressed("a"));
     if (!region.bookLeave && (pressed("left") || pressed("right"))) { region.page = 1 - region.page; region.mapT = 0.15; if (typeof sfxPageTurn === "function") sfxPageTurn(); }
     else if (region.page === 1 && pressed("a") && SONG_ON) songToggle();
+    else if (region.page === 1 && pressed("a") && !region.bookLeave && jSpreads().length) { bookClose(); jsceneOpen(false, null, true); return true; }   // (Glen 11-23: flip through them all)
     else if (back) { bookClose(); return true; }
   }
   region.mapT += dt;
@@ -2371,18 +2387,33 @@ function journalWatch() {   // updateRegion: a story moment just finished? he si
   const jW = region.save.jW || {}, first = (region.save.jAt || 0) < 9 && JFIRST.some(k => jFound(k) > 0 && !jW[k]);   // (jAt 9: the tests, no Journal)
   if (storyDone() > (region.save.jAt || 0) || first) jsceneOpen(false);
 }
-function jsceneOpen(final) {
+// (Glen 11-23: "after each room or two, david can write in his journal and just build on that until the end for his last
+// entry. then the user can flip through them all") a stop told over many rooms writes as it goes: REGION.spreads, each
+// { id, when (the story moment that sits him down), title, entry: [text, ref], psalm: { ref, text } }, the last one final
+// (his last page: the entry, a line of a psalm, what he's found, and the whole song). Left / Right turns through them all
+const jSpreads = () => (REGION.spreads || []).filter(s => regionHas("taken", s.when));
+function jsceneOpen(final, sp = null, browse = false) {
   const prev = region.save.jAt || 0, n = storyDone();
   region.save.jAt = Math.max(prev, n); regionWrite();
   const snap = document.createElement("canvas"); snap.width = W; snap.height = H; snap.getContext("2d").drawImage(ctx.canvas, 0, 0);   // the game behind, blurred
-  region.jscene = { t: 0, prev: final ? Math.min(prev, n) : prev, n, final, wasFinal: final && regionHas("taken", "g_jfinal"), snap, out: 0, jW: Object.assign({}, region.save.jW || {}) };
+  const own = !sp && !browse;   // (the region's own page is the one being written)
+  region.jscene = { t: 0, prev: own ? (final ? Math.min(prev, n) : prev) : n, n, final, wasFinal: own ? final && regionHas("taken", "g_jfinal") : true, snap, out: 0, jW: Object.assign({}, region.save.jW || {}) };
+  const J = region.jscene;
+  J.ownFinal = regionHas("taken", "g_jfinal");
+  if (!own) J.jW = Object.fromEntries(JFOUND.map(([k]) => [k, jFound(k)]));
   region.save.jW = Object.fromEntries(JFOUND.map(([k]) => [k, jFound(k)])); regionWrite();   // (what's written now: next time only what's new is)
-  if (final) regionAdd("taken", "g_jfinal");
-  const A = REGION.aside; if (A && regionHas("taken", A.when)) { region.jscene.aside = A.text; region.jscene.asideNew = !region.save.jAside; region.save.jAside = true; regionWrite(); }
+  if (final && own) regionAdd("taken", "g_jfinal");
+  const A = REGION.aside; if (A && regionHas("taken", A.when)) { J.aside = A.text; J.asideNew = own && !region.save.jAside; region.save.jAside = true; regionWrite(); }
+  // the pages: the region's own, then each one he's written since
+  J.pages = [null, ...jSpreads()];
+  const was = region.save.jSp || [];
+  J.view = sp ? Math.max(0, J.pages.findIndex(p => p && p.id === sp)) : browse ? J.pages.length - 1 : 0;
+  J.writing = browse || (sp && was.includes(sp)) ? -1 : J.view;   // (a page already written isn't written again)
+  if (sp && !was.includes(sp)) { region.save.jSp = [...was, sp]; regionWrite(); }
   hushStage();
   if (final && SONG_ON) songToggle(true);
   else if (typeof journalMusic !== "undefined") { journalMusic.currentTime = 0; journalMusic.volume = typeof JTUNE !== "undefined" ? JTUNE.MUSIC_VOLUME : 0.5; journalMusic.play().catch(() => {}); }
-  jsceneLayout(region.jscene);
+  jsceneLayout(J);
 }
 const regionHushed = () => REGION_ON && (!!region.jscene || region.mapOpen || (typeof CARD_SONG !== "undefined" && CARD_SONG && !CARD_SONG.paused));   // main.js updateMusic: the stage's music stays out   // (Glen 11-09: and the map and card pages are silent too, birds and all)
 function hushStage() {   // the stage's music stops (updateMusic brings it back afterward)
@@ -2392,6 +2423,77 @@ function hushStage() {   // the stage's music stops (updateMusic brings it back 
 }
 const jsFont = (px, ref) => typeof caveatReady !== "undefined" && caveatReady ? `${px}px Caveat, Georgia, serif` : `italic ${Math.round(px * 0.72)}px Georgia, serif`;
 function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, color, center, isNew }, and when each new one is written
+  const page = J.pages ? J.pages[J.view] : null, still = J.pages && J.writing !== J.view;   // (still: turned to, as it stands)
+  if (page) jsSpreadLayout(J, page);
+  else if (still) { const B = Object.assign({}, J, { prev: J.n, final: J.ownFinal, wasFinal: true, asideNew: false }); jsOwnLayout(B); J.left = B.left; J.right = B.right; }
+  else jsOwnLayout(J);
+  let t = 0.8;   // the writing: the new words, one after another (left page first)
+  J.titleAt = 0;
+  const all = [...J.left, ...J.right], order = [...all.filter(it => !it.last), ...all.filter(it => it.last)];
+  for (const it of order) {
+    if (!it.isNew || still) { it.at = -1; continue; }
+    if (it.title) { t += JSCENE.TITLE_WAIT; J.titleAt = t; }   // (the breath before it)
+    it.at = t; it.dur = it.text.length * JSCENE.CHAR * (it.title ? 2.2 : 1); t += it.dur + JSCENE.GAP * 0.3;
+  }
+  J.done = still ? 0 : t;
+  J.flat = { left: document.createElement("canvas"), right: document.createElement("canvas") };
+  for (const side of ["left", "right"]) { const [w, h] = JSCENE.PAGE[side]; J.flat[side].width = w * JSCENE.RES; J.flat[side].height = h * JSCENE.RES; }
+}
+const jsWrapper = () => { const m = document.createElement("canvas").getContext("2d");
+  return (t, px, w) => { m.font = jsFont(px); const out = []; let line = ""; for (const word of t.split(" ")) { const nn = line ? line + " " + word : word; if (line && m.measureText(nn).width > w) { out.push(line); line = word; } else line = nn; } if (line) out.push(line); return out; }; };
+const jsFit = (side, build) => { for (let k = 1; k > 0.55; k -= 0.06) { const r = build(k); if (r.bottom <= JSCENE.PAGE[side][1] - 8) return r.items; } return build(0.55).items; };
+function jsSpreadLayout(J, P) {   // one of the pages he writes as he goes (REGION.spreads)
+  const wrap = jsWrapper(), [LW] = JSCENE.PAGE.left, [RW_] = JSCENE.PAGE.right;
+  J.left = jsFit("left", k => {
+    const items = []; let y = 40 * k;
+    items.push({ text: P.title, x: LW / 2, y, px: 34 * k, center: true, isNew: true });
+    y += 16 * k;
+    const [text, ref] = P.entry;
+    for (const l of wrap(text, 23 * k, LW - 24)) { y += 25 * k; items.push({ text: l, x: 12, y, px: 23 * k, isNew: true }); }
+    y += 19 * k; items.push({ text: "— " + ref, x: 30, y, px: 17 * k, color: JSCENE.INK_REF, isNew: true });
+    if (P.final && P.psalm) {   // (his last page: a line of a psalm under it)
+      y += 16 * k;
+      for (const l of wrap("“" + P.psalm.text + "”", 21 * k, LW - 40)) { y += 23 * k; items.push({ text: l, x: 22, y, px: 21 * k, isNew: true }); }
+      y += 18 * k; items.push({ text: "— " + P.psalm.ref, x: 34, y, px: 17 * k, color: JSCENE.INK_REF, isNew: true });
+    }
+    y += 8 * k;
+    if (P.final) {   // then what he's found, all of it ("of N")
+      const list = [];
+      for (const [kind, name] of JFOUND) { const n = jFound(kind); if (n) list.push(`${name}: ${n} of ${jAll(kind)}`); }
+      if (list.length) {
+        const lines = []; for (const t of list) lines.push(...wrap(t, 18 * k, LW - 24));
+        const H_ = JSCENE.PAGE.left[1], top = H_ - 12 - lines.length * 20 * k - 24 * k;
+        if (top < y + 12 * k) y = H_ + 100;   // (no room: fit() tries smaller)
+        else { let ly = top; items.push({ text: `Found in ${REGION.name}:`, x: 12, y: ly, px: 19 * k, isNew: true });
+          for (const l of lines) { ly += 20 * k; items.push({ text: l, x: 20, y: ly, px: 18 * k, color: JSCENE.INK_REF, isNew: true }); } y = ly; }
+      }
+    }
+    return { items, bottom: y };
+  });
+  J.right = jsFit("right", k => {
+    const items = []; let y;
+    if (P.final) {   // (the last page: Glen's song, all of it)
+      y = 70 * k;
+      items.push({ text: "My Heart Is Steadfast", x: RW_ / 2, y: 40 * k, px: 40 * k, center: true, color: JSCENE.TITLE_INK, isNew: true, last: true });
+      items.push({ text: "Psalm 57", x: RW_ / 2, y: 64 * k, px: 21 * k, center: true, color: JSCENE.INK_REF, isNew: true, last: true });
+      for (let i = 0; i < JOURNAL_VERSE.length; i++) {
+        const ind = i % 2 ? 16 : 0;
+        wrap(JOURNAL_VERSE[i], 27 * k, RW_ - 24 - ind).forEach((l, j) => { y += 29 * k; items.push({ text: l, x: 8 + ind + (j ? 18 : 0), y, px: 27 * k, isNew: true, last: true }); });
+        if (i === 3) y += 14 * k;
+      }
+      return { items, bottom: y };
+    }
+    y = 40 * k;   // a psalm for what he's living through
+    items.push({ text: P.psalm.ref, x: RW_ / 2, y, px: 30 * k, center: true, color: JSCENE.TITLE_INK, isNew: true, last: true });
+    y += 12 * k;
+    for (const para of [].concat(P.psalm.text)) {
+      for (const l of wrap(para, 25 * k, RW_ - 28)) { y += 28 * k; items.push({ text: l, x: 12, y, px: 25 * k, isNew: true, last: true }); }
+      y += 12 * k;
+    }
+    return { items, bottom: y };
+  });
+}
+function jsOwnLayout(J) {   // the region's own page (as it always was)
   const m = document.createElement("canvas").getContext("2d");
   const fit = (side, build) => { for (let k = 1; k > 0.55; k -= 0.06) { const r = build(k); if (r.bottom <= JSCENE.PAGE[side][1] - 8) return r.items; } return build(0.55).items; };
   const wrap = (t, px, w) => { m.font = jsFont(px); const out = []; let line = ""; for (const word of t.split(" ")) { const nn = line ? line + " " + word : word; if (line && m.measureText(nn).width > w) { out.push(line); line = word; } else line = nn; } if (line) out.push(line); return out; };
@@ -2448,22 +2550,15 @@ function jsceneLayout(J) {   // the words on each flat page: { text, x, y, px, c
     }
     return { items, bottom: y };
   });
-  // the writing: the new words, one after another (left page first)
-  let t = 0.8;
-  const all = [...J.left, ...J.right], order = [...all.filter(it => !it.last), ...all.filter(it => it.last)];
-  for (const it of order) {
-    if (!it.isNew) { it.at = -1; continue; }
-    if (it.title) { t += JSCENE.TITLE_WAIT; J.titleAt = t; }   // (the breath before it)
-    it.at = t; it.dur = it.text.length * JSCENE.CHAR * (it.title ? 2.2 : 1); t += it.dur + JSCENE.GAP * 0.3;
-  }
-  J.done = t;
-  J.flat = { left: document.createElement("canvas"), right: document.createElement("canvas") };
-  for (const side of ["left", "right"]) { const [w, h] = JSCENE.PAGE[side]; J.flat[side].width = w * JSCENE.RES; J.flat[side].height = h * JSCENE.RES; }
 }
 function jsceneFrame(dt) {
   const J = region.jscene; J.t += dt;
   const skip = pressed("a") || pressed("b") || pressed("select") || pressed("start");
   if (!J.out && skip && J.t > 0.5) { if (J.t < J.done) J.t = J.done; else J.out = 0.001; }
+  if (!J.out && J.pages && J.pages.length > 1 && J.t >= J.done && J.t > 0.5 && (pressed("left") || pressed("right"))) {   // (Glen 11-23) turn the page
+    const v = Math.max(0, Math.min(J.pages.length - 1, J.view + (pressed("left") ? -1 : 1)));
+    if (v !== J.view) { J.view = v; jsceneLayout(J); J.t = Math.max(J.t, 0.6); if (typeof sfxPageTurn === "function") sfxPageTurn(); }
+  }
   if (!J.out) for (const it of [...J.left, ...J.right]) if (it.at >= 0 && !it.pen && J.t >= it.at) {
     it.pen = true; if (typeof penScratch === "function") penScratch(Math.min(1.2, it.dur), 0.8);
     if (it.title && typeof chime === "function") { chime(4); setTimeout(() => chime(7), 220); setTimeout(() => chime(11), 480); }   // (this is it)
@@ -2507,7 +2602,8 @@ function drawJscene(J) {
   // the hint, and the fades
   const fin = J.t >= J.done;
   ctx.textAlign = "center"; ctx.font = "17px Georgia, serif"; ctx.fillStyle = "rgba(255,240,215,0.8)";
-  ctx.fillText(fin ? (J.final ? "A: on to David's card" : "A: back to the game") : "A: finish writing", W / 2, H - 16);
+  const turn = fin && J.pages && J.pages.length > 1 ? `Left / Right: turn the page (${J.view + 1} of ${J.pages.length})      ` : "";
+  ctx.fillText(fin ? turn + (J.final ? "A: on to David's card" : "A: back to the game") : "A: finish writing", W / 2, H - 16);
   const a = Math.max(J.t < JSCENE.FADE ? 1 - J.t / JSCENE.FADE : 0, J.out ? J.out / JSCENE.FADE : 0);
   if (a > 0) { ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.fillRect(0, 0, W, H); }
   ctx.restore();
@@ -2614,7 +2710,7 @@ function drawCardSpread() {
 
   // the footer
   ctx.textAlign = "center"; ctx.fillStyle = "#e9dcc0"; ctx.font = "17px Georgia, serif";
-  ctx.fillText(region.bookLeave ? (SONG_ON ? "A: the song      B: on to the road" : "B: on to the road") : SONG_ON ? "Left / Right: the map      A: the song      Select or B: back to the game" : "Left / Right: the map      Select or B: back to the game", W / 2, H - 22);
+  ctx.fillText(region.bookLeave ? (SONG_ON ? "A: the song      B: on to the road" : "B: on to the road") : SONG_ON ? "Left / Right: the map      A: the song      Select or B: back to the game" : jSpreads().length ? "Left / Right: the map      A: read the Journal      Select or B: back to the game" : "Left / Right: the map      Select or B: back to the game", W / 2, H - 22);
   ctx.restore();
 }
 // (Glen 11-06) his old map sheet (torn parchment, a leather border, Gibeah's hill top-left, a compass bottom-right),
