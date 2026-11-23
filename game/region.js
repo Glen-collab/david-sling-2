@@ -350,6 +350,7 @@ const bird = (kind, room, x, y) => region.beasts.push({ kind, room, x, hx: x, y,
 // again. Three stones (or one charged, or three sword strokes) and he throws down his shield and runs, fading out.
 // Nobody dies. He keeps to his own floor or ledge (never off its end). y: the floor he stands on (px); range: his post, tiles
 const rPhil = (room, c, y = GR * T, range = 6) => beast("phil", room, c, { y, hy: y, range: range * T, state: "wait", hp: PHIL.HP, alpha: 1 });
+const PHIL_SK = { wait: "phil_run", charge: "phil_charge", run: "phil_run", drop: "phil_drop", flee: "phil_flee" };
 const PHIL = { HP: 3, PACE: 1.5, PACE_SPEED: 70, NEAR: 9, SPEED: 210, BACK: 0.9, BACK_SPEED: 230, REST: 0.5, FLEE_SPEED: 320, FADE: 2.5, DROP_MS: 150,
   // (Glen 11-06) walls, rocks and the tower stop him: up to HOP tiles high he jumps up onto it (and drops off the far side);
   // taller (the watchtower) he holds there, pacing behind it with his shield up, until there's a way to David again
@@ -1593,8 +1594,9 @@ function updatePhil(b, dt) {
       if (Math.abs(b.x - b.hx) > P.PACE * T && Math.sign(b.x - b.hx) === b.pdir) b.pdir = -b.pdir; }
     b.facing = b.pdir;
     if (Math.abs(d.x - b.x) < P.NEAR * T && Math.abs(d.y - b.y) < 140 && d.deadT <= 0) {
-      b.state = "run"; b.t = 0; sfxOne(["phil_hedad", "phil_hedad_2"], b.x, 0.75);   // "Hedad!", his battle cry
-      if (!region.philTold) { region.philTold = true; toast("Philistines! Three stones (or one charged) and he'll drop his shield and run."); }
+      b.state = "run"; b.t = 0; if (!b.sk) sfxOne(["phil_hedad", "phil_hedad_2"], b.x, 0.75);   // "Hedad!", his battle cry
+      if (!b.sk && !region.philTold) { region.philTold = true; toast("Philistines! Three stones (or one charged) and he'll drop his shield and run."); }
+      if (b.sk && b.sk.tell && !region.philTold2) { region.philTold2 = true; toast(b.sk.tell); }
     }
   } else if (b.state === "run") {
     const dir = Math.sign(d.x - b.x) || -1; b.facing = dir;
@@ -1613,7 +1615,7 @@ function updatePhil(b, dt) {
     if (b.t < P.BACK) step(-b.facing * P.BACK_SPEED * (1 - b.t / P.BACK * 0.5));
     else if (b.t > P.BACK + P.REST) { b.state = "run"; b.t = 0; }
   } else if (b.state === "drop") {
-    if (b.t * 1000 >= P.DROP_MS * SPR.phil_drop.frames) { b.state = "flee"; b.t = 0; }
+    if (b.t * 1000 >= P.DROP_MS * SPR[(b.sk || PHIL_SK).drop].frames) { b.state = "flee"; b.t = 0; }
   } else if (b.state === "flee") {   // away from David, fading as he goes
     if (!step(b.fleeDir * P.FLEE_SPEED, true) && !b.air) b.x += b.fleeDir * P.FLEE_SPEED * dt * 0.5;   // (fading anyway: a wall doesn't hold him long)
     b.alpha = Math.max(0, 1 - b.t / P.FADE);
@@ -1627,16 +1629,19 @@ function updatePhil(b, dt) {
 }
 function drawPhil(b, x) {
   const now = performance.now() / 1000, fl = b.flash > 0 ? "brightness(2)" : "", near = Math.abs(david.x - b.x) < 5 * T;
-  if ((b.state === "flee" || b.state === "drop") && b.dropX !== undefined) {   // his shield and spear, left lying where he dropped them
+  if ((b.state === "flee" || b.state === "drop") && b.dropX !== undefined && !(b.sk && b.sk.noGear)) {   // his shield and spear, left lying where he dropped them
     const gx = b.dropX - (b.x - x), gy = b.dropY ?? b.hy; ctx.save(); ctx.globalAlpha = b.state === "flee" ? b.alpha : 1;
     ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(gx - 50, gy - 3); ctx.lineTo(gx + 40, gy - 4); ctx.stroke();
     ctx.fillStyle = "#9a7440"; ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(gx - 22, gy - 5, 26, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
   }
-  if (b.state === "wait") drawSprite("phil_run", frameOf("phil_run", (now + b.hx) * 0.45), x, b.y, b.facing, 1, 1, fl);   // pacing: his run, slowed to a walk
-  else if (b.state === "back" || b.state === "hold") drawSprite("phil_charge", frameOf("phil_charge", now * 0.6), x, b.y, b.facing, 1, 1, fl);
-  else if (b.state === "run") { const nm = near ? "phil_charge" : "phil_run"; drawSprite(nm, frameOf(nm, now + b.hx), x, b.y, b.facing, 1, 1, fl); }
-  else if (b.state === "drop") drawSprite("phil_drop", frameOf("phil_drop", b.t, PHIL.DROP_MS), x, b.y, -(b.facing || -1), 1, 1, fl);   // (the sheet starts facing left)
-  else drawSprite("phil_flee", frameOf("phil_flee", now + b.hx), x, b.y, b.fleeDir, 1, b.alpha);
+  // (b.sk: another man's sheets, the same ways: zk7.js's Amalekite raiders, 11-23. wait / far: pacing, and further off;
+  //  dropFace: which way his drop sheet faces)
+  const S = b.sk || PHIL_SK, k = b.k || 1, far = S.far && Math.abs(david.x - b.x) > (PHIL.NEAR + 3) * T;
+  if (b.state === "wait") { const nm = far ? S.far : S.wait; drawSprite(nm, frameOf(nm, (now + b.hx) * (nm === "phil_run" ? 0.45 : 1)), x, b.y, b.facing, k, 1, fl); }   // pacing: his run, slowed to a walk
+  else if (b.state === "back" || b.state === "hold") drawSprite(S.charge, frameOf(S.charge, now * 0.6), x, b.y, b.facing, k, 1, fl);
+  else if (b.state === "run") { const nm = near ? S.charge : S.run; drawSprite(nm, frameOf(nm, now + b.hx), x, b.y, b.facing, k, 1, fl); }
+  else if (b.state === "drop") drawSprite(S.drop, frameOf(S.drop, b.t, PHIL.DROP_MS), x, b.y, (S.dropFace || -1) * (b.facing || -1), k, 1, fl);   // (the sheet starts facing left)
+  else drawSprite(S.flee, frameOf(S.flee, now + b.hx), x, b.y, b.fleeDir, k, b.alpha);
 }
 // (Glen 11-12: the shield blocks the animals) a bird, a bat or a spider coming at him from in front while he holds it:
 //  turned away, nothing lost (wildlife.js does the same for the road animals)
