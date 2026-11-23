@@ -78,7 +78,8 @@ function drawDialog() {
   const words = keyText(dialog.say).split(" "), lines = []; let cur = "";
   for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > 760) { lines.push(cur); cur = w; } else cur = t; }
   lines.push(cur);
-  const h = 44 + lines.length * 26, y = helpT > 0 ? 140 : 52;   // up in the sky, out of the way of the ground (below the help box while it shows)
+  const h = 44 + lines.length * 26, low = typeof REGION_ON !== "undefined" && REGION_ON && REGION.dialogY ? REGION.dialogY(h) : null;
+  const y = low != null ? low : helpT > 0 ? 140 : 52;   // (a region can put it low: World 7's mountaintop call)   // up in the sky, out of the way of the ground (below the help box while it shows)
   ctx.fillStyle = "rgba(25,14,6,0.82)"; ctx.beginPath(); ctx.roundRect(W / 2 - 410, y, 820, h, 14); ctx.fill();
   ctx.fillStyle = "#ffd98a"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "left"; ctx.fillText(dialog.who, W / 2 - 388, y + 28);
   ctx.fillStyle = "#fff"; ctx.font = "19px sans-serif";

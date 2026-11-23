@@ -20,7 +20,14 @@ const H7 = {
   SLEEP_FILTER: "sepia(0.7) hue-rotate(-12deg) saturate(0.8) brightness(1.15)",   // (stand-in: Saul's sheet as a soldier)
   CART_H: 150, BED_W: 17, BED_H: 290, FIRE_H: 74, SPEAR_L: 200, JAR_H: 34,             // px the jar cart's drawn (its solid top is 4 rows up)
   ABI_GAP: 95, ABI_K: 4,   // Abishai behind David (px), how quickly he catches up
-  SAUL_NEAR: 170,          // px: this close to Saul, the scene plays
+  SAUL_NEAR: 70,           // px: this close to the spear at Saul's head, the scene plays
+  // Glen's clips (11-23). Saul's head is to the left (David comes in from the left); the taking is his clip, flipped:
+  SAUL_K: 0.83,            // saul_sleep drawn this size, so the clip of the taking (at David's size) lines up with it
+  TAKE_DX: [110, 121],     // where David is in david_take, sheet px from the spear: at the start, at the end
+  CREEP_RATE: 1.6,         // david_creep's steps, sped up to his walking speed
+  ABNER_H: 76,             // px: Abner asleep against a cart wheel (Glen's still)
+  FAR_K: 0.45,             // Saul and Abner across the valley, at the call
+  YOUNG_K: 1, YOUNG_SPEAR: [81, 314, 231], YOUNG_WAIT: 0.8,   // the young man for the spear (26:22): the spear in his sheet (x0, x1, y)
 };
 
 const W7 = {
@@ -52,13 +59,16 @@ const W7 = {
   ],
   end: ["The LORD will give to every man his righteousness and his faithfulness.", "1 Samuel 26:23"],
   build: R => h7Build(R), enter: r => h7Enter(r), update: (dt, r) => h7Update(dt, r),
+  drawDavid: (d, x, y) => h7DrawDavid(d, x, y),
+  dialogY: h => region.room && region.room.id === "mountain" && h7.call ? H - 24 - h : null,   // (at the call, the lines go low: the mountaintop is up where they'd be)
   draw: camX => h7Draw(camX), drawFront: camX => h7DrawFront(camX), drawOver: () => h7DrawOver(),
 };
 
-const h7 = { told: {}, people: [], sleepers: [], carts: [], beds: [], embers: [], props: [], abi: null, saul: null, dawn: null, call: null };
+const h7 = { told: {}, people: [], sleepers: [], carts: [], beds: [], embers: [], props: [], abi: null, saul: null, abner: null, dawn: null, call: null, take: null, young: null, wake: null };
 const h7Has = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function h7Tell(k, text) { if (!h7.told[k]) { h7.told[k] = true; toast(text); } }
 function h7Person(room, spr, x, dir = 1, show = null, k = H7.NPC_K) { const p = { room, spr, x, y: FOOT, dir, show, k, t: Math.random() * 3 }; h7.people.push(p); return p; }
+const h7Now = () => performance.now() / 1000;   // (real time: the stage holds still while a line waits for A, these clips don't)
 const h7Sc = n => SCALE * (TUNE.SPRITE_SIZE[n] || 1);
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -83,7 +93,7 @@ const h7Ember = (room, c) => h7.embers.push({ room, x: c * T + T / 2, t: Math.ra
 
 function h7Build(R) {
   for (const k of ["people", "sleepers", "carts", "beds", "embers", "props"]) h7[k].length = 0;
-  h7.dawn = null; h7.call = null; h7.saul = null; h7.spearDown = false;
+  h7.dawn = null; h7.call = null; h7.saul = null; h7.spearDown = false; h7.take = null; h7.young = null; h7.wake = null; h7.abner = null;
   h7.abi = { x: 0, y: GR * T, t: 0, on: false, moving: false };
 
   // -- The Wilderness of Ziph (26:3-6): David's men; the spies come back; Abishai
@@ -131,9 +141,9 @@ function h7Build(R) {
   { const rm = "fire", X = k => (c + k) * T;
     ground(c, c + 49);
     h7Sleeper(rm, X(8), 1);
-    h7Ember(rm, c + 22);
-    h7.saul = { room: rm, x: X(27) };
-    h7Sleeper(rm, X(31), -1);   // (Abner, stand-in)
+    h7Ember(rm, c + 18);   // (Abishai waits by it while David takes the spear)
+    h7.saul = { room: rm, x: X(29) };   // (the spear at his head; he lies to the right of it)
+    h7.abner = { room: rm, x: X(34) };   // (Glen's, 11-23: asleep against a cart wheel, 26:7)
     h7Sleeper(rm, X(40), 1);
   }
 
@@ -189,6 +199,7 @@ function h7Update(dt, r) {
   // the top of the far mountain: the call (26:13-25)
   if (r.id === "mountain" && h7Has("h7_taken") && !h7Has("h7_end") && !h7.call && free && d.onGround && d.y <= h7.top.y + 4 && d.x > h7.top.x) h7Call();
   if (h7.dawn) h7.dawn.t += dt;
+  if (h7.take) h7.take.t += dt;
 }
 
 const H7_SAY = (who, text) => ({ say: [who, text] });
@@ -209,16 +220,20 @@ function h7Saul() {
     H7_SAY("Abishai", "“God has delivered up your enemy into your hand today. Now therefore please let me strike him with the spear to the earth at one stroke, and I will not strike him the second time.” (1 Samuel 26:8)"),
     H7_SAY("David", "“Don't destroy him, for who can stretch out his hand against the LORD's anointed, and be guiltless?” (1 Samuel 26:9)"),
     H7_SAY("David", "“As the LORD lives, the LORD will strike him; or his day shall come to die, or he shall go down into battle and perish. The LORD forbid that I should stretch out my hand against the LORD's anointed; but now please take the spear that is at his head and the jar of water, and let's go.” (1 Samuel 26:10-11)"),
-    { fn() { h7.abiPose = null; regionAdd("taken", "h7_taken"); } }, { wait: 0.6 },
+    // (Glen's clip, 11-23: David kneels, pulls the spear up out of the ground, picks up the jar, and stands)
+    { fn() { h7.abiPose = null; const d = david; d.x = h7.saul.x - H7.TAKE_DX[0] * SCALE; d.vx = 0; h7.take = { t: 0 }; } },
+    { wait: SPR.david_take ? SPR.david_take.frames * SPR.david_take.ms / 1000 + 0.3 : 0.6 },
+    { fn() { h7.take = null; regionAdd("taken", "h7_taken"); david.x = h7.saul.x - H7.TAKE_DX[1] * SCALE; david.facing = 1; } },
     H7_SAY("", "So David took the spear and the jar of water from Saul's head, and they went away. No man saw it, or knew it, nor did any awake; for they were all asleep, because a deep sleep from the LORD had fallen on them. (1 Samuel 26:12)"),
     { fn() { toast("Away to the other side: on through the camp and up the far mountain (right)."); } },
   ]);
 }
 function h7Call() {
-  h7.call = true; h7.dawn = { t: 0 };
+  h7.call = true; h7.dawn = { t: 0 }; david.facing = -1;   // (he turns to call back across the valley)
   rPlay([
     H7_SAY("", "Then David went over to the other side, and stood on the top of the mountain far away, a great space being between them; (1 Samuel 26:13)"),
     H7_SAY("David", "“Don't you answer, Abner?” (1 Samuel 26:14)"),
+    { fn() { h7.wake = { t0: h7Now() }; } },   // (across the valley, Saul wakes: Glen's clip, 11-23)
     H7_SAY("Abner", "“Who are you who calls to the king?” (1 Samuel 26:14)"),
     H7_SAY("David", "“Aren't you a man? Who is like you in Israel? Why then have you not kept watch over your lord the king? For one of the people came in to destroy your lord the king. This thing isn't good that you have done. As the LORD lives, you are worthy to die, because you have not kept watch over your lord, the LORD's anointed. Now see where the king's spear is, and the jar of water that was at his head.” (1 Samuel 26:15-16)"),
     H7_SAY("Saul", "“Is this your voice, my son David?” (1 Samuel 26:17)"),
@@ -227,7 +242,7 @@ function h7Call() {
     H7_SAY("David", "“Now therefore, don't let my blood fall to the earth away from the presence of the LORD; for the king of Israel has come out to seek a flea, as when one hunts a partridge in the mountains.” (1 Samuel 26:20)"),
     H7_SAY("Saul", "“I have sinned. Return, my son David; for I will no more do you harm, because my life was precious in your eyes today. Behold, I have played the fool, and have erred exceedingly.” (1 Samuel 26:21)"),
     H7_SAY("David", "“Behold the spear, O king! Let one of the young men come over and get it.” (1 Samuel 26:22)"),
-    { fn() { h7.spearDown = true; h7.spearX = david.x + david.facing * 60; h7.spearY = david.y; } },   // (out of his pack, stuck in the ground for Saul's young man)
+    { fn() { h7.spearDown = true; h7.young = { x: david.x + david.facing * 50, y: david.y + 4, t0: h7Now() + H7.YOUNG_WAIT }; } },   // (laid on the ground; one of Saul's young men runs up for it: Glen's clip, 11-23)
     H7_SAY("David", "“The LORD will give to every man his righteousness and his faithfulness; because the LORD delivered you into my hand today, and I wouldn't stretch out my hand against the LORD's anointed. Behold, as your life was respected today in my eyes, so let my life be respected in the LORD's eyes, and let him deliver me out of all oppression.” (1 Samuel 26:23-24)"),
     H7_SAY("Saul", "“You are blessed, my son David. You will both do mightily, and will surely prevail.” (1 Samuel 26:25)"),
     H7_SAY("", "So David went his way, and Saul returned to his place. (1 Samuel 26:25)"),
@@ -274,11 +289,18 @@ function h7Draw(camX) {
     ctx.save(); ctx.translate(x, FOOT + 3); ctx.scale(p.dir, 1); ctx.drawImage(im, -w / 2, -p.h, w, p.h); ctx.restore(); }
   for (const c of h7.carts) if (c.room === r.id) { const im = ITEM.w7_box; if (im && im.naturalWidth) drawItem("w7_box", c.x - camX, FOOT + 4, (4 * T + 10) / im.naturalWidth); }   // (Glen's tipped cart, 11-21)
   for (const s of h7.sleepers) if (s.room === r.id) h7DrawSleeper(s, camX);
-  if (h7.saul && h7.saul.room === r.id) {   // Saul asleep; once they're taken, without the spear and the jar (stand-in: clipped off)
-    const n = "saul_sleep", S = SPR[n];
-    if (S) { const sc = h7Sc(n), x = h7.saul.x - camX;
-      ctx.save(); if (h7Has("h7_taken")) { ctx.beginPath(); ctx.rect(x - S.ax * sc - 10, 0, (148 - 0) * sc + 10, H); ctx.clip(); }
-      drawSprite(n, frameOf(n, performance.now() / 1000), x, FOOT, 1, 1); ctx.restore(); }
+  const ab = h7.abner, ai = ITEM.w7_abner_sleep;   // Abner asleep against a cart wheel, by Saul (26:7), facing him
+  if (ab && ab.room === r.id && ai && ai.naturalWidth) {
+    const w = ai.naturalWidth * H7.ABNER_H / ai.naturalHeight, hh = H7.ABNER_H * (1 + 0.012 * Math.sin(performance.now() / 700));
+    ctx.save(); ctx.translate(ab.x - camX, FOOT + 3); ctx.scale(-1, 1); ctx.drawImage(ai, -w / 2, -hh, w, hh); ctx.restore();
+  }
+  if (h7.saul && h7.saul.room === r.id) {   // Saul asleep, his head and the spear to the left
+    const x = h7.saul.x - camX, S = SPR.david_take;
+    if (S && (h7.take || h7Has("h7_taken"))) {   // Glen's clip of the taking (flipped); after it, its last frame, Saul's side only
+      const f = h7.take ? frameOf("david_take", h7.take.t) : S.frames - 1;
+      ctx.save(); if (!h7.take) { ctx.beginPath(); ctx.rect(x - 8 * SCALE, 0, W, H); ctx.clip(); }
+      drawSprite("david_take", f, x, FOOT, -1, 1); ctx.restore();
+    } else drawSprite("saul_sleep", frameOf("saul_sleep", performance.now() / 1000), x, FOOT, -1, H7.SAUL_K);
   }
   for (const p of h7.people) if (p.room === r.id && (!p.show || p.show())) drawSprite(p.spr, frameOf(p.spr, p.t), p.x - camX, p.y, p.dir, p.k);
   const A = h7.abi;
@@ -297,15 +319,40 @@ function h7DrawFront(camX) {
   }
   // (Glen 11-21: David keeps the spear and the jar in his pack, so they aren't drawn on him. At 26:22 the spear comes out
   //  and stands in the ground at the mountaintop for Saul's young man.)
-  const sp = ITEM.saul_spear;
-  if (r.id === "mountain" && h7.call && h7.spearDown && sp && sp.naturalWidth) {
-    const L = H7.SPEAR_L, w = sp.naturalWidth * L / sp.naturalHeight * 0.65;
-    ctx.drawImage(sp, h7.spearX - camX - w / 2, h7.spearY + 8 - L, w, L);   // (its foot a little into the ground)
+  const Y = h7.young, YS = SPR.young_spear;
+  if (r.id === "mountain" && h7.call && Y) {
+    const t = h7Now() - Y.t0, sc = SCALE * H7.YOUNG_K, x = Y.x - camX, a = t < 0 ? 0 : Math.min(1, t / 0.4), sp = ITEM.saul_spear;
+    if (a < 1 && sp && sp.naturalWidth) {   // Glen's spear, lying where David laid it, till the clip's own takes its place
+      const [x0, x1, yy] = H7.YOUNG_SPEAR, L = (x1 - x0) * sc, th = sp.naturalWidth * L / sp.naturalHeight;
+      ctx.save(); ctx.globalAlpha = 1 - a; ctx.translate(x - L / 2, Y.y - (YS ? YS.ay - yy : 13) * sc); ctx.rotate(Math.PI / 2);
+      ctx.drawImage(sp, -th / 2, -L / 2, th, L); ctx.restore();
+    }
+    if (YS && t >= 0) drawSprite("young_spear", frameOf("young_spear", t), x, Y.y, 1, H7.YOUNG_K, a);   // (its tip at x)
   }
-  // across the valley, at the call: Saul and Abner far off and small, by the camp
+  // across the valley, at the call: Saul and Abner far off and small, by the camp (Saul wakes when David calls: Glen's clip)
   if (r.id === "mountain" && h7.call) {
-    drawSprite("saul_talk", 0, 150, FOOT, 1, 0.45, 0.85); drawSprite("abner_talk", 0, 210, FOOT, 1, 0.45, 0.85);
+    const n = SPR.saul_wake ? "saul_wake" : "saul_talk";
+    drawSprite(n, h7.wake && SPR.saul_wake ? frameOf(n, h7Now() - h7.wake.t0) : 0, 150, FOOT, 1, H7.FAR_K * H7.SAUL_K, 0.85);
+    const ai = ITEM.w7_abner_sleep;   // (Abner asleep against his wheel till David calls him)
+    if (!h7.wake && ai && ai.naturalWidth) { const hh = H7.ABNER_H * H7.FAR_K, w = ai.naturalWidth * hh / ai.naturalHeight;
+      ctx.save(); ctx.globalAlpha = 0.85; ctx.translate(225, FOOT + 3); ctx.scale(-1, 1); ctx.drawImage(ai, -w / 2, -hh, w, hh); ctx.restore(); }
+    else drawSprite("abner_talk", 0, 210, FOOT, 1, H7.FAR_K, 0.85);
   }
+}
+// David (Glen's clips, 11-23): creeping through the camp; then walking with the spear and the jar till 26:22
+function h7DrawDavid(d, x, y) {
+  if (h7.take) return true;   // (he's in the clip of the taking)
+  const r = region.room; if (!r || !d.onGround || d.throwT >= 0 || d.h === LOW_H) return false;
+  const walking = d.state === "walk" || d.state === "run", rate = Math.max(0.6, Math.abs(d.vx) / TUNE.WALK_SPEED);
+  if (h7Has("h7_taken") && !h7Has("h7_end") && !h7.spearDown) {
+    if (walking && SPR.david_walk_spear) { drawSprite("david_walk_spear", frameOf("david_walk_spear", d.t * rate), x, y, d.facing); return true; }
+    if (d.state === "idle" && SPR.david_stand_spear) { drawSprite("david_stand_spear", 0, x, y, d.facing); return true; }
+    return false;
+  }
+  if ((r.id === "wagons" || r.id === "fire") && !h7Has("h7_taken") && d.state === "walk" && SPR.david_creep) {
+    drawSprite("david_creep", frameOf("david_creep", d.t * rate * H7.CREEP_RATE), x, y, d.facing); return true;
+  }
+  return false;
 }
 const H7_DARK = typeof document !== "undefined" ? document.createElement("canvas") : null;
 function h7DrawOver() {

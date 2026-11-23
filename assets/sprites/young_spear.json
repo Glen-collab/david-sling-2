@@ -1,0 +1,31 @@
+{
+  "frames": 18,
+  "frame_w": 333,
+  "frame_h": 246,
+  "ms_per_frame": 280,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 314,
+  "anchor_y": 244,
+  "source": "young_steady.mp4",
+  "video_frames": [
+    25,
+    32,
+    39,
+    46,
+    53,
+    60,
+    67,
+    74,
+    81,
+    89,
+    96,
+    103,
+    110,
+    117,
+    124,
+    131,
+    138,
+    145
+  ]
+}

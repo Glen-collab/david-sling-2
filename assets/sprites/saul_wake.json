@@ -1,0 +1,29 @@
+{
+  "frames": 16,
+  "frame_w": 503,
+  "frame_h": 258,
+  "ms_per_frame": 378,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 341,
+  "anchor_y": 255,
+  "source": "wake_steady.mp4",
+  "video_frames": [
+    1,
+    11,
+    20,
+    30,
+    39,
+    49,
+    59,
+    68,
+    78,
+    87,
+    97,
+    107,
+    116,
+    126,
+    135,
+    145
+  ]
+}

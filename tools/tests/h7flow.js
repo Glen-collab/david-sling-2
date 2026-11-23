@@ -19,10 +19,10 @@ steps.push({ n: 1, fn() { at("wagons", 27); } }, run(10), { keys: ["ArrowRight"]
 // on a cart
 steps.push({ n: 1, fn() { at("wagons", 53, GR * T - 3 * T - 2); } }, run(30), { n: 1, fn() { log("on the cart: " + where() + " ground " + david.onGround); } }, { keys: [], n: 2, snap: true });
 // Saul's fire
-steps.push({ n: 1, fn() { at("fire", 18); } }, run(20), { keys: [], n: 2, snap: true }, { keys: ["ArrowRight"], n: 20 });
+steps.push({ n: 1, fn() { at("fire", 18); } }, run(20), { keys: [], n: 2, snap: true }, { keys: ["ArrowRight"], n: 110 });
 for (let i = 0; i < 4; i++) steps.push(run(10));
 steps.push({ n: 1, fn() { log("at Saul: script " + region.script.length + " taken " + h7Has("h7_taken")); } }, { keys: [], n: 2, snap: true });
-for (let i = 0; i < 20; i++) steps.push(run(10));
+for (let i = 0; i < 50; i++) steps.push(run(10));
 steps.push({ n: 1, fn() { log("after: taken " + h7Has("h7_taken") + " right " + region.room.right); } }, { keys: [], n: 2, snap: true });
 // the far mountain: on top
 steps.push({ n: 1, fn() { at("mountain", 52, GR * T - 400 - 2); } }, run(20), { n: 1, fn() { log("top: " + where() + " call " + !!h7.call); } }, { keys: [], n: 2, snap: true });

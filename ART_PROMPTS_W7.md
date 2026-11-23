@@ -29,19 +29,19 @@ complete, so paste one per image.
 
 ## 3. Clips (2-3 seconds, side view, facing right, feet on one flat line, pure #00FF00 behind, camera still)
 Use your David, Abishai, Saul and Abner from the other clips, in the same clothes.
-1. **Soldiers asleep:** `A soldier of King Saul's army of ancient Israel asleep on the ground wrapped in a cloak, his head on his arm, breathing slowly, then turning over in his sleep.` (Two or three different men, so a row of them doesn't repeat.)
-2. **Abner asleep:** `Abner, the captain of Saul's army, a strong bearded man in armor, asleep sitting against a cart wheel, his head nodding.` (26:7)
-3. **David creeping:** `...David creeping forward slowly and carefully, bent low, one hand out, looking from side to side.`
-4. **David taking the spear and the jar:** `...David kneeling, carefully pulling a spear up out of the ground, then picking up a clay water jar, then standing.` (26:12, the moment) **Glen's making this one (11-21).**
-5. ~~David walking with them~~ (not needed: Glen 11-21, the spear and the jar go in his pack, like the bow)
-6. **The young man for the spear:** `A young soldier of Saul's army running forward, then stopping and bending to pick up a spear from the ground.` (26:22)
-7. **Saul waking:** `...King Saul waking up on the ground, sitting up, looking around in alarm for his spear.` (Optional: for the morning in the camp, before David calls.)
+1. **Done (11-21, three men).** **Soldiers asleep:** `A soldier of King Saul's army of ancient Israel asleep on the ground wrapped in a cloak, his head on his arm, breathing slowly, then turning over in his sleep.` (Two or three different men, so a row of them doesn't repeat.)
+2. **Done (11-23, a still: `w7_abner_sleep`).** **Abner asleep:** `Abner, the captain of Saul's army, a strong bearded man in armor, asleep sitting against a cart wheel, his head nodding.` (26:7)
+3. **Done (11-23: `david_creep`, his walk in the camp).** **David creeping:** `...David creeping forward slowly and carefully, bent low, one hand out, looking from side to side.`
+4. **David taking the spear and the jar:** `...David kneeling, carefully pulling a spear up out of the ground, then picking up a clay water jar, then standing.` (26:12, the moment) **Done (11-23: `david_take`, the whole moment with Saul in it, flipped in the game).**
+5. **Done after all (11-23: `david_walk_spear`, `david_stand_spear`):** David walking with the spear and the jar, from the taking till 26:22.
+6. **Done (11-23: `young_spear`).** **The young man for the spear:** `A young soldier of Saul's army running forward, then stopping and bending to pick up a spear from the ground.` (26:22)
+7. **Done (11-23: `saul_wake`; the camera moved in it, undone with `tools/steady_clip.py`; across the valley at the call).** **Saul waking:** `...King Saul waking up on the ground, sitting up, looking around in alarm for his spear.` (Optional: for the morning in the camp, before David calls.)
 
 ## 4. Saul's water jar (the item, 26:12)
 **Done:** Glen's jar and spear (11-21), cut to `assets/items/saul_jar.png` and `saul_spear.png`.
 **Glen 11-21:** "I'll just make David pouring and grabbing the spear but keeping it in his pack." So both go in David's pack
 and aren't drawn on him. The spear comes out once, at 26:22, standing in the ground on the far mountain. No full-jar
 picture and no filling clip: at a spring David uses his kneel, and the pack's jar shows it's full.
-- **Clip, pouring it (Glen's making it):** `...David standing, tipping a plain terracotta water jar forward with both hands, a stream of water pouring out in front of him onto the ground, then lowering the jar.`
-- **Clip, taking the spear and the jar (Glen's making it):** clip 4 above.
+- **Done (11-23: `david_pour`, for Ziklag's fires).** **Clip, pouring it:** `...David standing, tipping a plain terracotta water jar forward with both hands, a stream of water pouring out in front of him onto the ground, then lowering the jar.`
+- **Clip, taking the spear and the jar:** clip 4 above (done).
 - Later, for the fires: a burning thornbush and the same bush put out (`thorn_bush.png` is in the game already): `A dry thornbush of the Judean wilderness on fire, bright orange flames and sparks, seen from the side.` / `The same thornbush just put out: blackened, wet, a little white steam rising, no flames.` (each alone on green)
