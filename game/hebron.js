@@ -11,6 +11,7 @@
 
 const HB = {
   NPC_K: 0.9,
+  ELDERS: [[30, "hanan_idle", 1.1], [34, "prophet_old", 1.25], [38, "trader_idle", 1.05], [42, "hanan_idle", 1.1], [46, "villager_man_stand", 0.9]],   // the elders of Israel at the gate (column, sprite, size)
   DONKEY_K: 1.7,   // (Glen 11-24: "the donkeys are super small") the tribes' laden donkeys, back up to a man's waist (the idle clip draws larger: x0.82)
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
   ASAHEL: { WALK: 290, RUN: 600, JUMP: 1060 },   // (the chase: David's speeds while you play Asahel, player2.js's)
@@ -164,7 +165,8 @@ function hbBuild(R) {
   c = R("gate");
   { const rm = "gate", X = k => (c + k) * T;
     ground(c, c + 59);
-    for (const [k, spr] of [[30, "villager_staffman_stand"], [34, "prophet_old"], [38, "villager_staffman_stand"], [42, "villager_man_stand"], [46, "villager_staffman_stand"]]) P(rm, spr, X(k), -1);
+    // (Glen 11-24: not the open-mouthed staff man; the little one was prophet_old at NPC_K, Ramah draws him at 1.2)
+    for (const [k, spr, sz] of HB.ELDERS) P(rm, spr, X(k), -1, null, sz);
     hb.gateElder = P(rm, "samuel_anoint", X(26), -1);
   }
 }
