@@ -39,6 +39,23 @@ const HB = {
 };
 // (Glen 11-24) the tribes come in pairs (1 Chronicles 12:24-37), each leader with a laden donkey and his banner; each
 //  brings one of the foods of 12:40 for the feast
+// (Glen 11-24: "The twelve tribes ties back to our room with the twelve tribes from Jacob early in the game") as each
+//  tribe is welcomed, Jacob's blessing on it from the Hall of the Tribes at Nob (Genesis 49, WEB). Ephraim and Manasseh:
+//  Joseph's sons, so his blessing; Levi became the priests
+const HB_JACOB = {
+  Judah: "“Judah is a lion’s cub.” (Genesis 49:9)",
+  Simeon: "“Simeon and Levi are brothers.” (Genesis 49:5)",
+  Levi: "“I will divide them in Jacob, and scatter them in Israel.” (Genesis 49:7) Levi’s sons became the priests, who wore the breastplate.",
+  Benjamin: "“Benjamin is a ravenous wolf.” (Genesis 49:27)",
+  Ephraim: "Ephraim is a son of Joseph: “Joseph is a fruitful vine, a fruitful vine by a spring.” (Genesis 49:22)",
+  Manasseh: "Manasseh is a son of Joseph: “Joseph is a fruitful vine, a fruitful vine by a spring.” (Genesis 49:22)",
+  Issachar: "“Issachar is a strong donkey.” (Genesis 49:14)",
+  Zebulun: "“He will be for a haven of ships.” (Genesis 49:13)",
+  Naphtali: "“Naphtali is a doe set free.” (Genesis 49:21)",
+  Dan: "“Dan will be a serpent on the trail.” (Genesis 49:17)",
+  Asher: "“Asher’s food will be rich.” (Genesis 49:20)",
+  "Reuben and Gad": "“Reuben, you are my firstborn.” (Genesis 49:3) “A troop will press on Gad, but he will press on their heel.” (Genesis 49:19)",
+};
 // (Glen 11-24: "Here is the twelve tribes- they can usher in the donkey and gifts") his leaders, each with his tribe's
 //  banner: tribe_<art>_walk / _stand; [5] the art, [6] a second leader walking with him. Benjamin and Manasseh: the
 //  walking-stick man and a drawn banner till theirs come
@@ -461,7 +478,8 @@ function hbFeast(dt, r, free) {
   if (free && d.onGround && pressed("up")) {
     const t = hb.tribes.find(o => o.st === "here" && Math.abs(o.x - d.x) < HB.REACH);
     const atTable = Math.abs(d.x - hbRoomX("feast", HB.TABLE)) < HB.REACH * 1.4;
-    if (t) { t.st = "leave"; hb.foods.push({ name: t.food, x: t.x + 60, y: FOOT, t: 0 }); toast(`Welcome, ${t.name}! ${t.line[0].toUpperCase() + t.line.slice(1)}. They brought ${hbFoodName(t.food)}.`); }
+    if (t) { t.st = "leave"; hb.foods.push({ name: t.food, x: t.x + 60, y: FOOT, t: 0 }); toast(`Welcome, ${t.name}! ${t.line[0].toUpperCase() + t.line.slice(1)}. They brought ${hbFoodName(t.food)}.`);
+      if (HB_JACOB[t.name]) rPlay([HB_SAY("Jacob’s blessing, from the Hall of the Tribes", HB_JACOB[t.name])]); }
     else if (atTable && hb.carry) { hb.table.push(hb.carry); hb.carry = null; toast(`On the table. ${hb.table.length} of ${HB_TRIBES.length}.`); }
   }
   if (!hb.carry) { const f = hb.foods.find(o => !o.got && Math.abs(o.x - d.x) < 40); if (f) { f.got = true; hb.carry = f.name; toast(`${hbFoodName(f.name)[0].toUpperCase() + hbFoodName(f.name).slice(1)}. To the table (left), and Up.`); } }

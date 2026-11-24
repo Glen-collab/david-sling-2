@@ -42,7 +42,7 @@ steps.push(until(() => hb.weep), { keys: [], n: 40 }, snap, until(() => region.j
 // 7 the feast: welcome each tribe, carry its food to the table
 steps.push(drain(), { keys: [], n: 3 }, snap);
 for (let i = 0; i < 12; i++) steps.push(
-  { n: 1, fn() { const t = hb.tribes[i]; t.x = t.slot; t.st = "here"; moveParty(t.x - 40, GR * T); } }, { keys: [], n: 2 }, { keys: ["ArrowUp"], n: 1 }, { keys: [], n: 2 },
+  { n: 1, fn() { const t = hb.tribes[i]; t.x = t.slot; t.st = "here"; moveParty(t.x - 40, GR * T); } }, { keys: [], n: 2 }, { keys: ["ArrowUp"], n: 1 }, { keys: [], n: 2 }, drain(), { keys: [], n: 2 },   // (Jacob's blessing: A past it)
   { n: 1, fn() { const f = hb.foods[hb.foods.length - 1]; if (f) moveParty(f.x, GR * T); } }, { keys: [], n: 4 },
   { n: 1, fn() { at("feast", 15); } }, { keys: [], n: 2 }, { keys: ["ArrowUp"], n: 1 }, { keys: [], n: 2 },
   ...(i === 3 ? [{ n: 1, fn() { const t = hb.tribes[4]; t.x = t.slot + 200; t.st = "come"; const u = hb.tribes[5]; u.x = u.slot; u.st = "here"; at("feast", 60); } }, { keys: [], n: 3 }, snap] : []));
