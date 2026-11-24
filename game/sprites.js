@@ -8364,6 +8364,30 @@ window.SPRITE_DATA = {
   "ay": 250,
   "align": "feet"
  },
+ "tribe_benjamin_stand": {
+  "src": "../assets/sprites/tribe_benjamin_stand.png",
+  "frames": 2,
+  "w": 149,
+  "h": 253,
+  "ms": 250,
+  "loop": false,
+  "pingpong": false,
+  "ax": 95,
+  "ay": 251,
+  "align": "feet"
+ },
+ "tribe_benjamin_walk": {
+  "src": "../assets/sprites/tribe_benjamin_walk.png",
+  "frames": 12,
+  "w": 178,
+  "h": 251,
+  "ms": 163,
+  "loop": true,
+  "pingpong": false,
+  "ax": 126,
+  "ay": 249,
+  "align": "feet"
+ },
  "tribe_dan_stand": {
   "src": "../assets/sprites/tribe_dan_stand.png",
   "frames": 2,

@@ -46,7 +46,7 @@ const HB_TRIBES = [
   ["Judah", "who bore shield and spear: six thousand eight hundred (12:24)", "#c8a030", "bread", "judah"],
   ["Simeon", "mighty men of valor: seven thousand one hundred (12:25)", "#8a3030", "grain_sack", "simeon"],
   ["Levi", "four thousand six hundred, and Zadok, a young man mighty of valor (12:26, 28)", "#e8e0d0", "gift_oil", "levi"],
-  ["Benjamin", "Saul's relatives: three thousand (12:29)", "#3a6aa8", "fig_cake"],
+  ["Benjamin", "Saul's relatives: three thousand (12:29)", "#3a6aa8", "fig_cake", "benjamin"],
   ["Ephraim", "twenty thousand eight hundred, mighty men of valor (12:30)", "#2a7a3a", "raisins", "ephraim"],
   ["Manasseh", "eighteen thousand, mentioned by name, to come and make David king (12:31)", "#6a4a8a", "wineskin"],
   ["Issachar", "men who had understanding of the times, to know what Israel ought to do (12:32)", "#2a2a2a", "bread", "issachar"],
