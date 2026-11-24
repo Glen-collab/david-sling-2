@@ -28,7 +28,8 @@ const steps = [{ n: 1, fn() { clean(); ["hb_ask", "hb_judah", "hb_pool"].forEach
   { n: 1, fn() { log("cut scene: " + where() + " auto " + !!hb.auto + " script " + region.script.length); } }, { keys: [], n: 25 }, snap,
   { keys: [], n: 60 }, { n: 1, fn() { log("up top: " + where() + " auto " + !!(hb.auto && hb.auto.kind) + " dialog " + (dialog.t > 0)); } }, snap,
   { keys: [], n: 1, fn() { if (dialog.t > 0) dialog.t = 0; } }, { keys: [], n: 15 }, { keys: [], n: 1, fn() { if (dialog.t > 0) dialog.t = 0; } }, { keys: [], n: 15 },
-  { n: 1, fn() { log("charge: " + where() + " blow " + !!hb.blow); } }, { keys: [], n: 1, snap: true }, { keys: [], n: 6 },
-  { n: 1, fn() { log("blow " + !!hb.blow + " " + where()); } }, { keys: [], n: 1, snap: true }, { keys: [], n: 8 }, snap, { keys: [], n: 90 }, snap,
+  { keys: [], n: 40 }, { n: 1, fn() { log("film " + preFilm.active + " " + where()); } }, { keys: [], n: 40 }, { keys: [], n: 1, snap: true },
+  { keys: [], n: 50 }, { n: 1, fn() { log("film t " + (preFilm.clip && preFilm.clip.currentTime.toFixed(2)) + " gate " + !!preFilm.gateDone); } }, { keys: [], n: 1, snap: true },
+  { n: 1, fn() { preFilm.end(); } }, { keys: [], n: 30 }, { n: 1, fn() { log("after film: dark " + !!hb.dark + " fallen " + hb.fallen + " dialog " + (dialog.t > 0)); } }, snap,
   { n: 1, fn() { region.script.length = 0; hb.cine = null; hb.dark = null; hb.fallen = false; hb.blow = hb.auto = null; } }, { n: 1, fn: clean }];
 testRun(steps);

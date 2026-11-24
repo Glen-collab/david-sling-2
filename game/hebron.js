@@ -28,7 +28,7 @@ const HB = {
   CHASE_BACK: [6, 91, 117],                   // (the stretches to go back to when Abner gets away)
   // (Glen 11-24: "a cut scene of ashael climbing up the last ridge and then wham") from the foot of the Hill of Ammah
   //  Asahel goes up by himself, Abner turns, warns him (2:22), and strikes with the back end of the spear (2:23)
-  BLOW: { FROM: 117, HOP: 0.55, RUN: 620, STOP: 150, GAP: 100, FLASH: 0.3, HIT_FPS: 22, HIT_HOLD: 6, BACK: 110, SPEAR: 230 },
+  BLOW: { FILM_HIT: 4.05, FROM: 117, HOP: 0.55, RUN: 620, STOP: 150, GAP: 100, FLASH: 0.3, HIT_FPS: 22, HIT_HOLD: 6, BACK: 110, SPEAR: 230 },
   LAMENT_SECS: 6,                             // (each line of the lament on screen; A for the next)
   TRIBE_SPEED: 140, TABLE: 14,                // (the tribes walking in; the feast table's column in the Feast)
   REACH: 110,                                 // (px: Up by a tribe's leader to welcome them; by the table to set down)
@@ -408,9 +408,12 @@ function hbFall() {
     HB_SAY("", "However, he refused to turn away. (2 Samuel 2:23)"),
     // he runs at Abner; Abner turns the spear and strikes with its back end
     { fn() { hb.auto = { legs: [[A.x - B.GAP, top - 4, "run"]], i: 0, u: 0 }; } }, { wait: Math.max(0.2, (A.x - B.GAP - X(B.STOP)) / B.RUN) },
-    { fn() { hb.auto = null; hb.blow = { t: 0, x0: david.x }; A.spear = "strike"; finalBlow.shake = 1; sfx("stone_hit", undefined, 1, 0.6); sfx("lion_hit", undefined, 0.7, 0.8); } },
-    { wait: 1.8 },
-    { fn() { hb.dark = { at: performance.now() / 1000 }; } }, { wait: 1.6 }, { fn() { hb.fallen = true; hb.blow = null; A.spear = null; } },
+    // (Glen 11-24: his film of the strike, through Asahel's eyes, made backwards and played forwards: the point toward
+    //  him, the spear turned, the back end; then the dark. The game holds still while it plays)
+    { fn() { hb.auto = null;
+      preFilm.start({ src: "../assets/rooms/w8/hebron/abner_strike.mp4", cues: [[HB.BLOW.FILM_HIT, "stone_hit", 1], [HB.BLOW.FILM_HIT, "lion_hit", 0.7]] }, () => {
+        hb.dark = { at: performance.now() / 1000 - 5 }; hb.fallen = true; hb.blow = null; A.spear = null; }); } },
+    { wait: 1.2 },
     HB_SAY("", "Therefore Abner with the back end of the spear struck him, and he fell down there and died in the same place. As many as came to the place where Asahel fell down and died stood still. (2 Samuel 2:23)"),
     { fn() { A.st = "gone"; hb.fallen = true; } },
     HB_SAY("", "Then Abner called to Joab, and said, “Shall the sword devour forever?” So Joab blew the trumpet; and all the people stood still and pursued Israel no more, and they fought no more. (2 Samuel 2:26, 28)"),
