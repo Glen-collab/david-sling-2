@@ -11,6 +11,7 @@
 
 const HB = {
   NPC_K: 0.9,
+  DONKEY_K: 1.7,   // (Glen 11-24: "the donkeys are super small") the tribes' laden donkeys, back up to a man's waist (the idle clip draws larger: x0.82)
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
   ASAHEL: { WALK: 290, RUN: 600, JUMP: 1060 },   // (the chase: David's speeds while you play Asahel, player2.js's)
   ABNER: { LEAD: 520, SPEED: 560, HOP: 90, K: 1 },   // (px ahead of Asahel, his top speed, how high he leaps a gap)
@@ -459,7 +460,7 @@ function hbDraw(camX) {
       ctx.save(); ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 30, FOOT); ctx.lineTo(x - 30, FOOT - 190); ctx.stroke();   // the banner
       const wave = Math.sin(now * 3 + t.i) * 6; ctx.fillStyle = t.color; ctx.beginPath(); ctx.moveTo(x - 30, FOOT - 188); ctx.lineTo(x - 30 - 56, FOOT - 180 + wave); ctx.lineTo(x - 30, FOOT - 150); ctx.fill();
       ctx.restore();
-      if (SPR[don]) drawSprite(don, frameOf(don, t.t), x + 60 * -face, FOOT, face, 0.8);
+      if (SPR[don]) drawSprite(don, frameOf(don, t.t), x + 90 * -face, FOOT, face, HB.DONKEY_K * (moving ? 1 : 0.82));
       if (SPR[lead]) drawSprite(lead, frameOf(lead, t.t), x, FOOT, face, HB.NPC_K);
       if (t.st === "here" && Math.abs(david.x - t.x) < HB.REACH && hbFree()) upHint(x, FOOT - 210);
     }
