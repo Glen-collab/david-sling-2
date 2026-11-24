@@ -1279,7 +1279,7 @@ function drawPhilistineRanks(y, a) {
   ctx.filter = "none";
 }
 function drawFleeingArmy(now, t) {   // soldiers running past David on both sides, away from the giant
-  const who = SPR.soldier_run ? ["soldier_run"] : ["villager_man_run", "villager_staffman_run"], f = SPR.soldier_run ? "" : "sepia(0.4) brightness(0.8)";
+  const who = SPR.soldier_run ? ["soldier_run"] : ["villager_man_run", "staffman_run"], f = SPR.soldier_run ? "" : "sepia(0.4) brightness(0.8)";
   for (let k = 0; k < 9; k++) {
     const nm = who[k % who.length], x = W + 100 + k * 130 - t * (420 + (k % 3) * 60), y = GR * T + (k % 2 ? 6 : -4);
     if (x < -150 || x > W + 150) continue;

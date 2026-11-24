@@ -354,7 +354,7 @@ function r2Build(R) {
     rTownStair("ramah", c + 22); rRoof("ramah", X(28), 420, 1); rBreak("pots", "ramah", c + 31, onTop(420));
     rDeco("ramah", "t_house", c + 52); rDeco("ramah", "t_jars", c + 60); rAwning("ramah", c + 64);
     r2.samX = X(44);
-    r2.townsfolk = [["villager_woman_stand", X(14), 1], ["villager_boy_stand", X(36), -1, 0.55], ["villager_staffman_stand", X(58), -1, 0.66], ["villager_girl_stand", X(68), 1]];
+    r2.townsfolk = [["villager_woman_stand", X(14), 1], ["villager_boy_stand", X(36), -1, 0.55], ["staffman_idle", X(58), -1, 1.05], ["villager_girl_stand", X(68), 1]];
     // (Glen 11-07: the door was standing in the street) Naioth's compound wall across the end of the town, the door in it
     r2.ramahWall = { x0: X(70), x1: X(84) }; roomImg("gibeah/wall2_base.png"); roomImg("gibeah/wall2_top.png"); roomImg("gibeah/wall2_end.png");
     rKitDoor("d_naioth", "ramah", c + 77, "door", "d_naiothdown", "tw_door_arch");

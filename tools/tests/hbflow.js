@@ -34,8 +34,8 @@ const atY = (id, k, y) => { const r = roomById(id); moveParty((r.c0 + k) * T, y)
 steps.push({ n: 1, fn() { at("chase", 8); region.jscene = null; } }, run(5), { keys: ["ArrowRight"], n: 40 }, snap, { n: 1, fn() { log("chase: " + where() + " abner col " + (hb.abner.x / T - roomById("chase").c0).toFixed(1)); } },
   { n: 1, fn() { hb.abner.x = hbRoomX("chase", 87); hb.abner.st = "run"; atY("chase", 82, HB.CHASE_H[2]); } }, { keys: [], n: 3 }, { n: 1, fn() { log("warn script " + region.script.length + " warned " + hb.abner.warned); } }, { keys: [], n: 2 }, snap, drain(),
   { n: 1, fn() { hb.abner.x = hbRoomX("chase", 108); hb.abner.st = "run"; at("chase", 103); } }, { keys: [], n: 3 }, drain(),
-  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 158); hb.abner.st = "run"; hb.abner.warned = 2; hb.abner.back = 2; at("chase", 118); } }, { keys: [], n: 3 }, { n: 1, fn() { log("end st " + hb.abner.st + " script " + region.script.length); } },
-  { keys: [], n: 90 }, snap, until(() => hb.blow), { keys: [], n: 3 }, snap, until(() => hb.dark), { keys: [], n: 40 }, snap, drain(), { keys: [], n: 90 },
+  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 158); hb.abner.st = "run"; hb.abner.warned = 2; hb.abner.back = 2; atY("chase", 155, HB.CHASE_H[2]); } }, { keys: [], n: 3 }, { n: 1, fn() { log("end st " + hb.abner.st + " script " + region.script.length); } },
+  { keys: [], n: 90 }, snap, until(() => preFilm.active), { keys: [], n: 30 }, snap, { n: 1, fn() { preFilm.end(); } }, { keys: [], n: 40 }, snap, drain(), { keys: [], n: 90 },
   { n: 1, fn() { log("after the chase: " + where() + " chase " + hbHas("hb_chase") + " run " + TUNE.RUN_SPEED); } });
 // 6 Abner's grave
 steps.push(until(() => hb.weep), { keys: [], n: 40 }, snap, until(() => region.jscene), ...jDone, drain(), { keys: [], n: 90 }, { n: 1, fn() { log("after the grave: " + where()); } });

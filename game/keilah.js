@@ -18,6 +18,7 @@ const K4 = {
   //  drawn 1.44x David (the girl and woman already smaller by TUNE.SPRITE_SIZE), Abiathar's a little under him. ABIATHAR_HOLD: the frame of his talk clip he stands on (it walks)
   SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85,   // (abiathar: TUNE.SPRITE_SIZE now, everywhere)
     townsman: 1.2, townswoman: 1.15 },   // (11-17: "these people are small in Keilah": the night street's men and women, 216 and 208 px to David's 240) ABIATHAR_HOLD: 6,
+  STAFFMAN_K: 1.22,   // (Glen's walking-stick man, cut at David's height: a head taller, with NPC_K, as in Hebron)
   ASK: { NEAR: 90, KNEEL_MS: 161, ABIATHAR: 170 },
   GATE_REACH: 160, GATE_TURN: 0.75,   // (Glen 11-17) px before an open gate where Up takes him through   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time
   // (Glen 11-14: "We can build multiple floors to defend like the caves. That was fun.") the raiders: each wave's count,
@@ -184,7 +185,7 @@ function k4Build(R) {
     k4.rocks.push({ id: "ephod", room: rm, x: X(68) });   // (the ephod: Up by Abiathar)
     for (const k of [72, 76, 80]) k4Person(rm, ["soldier_talk", "soldier2_fear", "soldier4_fear"][k % 3], X(k), FOOT, k % 2 ? 1 : -1).still = k !== 72;
     rDeco(rm, "t_house", c + 86); rDeco(rm, "t_jars", c + 94);
-    k4Person(rm, "villager_staffman_stand", X(92), FOOT, -1, () => !k4Has("k4_ephod"));
+    k4Person(rm, "staffman_idle", X(92), FOOT, -1, () => !k4Has("k4_ephod"), K4.NPC_K * K4.STAFFMAN_K);   // (Glen 11-24: his walking-stick man, in place of the open-mouthed one: "swap him everywhere")
     k4.lights.push({ room: rm, x: X(22), y: G - 40, r: 300 }, { room: rm, x: X(66), y: G - 120, r: 260 });
     rBreak("basket", rm, c + 100, 16); rBreak("jar", rm, c + 102, 16);
     k4.gateX = X(100);   // (shut till the ephod's question: k4Update)
@@ -202,10 +203,10 @@ function k4Build(R) {
     const man = (k, n) => k4.grabbers.push({ room: rm, x: X(k), x0: X(k), spr: n, state: "wait", t: 0 });
     // (easy at first, then closer together)
     cart(20); man(32, "villager_man"); beam(42); cart(52);
-    rHole(rm, c + 62, 3); man(72, "villager_capman"); beam(80); cart(88); man(96, "villager_staffman");
+    rHole(rm, c + 62, 3); man(72, "villager_capman"); beam(80); cart(88); man(96, "staffman");
     rHole(rm, c + 104, 4); beam(112); cart(118); man(124, "villager_wrapman");
     beam(132); rHole(rm, c + 138, 3); cart(146); man(152, "villager_man"); beam(158); man(164, "villager_capman");
-    cart(172); beam(178); rHole(rm, c + 184, 4); man(192, "villager_staffman"); cart(198); beam(206);
+    cart(172); beam(178); rHole(rm, c + 184, 4); man(192, "staffman"); cart(198); beam(206);
     for (let k = 10; k < 210; k += 16) k4.lights.push({ room: rm, x: X(k), y: G - 260, r: 230 });   // (torches on the walls)
     for (const k of [30, 70, 110, 150, 190]) rDeco(rm, "t_house", c + k);
   }
@@ -618,8 +619,8 @@ function k4DrawFront(camX) {
         drawSprite(n, i, x, FOOT, -1, K4.NPC_K * K4.SIZE.townsman); continue;
       }
       if (g.state === "miss") continue;
-      const n = g.spr + (g.state === "wait" ? "_stand" : "_run"), S = SPR[n] || SPR[g.spr + "_run"]; if (!S) continue;
-      drawSprite(SPR[n] ? n : g.spr + "_run", g.state === "wait" ? 0 : frameOf(SPR[n] ? n : g.spr + "_run", g.t), x, FOOT, -1, K4.NPC_K);
+      const n = g.spr + (g.state === "wait" ? (SPR[g.spr + "_idle"] ? "_idle" : "_stand") : "_run"), S = SPR[n] || SPR[g.spr + "_run"]; if (!S) continue;
+      drawSprite(SPR[n] ? n : g.spr + "_run", g.state === "wait" ? 0 : frameOf(SPR[n] ? n : g.spr + "_run", g.t), x, FOOT, -1, K4.NPC_K * (g.spr === "staffman" ? K4.STAFFMAN_K : 1));
     }
     for (const w of k4.throwers) if (SPR.townswoman_throw) drawSprite("townswoman_throw", frameOf("townswoman_throw", w.t), w.x - camX, FOOT, -1, K4.NPC_K * K4.SIZE.townswoman);
     for (const p of k4.pots) if (!p.broken) drawItem("camp_jar_small", p.x - camX, p.y, 0.4);

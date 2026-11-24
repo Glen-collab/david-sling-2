@@ -23,11 +23,12 @@ const steps = [{ n: 1, fn() { clean(); ["hb_ask", "hb_judah", "hb_pool"].forEach
   { n: 1, fn() { at(60, 0); david.y = GR * T + 3 * T; } }, { keys: [], n: 3 }, { n: 1, fn() { log("gully: " + where()); } },
   // on to the second stretch: the warning on the ground
   { n: 1, fn() { at(92); } }, { keys: [], n: 5 }, { n: 1, fn() { hb.abner.x = hbRoomX("chase", 108); hb.abner.st = "run"; at(103); } }, { keys: [], n: 3 }, { n: 1, fn() { log("second: " + where() + " script " + region.script.length); } }, drain,
-  // the Hill of Ammah: Abner waits on top; at its foot the cut scene takes over (Glen: "climbing up the last ridge and then wham")
-  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 158); hb.abner.st = "run"; hb.abner.warned = 2; hb.abner.back = 2; at(118); } }, { keys: [], n: 10 },
-  { n: 1, fn() { log("cut scene: " + where() + " auto " + !!hb.auto + " script " + region.script.length); } }, { keys: [], n: 25 }, snap,
-  { keys: [], n: 60 }, { n: 1, fn() { log("up top: " + where() + " auto " + !!(hb.auto && hb.auto.kind) + " dialog " + (dialog.t > 0)); } }, snap,
-  { keys: [], n: 1, fn() { if (dialog.t > 0) dialog.t = 0; } }, { keys: [], n: 15 }, { keys: [], n: 1, fn() { if (dialog.t > 0) dialog.t = 0; } }, { keys: [], n: 15 },
+  // the Hill of Ammah: Abner waits on top, his back to you; catch up and the game takes over (he turns, 2:22, the film)
+  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 158); hb.abner.st = "run"; hb.abner.warned = 2; hb.abner.back = 2; at(150, 2); } }, { keys: [], n: 10 }, snap,
+  { n: 1, fn() { log("waiting: " + where() + " script " + region.script.length); } },
+  { keys: ["ArrowRight"], n: 14 }, { keys: [], n: 20 }, { n: 1, fn() { log("caught up: " + where() + " script " + region.script.length); } },
+  { keys: [], n: 60 }, { n: 1, fn() { log("turned: look " + hb.abner.look + " dialog " + (dialog.t > 0)); } }, snap,
+  { keys: [], n: 1, fn() { if (dialog.t > 0) dialog.t = 0; } }, { keys: [], n: 15 }, { keys: [], n: 1, fn() { if (dialog.t > 0) dialog.t = 0; } },
   { keys: [], n: 40 }, { n: 1, fn() { log("film " + preFilm.active + " " + where()); } }, { keys: [], n: 40 }, { keys: [], n: 1, snap: true },
   { keys: [], n: 50 }, { n: 1, fn() { log("film t " + (preFilm.clip && preFilm.clip.currentTime.toFixed(2)) + " gate " + !!preFilm.gateDone); } }, { keys: [], n: 1, snap: true },
   { n: 1, fn() { preFilm.end(); } }, { keys: [], n: 30 }, { n: 1, fn() { log("after film: dark " + !!hb.dark + " fallen " + hb.fallen + " dialog " + (dialog.t > 0)); } }, snap,
