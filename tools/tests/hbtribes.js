@@ -7,4 +7,4 @@ const show = (pairs) => ({ n: 1, fn() { region.script.length = 0; dialog.t = 0; 
 testRun([{ n: 1, fn() { clean(); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave"].forEach(k => regionAdd("taken", k)); const r = roomById("feast"); moveParty((r.c0 + 40) * T, GR * T); snapCamera(); } },
   { keys: [], n: 10 }, show([[0, 220, "here"], [11, 560, "come"]]), { keys: [], n: 8 }, { keys: [], n: 2, snap: true },
   show([[3, 220, "here"], [7, 560, "leave"], [5, 900, "come"]]), { keys: [], n: 8 }, { keys: [], n: 2, snap: true },
-  show([[2, 220, "here"], [8, 560, "come"]]), { keys: [], n: 8 }, { keys: [], n: 2, snap: true }, { n: 1, fn: clean }]);
+  show([[5, 220, "here"], [8, 560, "come"]]), { keys: [], n: 8 }, { keys: [], n: 2, snap: true }, { n: 1, fn: clean }]);

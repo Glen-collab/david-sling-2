@@ -8532,6 +8532,30 @@ window.SPRITE_DATA = {
   "ay": 253,
   "align": "feet"
  },
+ "tribe_manasseh_stand": {
+  "src": "../assets/sprites/tribe_manasseh_stand.png",
+  "frames": 2,
+  "w": 193,
+  "h": 261,
+  "ms": 250,
+  "loop": false,
+  "pingpong": false,
+  "ax": 64,
+  "ay": 259,
+  "align": "feet"
+ },
+ "tribe_manasseh_walk": {
+  "src": "../assets/sprites/tribe_manasseh_walk.png",
+  "frames": 12,
+  "w": 221,
+  "h": 249,
+  "ms": 153,
+  "loop": true,
+  "pingpong": false,
+  "ax": 60,
+  "ay": 247,
+  "align": "feet"
+ },
  "tribe_naphtali_stand": {
   "src": "../assets/sprites/tribe_naphtali_stand.png",
   "frames": 2,
