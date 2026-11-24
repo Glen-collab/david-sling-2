@@ -180,6 +180,13 @@ function zkBuild(R) {
                   [78, "villager_woman_stand", "boy_sit"], [98, "villager_woman_stand", "girl_sit_talk"], [112, "abigail_idle", "villager_woman_stand", true]];
     for (const [k, a, b, wives] of fams) zk.captives.push({ room: rm, x: X(k), a, b, wives: !!wives, free: won, t: 0, gone: won });
   }
+  // (Glen 11-24: "what is the sediment from? Gibeah I think") the pits' edges: Hachilah's build renamed its own before
+  //  these rooms were built, so Ziklag's had Gibeah's cave kit (p_left / p_right). Now Hachilah's soil (h7_pit_*), and
+  //  the brook Besor's banks their own (h7_zk_bank_*, assets/rooms/w7/kit: Glen's to repaint; same size, same top line)
+  for (const p of region.props) if (ZK_ROOMS.includes(p.room) && (p.n === "p_left" || p.n === "p_right"))
+    p.n = (p.room === "besor" ? "h7_zk_bank_" : "h7_pit_") + (p.n === "p_left" ? "left" : "right");
+  Object.assign(KIT, { h7_zk_bank_left: KIT.h7_pit_left, h7_zk_bank_right: KIT.h7_pit_right });
+  kitImg("h7_zk_bank_left"); kitImg("h7_zk_bank_right");
 }
 function zkFire(room, c) {   // a fire standing in the street: solid (no way through) till the jar puts it out
   const f = { room, c, x: c * T + T / 2, out: zkHas(`z7_fire_${room}_${c}`), t: 0, steam: 0 };
