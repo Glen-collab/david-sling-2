@@ -1,0 +1,11 @@
+{
+  "frames": 20,
+  "frame_w": 160,
+  "frame_h": 246,
+  "ms_per_frame": 140,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 66,
+  "anchor_y": 244,
+  "source": "elder_anoint.mp4"
+}

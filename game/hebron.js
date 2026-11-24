@@ -11,7 +11,8 @@
 
 const HB = {
   NPC_K: 0.9,
-  ELDERS: [[32, "prophet_old", 1.25], [37, "elder_scroll_stand", 1.08], [42, "hanan_idle", 1.1], [47, "trader_idle", 1.05]],   // (each once: the staff elder anoints)   // (Glen's two elders, 11-24: the staff, the scroll)
+  ELDERS: [[32, "elder_staff_idle", 1.08], [36, "prophet_old", 1.25], [40, "elder_scroll_stand", 1.08], [44, "hanan_idle", 1.1], [48, "trader_idle", 1.05]],   // (each once; Glen's anointing elder pours the oil)
+  ANOINT: { K: 1.08, AT: 46, WAIT: 3.0 },   // (his size; px from David to stand so the oil falls on his head; the kneel, s)   // (Glen's two elders, 11-24: the staff, the scroll)
   STAFFMAN_K: 1.1,   // (Glen's walking-stick man, 11-24: staffman_idle/walk/run, cut at David's height; in place of the open-mouthed one)   // the elders of Israel at the gate (column, sprite, size)
   DONKEY_K: 1.25,   // (Glen 11-24: "super small", then at 1.7 "too big: make it between") the tribes' donkeys
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
@@ -144,8 +145,9 @@ function hbBuild(R) {
     ground(c, c + 89);
     // (Glen 11-24: "We are still using Samuel as anointing David ... two of the same people here": no one twice on a
     //  screen till his new men come; an elder anoints, not Samuel)
-    hb.judah = [P(rm, "villager_man_stand", X(46), -1), P(rm, "staffman_idle", X(58), -1, null, HB.STAFFMAN_K)];
-    hb.elder = P(rm, "elder_scroll_stand", X(52), -1, () => !hbHas("hb_chase"), 1.08);
+    hb.judah = [P(rm, "villager_man_stand", X(44), -1), P(rm, "elder_scroll_stand", X(48), -1, null, 1.08), P(rm, "staffman_idle", X(58), -1, null, HB.STAFFMAN_K)];
+    // (Glen's anointing elder, 11-24: holding the horn of oil; he pours it over David as he kneels: hbAnointNow)
+    hb.elder = P(rm, "elder_anoint_idle", X(53), -1, () => !hbHas("hb_chase"), HB.ANOINT.K);
     hb.grave = { room: rm, x: X(70) };
   }
   // -- The Pool of Gibeon (2:12-17): Joab's men on one side, Abner's on the other
@@ -183,7 +185,7 @@ function hbBuild(R) {
     ground(c, c + 59);
     // (Glen 11-24: not the open-mouthed staff man; the little one was prophet_old at NPC_K, Ramah draws him at 1.2)
     for (const [k, spr, sz] of HB.ELDERS) P(rm, spr, X(k), -1, null, sz);
-    hb.gateElder = P(rm, "elder_staff_idle", X(27), -1, null, 1.08);
+    hb.gateElder = P(rm, "elder_anoint_idle", X(27), -1, null, HB.ANOINT.K);
   }
 }
 
@@ -222,6 +224,8 @@ function hbUpdate(dt, r) {
   hbFeast(dt, r, free);
   if (r.id === "gate" && hbHas("hb_feasted") && !hbHas("hb_end") && free && d.x > hbRoomX("gate", 20)) hbAnoint();
 }
+// the elder steps up beside David as he kneels and pours the horn of oil once, then stands holding it
+function hbAnointNow(p) { p.x = david.x + HB.ANOINT.AT; p.spr = "elder_anoint"; p.t = 0; p.once = "elder_anoint_idle"; }
 function hbHold(d) {
   if (hb.auto) { d.vx = d.vy = 0; return true; }   // (moved in hbChase, on game time)
   if (hb.cine || hb.lament) { d.vx = 0; return true; }
@@ -315,7 +319,7 @@ function hbJudah() {
     hbCine("Hebron", "The hill country of Judah"),
     { fn() { d.vx = 0; d.facing = 1; } }, { wait: 2.5 },
     HB_SAY("", "They lived in the cities of Hebron. The men of Judah came, and there they anointed David king over the house of Judah. (2 Samuel 2:3-4)"),
-    { fn() { hb.kneel = true; hb.elder.x = d.x + 70; } }, { wait: 2.5 },
+    { fn() { hb.kneel = true; hbAnointNow(hb.elder); } }, { wait: HB.ANOINT.WAIT },
     { fn() { hb.kneel = false; regionAdd("taken", "hb_judah"); } },
     HB_SAY("", "They told David, “The men of Jabesh Gilead were those who buried Saul.” David sent messengers to the men of Jabesh Gilead, and said to them, “Blessed are you by the LORD, that you have shown this kindness to your lord, even to Saul, and have buried him. Now may the LORD show loving kindness and truth to you.” (2 Samuel 2:4-6)"),
     HB_SAY("", "Now Abner the son of Ner, captain of Saul’s army, had taken Ishbosheth the son of Saul and brought him over to Mahanaim, and he made him king over all Israel. But the house of Judah followed David. (2 Samuel 2:8-10)"),
@@ -477,7 +481,7 @@ function hbAnoint() {
     { fn() { d.vx = 0; d.facing = 1; } }, { wait: 2.5 },
     HB_SAY("The elders of Israel", "“Behold, we are your bone and your flesh. In times past, when Saul was king over us, it was you who led Israel out and in. The LORD said to you, ‘You will be shepherd of my people Israel, and you will be prince over Israel.’” (2 Samuel 5:1-2)"),
     HB_SAY("", "So all the elders of Israel came to the king to Hebron, and King David made a covenant with them in Hebron before the LORD; (2 Samuel 5:3)"),
-    { fn() { hb.kneel = true; hb.gateElder.x = d.x + 70; } }, { wait: 2.5 },
+    { fn() { hb.kneel = true; hbAnointNow(hb.gateElder); } }, { wait: HB.ANOINT.WAIT },
     HB_SAY("", "and they anointed David king over Israel. (2 Samuel 5:3)"),
     { fn() { hb.kneel = false; } },
     HB_SAY("", "David was thirty years old when he began to reign, and he reigned forty years. In Hebron he reigned over Judah seven years and six months, and in Jerusalem he reigned thirty-three years over all Israel and Judah. (2 Samuel 5:4-5)"),
@@ -520,7 +524,8 @@ function hbDraw(camX) {
   const now = performance.now() / 1000;
   for (const p of hb.people) if (p.room === r.id && (!p.show || p.show())) {
     if (p.still) { drawManStill(p.img, p.x - camX, FOOT, p.dir); continue; }
-    if (SPR[p.spr]) drawSprite(p.spr, frameOf(p.spr, p.t), p.x - camX, p.y, p.dir, p.k);
+    if (p.once && SPR[p.spr] && p.t * 1000 >= SPR[p.spr].ms * SPR[p.spr].frames) { p.spr = p.once; p.once = null; }   // (played once: back to standing)
+    if (SPR[p.spr]) drawSprite(p.spr, p.once ? Math.min(SPR[p.spr].frames - 1, Math.floor(p.t * 1000 / SPR[p.spr].ms)) : frameOf(p.spr, p.t), p.x - camX, p.y, p.dir, p.k);
   }
   // Abner's grave (after the chase)
   if (r.id === "hebron" && hbHas("hb_chase") && hb.grave) { const x = hb.grave.x - camX;

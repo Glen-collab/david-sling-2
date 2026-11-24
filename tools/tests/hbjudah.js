@@ -3,4 +3,4 @@ startSetup = () => {}; setup.active = false; helpT = 0;
 const clean = () => { region.save.taken = region.save.taken.filter(k => !/^hb_/.test(k)); regionWrite(); };
 const place = () => { const r = roomById("hebron"); moveParty((r.c0 + 36) * T, GR * T); snapCamera(); region.script.length = 0; dialog.t = 0; hb.cine = null; region.jscene = null; };
 testRun([{ n: 1, fn() { clean(); regionAdd("taken", "hb_ask"); place(); } }, { keys: [], n: 10 }, { n: 1, fn: place }, { keys: [], n: 3, snap: true },
-  { n: 1, fn() { hb.kneel = true; hb.elder.x = david.x + 70; } }, { keys: [], n: 3, snap: true }, { n: 1, fn() { hb.kneel = false; clean(); } }]);
+  { n: 1, fn() { hb.kneel = true; hbAnointNow(hb.elder); } }, { keys: [], n: 60 }, { keys: [], n: 1, snap: true }, { keys: [], n: 70 }, { keys: [], n: 1, snap: true }, { keys: [], n: 60 }, { keys: [], n: 1, snap: true }, { n: 1, fn() { hb.kneel = false; clean(); } }]);

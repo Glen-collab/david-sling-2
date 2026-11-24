@@ -3648,6 +3648,30 @@ window.SPRITE_DATA = {
   "ay": 231,
   "align": "feet"
  },
+ "elder_anoint": {
+  "src": "../assets/sprites/elder_anoint.png",
+  "frames": 20,
+  "w": 160,
+  "h": 246,
+  "ms": 140,
+  "loop": false,
+  "pingpong": false,
+  "ax": 66,
+  "ay": 244,
+  "align": "feet"
+ },
+ "elder_anoint_idle": {
+  "src": "../assets/sprites/elder_anoint_idle.png",
+  "frames": 12,
+  "w": 119,
+  "h": 244,
+  "ms": 110,
+  "loop": true,
+  "pingpong": false,
+  "ax": 39,
+  "ay": 242,
+  "align": "feet"
+ },
  "elder_scroll_stand": {
   "src": "../assets/sprites/elder_scroll_stand.png",
   "frames": 1,

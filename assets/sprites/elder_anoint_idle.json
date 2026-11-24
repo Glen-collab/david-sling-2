@@ -1,0 +1,11 @@
+{
+  "frames": 12,
+  "frame_w": 119,
+  "frame_h": 244,
+  "ms_per_frame": 110,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 39,
+  "anchor_y": 242,
+  "source": "elder_anoint_idle.mp4"
+}
