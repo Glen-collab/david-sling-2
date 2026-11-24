@@ -26,6 +26,7 @@ const ZK = {
   MARCH_Y: [26, 56], MARCH_K: [0.62, 0.5],   // (Aphek's marching army: px above the ground line, and size, near row and far row)
   BROOK_TOP: 8,                        // (px below the ground line: the brook Besor's water surface)
   CAMELS: 4, CAMEL_SPEED: 420, CAMEL_K: 1,
+  MAN_K: 0.13, MAN_LIGHT: 1.35,        // (Glen's stills of the men, 11-24: their size, and lit a little: they were shot by night)
   TINT: { ziklag: [90, 44, 20, 0.28], camp: [70, 26, 70, 0.30] },
 };
 
@@ -127,8 +128,10 @@ function zkBuild(R) {
   { const rm = "ziklag", X = k => (c + k) * T;
     ground(c, c + 109);
     // David's men in the ashes, weeping (30:4); then they turn on him (30:6)
-    for (const [k, spr, dir] of [[14, "men_hungry", 1], [19, "men_hungry", -1], [24, "men_hungry", -1], [30, "men_hungry", 1], [35, "men_hungry", 1]])
-      zk.men.push(P(rm, spr, X(k), dir));
+    //  (Glen 11-24: his night stills of David's men, assets/items/zk_man_*: three sitting, heads down; two lying in the
+    //  ashes, "until they had no more power to weep")
+    for (const [k, img, dir] of [[14, "zk_man_sit_old", 1], [19, "zk_man_lie_1", -1], [24, "zk_man_sit_beard", -1], [30, "zk_man_lie_2", 1], [35, "zk_man_sit_stripes", 1]])
+      zk.men.push({ room: rm, img, x: X(k), dir, still: true });
     zk.abiathar = P(rm, "abiathar_stand", X(6), 1, () => zkHas("z7_stones"));
     zk.waters.push({ room: rm, x: X(52), kind: "well" });   // (the town's well: fill the jar)
     zkFire(rm, c + 60); zkFire(rm, c + 74);
@@ -294,7 +297,7 @@ function zkStones() {
   regionAdd("taken", "z7_stones");
   const dur = SPR.david_pray ? SPR.david_pray.frames * SPR.david_pray.ms / 1000 * 2 : 2.5;
   rPlay([
-    { fn() { zk.stones = { t: 0 }; for (const m of zk.men) if (m.room === "ziklag") { m.dir = Math.sign(david.x - m.x) || 1; } } },
+    { fn() { zk.stones = { t: 0 }; for (const m of zk.men) if (m.room === "ziklag" && !/lie/.test(m.img || "")) { m.dir = Math.sign(david.x - m.x) || 1; } } },
     ZK_SAY("", "David was greatly distressed, for the people spoke of stoning him, because the souls of all the people were grieved, every man for his sons and for his daughters; (1 Samuel 30:6)"),
     { fn() { zk.pray = { t: 0 }; david.vx = 0; } }, { wait: dur },
     ZK_SAY("", "but David strengthened himself in the LORD his God. (1 Samuel 30:6)"),
@@ -422,6 +425,11 @@ function zkDraw(camX) {
     const x0 = zk.brook.c0 * T - camX, w = (zk.brook.c1 - zk.brook.c0) * T, wt = GR * T + ZK.BROOK_TOP;
     const wv = typeof streamPiece === "function" && streamPiece("stream_water", w + 2 * T, (ROWS * T - wt + 10) / 187, true);
     if (wv) { ctx.save(); ctx.beginPath(); ctx.rect(x0, 0, w, H); ctx.clip(); ctx.globalAlpha = 0.92; ctx.drawImage(wv, x0 - T, wt - 10 + Math.sin(now * 1.6) * 1.5); ctx.restore(); }
+  }
+  for (const m of zk.men) if (m.still && m.room === r.id) {   // Glen's stills of the men (flipped to face the other way)
+    const im = ITEM[m.img]; if (!im || !im.naturalWidth) continue;
+    const w = im.naturalWidth * ZK.MAN_K, h = im.naturalHeight * ZK.MAN_K, x = m.x - camX;
+    ctx.save(); ctx.filter = `brightness(${ZK.MAN_LIGHT})`; ctx.translate(x, 0); ctx.scale(m.dir, 1); ctx.drawImage(im, -w / 2, FOOT + 2 - h, w, h); ctx.restore();
   }
   for (const f of zk.fires) if (f.room === r.id) zkDrawFire(f, f.x - camX, now);
   for (const o of zk.foods) if (o.room === r.id && !o.got) drawItem(o.name, o.x - camX, o.y + 2 + Math.sin(o.t * 2.5) * 3, 30 / ((ITEM[o.name] && ITEM[o.name].naturalHeight) || 30));
