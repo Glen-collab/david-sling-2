@@ -1,0 +1,11 @@
+{
+  "frames": 2,
+  "frame_w": 131,
+  "frame_h": 262,
+  "ms_per_frame": 250,
+  "loop": false,
+  "align": "feet",
+  "anchor_x": 62,
+  "anchor_y": 260,
+  "source": "tribe_01.mp4"
+}

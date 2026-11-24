@@ -13,7 +13,9 @@ const HB = {
   NPC_K: 0.9,
   ELDERS: [[32, "elder_staff_idle", 1.08], [36, "prophet_old", 1.25], [40, "elder_scroll_stand", 1.08], [44, "hanan_idle", 1.1], [48, "trader_idle", 1.05]],   // (each once; Glen's anointing elder pours the oil)
   ANOINT: { K: 1.08, AT: 46, WAIT: 3.0 },   // (his size; px from David to stand so the oil falls on his head; the kneel, s)   // (Glen's two elders, 11-24: the staff, the scroll)
-  STAFFMAN_K: 1.1,   // (Glen's walking-stick man, 11-24: staffman_idle/walk/run, cut at David's height; in place of the open-mouthed one)   // the elders of Israel at the gate (column, sprite, size)
+  STAFFMAN_K: 1.1,
+  TRIBE_K: 1.1, TRIBE_PAIR: 70,   // (Glen's tribe leaders: their size; px between Reuben's man and Gad's)
+  TRIBE_SIZE: { judah: 1.5 },   // (Judah's clip was shot from farther back, his big lion flag measured with him)   // (Glen's walking-stick man, 11-24: staffman_idle/walk/run, cut at David's height; in place of the open-mouthed one)   // the elders of Israel at the gate (column, sprite, size)
   DONKEY_K: 1.25,   // (Glen 11-24: "super small", then at 1.7 "too big: make it between") the tribes' donkeys
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
   ASAHEL: { WALK: 290, RUN: 600, JUMP: 1060 },   // (the chase: David's speeds while you play Asahel, player2.js's)
@@ -37,19 +39,22 @@ const HB = {
 };
 // (Glen 11-24) the tribes come in pairs (1 Chronicles 12:24-37), each leader with a laden donkey and his banner; each
 //  brings one of the foods of 12:40 for the feast
+// (Glen 11-24: "Here is the twelve tribes- they can usher in the donkey and gifts") his leaders, each with his tribe's
+//  banner: tribe_<art>_walk / _stand; [5] the art, [6] a second leader walking with him. Benjamin and Manasseh: the
+//  walking-stick man and a drawn banner till theirs come
 const HB_TRIBES = [
-  ["Judah", "who bore shield and spear: six thousand eight hundred (12:24)", "#c8a030", "bread"],
-  ["Simeon", "mighty men of valor: seven thousand one hundred (12:25)", "#8a3030", "grain_sack"],
-  ["Levi", "four thousand six hundred, and Zadok, a young man mighty of valor (12:26, 28)", "#e8e0d0", "gift_oil"],
+  ["Judah", "who bore shield and spear: six thousand eight hundred (12:24)", "#c8a030", "bread", "judah"],
+  ["Simeon", "mighty men of valor: seven thousand one hundred (12:25)", "#8a3030", "grain_sack", "simeon"],
+  ["Levi", "four thousand six hundred, and Zadok, a young man mighty of valor (12:26, 28)", "#e8e0d0", "gift_oil", "levi"],
   ["Benjamin", "Saul's relatives: three thousand (12:29)", "#3a6aa8", "fig_cake"],
-  ["Ephraim", "twenty thousand eight hundred, mighty men of valor (12:30)", "#2a7a3a", "raisins"],
+  ["Ephraim", "twenty thousand eight hundred, mighty men of valor (12:30)", "#2a7a3a", "raisins", "ephraim"],
   ["Manasseh", "eighteen thousand, mentioned by name, to come and make David king (12:31)", "#6a4a8a", "wineskin"],
-  ["Issachar", "men who had understanding of the times, to know what Israel ought to do (12:32)", "#2a2a2a", "bread"],
-  ["Zebulun", "fifty thousand, not of double heart (12:33)", "#d07a20", "fig_cake"],
-  ["Naphtali", "a thousand captains, and thirty-seven thousand with shield and spear (12:34)", "#a8a040", "raisins"],
-  ["Dan", "twenty-eight thousand six hundred (12:35)", "#7a5030", "grain_sack"],
-  ["Asher", "forty thousand (12:36)", "#4aa0a0", "gift_oil"],
-  ["Reuben and Gad", "from the other side of the Jordan: one hundred twenty thousand (12:37)", "#a04a70", "wineskin"],
+  ["Issachar", "men who had understanding of the times, to know what Israel ought to do (12:32)", "#2a2a2a", "bread", "issachar"],
+  ["Zebulun", "fifty thousand, not of double heart (12:33)", "#d07a20", "fig_cake", "zebulun"],
+  ["Naphtali", "a thousand captains, and thirty-seven thousand with shield and spear (12:34)", "#a8a040", "raisins", "naphtali"],
+  ["Dan", "twenty-eight thousand six hundred (12:35)", "#7a5030", "grain_sack", "dan"],
+  ["Asher", "forty thousand (12:36)", "#4aa0a0", "gift_oil", "asher"],
+  ["Reuben and Gad", "from the other side of the Jordan: one hundred twenty thousand (12:37)", "#a04a70", "wineskin", "reuben", "gad"],
 ];
 
 const HEB = {
@@ -175,7 +180,7 @@ function hbBuild(R) {
     ground(c, c + 109);
     campfire(c + 4, GR - 1);   // an olive press (the save point)
     const done = hbHas("hb_feasted");
-    HB_TRIBES.forEach(([name, line, color, food], i) => hb.tribes.push({ room: rm, name, line, color, food, i, wave: i,   // (Glen 11-24: "two people at once ... gets confusing": one tribe at a time)
+    HB_TRIBES.forEach(([name, line, color, food, art, art2], i) => hb.tribes.push({ room: rm, name, line, color, food, art, art2, i, wave: i,   // (Glen 11-24: "two people at once ... gets confusing": one tribe at a time)
       slot: hbRoomX("feast", 56), x: hbRoomX("feast", 116), st: done ? "home" : "wait", t: 0 }));
     if (done) for (const t of HB_TRIBES) hb.table.push(t[3]);
   }
@@ -548,12 +553,19 @@ function hbDraw(camX) {
     hb.table.forEach((n, i) => drawItem(n, tx - 100 + (i % 6) * 40, FOOT - 46 - Math.floor(i / 6) * 22, 26 / ((ITEM[n] && ITEM[n].naturalHeight) || 26)));
     for (const t of hb.tribes) if ((t.st === "come" || t.st === "here" || t.st === "leave") && !hbHas("hb_feasted")) {
       const x = t.x - camX; if (x < -200 || x > W + 200) continue;
-      const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, lead = moving ? "staffman_walk" : "staffman_idle", don = t.st === "leave" ? "donkey_bare_walk" : "donkey_packs_walk";   // (Glen 11-24: laden till you take the gifts, bare after)
-      ctx.save(); ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 30, FOOT); ctx.lineTo(x - 30, FOOT - 190); ctx.stroke();   // the banner
-      const wave = Math.sin(now * 3 + t.i) * 6; ctx.fillStyle = t.color; ctx.beginPath(); ctx.moveTo(x - 30, FOOT - 188); ctx.lineTo(x - 30 - 56, FOOT - 180 + wave); ctx.lineTo(x - 30, FOOT - 150); ctx.fill();
-      ctx.restore();
-      if (SPR[don]) drawSprite(don, moving ? frameOf(don, t.t) : 0, x + 80 * -face, FOOT, face, HB.DONKEY_K);
-      if (SPR[lead]) drawSprite(lead, frameOf(lead, t.t), x, FOOT, face, HB.STAFFMAN_K);
+      const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, don = t.st === "leave" ? "donkey_bare_walk" : "donkey_packs_walk";   // (Glen 11-24: laden till you take the gifts, bare after)
+      const own = n => n && SPR["tribe_" + n + "_walk"] ? "tribe_" + n + (moving ? "_walk" : "_stand") : null, lead = own(t.art), lead2 = own(t.art2);
+      const tk = n => HB.TRIBE_K * (HB.TRIBE_SIZE[n] || 1);
+      if (!lead) {   // (no leader of his own yet: the walking-stick man and a drawn banner)
+        ctx.save(); ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 30, FOOT); ctx.lineTo(x - 30, FOOT - 190); ctx.stroke();
+        const wave = Math.sin(now * 3 + t.i) * 6; ctx.fillStyle = t.color; ctx.beginPath(); ctx.moveTo(x - 30, FOOT - 188); ctx.lineTo(x - 30 - 56, FOOT - 180 + wave); ctx.lineTo(x - 30, FOOT - 150); ctx.fill();
+        ctx.restore();
+      }
+      const back = lead2 ? HB.TRIBE_PAIR : 0;   // (Reuben and Gad: Gad's man beside Reuben's, the donkey behind them both)
+      if (SPR[don]) drawSprite(don, moving ? frameOf(don, t.t) : 0, x + (80 + back) * -face, FOOT, face, HB.DONKEY_K);
+      if (lead2) drawSprite(lead2, moving ? frameOf(lead2, t.t + 0.3) : 0, x + back * -face, FOOT, face, tk(t.art2));
+      if (lead) drawSprite(lead, moving ? frameOf(lead, t.t) : 0, x, FOOT, face, tk(t.art));
+      else if (SPR[moving ? "staffman_walk" : "staffman_idle"]) { const n = moving ? "staffman_walk" : "staffman_idle"; drawSprite(n, frameOf(n, t.t), x, FOOT, face, HB.STAFFMAN_K); }
       if (t.st === "here" && Math.abs(david.x - t.x) < HB.REACH && hbFree()) upHint(x, FOOT - 210);
     }
     for (const f of hb.foods) if (!f.got) drawItem(f.name, f.x - camX, FOOT + 2 + Math.sin(now * 2.5 + f.x) * 3, 30 / ((ITEM[f.name] && ITEM[f.name].naturalHeight) || 30));
