@@ -12,13 +12,19 @@ const ZK = {
   // Saul's jar (Hachilah): fill it at water (Up), pour it on a fire (Up): Glen's david_pour
   REACH: 100, POUR_AT: 0.55, POUR_RATE: 2,   // (Glen's pour is 6 s: played at twice the speed)
            // (px to a fire or the water; how far into the pour the fire goes out)
-  FIRE_H: 5, FIRE_PX: 190, WELL_H: 84,   // (rows a fire stands: too tall to jump through; its picture's height; the well's)
+  FIRE_H: 5, FIRE_PX: 190, WELL_H: 84,   // (rows a fire stands: too tall to jump through; the put-out picture's height; the well's)
+  // (Glen 11-24: "start it by showing frames 1 AND 2 and then cycling slowly fading in and out from 3 and 4") his signal
+  //  fire, four frames (tools/cut_zk_fire.py): 1, then 2, once as David comes in; then 3 and 4 fading into each other
+  FIRE_K: 0.4,                         // (the frames' size: 444 x 672 each, the stone base the full width)
+  FIRE_CATCH: [0.7, 0.5, 0.7, 0.5],    // (s: frame 1 held, faded into 2, 2 held, faded into 3)
+  FIRE_CYCLE: 3.2,                     // (s: 3 to 4 and back)
   // the raiders (region.js's skirmisher, with the raider clips)
   RAID_K: 1.1, RAID_HP: 3,
   FREE_REACH: 80,                     // (px to a tied family to free them)
   FREE_SAFE: 5,                       // (no raider closer than this many columns, or they're too busy to untie)
   EGY_K: 0.95, EGY_LEAD: 160, EGY_SPEED: 260,
   MARCH_Y: [26, 56], MARCH_K: [0.62, 0.5],   // (Aphek's marching army: px above the ground line, and size, near row and far row)
+  BROOK_TOP: 8,                        // (px below the ground line: the brook Besor's water surface)
   CAMELS: 4, CAMEL_SPEED: 420, CAMEL_K: 1,
   TINT: { ziklag: [90, 44, 20, 0.28], camp: [70, 26, 70, 0.30] },
 };
@@ -149,7 +155,7 @@ function zkBuild(R) {
     for (const k of [6, 10, 14, 18]) zk.men.push(P(rm, "men_hungry", X(k), k % 8 ? 1 : -1, () => zkHas("z7_besor")));
     zk.brook = { room: rm, c0: c + 26, c1: c + 36 };
     rHole(rm, c + 26, 10);
-    h7Rock(rm, "sand", "s", 29.2, GR * T - 24);   // (a rock in the brook: jump to it, and on over)
+    h7Rock(rm, "sand", "s", 29.2, GR * T - 12);   // (a rock in the brook: jump to it, and on over; Glen 11-24: down in the water, not floating over it)
     zk.waters.push({ room: rm, x: X(25), kind: "brook" }, { room: rm, x: X(37), kind: "brook" });
   }
 
@@ -176,9 +182,9 @@ function zkBuild(R) {
   }
 }
 function zkFire(room, c) {   // a fire standing in the street: solid (no way through) till the jar puts it out
-  const f = { room, c, x: c * T + T / 2, out: zkHas(`z7_fire_${room}_${c}`), t: Math.random() * 5, steam: 0 };
+  const f = { room, c, x: c * T + T / 2, out: zkHas(`z7_fire_${room}_${c}`), t: 0, steam: 0 };
   if (!f.out) block(c, GR - ZK.FIRE_H, 1, ZK.FIRE_H, 6);   // (6: solid, nothing drawn: the fire is)
-  kitImg("h7_zk_fire"); kitImg("h7_zk_fire_out");
+  for (let i = 1; i <= 4; i++) kitImg("h7_zk_fire_" + i); kitImg("h7_zk_fire_out");
   zk.fires.push(f);
 }
 function zkFood(room, name, c, y) { zk.foods.push({ room, name, x: c * T + T / 2, y, got: zkHas("z7_" + name), t: Math.random() * 4 }); }
@@ -190,6 +196,7 @@ function zkRaider(room, c) {   // an Amalekite (region.js's skirmisher, with Gle
 
 // ---------------------------------------------------------------------------------------------------------------------
 function zkEnter(r) {
+  for (const f of zk.fires) if (f.room === r.id) f.t = Math.random() * 0.3;   // (each fire catches as he comes in)
   if (r.id === "road" && !zk.told.road) zkTell("road", "Three days south to Ziklag.");
   if (r.id === "ziklag" && !zkHas("z7_burned")) {
     regionAdd("taken", "z7_burned");
@@ -394,12 +401,15 @@ function zkDraw(camX) {
   const d = david, burning = zk.fires.some(f => f.room === r.id && !f.out);
   if (zkFree() && !zk.act && d.onGround) {
     if (!zk.jar && (burning || (r.id === "besor" && !zkHas("z7_egypt")))) { const w = zk.waters.find(o => o.room === r.id && Math.abs(o.x - d.x) < ZK.REACH); if (w) upHint(w.x - camX, GR * T - 200); }
-    if (zk.jar) { const f = zk.fires.find(o => o.room === r.id && !o.out && Math.abs(o.x - d.x) < ZK.REACH); if (f) upHint(f.x - camX, GR * T - ZK.FIRE_PX - 30); }
+    if (zk.jar) { const f = zk.fires.find(o => o.room === r.id && !o.out && Math.abs(o.x - d.x) < ZK.REACH); if (f) upHint(f.x - camX, GR * T - 250); }
   }
-  if (zk.brook && zk.brook.room === r.id) {   // the brook: water in the gap (stand-in)
-    const x0 = zk.brook.c0 * T - camX, x1 = zk.brook.c1 * T - camX;
-    ctx.save(); const g = ctx.createLinearGradient(0, FOOT, 0, FOOT + 90); g.addColorStop(0, "rgba(90,150,170,0.9)"); g.addColorStop(1, "rgba(30,60,80,0.95)");
-    ctx.fillStyle = g; ctx.fillRect(x0, FOOT + 10 + Math.sin(now * 2) * 2, x1 - x0, 200); ctx.restore(); }
+  // (Glen 11-24: "this water looks bad, I thought we had other sprites for that") the brook: Glen's side-on water
+  //  (Part One's world6/stream.png, stream_water: no banks, the gap's own edges are the banks), as world2.js fills a pit
+  if (zk.brook && zk.brook.room === r.id) {
+    const x0 = zk.brook.c0 * T - camX, w = (zk.brook.c1 - zk.brook.c0) * T, wt = GR * T + ZK.BROOK_TOP;
+    const wv = typeof streamPiece === "function" && streamPiece("stream_water", w + 2 * T, (ROWS * T - wt + 10) / 187, true);
+    if (wv) { ctx.save(); ctx.beginPath(); ctx.rect(x0, 0, w, H); ctx.clip(); ctx.globalAlpha = 0.92; ctx.drawImage(wv, x0 - T, wt - 10 + Math.sin(now * 1.6) * 1.5); ctx.restore(); }
+  }
   for (const f of zk.fires) if (f.room === r.id) zkDrawFire(f, f.x - camX, now);
   for (const o of zk.foods) if (o.room === r.id && !o.got) drawItem(o.name, o.x - camX, o.y + 2 + Math.sin(o.t * 2.5) * 3, 30 / ((ITEM[o.name] && ITEM[o.name].naturalHeight) || 30));
   const E = zk.egy;
@@ -434,16 +444,22 @@ function zkDrawFire(f, x, now) {
     const im = kitImg("h7_zk_fire_out"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); }
     return;
   }
-  const h = ZK.FIRE_H * T;   // Glen's fire (Ziph's signal fire, 11-15) till his burning doorway, a glow round it
-  { const im = kitImg("h7_zk_fire"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); } }
-  ctx.save(); ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 9; i++) { const k = (now * 1.4 + i / 9 + f.t) % 1, s = Math.sin(i * 7.3 + now * 3);
-    const g = ctx.createRadialGradient(x + s * 12, FOOT - k * h, 2, x + s * 12, FOOT - k * h, 30 * (1 - k * 0.6));
-    g.addColorStop(0, `rgba(255,230,140,${0.8 * (1 - k)})`); g.addColorStop(0.5, `rgba(255,120,30,${0.55 * (1 - k)})`); g.addColorStop(1, "rgba(200,40,0,0)");
-    ctx.fillStyle = g; ctx.fillRect(x - 50, FOOT - h - 40, 100, h + 50); }
-  ctx.restore();
-  ctx.save(); for (let i = 0; i < 4; i++) { const k = (now * 0.35 + i / 4) % 1; ctx.fillStyle = `rgba(70,60,55,${0.35 * (1 - k)})`;
-    ctx.beginPath(); ctx.arc(x + Math.sin(i * 3 + now * 0.7) * 20, FOOT - h - k * 160, 18 + k * 30, 0, 7); ctx.fill(); } ctx.restore();
+  // Glen's signal fire: catching (frames 1, 2: once, from when David comes into the street), then burning (3 and 4)
+  const C = ZK.FIRE_CATCH, t = f.t, cy = ZK.FIRE_CYCLE;
+  let A = 3, B = 4, mix;
+  if (t < C[0]) { A = 1; B = 2; mix = 0; }
+  else if (t < C[0] + C[1]) { A = 1; B = 2; mix = (t - C[0]) / C[1]; }
+  else if (t < C[0] + C[1] + C[2]) { A = 2; B = 3; mix = 0; }
+  else if (t < C[0] + C[1] + C[2] + C[3]) { A = 2; B = 3; mix = (t - C[0] - C[1] - C[2]) / C[3]; }
+  else mix = 0.5 - 0.5 * Math.cos((t - C[0] - C[1] - C[2] - C[3]) / cy * Math.PI * 2);
+  const draw = (n, a) => { const im = kitImg("h7_zk_fire_" + n); if (!im || a <= 0) return false;
+    const w = im.naturalWidth * ZK.FIRE_K, hh = im.naturalHeight * ZK.FIRE_K; ctx.save(); ctx.globalAlpha = a; ctx.drawImage(im, x - w / 2, FOOT + 8 - hh, w, hh); ctx.restore(); return true; };
+  if (!draw(A, 1)) { const im = kitImg("w4_z_fire"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); } }   // (till the frames load)
+  draw(B, mix);
+  ctx.save(); ctx.globalCompositeOperation = "lighter";   // a soft warm light round it, breathing with the flames
+  const gl = ctx.createRadialGradient(x, FOOT - 60, 10, x, FOOT - 60, 170), p = 0.16 + 0.05 * Math.sin(now * 3 + f.c);
+  gl.addColorStop(0, `rgba(255,170,70,${p})`); gl.addColorStop(1, "rgba(255,120,30,0)");
+  ctx.fillStyle = gl; ctx.fillRect(x - 180, FOOT - 240, 360, 260); ctx.restore();
 }
 function zkDrawFront(camX) {
   const r = region.room; if (!r || r.id !== "camp" || zkHas("z7_won")) return;
