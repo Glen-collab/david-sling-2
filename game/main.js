@@ -136,6 +136,8 @@ const TUNE = {
     villager_woman_stand: 0.66, villager_woman_run: 0.66,           // (Glen 11-05, the town's singing women: his villager sheets are
     villager_girl_stand: 0.59, villager_girl_run: 0.59,             //  drawn 1.44x David; a woman a touch shorter than him, a girl,
     villager_braidgirl_stand: 0.5, villager_braidgirl_run: 0.5,     //  a child)
+    // (Glen 11-24: "Is the priest this mini everywhere") Abiathar a little under David everywhere, as Keilah had him alone
+    abiathar_stand: 1.17, abiathar_talk: 1.17, abiathar_ephod: 1.17, abiathar_pray: 1.17, abiathar_walk: 1.17, abiathar_hide: 1.17,
     saul_robe_cut: 1.08,   // Glen's two-shot (Saul and David): Saul kneels as tall as in saul_sit
     david_slip: 0.8,      // Glen's slip strip draws him chunkier: matched to his head size on the other sprites
     lion_prowl_carry_lamb: 1.3, lion_sit_carry_lamb: 1.3, lion_set_lamb_down: 1.24,

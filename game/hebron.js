@@ -12,11 +12,22 @@
 const HB = {
   NPC_K: 0.9,
   ELDERS: [[30, "hanan_idle", 1.1], [34, "prophet_old", 1.25], [38, "trader_idle", 1.05], [42, "hanan_idle", 1.1], [46, "villager_man_stand", 0.9]],   // the elders of Israel at the gate (column, sprite, size)
-  DONKEY_K: 1.7,   // (Glen 11-24: "the donkeys are super small") the tribes' laden donkeys, back up to a man's waist (the idle clip draws larger: x0.82)
+  DONKEY_K: 1.25,   // (Glen 11-24: "super small", then at 1.7 "too big: make it between") the tribes' donkeys
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
   ASAHEL: { WALK: 290, RUN: 600, JUMP: 1060 },   // (the chase: David's speeds while you play Asahel, player2.js's)
-  ABNER: { LEAD: 520, SPEED: 560, HOP: 90, K: 1 },   // (px ahead of Asahel, his top speed, how high he leaps a gap)
-  WARN: [60, 110, 158],                       // (columns of the chase where Abner looks back: 2:20, 2:21, 2:22 and the end)
+  // (Glen 11-24: "it was fast and easy. Let's have him go up a hill ... or down a hill") Abner no longer waits for you:
+  //  he runs his own pace up over the ridge and down, then up the Hill of Ammah. Fall into a gully, or let him get
+  //  LOSE px ahead, and he's away: back to the last stretch you reached (no heart lost)
+  ABNER: { SPEED: 455, CLIMB: 0.8, HOP: 90, K: 1, LOSE: 1500, START: 700, NEAR: 560 },   // (px/s on the flat, x on a ledge-hop up, how high he leaps, how far ahead he's lost, how near you start him, how near for a warning)
+  WARN: [87, 108, 158],                       // (columns of the chase where Abner looks back: 2:20, 2:21, 2:22 and the end)
+  CHASE_H: [0, 462, 312, 162, 12, -138],      // (the chase's heights: the ground (0 = GR*T), then a ledge at a time up, as Ziph's tall hill)
+  // where Abner runs: [first col, last col, height] in order; the ledges are built from the same list
+  CHASE_ROUTE: [[0, 21, 0], [26, 30, 0], [31, 34, 1], [36, 39, 2], [41, 44, 3], [46, 49, 4], [51, 68, 5], [71, 74, 4], [76, 79, 3],
+    [81, 84, 2], [86, 89, 1], [91, 95, 0], [100, 112, 0], [117, 120, 0], [121, 124, 1], [126, 166, 2]],
+  CHASE_BACK: [6, 91, 117],                   // (the stretches to go back to when Abner gets away)
+  // (Glen 11-24: "a cut scene of ashael climbing up the last ridge and then wham") from the foot of the Hill of Ammah
+  //  Asahel goes up by himself, Abner turns, warns him (2:22), and strikes with the back end of the spear (2:23)
+  BLOW: { FROM: 117, HOP: 0.55, RUN: 620, STOP: 150, GAP: 100, FLASH: 0.3, HIT_FPS: 22, HIT_HOLD: 6, BACK: 110, SPEAR: 230 },
   LAMENT_SECS: 6,                             // (each line of the lament on screen; A for the next)
   TRIBE_SPEED: 140, TABLE: 14,                // (the tribes walking in; the feast table's column in the Feast)
   REACH: 110,                                 // (px: Up by a tribe's leader to welcome them; by the table to set down)
@@ -147,9 +158,11 @@ function hbBuild(R) {
   c = R("chase");
   { const rm = "chase";
     ground(c, c + 169);
-    for (const [k, w] of [[24, 4], [42, 5], [70, 4], [92, 6], [124, 5], [140, 4]]) rHole(rm, c + k, w);
-    for (const k of [34, 58, 84, 106, 132]) rBoulder(rm, c + k);
-    hb.abner = { room: rm, x: hbRoomX("chase", 16), y: FOOT, t: 0, st: "run", warned: 0, dir: 1 };
+    // up over the ridge (above the top of the screen) and down, a gully under it; then the Hill of Ammah (2:24)
+    for (const [a, b, lv] of HB.CHASE_ROUTE) if (lv) rLedge(rm, c + a, hbChaseY(lv), b - a + 1);
+    for (const [k, w] of [[22, 4], [31, 60], [96, 4], [113, 4], [121, 46]]) rHole(rm, c + k, w);
+    rBoulder(rm, c + 104);
+    hb.abner = { room: rm, x: hbRoomX("chase", 16), y: FOOT, t: 0, st: "wait", warned: 0, dir: 1, back: 0 };
   }
   // -- The Feast (1 Chronicles 12): the table; the tribes come in pairs from the right
   c = R("feast");
@@ -157,8 +170,8 @@ function hbBuild(R) {
     ground(c, c + 109);
     campfire(c + 4, GR - 1);   // an olive press (the save point)
     const done = hbHas("hb_feasted");
-    HB_TRIBES.forEach(([name, line, color, food], i) => hb.tribes.push({ room: rm, name, line, color, food, i, wave: Math.floor(i / 2),
-      slot: hbRoomX("feast", 50 + (i % 2) * 18), x: hbRoomX("feast", 116), st: done ? "home" : "wait", t: 0 }));
+    HB_TRIBES.forEach(([name, line, color, food], i) => hb.tribes.push({ room: rm, name, line, color, food, i, wave: i,   // (Glen 11-24: "two people at once ... gets confusing": one tribe at a time)
+      slot: hbRoomX("feast", 56), x: hbRoomX("feast", 116), st: done ? "home" : "wait", t: 0 }));
     if (done) for (const t of HB_TRIBES) hb.table.push(t[3]);
   }
   // -- The Gate (5:1-5): the elders of all Israel
@@ -179,7 +192,7 @@ function hbEnter(r) {
       { fn() { toast("Up to Hebron (right). The families follow you."); } }]);
   }
   if (r.id === "gibeon" && !hbHas("hb_pool")) hbPool();
-  if (r.id === "chase" && !hbHas("hb_chase")) hbTell("chase", "After Abner (right)! Asahel is “as light of foot as a wild gazelle” (2:18): run, and leap the gaps.");
+  if (r.id === "chase" && !hbHas("hb_chase")) hbTell("chase", "After Abner (right), up the ledges and over the hill! Don't fall behind, or he gets away.");
   if (r.id === "feast" && !hbHas("hb_tribes")) {
     regionAdd("taken", "hb_tribes");
     rPlay([HB_SAY("", "Then all the tribes of Israel came to David at Hebron. (2 Samuel 5:1)"),
@@ -206,7 +219,26 @@ function hbUpdate(dt, r) {
   hbFeast(dt, r, free);
   if (r.id === "gate" && hbHas("hb_feasted") && !hbHas("hb_end") && free && d.x > hbRoomX("gate", 20)) hbAnoint();
 }
-function hbHold(d) { if (hb.cine || hb.lament) { d.vx = 0; return true; } return false; }
+function hbHold(d) {
+  if (hb.auto) { d.vx = d.vy = 0; return true; }   // (moved in hbChase, on game time)
+  if (hb.cine || hb.lament) { d.vx = 0; return true; }
+  return false;
+}
+// Asahel moved by the cut scene: a list of [x, y, "hop" | "run"] legs, from where he is
+function hbAutoStep(d, dt) {
+  const a = hb.auto;
+  const leg = a.legs[a.i]; if (!leg) { d.vx = d.vy = 0; return; }
+  if (a.u === 0) { a.x0 = d.x; a.y0 = d.y; }
+  const [x, y, kind] = leg, dist = Math.abs(x - a.x0);
+  a.u = Math.min(1, a.u + dt / (kind === "hop" ? HB.BLOW.HOP : Math.max(0.05, dist / HB.BLOW.RUN)));
+  d.x = a.x0 + (x - a.x0) * a.u;
+  d.y = kind === "hop" ? a.y0 + (y - a.y0) * a.u - Math.sin(a.u * Math.PI) * 110 : y;
+  d.vx = d.vy = 0; d.facing = x >= a.x0 ? 1 : -1; d.onGround = kind !== "hop" || a.u >= 1;
+  a.kind = kind;
+  if (a.u >= 1) { a.i++; a.u = 0; if (!a.legs[a.i]) a.kind = null; }
+}
+const hbAutoTime = legs => { let t = 0, x = david.x; for (const [lx, , k] of legs) { t += k === "hop" ? HB.BLOW.HOP : Math.abs(lx - x) / HB.BLOW.RUN; x = lx; } return t; };
+// (the strike shakes the camera with main.js's finalBlow.shake, the final stone's; we wear it off ourselves while it's not on)
 
 // the cut scenes: letterboxed, the place named
 const hbCine = (title, sub) => ({ fn() { hb.cine = { at: performance.now() / 1000, title, sub }; david.vx = 0; } });
@@ -307,20 +339,50 @@ function hbPool() {
   ]);
 }
 
-// the chase (2:19-23): Abner ahead, leaping the gaps; he looks back and warns Asahel; at the last, the end
+// the chase (2:19-23): Abner ahead, up and over the ridge and up the Hill of Ammah; he looks back and warns Asahel;
+//  at the last, the end. He runs his own pace: lose him (or fall into a gully) and it's back to the last stretch
+function hbChaseY(lv) { return lv ? HB.CHASE_H[lv] : GR * T; }
+function hbAbnerY(x) {   // where Abner's feet are at x: on his route, or leaping between two pieces of it
+  const col = x / T - roomById("chase").c0, R = HB.CHASE_ROUTE;
+  for (let i = 0; i < R.length; i++) {
+    const [a, b, lv] = R[i];
+    if (col >= a && col <= b + 1) return { y: hbChaseY(lv) + 4, up: false };
+    const n = R[i + 1]; if (!n || col <= b + 1 || col >= n[0]) continue;
+    const u = (col - b - 1) / (n[0] - b - 1), y0 = hbChaseY(lv) + 4, y1 = hbChaseY(n[2]) + 4;
+    return { y: y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * HB.ABNER.HOP, up: y1 < y0 };
+  }
+  return { y: FOOT, up: false };
+}
 function hbChase(dt, r, free) {
+  if (!finalBlow.on) finalBlow.shake = Math.max(0, finalBlow.shake - dt * 1.8);
+  if (r.id === "chase") { if (hb.auto) hbAutoStep(david, dt); if (hb.blow) hb.blow.t += dt; }
   const A = hb.abner; if (!A || r.id !== "chase" || hbHas("hb_chase")) return;
   A.t += dt;
-  const d = david, end = hbRoomX("chase", HB.WARN[2]);
+  const d = david, c0 = roomById("chase").c0, end = hbRoomX("chase", HB.WARN[2]), dcol = d.x / T - c0;
+  for (let i = 0; i < HB.CHASE_BACK.length; i++) if (dcol >= HB.CHASE_BACK[i] && d.onGround && d.y <= GR * T + 4) A.back = Math.max(A.back, i);
+  if (!free) { A.moving = false; return; }
+  // lost him: down in a gully, or too far behind
+  if ((d.y > GR * T + 2 * T && d.x > hbRoomX("chase", 22)) || (A.st === "run" && A.x - d.x > HB.ABNER.LOSE)) { hbChaseLost(); return; }
+  if (A.st === "wait" && A.x - d.x < HB.ABNER.START) A.st = "run";
   if (A.st === "run") {
-    const tx = Math.min(end, d.x + HB.ABNER.LEAD), v = Math.sign(tx - A.x) * Math.min(HB.ABNER.SPEED, Math.abs(tx - A.x) * 2.2);
-    if (free) { A.x += v * dt; A.moving = Math.abs(v) > 30; A.dir = 1; }
-    const col = A.x / T - roomById("chase").c0;
-    if (free && A.warned < 2 && col >= HB.WARN[A.warned] && d.x > A.x - HB.ABNER.LEAD - 200) hbWarn(A.warned++);
-    if (free && A.x >= end - 4 && d.x > end - 7 * T) { A.st = "turn"; hbFall(); }
+    const col = A.x / T - c0, stop = A.warned < 2 ? hbRoomX("chase", HB.WARN[A.warned]) : end;
+    if (A.x < stop) {
+      const p = hbAbnerY(A.x), v = HB.ABNER.SPEED * (p.up ? HB.ABNER.CLIMB : 1);
+      A.x = Math.min(stop, A.x + v * dt); A.moving = true; A.dir = 1;
+    } else {
+      A.moving = false;   // he stops to look back once you're near
+      if (A.warned < 2 && Math.abs(d.x - A.x) < HB.ABNER.NEAR) hbWarn(A.warned++);
+      else if (A.warned >= 2 && dcol >= HB.BLOW.FROM && d.onGround) { A.st = "turn"; hbFall(); }
+    }
   }
-  // his leap over a gap
-  A.y = FOOT; for (const h of region.holes) { const a = h.x0 - 50, b = h.x1 + 50; if (A.x > a && A.x < b) A.y = FOOT - Math.sin((A.x - a) / (b - a) * Math.PI) * HB.ABNER.HOP; }
+  A.y = hbAbnerY(A.x).y;
+}
+function hbChaseLost() {
+  const A = hb.abner, d = david, k = HB.CHASE_BACK[A.back];
+  toast(d.y > GR * T + 2 * T ? "Asahel fell! Abner is away. Back on his trail." : "Abner is out of sight! Back on his trail.");
+  d.x = hbRoomX("chase", k); d.y = GR * T; d.vx = d.vy = 0; d.fallTop = null; d.facing = 1; snapCamera();
+  A.x = hbRoomX("chase", HB.CHASE_BACK[A.back] + 8); A.st = "wait"; A.moving = false;
+  A.warned = Math.max(A.warned, Math.min(2, A.back));   // (past the ridge: he's said 2:20; on the last stretch, 2:21 too)
 }
 function hbWarn(i) {
   const A = hb.abner;
@@ -331,13 +393,23 @@ function hbWarn(i) {
     { fn() { A.look = false; } }]);
 }
 function hbFall() {
-  const A = hb.abner, d = david;
+  const A = hb.abner, d = david, B = HB.BLOW, X = k => hbRoomX("chase", k), top = hbChaseY(2) + 4;
+  // up the last ledges, then on to face him
+  const legs = [];
+  if (d.y > hbChaseY(1) + 20) legs.push([X(119.5), GR * T, "run"], [X(122.5), hbChaseY(1), "hop"]);
+  if (d.y > hbChaseY(2) + 20) legs.push([X(127.5), top - 4, "hop"]);
+  legs.push([X(B.STOP), top - 4, "run"]);
   rPlay([
-    hbCine("", ""),
-    { fn() { A.look = true; A.spr = "abner_present"; d.vx = 0; } },
+    hbCine("", ""),   // (no title: it would cover the hilltop)
+    { fn() { d.vx = 0; hb.auto = { legs, i: 0, u: 0 }; A.look = true; A.spr = "abner_present"; A.spear = "held"; } },
+    { wait: hbAutoTime(legs) + 0.6 },
     HB_SAY("Abner", "“Turn away from following me. Why should I strike you to the ground? How then could I look Joab your brother in the face?” (2 Samuel 2:22)"),
     HB_SAY("", "However, he refused to turn away. (2 Samuel 2:23)"),
-    { fn() { hb.dark = { at: performance.now() / 1000 }; } }, { wait: 1.6 }, { fn() { hb.fallen = true; } },
+    // he runs at Abner; Abner turns the spear and strikes with its back end
+    { fn() { hb.auto = { legs: [[A.x - B.GAP, top - 4, "run"]], i: 0, u: 0 }; } }, { wait: Math.max(0.2, (A.x - B.GAP - X(B.STOP)) / B.RUN) },
+    { fn() { hb.auto = null; hb.blow = { t: 0, x0: david.x }; A.spear = "strike"; finalBlow.shake = 1; sfx("stone_hit", undefined, 1, 0.6); sfx("lion_hit", undefined, 0.7, 0.8); } },
+    { wait: 1.8 },
+    { fn() { hb.dark = { at: performance.now() / 1000 }; } }, { wait: 1.6 }, { fn() { hb.fallen = true; hb.blow = null; A.spear = null; } },
     HB_SAY("", "Therefore Abner with the back end of the spear struck him, and he fell down there and died in the same place. As many as came to the place where Asahel fell down and died stood still. (2 Samuel 2:23)"),
     { fn() { A.st = "gone"; hb.fallen = true; } },
     HB_SAY("", "Then Abner called to Joab, and said, “Shall the sword devour forever?” So Joab blew the trumpet; and all the people stood still and pursued Israel no more, and they fought no more. (2 Samuel 2:26, 28)"),
@@ -419,6 +491,16 @@ function hbDrawDavid(d, x, y) {
   const now = performance.now() / 1000;
   if (hbAsahel()) {   // Asahel, Joab's brother (player2.js's sheets)
     if (hb.fallen) return true;
+    if (hb.blow && SPR.asahel_hit) {   // struck: knocked back, and down (the dark comes after)
+      const t = hb.blow.t, f = Math.min(HB.BLOW.HIT_HOLD, Math.floor(t * HB.BLOW.HIT_FPS));
+      const nx = hb.blow.x0 - HB.BLOW.BACK * Math.min(1, t / 0.35);
+      drawSprite("asahel_hit", f, x + (nx - d.x), y, 1); d.x = nx; return true;
+    }
+    if (hb.auto && hb.auto.kind) {
+      const n = hb.auto.kind === "hop" ? "asahel_long_jump" : "asahel_sprint", S = SPR[n];
+      const f = hb.auto.kind === "hop" && S ? Math.min(S.frames - 1, Math.floor(hb.auto.u * S.frames)) : frameOf(n, performance.now() / 1000);
+      if (S) { drawSprite(n, f, x, y, d.facing); return true; }
+    }
     let n = "asahel_idle", f = null;
     if (!d.onGround) { n = "asahel_long_jump"; const S = SPR[n]; if (S) f = Math.max(0, Math.min(S.frames - 1, Math.floor((d.vy / 1200 + 0.5) * S.frames))); }
     else if (d.state === "run") n = "asahel_sprint";
@@ -450,6 +532,7 @@ function hbDraw(camX) {
   if (A && r.id === "chase" && A.st !== "gone" && !hbHas("hb_chase")) {
     const n = A.spr || (A.look ? "abner_talk" : "abner_walk"), dir = A.look ? -1 : 1;
     if (SPR[n]) drawSprite(n, frameOf(n, A.t * (A.moving ? 2.2 : 1)), A.x - camX, A.y, dir, HB.ABNER.K);
+    if (A.spear) hbDrawSpear(A, camX);
   }
   // the feast: the tribes, their banners, the foods they unload, the table
   if (r.id === "feast") {
@@ -458,11 +541,11 @@ function hbDraw(camX) {
     hb.table.forEach((n, i) => drawItem(n, tx - 100 + (i % 6) * 40, FOOT - 46 - Math.floor(i / 6) * 22, 26 / ((ITEM[n] && ITEM[n].naturalHeight) || 26)));
     for (const t of hb.tribes) if ((t.st === "come" || t.st === "here" || t.st === "leave") && !hbHas("hb_feasted")) {
       const x = t.x - camX; if (x < -200 || x > W + 200) continue;
-      const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, lead = moving ? "villager_staffman_run" : "villager_staffman_stand", don = moving ? "donkey_packs_walk" : "donkey_idle";
+      const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, lead = moving ? "villager_staffman_run" : "villager_staffman_stand", don = t.st === "leave" ? "donkey_bare_walk" : "donkey_packs_walk";   // (Glen 11-24: laden till you take the gifts, bare after)
       ctx.save(); ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 30, FOOT); ctx.lineTo(x - 30, FOOT - 190); ctx.stroke();   // the banner
       const wave = Math.sin(now * 3 + t.i) * 6; ctx.fillStyle = t.color; ctx.beginPath(); ctx.moveTo(x - 30, FOOT - 188); ctx.lineTo(x - 30 - 56, FOOT - 180 + wave); ctx.lineTo(x - 30, FOOT - 150); ctx.fill();
       ctx.restore();
-      if (SPR[don]) drawSprite(don, frameOf(don, t.t), x + 90 * -face, FOOT, face, HB.DONKEY_K * (moving ? 1 : 0.82));
+      if (SPR[don]) drawSprite(don, moving ? frameOf(don, t.t) : 0, x + 80 * -face, FOOT, face, HB.DONKEY_K);
       if (SPR[lead]) drawSprite(lead, frameOf(lead, t.t), x, FOOT, face, HB.NPC_K);
       if (t.st === "here" && Math.abs(david.x - t.x) < HB.REACH && hbFree()) upHint(x, FOOT - 210);
     }
@@ -479,10 +562,27 @@ function hbDrawFront(camX) {
     ctx.fillStyle = "#ffe08a"; ctx.fillText(`Tribes welcomed: ${n} of ${all}    On the table: ${hb.table.length} of ${all}`, W / 2, 76); ctx.restore();
   }
 }
+// Abner's spear (stand-in till Glen's clip, ART_PROMPTS_HEBRON.md 8.4): held upright, then turned and thrust back end first
+function hbDrawSpear(A, camX) {
+  const x = A.x - camX, L = HB.BLOW.SPEAR;
+  ctx.save(); ctx.lineCap = "round";
+  let butt, head;
+  if (A.spear === "held") { butt = [x - 34, A.y - 6]; head = [x - 34, A.y - 6 - L * 1.15]; }
+  else {
+    const t = hb.blow ? hb.blow.t : 1, p = Math.min(1, t / 0.12), back = t > 0.7 ? Math.min(1, (t - 0.7) / 0.4) : 0, k = p * (1 - back * 0.6);
+    const hy = A.y - 78; butt = [x - 40 - 70 * k, hy]; head = [x - 40 - 70 * k + L, hy - 6];
+  }
+  ctx.strokeStyle = "#5b3a1c"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(butt[0], butt[1]); ctx.lineTo(head[0], head[1]); ctx.stroke();
+  const ang = Math.atan2(head[1] - butt[1], head[0] - butt[0]);
+  ctx.translate(head[0], head[1]); ctx.rotate(ang); ctx.fillStyle = "#b9b4a6"; ctx.strokeStyle = "#5e5a50"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(-4, -9); ctx.lineTo(-4, 9); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
 function hbDrawOver() {
   const r = region.room; if (!r) return;
   const tn = HB.TINT[r.id]; if (tn) { ctx.save(); ctx.fillStyle = `rgba(${tn[0]},${tn[1]},${tn[2]},${tn[3]})`; ctx.fillRect(0, 0, W, H); ctx.restore(); }
   const now = performance.now() / 1000;
+  if (hb.blow) { const t = hb.blow.t; if (t < HB.BLOW.FLASH) { ctx.fillStyle = `rgba(255,250,235,${0.85 * (1 - t / HB.BLOW.FLASH)})`; ctx.fillRect(0, 0, W, H); } }   // wham
   if (hb.dark) { const a = Math.min(0.92, (now - hb.dark.at) / 1.4); ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.fillRect(0, 0, W, H); }
   if (hb.cine) {   // a cut scene: the picture letterboxed, the place named
     const t = now - hb.cine.at, bar = 64 * Math.min(1, t / 0.8);

@@ -16,7 +16,7 @@ const K4 = {
   NPC_K: 0.9,
   // (Glen 11-17: "way disproportionate") each one's size beside David (240 px), on top of NPC_K: the villager sheets are
   //  drawn 1.44x David (the girl and woman already smaller by TUNE.SPRITE_SIZE), Abiathar's a little under him. ABIATHAR_HOLD: the frame of his talk clip he stands on (it walks)
-  SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85, abiathar: 1.17,
+  SIZE: { villager_man: 0.77, villager_staffman: 0.77, villager_boy: 0.5, villager_girl: 0.85,   // (abiathar: TUNE.SPRITE_SIZE now, everywhere)
     townsman: 1.2, townswoman: 1.15 },   // (11-17: "these people are small in Keilah": the night street's men and women, 216 and 208 px to David's 240) ABIATHAR_HOLD: 6,
   ASK: { NEAR: 90, KNEEL_MS: 161, ABIATHAR: 170 },
   GATE_REACH: 160, GATE_TURN: 0.75,   // (Glen 11-17) px before an open gate where Up takes him through   // (Glen 11-17: "I can walk right past Abiathar": this close, the ephod scene starts by itself)   // the prayer rock: px from it to kneel (Up); david_kneel's frame time

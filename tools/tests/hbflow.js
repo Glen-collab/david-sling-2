@@ -28,12 +28,14 @@ steps.push({ n: 1, fn() { at("hebron", 34); } }, run(5), { keys: ["ArrowRight"],
   { n: 1, fn() { log("after Judah: " + where() + " judah " + hbHas("hb_judah")); } }, { keys: [], n: 20 }, snap);
 // 4 Gibeon
 steps.push(until(() => /Joab/.test(JSON.stringify(region.script[0] || {}))), { keys: [], n: 3 }, snap, drain(), { n: 1, fn() { log("pool " + hbHas("hb_pool") + " asahel " + hbAsahel() + " run " + TUNE.RUN_SPEED); } });
-// 5 the chase
-steps.push({ n: 1, fn() { at("chase", 8); } }, run(5), { keys: ["ArrowRight"], n: 40 }, snap, { n: 1, fn() { log("chase: " + where() + " abner col " + (hb.abner.x / T - roomById("chase").c0).toFixed(1)); } },
-  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 62); at("chase", 52); } }, { keys: [], n: 3 }, { n: 1, fn() { log("warn script " + region.script.length + " warned " + hb.abner.warned); } }, { keys: [], n: 2 }, snap, drain(),
-  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 112); at("chase", 104); } }, { keys: [], n: 3 }, drain(),
-  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 158); at("chase", 153); } }, { keys: [], n: 3 }, { n: 1, fn() { log("end st " + hb.abner.st + " script " + region.script.length); } },
-  until(() => hb.dark), { keys: [], n: 3 }, snap, until(() => hb.dark && (performance.now() / 1000 - hb.dark.at) > 0), { keys: [], n: 60 }, snap, drain(), { keys: [], n: 90 },
+// 5 the chase: up over the ridge and down (the first warning on the way down), the second on the ground, then the
+//  cut scene from the foot of the Hill of Ammah (he climbs, Abner warns him, the strike)
+const atY = (id, k, y) => { const r = roomById(id); moveParty((r.c0 + k) * T, y); david.vy = 0; snapCamera(); };
+steps.push({ n: 1, fn() { at("chase", 8); region.jscene = null; } }, run(5), { keys: ["ArrowRight"], n: 40 }, snap, { n: 1, fn() { log("chase: " + where() + " abner col " + (hb.abner.x / T - roomById("chase").c0).toFixed(1)); } },
+  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 87); hb.abner.st = "run"; atY("chase", 82, HB.CHASE_H[2]); } }, { keys: [], n: 3 }, { n: 1, fn() { log("warn script " + region.script.length + " warned " + hb.abner.warned); } }, { keys: [], n: 2 }, snap, drain(),
+  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 108); hb.abner.st = "run"; at("chase", 103); } }, { keys: [], n: 3 }, drain(),
+  { n: 1, fn() { hb.abner.x = hbRoomX("chase", 158); hb.abner.st = "run"; hb.abner.warned = 2; hb.abner.back = 2; at("chase", 118); } }, { keys: [], n: 3 }, { n: 1, fn() { log("end st " + hb.abner.st + " script " + region.script.length); } },
+  { keys: [], n: 90 }, snap, until(() => hb.blow), { keys: [], n: 3 }, snap, until(() => hb.dark), { keys: [], n: 40 }, snap, drain(), { keys: [], n: 90 },
   { n: 1, fn() { log("after the chase: " + where() + " chase " + hbHas("hb_chase") + " run " + TUNE.RUN_SPEED); } });
 // 6 Abner's grave
 steps.push(until(() => hb.weep), { keys: [], n: 40 }, snap, until(() => region.jscene), ...jDone, drain(), { keys: [], n: 90 }, { n: 1, fn() { log("after the grave: " + where()); } });
