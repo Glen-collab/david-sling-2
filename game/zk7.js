@@ -174,7 +174,7 @@ function zkBuild(R) {
 function zkFire(room, c) {   // a fire standing in the street: solid (no way through) till the jar puts it out
   const f = { room, c, x: c * T + T / 2, out: zkHas(`z7_fire_${room}_${c}`), t: Math.random() * 5, steam: 0 };
   if (!f.out) block(c, GR - ZK.FIRE_H, 1, ZK.FIRE_H, 6);   // (6: solid, nothing drawn: the fire is)
-  kitImg("w4_z_fire"); kitImg("w4_z_fire_out");
+  kitImg("h7_zk_fire"); kitImg("h7_zk_fire_out");
   zk.fires.push(f);
 }
 function zkFood(room, name, c, y) { zk.foods.push({ room, name, x: c * T + T / 2, y, got: zkHas("z7_" + name), t: Math.random() * 4 }); }
@@ -427,11 +427,11 @@ function zkDrawFire(f, x, now) {
   if (f.out) {   // blackened, a little steam
     if (f.steam > 0) { ctx.save(); for (let i = 0; i < 5; i++) { const k = (now * 0.6 + i / 5) % 1; ctx.fillStyle = `rgba(235,235,235,${0.35 * (1 - k) * Math.min(1, f.steam)})`;
       ctx.beginPath(); ctx.arc(x + Math.sin(i * 2 + now) * 10, FOOT - 20 - k * 90, 10 + k * 16, 0, 7); ctx.fill(); } ctx.restore(); }
-    const im = kitImg("w4_z_fire_out"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); }
+    const im = kitImg("h7_zk_fire_out"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); }
     return;
   }
   const h = ZK.FIRE_H * T;   // Glen's fire (Ziph's signal fire, 11-15) till his burning doorway, a glow round it
-  { const im = kitImg("w4_z_fire"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); } }
+  { const im = kitImg("h7_zk_fire"); if (im) { const k = ZK.FIRE_PX / im.naturalHeight, w = im.naturalWidth * k; ctx.drawImage(im, x - w / 2, FOOT + 6 - ZK.FIRE_PX, w, ZK.FIRE_PX); } }
   ctx.save(); ctx.globalCompositeOperation = "lighter";
   for (let i = 0; i < 9; i++) { const k = (now * 1.4 + i / 9 + f.t) % 1, s = Math.sin(i * 7.3 + now * 3);
     const g = ctx.createRadialGradient(x + s * 12, FOOT - k * h, 2, x + s * 12, FOOT - k * h, 30 * (1 - k * 0.6));
