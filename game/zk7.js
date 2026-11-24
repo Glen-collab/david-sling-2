@@ -87,7 +87,11 @@ const ZK_SAY = (who, text) => ({ say: [who, text] });
 const zkFree = () => !region.script.length && region.wait <= 0 && !region.trans && !(dialog.t > 0);
 
 // ---------------------------------------------------------------------------------------------------------------------
+// (Glen 11-24: "check the size differences in the attacking sprite compared to dancing") his dancing clip came out smaller:
+//  measured by head, about 0.82 of the others (walking, attacking, running, fleeing), so it is drawn bigger to match
+const ZK_PARTY_K = 1.22;
 function zkBuild(R) {
+  TUNE.SPRITE_SIZE.raider_party = ZK_PARTY_K;
   for (const k of ["fires", "waters", "foods", "captives", "camels", "men"]) zk[k].length = 0;
   zk.act = null; zk.egy = null; zk.stones = null; zk.jar = zkHas("z7_jar");
   const P = (room, spr, x, dir = 1, show = null, k = ZK.NPC_K) => h7Person(room, spr, x, dir, show, k);
