@@ -241,7 +241,7 @@ function zkUpdate(dt, r) {
 function zkHold(d) { if (zk.act || zk.pray || zk.cine) { d.vx = 0; return true; } return false; }
 function zkAct(dt) {
   const A = zk.act, d = david; A.t += dt;
-  if (A.kind === "fill") { if (A.t > 0.9) { zk.act = null; zk.jar = true; regionAdd("taken", "z7_jar"); toast("Saul's jar: full of water."); } return; }
+  if (A.kind === "fill") { if (A.t > 0.9) { zk.act = null; zk.jar = true; regionAdd("taken", "z7_jar"); toast(zk.fires.some(o => o.room === region.room.id && !o.out) ? "David fills Saul's jar (the one he took from Saul's camp). Now pour it on the fire (Up)." : "David fills Saul's jar with water."); } return; }
   const dur = SPR.david_pour ? SPR.david_pour.frames * SPR.david_pour.ms / 1000 / ZK.POUR_RATE : 1.2;
   if (!A.done && A.t > dur * ZK.POUR_AT) { A.done = true; const f = A.f; f.out = true; f.steam = 2.5; regionAdd("taken", `z7_fire_${f.room}_${f.c}`);
     for (let r = GR - ZK.FIRE_H; r < GR; r++) solid[r][f.c] = 0;
@@ -382,7 +382,16 @@ function zkDrawDavid(d, x, y) {
 function zkDraw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
-  for (const w of zk.waters) if (w.room === r.id && w.kind === "well") { const im = ITEM.town_well; if (im && im.naturalWidth) drawItem("town_well", w.x - camX, FOOT + 4, ZK.WELL_H / im.naturalHeight); }   // (the town's well: Glen's)
+  // (Glen 11-24: the well stood back, floating) the town's well, Glen's, drawn as region.js draws it: its base (not the
+  //  picture's bottom, which has room under it) sunk into the street, the same size as the wells David climbs down
+  for (const w of zk.waters) if (w.room === r.id && w.kind === "well") { const im = ITEM.town_well; if (im && im.naturalWidth) { const k = wellK();
+    ctx.drawImage(im, w.x - camX - RTUNE.WELL_OPEN_X * k, GR * T + RTUNE.WELL_SINK - RTUNE.WELL_BOTTOM * k, im.naturalWidth * k, im.naturalHeight * k); } }
+  // Up, over the water while the jar's empty and a fire's still burning; over a fire while it's full
+  const d = david, burning = zk.fires.some(f => f.room === r.id && !f.out);
+  if (zkFree() && !zk.act && d.onGround) {
+    if (!zk.jar && (burning || (r.id === "besor" && !zkHas("z7_egypt")))) { const w = zk.waters.find(o => o.room === r.id && Math.abs(o.x - d.x) < ZK.REACH); if (w) upHint(w.x - camX, GR * T - 200); }
+    if (zk.jar) { const f = zk.fires.find(o => o.room === r.id && !o.out && Math.abs(o.x - d.x) < ZK.REACH); if (f) upHint(f.x - camX, GR * T - ZK.FIRE_PX - 30); }
+  }
   if (zk.brook && zk.brook.room === r.id) {   // the brook: water in the gap (stand-in)
     const x0 = zk.brook.c0 * T - camX, x1 = zk.brook.c1 * T - camX;
     ctx.save(); const g = ctx.createLinearGradient(0, FOOT, 0, FOOT + 90); g.addColorStop(0, "rgba(90,150,170,0.9)"); g.addColorStop(1, "rgba(30,60,80,0.95)");
