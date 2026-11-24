@@ -3648,6 +3648,30 @@ window.SPRITE_DATA = {
   "ay": 231,
   "align": "feet"
  },
+ "elder_scroll_stand": {
+  "src": "../assets/sprites/elder_scroll_stand.png",
+  "frames": 1,
+  "w": 256,
+  "h": 248,
+  "ms": 120,
+  "loop": true,
+  "pingpong": false,
+  "ax": 209,
+  "ay": 245,
+  "align": "feet"
+ },
+ "elder_staff_idle": {
+  "src": "../assets/sprites/elder_staff_idle.png",
+  "frames": 12,
+  "w": 101,
+  "h": 246,
+  "ms": 110,
+  "loop": true,
+  "pingpong": false,
+  "ax": 47,
+  "ay": 244,
+  "align": "feet"
+ },
  "eliab_angry": {
   "src": "../assets/sprites/eliab_angry.png",
   "frames": 16,
@@ -7978,6 +8002,42 @@ window.SPRITE_DATA = {
   "pingpong": false,
   "ax": 116,
   "ay": 121,
+  "align": "feet"
+ },
+ "staffman_idle": {
+  "src": "../assets/sprites/staffman_idle.png",
+  "frames": 12,
+  "w": 85,
+  "h": 246,
+  "ms": 56,
+  "loop": true,
+  "pingpong": false,
+  "ax": 33,
+  "ay": 244,
+  "align": "feet"
+ },
+ "staffman_run": {
+  "src": "../assets/sprites/staffman_run.png",
+  "frames": 8,
+  "w": 209,
+  "h": 227,
+  "ms": 78,
+  "loop": true,
+  "pingpong": false,
+  "ax": 150,
+  "ay": 225,
+  "align": "feet"
+ },
+ "staffman_walk": {
+  "src": "../assets/sprites/staffman_walk.png",
+  "frames": 12,
+  "w": 134,
+  "h": 245,
+  "ms": 97,
+  "loop": true,
+  "pingpong": false,
+  "ax": 75,
+  "ay": 243,
   "align": "feet"
  },
  "steward": {

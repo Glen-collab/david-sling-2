@@ -11,7 +11,8 @@
 
 const HB = {
   NPC_K: 0.9,
-  ELDERS: [[30, "hanan_idle", 1.1], [34, "prophet_old", 1.25], [38, "trader_idle", 1.05], [42, "hanan_idle", 1.1], [46, "villager_man_stand", 0.9]],   // the elders of Israel at the gate (column, sprite, size)
+  ELDERS: [[30, "elder_staff_idle", 1.08], [34, "prophet_old", 1.25], [38, "elder_scroll_stand", 1.08], [42, "hanan_idle", 1.1], [46, "elder_staff_idle", 1.08]],   // (Glen's two elders, 11-24: the staff, the scroll)
+  STAFFMAN_K: 1.1,   // (Glen's walking-stick man, 11-24: staffman_idle/walk/run, cut at David's height; in place of the open-mouthed one)   // the elders of Israel at the gate (column, sprite, size)
   DONKEY_K: 1.25,   // (Glen 11-24: "super small", then at 1.7 "too big: make it between") the tribes' donkeys
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
   ASAHEL: { WALK: 290, RUN: 600, JUMP: 1060 },   // (the chase: David's speeds while you play Asahel, player2.js's)
@@ -56,7 +57,7 @@ const HEB = {
   rooms: [
     { id: "ziklag", name: "Ziklag", w: 60, bg: "w4_1", mx: 0, my: 1, mw: 2,
       get right() { return hbHas("hb_ask") ? "road" : null; },
-      far: "keilah/town/far", mid: "keilah/town/mid.png", midY: 0, near: "keilah/town/near.png" },   // (stand-in: Keilah's town by day)
+      far: "keilah/town/far", mid: "keilah/town/mid.png", midY: 0, near: "w8/hebron/ziklag_near.png", nearK: 0.55 },   // (stand-in: Keilah's town by day; Glen's own near ground, 11-24: "way too big", zoomed out)
     { id: "road", name: "The Road Up to Hebron", w: 120, bg: "w4_1", mx: 2, my: 1, mw: 4, left: "ziklag", right: "hebron",
       far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },   // (stand-in: Keilah's road, by day)
     { id: "hebron", name: "Hebron", w: 90, bg: "w4_1", mx: 6, my: 1, mw: 3, left: "road",
@@ -141,7 +142,7 @@ function hbBuild(R) {
   c = R("hebron");
   { const rm = "hebron", X = k => (c + k) * T;
     ground(c, c + 89);
-    hb.judah = [P(rm, "villager_man_stand", X(44), -1), P(rm, "villager_staffman_stand", X(48), -1), P(rm, "villager_man_stand", X(56), -1), P(rm, "villager_staffman_stand", X(60), -1)];
+    hb.judah = [P(rm, "villager_man_stand", X(44), -1), P(rm, "staffman_idle", X(48), -1, null, HB.STAFFMAN_K), P(rm, "villager_man_stand", X(56), -1), P(rm, "staffman_idle", X(60), -1, null, HB.STAFFMAN_K)];
     hb.elder = P(rm, "samuel_anoint", X(52), -1, () => !hbHas("hb_chase"));   // (stand-in: Samuel's clip, the horn of oil)
     hb.grave = { room: rm, x: X(70) };
   }
@@ -541,12 +542,12 @@ function hbDraw(camX) {
     hb.table.forEach((n, i) => drawItem(n, tx - 100 + (i % 6) * 40, FOOT - 46 - Math.floor(i / 6) * 22, 26 / ((ITEM[n] && ITEM[n].naturalHeight) || 26)));
     for (const t of hb.tribes) if ((t.st === "come" || t.st === "here" || t.st === "leave") && !hbHas("hb_feasted")) {
       const x = t.x - camX; if (x < -200 || x > W + 200) continue;
-      const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, lead = moving ? "villager_staffman_run" : "villager_staffman_stand", don = t.st === "leave" ? "donkey_bare_walk" : "donkey_packs_walk";   // (Glen 11-24: laden till you take the gifts, bare after)
+      const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, lead = moving ? "staffman_walk" : "staffman_idle", don = t.st === "leave" ? "donkey_bare_walk" : "donkey_packs_walk";   // (Glen 11-24: laden till you take the gifts, bare after)
       ctx.save(); ctx.strokeStyle = "#5a3e20"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 30, FOOT); ctx.lineTo(x - 30, FOOT - 190); ctx.stroke();   // the banner
       const wave = Math.sin(now * 3 + t.i) * 6; ctx.fillStyle = t.color; ctx.beginPath(); ctx.moveTo(x - 30, FOOT - 188); ctx.lineTo(x - 30 - 56, FOOT - 180 + wave); ctx.lineTo(x - 30, FOOT - 150); ctx.fill();
       ctx.restore();
       if (SPR[don]) drawSprite(don, moving ? frameOf(don, t.t) : 0, x + 80 * -face, FOOT, face, HB.DONKEY_K);
-      if (SPR[lead]) drawSprite(lead, frameOf(lead, t.t), x, FOOT, face, HB.NPC_K);
+      if (SPR[lead]) drawSprite(lead, frameOf(lead, t.t), x, FOOT, face, HB.STAFFMAN_K);
       if (t.st === "here" && Math.abs(david.x - t.x) < HB.REACH && hbFree()) upHint(x, FOOT - 210);
     }
     for (const f of hb.foods) if (!f.got) drawItem(f.name, f.x - camX, FOOT + 2 + Math.sin(now * 2.5 + f.x) * 3, 30 / ((ITEM[f.name] && ITEM[f.name].naturalHeight) || 30));

@@ -1,0 +1,11 @@
+{
+  "frames": 12,
+  "frame_w": 101,
+  "frame_h": 246,
+  "ms_per_frame": 110,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 47,
+  "anchor_y": 244,
+  "source": "elder_move.mp4"
+}

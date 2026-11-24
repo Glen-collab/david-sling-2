@@ -1,0 +1,11 @@
+{
+  "frames": 1,
+  "frame_w": 256,
+  "frame_h": 248,
+  "ms_per_frame": 120,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 209,
+  "anchor_y": 245,
+  "source": "elder_scroll.jpg"
+}

@@ -1,0 +1,11 @@
+{
+  "frames": 12,
+  "frame_w": 85,
+  "frame_h": 246,
+  "ms_per_frame": 56,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 33,
+  "anchor_y": 244,
+  "source": "staffman_idle_walk_run.mp4"
+}
