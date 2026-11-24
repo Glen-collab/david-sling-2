@@ -121,7 +121,7 @@ function hbBuild(R) {
   }
   // the families behind David (Abigail, Ahinoam, the men's wives and children)
   hb.follow.push({ spr: "abigail_walk", still: "abigail_idle", k: 1 }, { spr: "villager_woman_run", still: "villager_woman_stand", k: HB.NPC_K },
-                 { spr: "villager_boy_run", still: "villager_boy_stand", k: HB.NPC_K * 0.8 }, { spr: "villager_scarfwoman_run", still: "villager_woman_stand", k: HB.NPC_K });
+                 { spr: "villager_braidgirl_run", still: "villager_braidgirl_stand", k: 1 }, { spr: "villager_scarfwoman_run", still: "villager_woman_stand", k: HB.NPC_K });
   hb.follow.forEach((f, i) => Object.assign(f, { x: hbRoomX("road", 2) - i * HB.FOLLOW_GAP, t: i * 0.3, moving: false, dir: 1 }));
 
   // -- Hebron (2:4): the men of Judah; the elder with the horn of oil
