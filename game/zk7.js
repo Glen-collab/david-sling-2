@@ -19,13 +19,13 @@ const ZK = {
   FIRE_CATCH: [0.7, 0.5, 0.7, 0.5],    // (s: frame 1 held, faded into 2, 2 held, faded into 3)
   FIRE_CYCLE: 3.2,                     // (s: 3 to 4 and back)
   // the raiders (region.js's skirmisher, with the raider clips)
-  RAID_K: 1.1, RAID_HP: 3,
+  RAID_K: 0.8, RAID_HP: 3,   // (Glen 11-24: "the raider is still way too large": his clips drawn 1.1 had heads half again David's; 0.8 matches a grown man)
   FREE_REACH: 80,                     // (px to a tied family to free them)
   FREE_SAFE: 5,                       // (no raider closer than this many columns, or they're too busy to untie)
   EGY_K: 0.95, EGY_LEAD: 160, EGY_SPEED: 260,
   MARCH_Y: [26, 56], MARCH_K: [0.62, 0.5],   // (Aphek's marching army: px above the ground line, and size, near row and far row)
   BROOK_TOP: 8,                        // (px below the ground line: the brook Besor's water surface)
-  CAMELS: 4, CAMEL_SPEED: 420, CAMEL_K: 1,
+  CAMELS: 4, CAMEL_SPEED: 420, CAMEL_K: 0.85,
   MAN_LIGHT: 1.35,                     // (Glen's night stills of the men, 11-24: lit a little on the dark street)
   TINT: { ziklag: [90, 44, 20, 0.28], camp: [70, 26, 70, 0.30] },
 };
