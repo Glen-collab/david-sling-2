@@ -11,7 +11,7 @@
 
 const HB = {
   NPC_K: 0.9,
-  ELDERS: [[30, "elder_staff_idle", 1.08], [34, "prophet_old", 1.25], [38, "elder_scroll_stand", 1.08], [42, "hanan_idle", 1.1], [46, "elder_staff_idle", 1.08]],   // (Glen's two elders, 11-24: the staff, the scroll)
+  ELDERS: [[32, "prophet_old", 1.25], [37, "elder_scroll_stand", 1.08], [42, "hanan_idle", 1.1], [47, "trader_idle", 1.05]],   // (each once: the staff elder anoints)   // (Glen's two elders, 11-24: the staff, the scroll)
   STAFFMAN_K: 1.1,   // (Glen's walking-stick man, 11-24: staffman_idle/walk/run, cut at David's height; in place of the open-mouthed one)   // the elders of Israel at the gate (column, sprite, size)
   DONKEY_K: 1.25,   // (Glen 11-24: "super small", then at 1.7 "too big: make it between") the tribes' donkeys
   FOLLOW_GAP: 70, FOLLOW_SPEED: 300,          // (the families behind David on the road: px apart, their walking speed)
@@ -142,8 +142,10 @@ function hbBuild(R) {
   c = R("hebron");
   { const rm = "hebron", X = k => (c + k) * T;
     ground(c, c + 89);
-    hb.judah = [P(rm, "villager_man_stand", X(44), -1), P(rm, "staffman_idle", X(48), -1, null, HB.STAFFMAN_K), P(rm, "villager_man_stand", X(56), -1), P(rm, "staffman_idle", X(60), -1, null, HB.STAFFMAN_K)];
-    hb.elder = P(rm, "samuel_anoint", X(52), -1, () => !hbHas("hb_chase"));   // (stand-in: Samuel's clip, the horn of oil)
+    // (Glen 11-24: "We are still using Samuel as anointing David ... two of the same people here": no one twice on a
+    //  screen till his new men come; an elder anoints, not Samuel)
+    hb.judah = [P(rm, "villager_man_stand", X(46), -1), P(rm, "staffman_idle", X(58), -1, null, HB.STAFFMAN_K)];
+    hb.elder = P(rm, "elder_scroll_stand", X(52), -1, () => !hbHas("hb_chase"), 1.08);
     hb.grave = { room: rm, x: X(70) };
   }
   // -- The Pool of Gibeon (2:12-17): Joab's men on one side, Abner's on the other
@@ -181,7 +183,7 @@ function hbBuild(R) {
     ground(c, c + 59);
     // (Glen 11-24: not the open-mouthed staff man; the little one was prophet_old at NPC_K, Ramah draws him at 1.2)
     for (const [k, spr, sz] of HB.ELDERS) P(rm, spr, X(k), -1, null, sz);
-    hb.gateElder = P(rm, "samuel_anoint", X(26), -1);
+    hb.gateElder = P(rm, "elder_staff_idle", X(27), -1, null, 1.08);
   }
 }
 
