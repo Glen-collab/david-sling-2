@@ -24,7 +24,8 @@ const ZK = {
   FREE_SAFE: 5,                       // (no raider closer than this many columns, or they're too busy to untie)
   EGY_K: 0.95, EGY_LEAD: 160, EGY_SPEED: 260,
   MARCH_Y: [26, 56], MARCH_K: [0.62, 0.5],   // (Aphek's marching army: px above the ground line, and size, near row and far row)
-  BROOK_TOP: 8,                        // (px below the ground line: the brook Besor's water surface)
+  BROOK_TOP: 8,
+  SHARE_COL: 23,                       // (the brook Besor, on the way back: this side of this column, by the olive press, the sharing plays)                        // (px below the ground line: the brook Besor's water surface)
   CAMELS: 4, CAMEL_SPEED: 420, CAMEL_K: 0.85,
   MAN_LIGHT: 1.35,                     // (Glen's night stills of the men, 11-24: lit a little on the dark street)
   TINT: { ziklag: [90, 44, 20, 0.28], camp: [70, 26, 70, 0.30] },
@@ -215,7 +216,7 @@ function zkEnter(r) {
     ]);
   }
   if (r.id === "negev" && zkHas("z7_pursue")) zkTell("negev", "After the raiders, with six hundred men. Their tracks lead south.");
-  if (r.id === "besor" && zkHas("z7_won") && !zkHas("z7_end")) zkShare();
+  if (r.id === "besor" && zkHas("z7_won") && !zkHas("z7_end")) zkTell("back", "Over the brook, back to the two hundred by the olive press.");
   else if (r.id === "besor" && !zkHas("z7_besor")) {
     regionAdd("taken", "z7_besor");
     rPlay([ZK_SAY("", "So David went, he and the six hundred men who were with him, and came to the brook Besor, where those who were left behind stayed. But David pursued, he and four hundred men; for two hundred stayed behind, who were so faint that they couldn't go over the brook Besor. (1 Samuel 30:9-10)"),
@@ -237,6 +238,9 @@ function zkUpdate(dt, r) {
   if (zk.cine) zk.cine.t += dt;
   if (zk.march) for (const m of zk.march) { m.x += 70 * dt; m.t += dt; }
   if (r.id === "aphek" && !zkHas("z7_sent") && !zk.cine && free) zkAphek();
+  // (Glen 11-24: "have the journal write and the level end when he goes back to his people there by the olive press")
+  //  back at the brook Besor with everyone: the sharing (30:21-25) once he's over the water, with the two hundred
+  if (r.id === "besor" && zkHas("z7_won") && !zkHas("z7_end") && !zk.sharing && free && d.onGround && d.x < (roomById("besor").c0 + ZK.SHARE_COL) * T) { zk.sharing = true; zkShare(); }
   // Ziklag: past the weeping men, they turn on him (30:6)
   if (r.id === "ziklag" && zkHas("z7_burned") && !zkHas("z7_stones") && free && d.x > (roomById("ziklag").c0 + 40) * T) zkStones();
   // the jar: fill it, pour it

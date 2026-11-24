@@ -38,6 +38,7 @@ steps.push({ n: 1, fn() { at("camp", 6); } }, run(20), drain(), { keys: [], n: 2
 steps.push({ n: 1, fn() { for (const b of region.beasts) if (b.room === "camp") b.dead = true; at("camp", 22); } }, run(5), ...up(), run(10), { keys: [], n: 2, snap: true },
   { n: 1, fn() { for (const q of zk.captives) if (!q.free) { q.free = true; q.t = 0; } zkWon(); } }, { keys: [], n: 40 }, { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 3 }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, closeJ);
 // 8 the sharing
-steps.push({ n: 1, fn() { at("besor", 12); zkEnter(roomById("besor")); log("share script " + region.script.length); } }, run(10), { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 60 }, { n: 1, fn() { log("end " + zkHas("z7_end") + " jscene " + !!region.jscene); } }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true },
+steps.push({ n: 1, fn() { at("besor", 40); zkEnter(roomById("besor")); } }, run(10), { n: 1, fn() { log("by the far bank: share " + !!zk.sharing); at("besor", 21); } }, run(10), { n: 1, fn() { log("by the press: share " + !!zk.sharing + " script " + region.script.length); } }, { keys: [], n: 2, snap: true }, drain(), { keys: [], n: 60 }, { n: 1, fn() { log("end " + zkHas("z7_end") + " jscene " + !!region.jscene); } }, jFinish, { keys: [], n: 3 }, { keys: [], n: 2, snap: true },
   { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, { keys: [], n: 2, snap: true }, closeJ);
+steps.push({ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^z7_/.test(k)); region.save.jSp = []; regionWrite(); } });   // (the save stays between runs: leave it as found)
 testRun(steps);
