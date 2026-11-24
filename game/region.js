@@ -13,7 +13,7 @@
 // Loaded before main.js: only data and functions here; the layout is built when main.js calls buildRegion().
 
 // (Glen 11-06) which region: "#9-5" Gibeah (World 1), "#9-6" World 2, The Window (ramah.js, loaded before this file)
-const REGION_KEY = location.hash === "#9-13" ? "w7" : location.hash === "#9-12" ? "carmel" : location.hash === "#9-11" ? "engedi" : location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
+const REGION_KEY = location.hash === "#9-14" ? "hebron" : location.hash === "#9-13" ? "w7" : location.hash === "#9-12" ? "carmel" : location.hash === "#9-11" ? "engedi" : location.hash === "#9-10" ? "ziph" : location.hash === "#9-9" ? "keilah" : location.hash === "#9-8" ? "adullam" : location.hash === "#9-7" ? "nobgath" : location.hash === "#9-6" ? "ramah" : location.hash === "#9-5" ? "gibeah" : null;   // (11-10: "#9-7" World 3, Nob and Gath: nobgath.js)
 const REGION_ON = !!REGION_KEY;
 const REGION_UP = 130;   // (Glen 11-13: 130 for World 4's Old Well Shaft, 124 rows up; was 110)
 //   // rows a tall room can reach up above the screen's top (main.js TOP_ROW; a room's own: up)
@@ -113,7 +113,7 @@ const REGION_GIBEAH = {
     { id: "deep",    name: "The Deep Cellar",  w: 70, cave: true, mx: 4, my: 4, mw: 3, left: "cisterns", strip: "gibeah/deep_strip", floor: "gibeah/deep_floor" },   // (Glen 11-05: down the hole in the cellars' floor)
   ],
 };
-const REGION = REGION_KEY === "w7" && typeof W7 !== "undefined" ? W7 : REGION_KEY === "carmel" && typeof CARMEL !== "undefined" ? CARMEL : REGION_KEY === "engedi" && typeof ENGEDI !== "undefined" ? ENGEDI : REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
+const REGION = REGION_KEY === "hebron" && typeof HEB !== "undefined" ? HEB : REGION_KEY === "w7" && typeof W7 !== "undefined" ? W7 : REGION_KEY === "carmel" && typeof CARMEL !== "undefined" ? CARMEL : REGION_KEY === "engedi" && typeof ENGEDI !== "undefined" ? ENGEDI : REGION_KEY === "ziph" && typeof ZIPH !== "undefined" ? ZIPH : REGION_KEY === "keilah" && typeof KEILAH !== "undefined" ? KEILAH : REGION_KEY === "adullam" && typeof ADULLAM !== "undefined" ? ADULLAM : REGION_KEY === "nobgath" && typeof NOBGATH !== "undefined" ? NOBGATH : REGION_KEY === "ramah" && typeof RAMAH !== "undefined" ? RAMAH : REGION_GIBEAH;
 (() => { let c = RTUNE.GAP; for (const r of REGION.rooms) { r.c0 = c; c += r.w + RTUNE.GAP; } REGION.cols = c; })();
 const REGION_COLS = REGION.cols;
 const roomById = id => REGION.rooms.find(r => r.id === id);
@@ -2218,6 +2218,12 @@ const CRAWLS = {
     "The king lies asleep,", "his spear stuck in the ground at his head.", "David could end it with one blow.", "",
     "“The LORD forbid that I should stretch out", "my hand against the LORD's anointed.”", "(1 Samuel 26:11)", "",
     "He takes only the spear and the jar of water,", "and goes."],
+  hebron: ["# World 8: Hebron", "",   // (draft, 11-24: Glen, "crawl + cut scene"; 1 Samuel 31 off-screen, gently)
+    "While David was bringing the families of Ziklag home,", "the Philistines fought against Israel", "on Mount Gilboa.", "",
+    "“So Saul died with his three sons,", "his armor bearer, and all his men", "that same day together.”", "(1 Samuel 31:6)", "",
+    "Jonathan, David's best friend, is gone.", "And Saul, the king who hunted him for years,", "the LORD's anointed, is gone too.", "",
+    "Many men would cheer.", "The throne is empty at last.", "David does not cheer. He weeps.", "",
+    "After all the years of running,", "before he takes a single step,", "David still asks the LORD first."],
   ziklag: ["# World 7: Ziklag", "",   // (draft, 11-23: Glen, "i want the whole story so lets include aphek ... in the crawl and as the cut scene")
     "David is tired of running.", "", "“I will now perish one day by the hand of Saul.", "There is nothing better for me than that I should",
     "escape into the land of the Philistines.”", "(1 Samuel 27:1)", "",
@@ -2419,7 +2425,7 @@ function jsceneOpen(final, sp = null, browse = false) {
   if (final && own) regionAdd("taken", "g_jfinal");
   const A = REGION.aside; if (A && regionHas("taken", A.when)) { J.aside = A.text; J.asideNew = own && !region.save.jAside; region.save.jAside = true; regionWrite(); }
   // the pages: the region's own, then each one he's written since
-  J.pages = [null, ...jSpreads()];
+  J.pages = REGION.ownPage === false && jSpreads().length ? jSpreads() : [null, ...jSpreads()];   // (ownPage false: Hebron, pages only)
   const was = region.save.jSp || [];
   J.view = sp ? Math.max(0, J.pages.findIndex(p => p && p.id === sp)) : browse ? J.pages.length - 1 : 0;
   J.writing = browse || (sp && was.includes(sp)) ? -1 : J.view;   // (a page already written isn't written again)

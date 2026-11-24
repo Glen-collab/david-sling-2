@@ -41,7 +41,7 @@ Then the Journal, and on to Jerusalem.
 | The Gate | anointed over Israel | Psalm 23:5, and the whole song |
 (Each checked against WEB when it goes in.)
 
-## Open questions for Glen
+## Open questions for Glen (answered 11-24, below)
 1. **Abner's death.** After Asahel, Abner comes to Hebron to make peace (3:20-21), and Joab kills him at the gate for
    Asahel's blood (3:27); David weeps at his grave (3:31-39). In the time card, left out, or a cut scene?
 2. **The battle before the anointing.** As planned, Gibeon is the battle, then years pass, then the tribes and the
@@ -58,6 +58,39 @@ Abner running and looking back, Asahel falling, elders, men unloading donkeys, t
 Ziklag: Keilah's town by day. The road: Carmel's or Ziph's hills. Hebron: Gibeah's town or Keilah's. Gibeon: En-Gedi's
 spring. The chase: Ziph's hills. The feast: Carmel's camp. People: abner_walk/talk, asahel_*, messenger_*,
 samuel_anoint, villagers, donkeys, ox, camel.
+
+## Glen's answers, 11-24 (second round), and the first build
+- Abner: **David weeping at Abner's grave, a cut scene** (3:31-38). Abner's coming in peace and his death are told in
+  one line each (3:20-21, 30), off-screen.
+- **Gibeon is the fight.** No second battle before the anointing.
+- **Jabesh Gilead is told** (2:4-6), in Hebron.
+- **The lament is a cut scene:** David at his harp, the song's lines one at a time on a dark band (1:17, 19, 23-27;
+  1:20-22 left out), the Journal's harp under it; A for the next line.
+
+Built (game/hebron.js, stage #9-14, tools/tests/hbflow.js plays every beat):
+- Ziklag (cut scene): the messenger runs in; 2 Samuel 1:1-4, 10 (the crown and bracelet, told; 1:6-10's account of
+  Saul's death and 1:13-16 left out), 1:11-12 (David kneels and weeps), the lament, the Journal's first page, Abiathar
+  with the ephod: 2:1. The road opens.
+- The Road Up to Hebron: 2:2-3; four of the families walk behind David (Abigail, two women, a boy); scorpions, a viper,
+  a wild donkey, two pits.
+- Hebron: walking in, the cut scene: 2:3-4 (David kneels, the elder with the horn of oil), 2:4-6 (Jabesh Gilead),
+  2:8-10 (Ishbosheth), the Journal, 2:12-13; on to Gibeon.
+- The Pool of Gibeon (cut scene): 2:13-19. From here you are Asahel (his sheets, his speeds: walk 290, run 600, jump 1060).
+- The Hill of Ammah: the chase. Six gaps and five rocks; Abner runs ahead (leaping the gaps), looks back at column 60
+  (2:20) and 110 (2:21); at 158 he turns (2:22), the screen goes dark (2:23), 2:26-28, 2:32, 3:1, 3:20-21 and 30 told.
+- Hebron, Abner's grave (cut scene): David kneels, weeping; 3:31-32, 38, 37; the Journal; 2:11; on to the Feast.
+- The Feast: 2 Samuel 5:1; the twelve tribes come two by two (1 Chronicles 12:24-37), each leader with his banner and a
+  laden donkey. Up by a leader welcomes them (their verse) and they unload one food (bread, flour, oil, fig cakes,
+  raisins, wine); carry it to the table (left) and Up. A counter at the top. All twelve: 12:38-40, the Journal.
+- The Gate: 5:1-3 (David kneels, the elder anoints him), 5:4-5, the Journal's last page (Psalm 23:5 and the song).
+  Then David's card, and the road.
+- The Journal: five pages, no page of its own (region.js `ownPage: false`); Left / Right turns through them.
+- The song on the last page: Verse 4 (Hachilah's) until Glen's next verse.
+- Stand-ins: Keilah's town (Ziklag), Keilah's road, Nob (Hebron), En-Gedi's spring (Gibeon), Ziph's mountain with a
+  sunset tint (the chase), Carmel's camp (the feast), Gath's gate (the gate); Samuel's clip as the elder with the oil,
+  soldier_talk as Joab, Saul's soldiers as Abner's men, a villager as the messenger.
+
+Still to come: Player 2 (Asahel can't be chosen after Hebron); Glen's art (ART_PROMPTS_HEBRON.md); Jerusalem.
 
 ## The text (WEB Classic, ebible.org/eng-web, fetched 2026-11-24; "the LORD" for "Yahweh")
 
