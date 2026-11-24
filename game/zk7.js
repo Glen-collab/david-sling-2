@@ -18,6 +18,7 @@ const ZK = {
   FREE_REACH: 80,                     // (px to a tied family to free them)
   FREE_SAFE: 5,                       // (no raider closer than this many columns, or they're too busy to untie)
   EGY_K: 0.95, EGY_LEAD: 160, EGY_SPEED: 260,
+  MARCH_Y: [26, 56], MARCH_K: [0.62, 0.5],   // (Aphek's marching army: px above the ground line, and size, near row and far row)
   CAMELS: 4, CAMEL_SPEED: 420, CAMEL_K: 1,
   TINT: { ziklag: [90, 44, 20, 0.28], camp: [70, 26, 70, 0.30] },
 };
@@ -254,7 +255,7 @@ function zkAct(dt) {
 //  sent home; then the road
 function zkAphek() {
   const d = david, c = roomById("aphek").c0;
-  zk.cine = { t: 0 }; d.x = (c + 36) * T; d.vx = 0; d.facing = 1; snapCamera();
+  zk.cine = { t: 0, at: performance.now() / 1000 }; d.x = (c + 36) * T; d.vx = 0; d.facing = 1; snapCamera();
   zk.march = [];   // the Philistine armies passing behind, by hundreds and by thousands (29:2)
   for (let i = 0; i < 34; i++) zk.march.push({ row: i % 2, x: (c + 14) * T + i * 70 + (i % 2) * 30, spr: i % 3 ? "gath_guard_walk" : "gath_elite_walk", t: i * 0.13 });
   rPlay([
@@ -381,9 +382,6 @@ function zkDrawDavid(d, x, y) {
 function zkDraw(camX) {
   const r = region.room; if (!r) return;
   const now = performance.now() / 1000;
-  if (zk.march && r.id === "aphek") for (const row of [1, 0]) for (const m of zk.march) if (m.row === row && SPR[m.spr]) {   // the armies passing behind (the far row smaller, darker)
-    const x = m.x - camX; if (x < -80 || x > W + 80) continue;
-    drawSprite(m.spr, frameOf(m.spr, m.t), x, FOOT - (row ? 92 : 58), 1, row ? 0.42 : 0.55, row ? 0.55 : 0.75); }
   for (const w of zk.waters) if (w.room === r.id && w.kind === "well") { const im = ITEM.town_well; if (im && im.naturalWidth) drawItem("town_well", w.x - camX, FOOT + 4, ZK.WELL_H / im.naturalHeight); }   // (the town's well: Glen's)
   if (zk.brook && zk.brook.room === r.id) {   // the brook: water in the gap (stand-in)
     const x0 = zk.brook.c0 * T - camX, x1 = zk.brook.c1 * T - camX;
@@ -407,6 +405,15 @@ function zkDraw(camX) {
   }
   for (const m of zk.camels) if (SPR.raider_camel) drawSprite("raider_camel", frameOf("raider_camel", m.t), m.x - camX, m.y, m.dir, ZK.CAMEL_K);
 }
+// (Glen 11-24: "the philistine men are in the background of the near ground but in front of the mid ground") the armies
+//  passing behind, by hundreds and by thousands (29:2): drawn between the room's mid and near pictures (region.js afterMid)
+W7.afterMid = (r, camX) => {
+  if (!zk.march || r.id !== "aphek") return;
+  for (const row of [1, 0]) for (const m of zk.march) if (m.row === row && SPR[m.spr]) {   // (the far row smaller and paler)
+    const x = m.x - camX; if (x < -80 || x > W + 80) continue;
+    drawSprite(m.spr, frameOf(m.spr, m.t), x, FOOT - (row ? ZK.MARCH_Y[1] : ZK.MARCH_Y[0]), 1, row ? ZK.MARCH_K[1] : ZK.MARCH_K[0], row ? 0.8 : 1);
+  }
+};
 function zkDrawFire(f, x, now) {
   if (f.out) {   // blackened, a little steam
     if (f.steam > 0) { ctx.save(); for (let i = 0; i < 5; i++) { const k = (now * 0.6 + i / 5) % 1; ctx.fillStyle = `rgba(235,235,235,${0.35 * (1 - k) * Math.min(1, f.steam)})`;
@@ -434,7 +441,7 @@ function zkDrawFront(camX) {
 function zkDrawOver() {
   const r = region.room; if (!r) return;
   if (zk.cine) {   // the cut scene: the picture letterboxed, and the place named
-    const t = zk.cine.t, bar = 64 * Math.min(1, t / 0.8);
+    const t = performance.now() / 1000 - zk.cine.at, bar = 64 * Math.min(1, t / 0.8);   // (real time: the title fades on schedule even while the words wait for Z)
     ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, bar); ctx.fillRect(0, H - bar * 0.5, W, bar * 0.5);
     const a = Math.max(0, Math.min(1, t / 0.8, (3.4 - t) / 0.6));
     if (a > 0) { ctx.globalAlpha = a; ctx.textAlign = "center"; ctx.fillStyle = "rgba(0,0,0,0.45)"; ctx.fillRect(0, H * 0.3 - 60, W, 104);

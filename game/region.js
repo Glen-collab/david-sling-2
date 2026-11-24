@@ -1267,6 +1267,7 @@ function drawRegionBackdrop(camX) {   // true if it drew the room's backdrop
     if (REGION.afterFar) { const w = far.naturalWidth * H / far.naturalHeight;   // (a region's own, on the far picture: En-Gedi's ibex)
       REGION.afterFar(r, -((rel * 0.12) % w + w) % w, w, H / far.naturalHeight, fy); }
     if (mid) tile(mid, r.midP ?? 0.45, r.midY || 0, mid.naturalHeight, r.midX || 0);   // (r.midX: px the picture starts in from the room's left: Gath's painted gate on its door)   // (r.midP: a town's own wall, nearly with the room: World 3)
+    if (REGION.afterMid) REGION.afterMid(r, camX);   // (Glen 11-24) a region's own, between the mid and near pictures: Aphek's marching army
     const near = roomImg(r.near);   // (Glen 11-10: "far, mid and near ground", as Part One) a third layer, nearer and faster, its bottom at nearY (default: the ground line)
     if (near) { const nh = near.naturalHeight * (r.nearK || 1);   // (r.nearK: the strip smaller, Glen 11-18: En-Gedi's camp pots and mats were as tall as David)
       tile(near, 0.75, (r.nearY ?? GR * T + 20) - nh, nh); }
