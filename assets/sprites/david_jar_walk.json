@@ -1,0 +1,11 @@
+{
+  "frames": 12,
+  "frame_w": 144,
+  "frame_h": 247,
+  "ms_per_frame": 104,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 71,
+  "anchor_y": 244,
+  "source": "david_jar_walk.mp4"
+}

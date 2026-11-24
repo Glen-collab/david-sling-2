@@ -391,6 +391,16 @@ function zkDrawDavid(d, x, y) {
   if (zk.act && zk.act.kind === "pour" && SPR.david_pour) { drawSprite("david_pour", frameOf("david_pour", zk.act.t * ZK.POUR_RATE), x, y, d.facing); return true; }
   if (zk.act && zk.act.kind === "fill" && SPR.david_kneel) { drawSprite("david_kneel", frameOf("david_kneel", zk.act.t), x, y, d.facing); return true; }
   if (zk.pray && SPR.david_pray) { drawSprite("david_pray", frameOf("david_pray", h7Now() - (zk.pray.t0 ??= h7Now())), x, y, d.facing); return true; }
+  // (Glen 11-24: "him walking with it to put those fires out") the jar full: he carries it in both hands (Glen's clips:
+  //  david_jar_walk; standing, the first frames of his pour clip, david_jar_stand). Running, the walk sped up
+  if (zk.jar && region.room && ZK_ROOMS.includes(region.room.id) && d.onGround && SPR.david_jar_walk) {
+    const now = performance.now() / 1000;
+    if (d.state === "idle" && SPR.david_jar_stand) { drawSprite("david_jar_stand", frameOf("david_jar_stand", now), x, y, d.facing); return true; }
+    if (d.state === "walk" || d.state === "run" || d.state === "stop") {
+      const rate = Math.max(0.6, Math.abs(d.vx) / TUNE.WALK_SPEED);
+      drawSprite("david_jar_walk", frameOf("david_jar_walk", d.t * rate), x, y, d.facing); return true;
+    }
+  }
   return false;
 }
 function zkDraw(camX) {

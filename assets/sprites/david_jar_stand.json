@@ -1,0 +1,12 @@
+{
+  "frames": 3,
+  "frame_w": 123,
+  "frame_h": 248,
+  "ms_per_frame": 300,
+  "loop": true,
+  "align": "feet",
+  "anchor_x": 72,
+  "anchor_y": 245,
+  "source": "david_jar_pour_ground.mp4",
+  "pingpong": true
+}

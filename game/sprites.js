@@ -2292,6 +2292,30 @@ window.SPRITE_DATA = {
   "ay": 244,
   "align": "feet"
  },
+ "david_jar_stand": {
+  "src": "../assets/sprites/david_jar_stand.png",
+  "frames": 3,
+  "w": 123,
+  "h": 248,
+  "ms": 300,
+  "loop": true,
+  "pingpong": true,
+  "ax": 72,
+  "ay": 245,
+  "align": "feet"
+ },
+ "david_jar_walk": {
+  "src": "../assets/sprites/david_jar_walk.png",
+  "frames": 12,
+  "w": 144,
+  "h": 247,
+  "ms": 104,
+  "loop": true,
+  "pingpong": false,
+  "ax": 71,
+  "ay": 244,
+  "align": "feet"
+ },
  "david_jump": {
   "src": "../assets/sprites/david_jump.png",
   "frames": 15,
