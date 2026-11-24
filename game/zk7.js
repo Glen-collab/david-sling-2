@@ -152,7 +152,8 @@ function zkBuild(R) {
   c = R("besor");
   { const rm = "besor", X = k => (c + k) * T;
     ground(c, c + 69);
-    for (const k of [6, 10, 14, 18]) zk.men.push(P(rm, "men_hungry", X(k), k % 8 ? 1 : -1, () => zkHas("z7_besor")));
+    for (const k of [4, 8, 12, 16]) zk.men.push(P(rm, "men_hungry", X(k), k % 8 ? 1 : -1, () => zkHas("z7_besor")));
+    campfire(c + 21, GR - 1);   // (Glen 11-24: "there are no olive presses in ziklag. put one by the brook") the save point
     zk.brook = { room: rm, c0: c + 26, c1: c + 36 };
     rHole(rm, c + 26, 10);
     h7Rock(rm, "sand", "s", 29.2, GR * T - 12);   // (a rock in the brook: jump to it, and on over; Glen 11-24: down in the water, not floating over it)
@@ -180,13 +181,8 @@ function zkBuild(R) {
                   [78, "villager_woman_stand", "boy_sit"], [98, "villager_woman_stand", "girl_sit_talk"], [112, "abigail_idle", "villager_woman_stand", true]];
     for (const [k, a, b, wives] of fams) zk.captives.push({ room: rm, x: X(k), a, b, wives: !!wives, free: won, t: 0, gone: won });
   }
-  // (Glen 11-24: "what is the sediment from? Gibeah I think") the pits' edges: Hachilah's build renamed its own before
-  //  these rooms were built, so Ziklag's had Gibeah's cave kit (p_left / p_right). Now Hachilah's soil (h7_pit_*), and
-  //  the brook Besor's banks their own (h7_zk_bank_*, assets/rooms/w7/kit: Glen's to repaint; same size, same top line)
-  for (const p of region.props) if (ZK_ROOMS.includes(p.room) && (p.n === "p_left" || p.n === "p_right"))
-    p.n = (p.room === "besor" ? "h7_zk_bank_" : "h7_pit_") + (p.n === "p_left" ? "left" : "right");
-  Object.assign(KIT, { h7_zk_bank_left: KIT.h7_pit_left, h7_zk_bank_right: KIT.h7_pit_right });
-  kitImg("h7_zk_bank_left"); kitImg("h7_zk_bank_right");
+  // (Glen 11-24) the pits' edges: Glen's repainted p_left / p_right (Gibeah's cave kit, now in this soil), as built here
+  //  (Hachilah's build renames its own pits to h7_pit_* before these rooms are added, so Ziklag's keep Glen's new ones)
 }
 function zkFire(room, c) {   // a fire standing in the street: solid (no way through) till the jar puts it out
   const f = { room, c, x: c * T + T / 2, out: zkHas(`z7_fire_${room}_${c}`), t: 0, steam: 0 };
