@@ -195,6 +195,19 @@ const KIT = {
   w3_hide_jar: { w: 125, h: 115 }, w3_hide_rug: { w: 114, h: 162 }, w3_hide_wood: { w: 118, h: 77 },   // (11-10: Glen's hiding spots for the streets of Gath)   // (11-10: Glen's five stages: whole, three hits, broken through)
 };
 const KIT_IMG = {};
+// (Glen 11-24: "don't limit these profile views to just this level. If we need different men elsewhere so be it") his
+//  stills of David's men, side on, facing right: assets/items/men_<day|night>_<sit|lie>_<old|beard|stripes|1|2>
+//  (tools/cut_men_stills.py: every sitting man the same height, every lying man the same length). (x, y): his middle, the
+//  ground under him; dir -1 faces him left; light: a little brighter (the night ones on a dark street) or darker
+const MEN_STILL = { K: 0.15 };
+const MEN_DAY = ["men_day_sit_old", "men_day_sit_beard", "men_day_sit_stripes", "men_day_lie_1", "men_day_lie_2"];
+const MEN_NIGHT = ["men_night_sit_old", "men_night_sit_beard", "men_night_sit_stripes", "men_night_lie_1", "men_night_lie_2"];
+function drawManStill(img, x, y, dir = 1, light = 1, k = 1) {
+  const im = ITEM[img]; if (!im || !im.naturalWidth) return;
+  const w = im.naturalWidth * MEN_STILL.K * k, h = im.naturalHeight * MEN_STILL.K * k;
+  ctx.save(); if (light !== 1) ctx.filter = `brightness(${light})`;
+  ctx.translate(Math.round(x), 0); ctx.scale(dir, 1); ctx.drawImage(im, -w / 2, y + 2 - h, w, h); ctx.restore();
+}
 function kitImg(n) {
   let im = KIT_IMG[n];
   if (!im) { im = KIT_IMG[n] = new Image(); im.src = n.startsWith("cm_") ? "../assets/rooms/carmel/kit/" + n + ".png" : n.startsWith("h7_") ? "../assets/rooms/w7/kit/" + n + ".png" : n.startsWith("w3_") ? "../assets/rooms/w3/kit/" + n + ".png" : n.startsWith("w4_") ? "../assets/rooms/w4/kit/" + n + ".png" : "../assets/rooms/gibeah/" + (n.startsWith("tw_") ? "kit_tower/" : n.startsWith("hall_") ? "kit_halls/" : /^fg?_/.test(n) ? "kit_fields/" : /^t(fg)?_/.test(n) ? "kit_town/" : /^[cp]_/.test(n) ? "kit_cave/" : /^hr_/.test(n) ? "kit_harp/" : "kit/") + n + ".png"; }

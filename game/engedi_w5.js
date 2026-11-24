@@ -15,6 +15,7 @@
 // Adullam camp kit) till Glen's own.
 
 const G5 = {
+  MAN_LIGHT: 1.15,   // (Glen's night stills of the men in the camp, 11-24: lit a little, by the fire)
   PACK_REACH: 44,          // px: touching a provision picks it up
   SPARE: 1,                // provisions each load can do without (one dropped on the way home is all right)
   DROP_FOR: 3.5,           // s a dropped provision waits to be picked back up (then it's back where it was found)
@@ -192,6 +193,10 @@ function g5Build(R) {
     campfire(c + 36, GR - 1);
     // (Glen's clips, 11-18) two of the men by the fire: hungry, heads down, till the first load is home; then bread and figs
     g5Person(rm, "men_hungry", X(40), 1, () => g5Stage() === 0, G5.SIT_K); g5Person(rm, "men_eat", X(40), 1, () => g5Stage() > 0, G5.SIT_K);   // (back in the dark while Saul sits by the fire)
+    // (Glen 11-24: "the night ones can be used in caves for David's camp ... also in en gedi") more of the men round the
+    //  fire, his night stills (region.js drawManStill): heads down, or asleep
+    for (const [k, img, dir] of [[31, "men_night_sit_old", 1], [44, "men_night_lie_1", -1], [47.5, "men_night_sit_beard", -1], [51, "men_night_sit_stripes", -1]])
+      g5Person(rm, img, X(k), dir).still = true;
     g5.entry.camp = X(54);
   }
 
@@ -890,7 +895,8 @@ function g5DrawFront(camX) {
     if (p.room !== r.id || (p.show && !p.show())) continue;
     const x = p.x - camX; if (x < -300 || x > W + 300) continue;
     const n = typeof p.spr === "function" ? p.spr() : p.spr;   // (Glen's sitting man: hungry, then eating, 11-18)
-    if (SPR[n]) drawSprite(n, frameOf(n, p.t), x, p.y, p.dir, p.k, 1, "");
+    if (p.still) drawManStill(n, x, p.y, p.dir, G5.MAN_LIGHT);   // (Glen's stills of the men, 11-24)
+    else if (SPR[n]) drawSprite(n, frameOf(n, p.t), x, p.y, p.dir, p.k, 1, "");
   }
   for (const g of g5.guards) if (g.room === r.id && g5Active(g) && typeof z5DrawMan === "function") z5DrawMan(g, camX);
   const s = g5.saul;

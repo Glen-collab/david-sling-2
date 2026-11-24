@@ -15,6 +15,7 @@
 // below a room's waterline he swims (Glen's david_swim), with a breath meter.
 
 const R4 = {
+  MAN_LIGHT: 1,   // (Glen's day stills of the men in the camp, 11-24: the camp is lit, so the day ones, not the night)
   STAND: 0.12,       // a ledge's walking surface: this much of its height down from its top edge (the top face of the rock)
   PROP_K: 0.55,      // the camp's bedrolls and baskets, next to their cut size
   // (Glen 11-13: "an up arrow to go into the cave deeper") a tunnel into the picture: Up by it, he turns his back
@@ -629,7 +630,7 @@ function r4Build(R) {
   ];
   NEW.forEach(([room, k, man, dir, say, reply], i) => r4.men.push({ id: "r4_man_" + i, room, x: (roomById(room).c0 + k) * T, y: FOOT, man: "soldier" + man, dir, say, reply, state: regionHas("taken", "r4_man_" + i) ? "gone" : "hide", t: 0 }));
   { const cc = roomById("camp").c0, at = k => (cc + k) * T;
-    for (const [n, k, dir, f] of [["soldier_sit", 30, 1, 0], ["soldier_sit", 36, -1, 2], ["soldier_talk", 44, -1, 0], ["soldier2_fear", 53, 1, 0], ["boy_scared", 57, -1, 0], ["soldier_sit", 85, 1, 1], ["soldier4_fear", 92, -1, 0]])
+    for (const [n, k, dir, f] of [["men_day_sit_old", 30, 1, 0], ["men_day_sit_beard", 36, -1, 0], ["soldier_talk", 44, -1, 0], ["soldier2_fear", 53, 1, 0], ["boy_scared", 57, -1, 0], ["men_day_sit_stripes", 85, 1, 0], ["soldier4_fear", 92, -1, 0]])
       r4.men.push({ id: null, room: "camp", x: at(k), y: FOOT, still: n, f, dir, state: "camp", t: Math.random() * 3 });
     NEW.forEach((m, i) => r4.men.push({ id: null, room: "camp", x: at([40, 48, 61, 66, 72, 78, 97, 102][i]), y: FOOT, still: "soldier" + m[2] + "_fear", f: -1, dir: i % 2 ? 1 : -1, state: "camp", need: "r4_man_" + i, t: 0 }));
     // (Glen 11-17: "everyone ... can say something instead of just standing there") Up by anyone in the camp: their next
@@ -941,6 +942,7 @@ function r4DrawMen(camX) {
     const x = m.x - camX; if (x < -200 || x > W + 200) continue;
     if (m.state === "camp") {
       if (m.need && !regionHas("taken", m.need)) continue;
+      if (/^men_/.test(m.still)) { drawManStill(m.still, x, m.y, m.dir, R4.MAN_LIGHT); continue; }   // (Glen 11-24: his stills of the men, for the soldier_sit that looked like boys)
       const S = SPR[m.still]; if (!S) continue;
       const f = m.f < 0 ? S.frames - 1 : m.still === "soldier_sit" || m.still === "soldier_talk" || m.still === "boy_scared" ? frameOf(m.still, now + m.t) : m.f;
       drawSprite(m.still, f, x + (m.f === 0 && /_fear$/.test(m.still) ? Math.sin(now * 40) * 1.2 : 0), m.y, m.dir); continue;
