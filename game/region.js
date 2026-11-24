@@ -2152,7 +2152,7 @@ function drawRegionOver() {
 //      know is informed"): before each region's first play, a short sermon rising up the screen and away, like Part
 //      One's (world1.js W1_CRAWL). Once per save (the "crawl" flag); A skips. Words: SERMONS_DRAFT.md (WEB, checked on
 //      ebible.org 11-15, "the LORD" for Yahweh). "#" a heading line; "(" a reference, smaller and paler ----
-const CRAWL = { SPEED: 46, SPACE: 42, TAIL: 4, PX: 32, REF_PX: 22, GOLD: "#ffe08a", REF: "#c9b27a" };
+const CRAWL = { BACK: 2.5, FAST: 3, SPEED: 46, SPACE: 42, TAIL: 4, PX: 32, REF_PX: 22, GOLD: "#ffe08a", REF: "#c9b27a" };
 const CRAWLS = {
   gibeah: ["# World 1: Gibeah", "",
     "Years ago, the prophet Samuel anointed", "a shepherd boy named David", "to be the next king of Israel.",
@@ -2256,10 +2256,17 @@ const CRAWLS = {
 const regionCrawlStart = (key = REGION.key) => { region.crawl = { t: 0, key, flag: key === REGION.key ? "crawl" : "crawl_" + key }; };
 function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has the screen
   const C = region.crawl, L = CRAWLS[C.key || REGION.key] || [];
-  C.t += dt;
+  // (Glen 11-24: "if readers can't read that fast, let me control it by pausing or going back up with the d pad")
+  //  Up: back up the page; Down: faster; Left or Right: pause, and go on again. A still skips the rest
+  C.age = (C.age || 0) + dt;
+  if (pressed("left") || pressed("right")) C.paused = !C.paused;
+  const up = !!input.now.up, down = !!input.now.down;
+  const rate = up ? -CRAWL.BACK : down ? CRAWL.FAST : C.paused ? 0 : 1;
+  if (up || down) C.paused = false;
+  C.t = Math.max(0, C.t + dt * rate);
   const end = L.length * CRAWL.SPACE / CRAWL.SPEED + CRAWL.TAIL;
-  if (C.t > end || (C.t > 1.5 && (pressed("a") || pressed("start")))) { region.crawl = null; regionAdd("taken", C.flag || "crawl"); return; }
-  ctx.fillStyle = `rgba(8,5,2,${Math.min(0.94, 0.75 + C.t * 0.2)})`; ctx.fillRect(0, 0, W, H);
+  if ((C.t > end && rate > 0) || (C.age > 1.5 && (pressed("a") || pressed("start")))) { region.crawl = null; regionAdd("taken", C.flag || "crawl"); return; }
+  ctx.fillStyle = `rgba(8,5,2,${Math.min(0.94, 0.75 + C.age * 0.2)})`; ctx.fillRect(0, 0, W, H);
   ctx.save(); ctx.textAlign = "center";
   const top = H * 0.1;
   L.forEach((l, i) => {
@@ -2272,7 +2279,8 @@ function regionCrawlFrame(dt) {   // regionMapFrame: true while the crawl has th
     ctx.save(); ctx.translate(W / 2, y); ctx.scale(1, 0.92); ctx.fillText(text, 0, 0); ctx.restore();
   });
   ctx.restore();
-  if (C.t > 1.5 && typeof caption === "function") caption("A: skip", 0.6, true);
+  if (C.age > 1.5) { const g = ctx.createLinearGradient(0, H - 70, 0, H); g.addColorStop(0, "rgba(8,5,2,0)"); g.addColorStop(0.3, "rgba(8,5,2,0.97)"); ctx.fillStyle = g; ctx.fillRect(0, H - 70, W, 70); }   // (the words go under the hint)
+  if (C.age > 1.5 && typeof caption === "function") caption(C.paused ? "Paused.   Left / Right: go on      Up: back      Down: faster      A: skip" : "Up: back      Down: faster      Left / Right: pause      A: skip", 0.6, true);
 }
 
 // ---- the map screen (Select): the rooms you've been in, where you are, the seals you've seen, the finds you've
