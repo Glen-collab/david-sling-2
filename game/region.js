@@ -2195,6 +2195,12 @@ const CRAWLS = {
     "\u201cGo strike the Philistines, and save Keilah.\u201d", "(1 Samuel 23:2)",
     "His men are afraid, so he asks again.", "\u201cArise, go down to Keilah;", "for I will deliver the Philistines into your hand.\u201d", "(1 Samuel 23:4)", "",
     "David saves the town. But Saul hears where he is,", "and the people David saved would hand him over.", "The LORD tells him the truth in time,", "and David slips away in the night.", "",
+    // (Glen 11-24: "for sure mention why the ephod is important ... as part of the crawl that is like the sermon")
+    "How does David hear from God?", "When Saul killed the priests of Nob,", "one young priest, Abiathar, escaped",
+    "and ran to David.", "“He came down with an ephod in his hand.”", "(1 Samuel 23:6)", "",
+    "The ephod was the high priest's linen vest.", "In it were the Urim and Thummim,", "lots God used to answer yes or no.",
+    "With the ephod, David could ask God,", "and God would answer.", "",
+    "King Saul has a palace and an army,", "but he has lost that.", "The hunted man in the hills has the one thing", "that matters most: the LORD still speaks to him.", "",
     "Ask the LORD first, every time,", "even when the answer is hard to hear."],
   ziph: ["# World 5: Ziph", "",
     "David hides in the wilderness of Ziph,", "in the dry hills and the strongholds.",
@@ -2223,7 +2229,8 @@ const CRAWLS = {
     "“So Saul died with his three sons,", "his armor bearer, and all his men", "that same day together.”", "(1 Samuel 31:6)", "",
     "Jonathan, David's best friend, is gone.", "And Saul, the king who hunted him for years,", "the LORD's anointed, is gone too.", "",
     "Many men would cheer.", "The throne is empty at last.", "David does not cheer. He weeps.", "",
-    "After all the years of running,", "before he takes a single step,", "David still asks the LORD first."],
+    "Before that last battle, Saul asked the LORD,", "but heard nothing.", "“The LORD didn't answer him", "by dreams, by Urim, or by prophets.”", "(1 Samuel 28:6)", "",
+    "After all the years of running,", "before he takes a single step,", "David still asks the LORD first,", "with Abiathar the priest and the ephod.", "And the LORD answers."],
   ziklag: ["# World 7: Ziklag", "",   // (draft, 11-23: Glen, "i want the whole story so lets include aphek ... in the crawl and as the cut scene")
     "David is tired of running.", "", "“I will now perish one day by the hand of Saul.", "There is nothing better for me than that I should",
     "escape into the land of the Philistines.”", "(1 Samuel 27:1)", "",

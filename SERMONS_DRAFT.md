@@ -133,6 +133,13 @@ all back." (1 Samuel 30:19)
 Then sad news comes from the north. Saul and Jonathan have fallen in battle on Mount Gilboa. David doesn't
 celebrate. He weeps for them both, and sings, "How the mighty have fallen!" (2 Samuel 1:19)
 
+### The ephod (added 11-24, Glen: "for sure mention why the ephod is important"): in Keilah's crawl
+How does David hear from God? When Saul killed the priests of Nob, one young priest, Abiathar, escaped and ran to David.
+"He came down with an ephod in his hand." (1 Samuel 23:6) The ephod was the high priest's linen vest. In it were the
+Urim and Thummim, lots God used to answer yes or no. With the ephod, David could ask God, and God would answer. King Saul
+has a palace and an army, but he has lost that. In Hebron's crawl: before Gilboa, "The LORD didn't answer him by dreams,
+by Urim, or by prophets." (1 Samuel 28:6) David still asks first, with Abiathar and the ephod, and the LORD answers.
+
 ### World 8: Hebron (2 Samuel 2:1-11; 5:1-5)
 After all the years of running, David still asks first. "Shall I go up into any of the cities of Judah?" The LORD
 says, "Go up." "Where shall I go up?" "To Hebron." (2 Samuel 2:1) There the men of Judah anoint David king over the house of
