@@ -33,7 +33,8 @@ const HB = {
   //  Asahel goes up by himself, Abner turns, warns him (2:22), and strikes with the back end of the spear (2:23)
   BLOW: { FILM_HIT: 4.05, REACH: 170, FROM: 117, HOP: 0.55, RUN: 620, STOP: 150, GAP: 100, FLASH: 0.3, HIT_FPS: 22, HIT_HOLD: 6, BACK: 110, SPEAR: 230 },
   LAMENT_SECS: 6,                             // (each line of the lament on screen; A for the next)
-  TRIBE_SPEED: 140, TABLE: 14,                // (the tribes walking in; the feast table's column in the Feast)
+  TRIBE_SPEED: 140, TABLE: 19, TABLE_K: 0.42, TABLE_TOP: 0.4, TABLE_ITEM: 34,   // (Glen 11-25: his table, carmel/kit/12_tribes_table.png: its scale, where the top is (x its height from the top), each gift's height)
+                 // (the tribes walking in; the feast table's column in the Feast)
   REACH: 110,                                 // (px: Up by a tribe's leader to welcome them; by the table to set down)
   TINT: { chase: [150, 60, 20, 0.2] },
 };
@@ -193,7 +194,7 @@ function hbBuild(R) {
   }
   // -- The Feast (1 Chronicles 12): the table; the tribes come in pairs from the right
   c = R("feast");
-  { const rm = "feast";
+  { const rm = "feast"; roomImg("carmel/kit/12_tribes_table.png");   // (load Glen's table ahead)
     ground(c, c + 109);
     campfire(c + 4, GR - 1);   // an olive press (the save point)
     const done = hbHas("hb_feasted");
@@ -370,6 +371,7 @@ function hbPool() {
 
 // the chase (2:19-23): Abner ahead, up and over the ridge and up the Hill of Ammah; he looks back and warns Asahel;
 //  at the last, the end. He runs his own pace: lose him (or fall into a gully) and it's back to the last stretch
+function hbTableHalf() { const im = roomImg("carmel/kit/12_tribes_table.png"); return ((im && im.naturalWidth) || 1944) * HB.TABLE_K / 2; }
 function hbChaseY(lv) { return lv ? HB.CHASE_H[lv] : GR * T; }
 function hbAbnerY(x) {   // where Abner's feet are at x: on his route, or leaping between two pieces of it
   const col = x / T - roomById("chase").c0, R = HB.CHASE_ROUTE;
@@ -477,7 +479,7 @@ function hbFeast(dt, r, free) {
   }
   if (free && d.onGround && pressed("up")) {
     const t = hb.tribes.find(o => o.st === "here" && Math.abs(o.x - d.x) < HB.REACH);
-    const atTable = Math.abs(d.x - hbRoomX("feast", HB.TABLE)) < HB.REACH * 1.4;
+    const atTable = Math.abs(d.x - hbRoomX("feast", HB.TABLE)) < hbTableHalf() + 20;
     if (t) { t.st = "leave"; hb.foods.push({ name: t.food, x: t.x + 60, y: FOOT, t: 0 }); toast(`Welcome, ${t.name}! ${t.line[0].toUpperCase() + t.line.slice(1)}. They brought ${hbFoodName(t.food)}.`);
       if (HB_JACOB[t.name]) rPlay([HB_SAY("Jacob’s blessing, from the Hall of the Tribes", HB_JACOB[t.name])]); }
     else if (atTable && hb.carry) { hb.table.push(hb.carry); hb.carry = null; toast(`On the table. ${hb.table.length} of ${HB_TRIBES.length}.`); }
@@ -567,8 +569,10 @@ function hbDraw(camX) {
   // the feast: the tribes, their banners, the foods they unload, the table
   if (r.id === "feast") {
     const tx = hbRoomX("feast", HB.TABLE) - camX;
-    ctx.save(); ctx.fillStyle = "#6a4a2a"; ctx.fillRect(tx - 120, FOOT - 46, 240, 12); ctx.fillRect(tx - 110, FOOT - 34, 10, 34); ctx.fillRect(tx + 100, FOOT - 34, 10, 34); ctx.restore();   // (stand-in: a plank table)
-    hb.table.forEach((n, i) => drawItem(n, tx - 100 + (i % 6) * 40, FOOT - 46 - Math.floor(i / 6) * 22, 26 / ((ITEM[n] && ITEM[n].naturalHeight) || 26)));
+    const im = roomImg("carmel/kit/12_tribes_table.png"), K = HB.TABLE_K, tw = ((im && im.naturalWidth) || 1944) * K, th = ((im && im.naturalHeight) || 279) * K, top = FOOT - th + 4;
+    if (im && im.naturalWidth) ctx.drawImage(im, tx - tw / 2, top, tw, th);
+    const ty = top + th * HB.TABLE_TOP, gap = tw * 0.84 / HB_TRIBES.length;   // (a gift a tribe, in a row along the top)
+    hb.table.forEach((n, i) => drawItem(n, tx - gap * (HB_TRIBES.length - 1) / 2 + i * gap, ty, HB.TABLE_ITEM / ((ITEM[n] && ITEM[n].naturalHeight) || 26)));
     for (const t of hb.tribes) if ((t.st === "come" || t.st === "here" || t.st === "leave") && !hbHas("hb_feasted")) {
       const x = t.x - camX; if (x < -200 || x > W + 200) continue;
       const moving = t.st !== "here", face = t.st === "leave" ? 1 : -1, don = t.st === "leave" ? "donkey_bare_walk" : "donkey_packs_walk";   // (Glen 11-24: laden till you take the gifts, bare after)
