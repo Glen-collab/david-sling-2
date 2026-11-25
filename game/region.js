@@ -2456,6 +2456,7 @@ function jsceneOpen(final, sp = null, browse = false) {
   if (sp && !was.includes(sp)) { region.save.jSp = [...was, sp]; regionWrite(); }
   hushStage();
   if (final && SONG_ON) songToggle(true);
+  else if (CARD_SONG && !CARD_SONG.paused) {}   // (the end of the game: his song, already playing under the ark's films, carries on)
   else if (typeof journalMusic !== "undefined") { journalMusic.currentTime = 0; journalMusic.volume = typeof JTUNE !== "undefined" ? JTUNE.MUSIC_VOLUME : 0.5; journalMusic.play().catch(() => {}); }
   jsceneLayout(J);
 }

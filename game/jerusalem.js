@@ -37,9 +37,13 @@ HEB.rooms.push(
     far: "keilah/town/far", mid: "keilah/town/mid.png", midY: 0, near: "keilah/town/near.png" },   // (stand-in: Keilah's town by day)
 );
 HEB.spreads.push(
-  { id: "js_zion", when: "jr_end", title: "Jerusalem", final: true,
+  { id: "js_zion", when: "jr_end", title: "Jerusalem",
     entry: ["The Jebusites laughed at us from their walls: even the blind and the lame could keep us out. The way in was hidden, under the ground, and I could only find it one step at a time. Now the stronghold of Zion is the LORD's city, and mine to keep for Him.", "2 Samuel 5:6-10"],
     psalm: { ref: "Psalm 122", text: "I was glad when they said to me, “Let’s go to the LORD’s house!” Our feet are standing within your gates, Jerusalem! (122:1-2)" } },
+  // (Glen 11-25: his two clips "for the end of the game") the ark comes into the city: his last page
+  { id: "js_ark", when: "jr_ark", title: "The Ark Comes Home", final: true,
+    entry: ["The ark of the LORD has come into Jerusalem, with shouting and the sound of the trumpet, and I danced before the LORD with all my might. Through the caves and the long years of running, He kept every promise. My heart is steadfast.", "2 Samuel 6:12-15"],
+    psalm: { ref: "Psalm 24", text: "Lift up your heads, you gates! Be lifted up, you everlasting doors, and the King of glory will come in. (24:7)" } },
 );
 // (region.js CRAWLS.jerusalem) its own crawl, once, the first time you're in one of its rooms
 HEB.crawlKey = () => { const c = david.x / T, r = HEB.rooms.find(o => c >= o.c0 && c < o.c0 + o.w); return r && JR_ROOMS.includes(r.id) ? "jerusalem" : null; };
@@ -198,7 +202,22 @@ function jrZion() {
     HB_SAY("", "Nevertheless David took the stronghold of Zion. This is David’s city. (2 Samuel 5:7)"),
     HB_SAY("", "David lived in the stronghold, and called it David’s city. David built around from Millo and inward. David grew greater and greater, for the LORD, the God of Armies, was with him. (2 Samuel 5:9-10)"),
     { fn() { regionAdd("taken", "jr_end"); regionAdd("taken", "g_exit_open"); hb.cine = null; } }, { wait: 1.2 },
-    { fn() { jsceneOpen(true, "js_zion"); } },   // (his last page; then the card, and the road)
+    { fn() { jrArk(); } },
+  ]);
+}
+// ---- the ark comes into the city (6:12-15), the end of the game: Glen's two films, his song under them (the first
+//      time it plays in Part Two), carried on into the last Journal page and the card ---------------------------------
+function jrArk() {
+  rPlay([
+    HB_SAY("", "David went and brought up God’s ark from the house of Obed-Edom into David’s city with joy. (2 Samuel 6:12)"),
+    { fn() {
+      region.wait = 99;   // (held here till the films are done)
+      const last = () => { regionAdd("taken", "jr_ark"); region.wait = 0; jsceneOpen(true, "js_ark"); };   // (his last page; then the card, and the road)
+      if (/simgame/.test(location.pathname) && !window.JR_FILMS) return last();
+      songToggle(true);
+      preFilm.start({ src: "../assets/video/ark_enter.mp4", words: [[0.6, 5.4, "The ark comes to Jerusalem", "“…with shouting and with the sound of the trumpet.” (2 Samuel 6:15)"]] }, () =>
+        preFilm.start({ src: "../assets/video/ark_dance.mp4", words: [[1.0, 6.0, "“David danced before the LORD with all his might.”", "2 Samuel 6:14"]] }, last));
+    } },
   ]);
 }
 
