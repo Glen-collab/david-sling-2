@@ -2231,6 +2231,15 @@ const CRAWLS = {
     "Many men would cheer.", "The throne is empty at last.", "David does not cheer. He weeps.", "",
     "Before that last battle, Saul asked the LORD,", "but heard nothing.", "“The LORD didn't answer him", "by dreams, by Urim, or by prophets.”", "(1 Samuel 28:6)", "",
     "After all the years of running,", "before he takes a single step,", "David still asks the LORD first,", "with Abiathar the priest and the ephod.", "And the LORD answers."],
+  jerusalem: ["# World 8: Jerusalem", "",   // (draft, 11-25: Glen, "why won't jerusalem let david in? they don't trust him yet?")
+    "David is king over all Israel now.", "", "In the middle of the land, on a high ridge,", "stands a city that has never belonged to Israel:",
+    "Jebus, the city of the Jebusites.", "", "Four hundred years before,", "when Joshua brought Israel into the land,", "the Jebusites held on to their fortress.", "",
+    "“As for the Jebusites,", "the inhabitants of Jerusalem,", "the children of Judah couldn’t drive them out.”", "(Joshua 15:63)", "",
+    "So it isn't that they don't trust David.", "They are not his people,", "and he is not their king.", "They are a nation of their own,", "behind walls no one has ever broken.", "",
+    "But the city sits on the border", "between Judah in the south", "and the tribes of the north.", "A city no tribe owns", "could belong to all of them:", "a capital for all Israel.", "",
+    "So the new king marches his men to its gate.", "The Jebusites look down and laugh.", "Their walls are so strong, they say,", "even the blind and the lame could keep David out.", "",
+    "But under the city runs a secret:", "the watercourse, the shaft", "that brings the spring's water up into the city.", "",
+    "The way in is hidden.", "It is found one step at a time."],
   ziklag: ["# World 7: Ziklag", "",   // (draft, 11-23: Glen, "i want the whole story so lets include aphek ... in the crawl and as the cut scene")
     "David is tired of running.", "", "“I will now perish one day by the hand of Saul.", "There is nothing better for me than that I should",
     "escape into the land of the Philistines.”", "(1 Samuel 27:1)", "",
