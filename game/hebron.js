@@ -33,7 +33,7 @@ const HB = {
   //  Asahel goes up by himself, Abner turns, warns him (2:22), and strikes with the back end of the spear (2:23)
   BLOW: { FILM_HIT: 4.05, REACH: 170, FROM: 117, HOP: 0.55, RUN: 620, STOP: 150, GAP: 100, FLASH: 0.3, HIT_FPS: 22, HIT_HOLD: 6, BACK: 110, SPEAR: 230 },
   LAMENT_SECS: 6,                             // (each line of the lament on screen; A for the next)
-  TRIBE_SPEED: 140, GRAVE_W: 300, GRAVE_SINK: 10,   // (Abner's grave: drawn this wide, its foot this far into the ground)
+  TRIBE_SPEED: 140, GRAVE_W: 300, GRAVE_SINK: 10, CROWN_H: 40,   // (Abner's grave: drawn this wide, its foot this far into the ground)
    TABLE: 19, TABLE_K: 0.42, TABLE_TOP: 0.4, TABLE_ITEM: 34,   // (Glen 11-25: his table, carmel/kit/12_tribes_table.png: its scale, where the top is (x its height from the top), each gift's height)
                  // (the tribes walking in; the feast table's column in the Feast)
   REACH: 110,                                 // (px: Up by a tribe's leader to welcome them; by the table to set down)
@@ -63,17 +63,17 @@ const HB_JACOB = {
 //  walking-stick man and a drawn banner till theirs come
 const HB_TRIBES = [
   ["Judah", "who bore shield and spear: six thousand eight hundred (12:24)", "#c8a030", "bread", "judah"],
-  ["Simeon", "mighty men of valor: seven thousand one hundred (12:25)", "#8a3030", "grain_sack", "simeon"],
-  ["Levi", "four thousand six hundred, and Zadok, a young man mighty of valor (12:26, 28)", "#e8e0d0", "gift_oil", "levi"],
+  ["Simeon", "mighty men of valor: seven thousand one hundred (12:25)", "#8a3030", "hb_flour", "simeon"],
+  ["Levi", "four thousand six hundred, and Zadok, a young man mighty of valor (12:26, 28)", "#e8e0d0", "hb_oil", "levi"],
   ["Benjamin", "Saul's relatives: three thousand (12:29)", "#3a6aa8", "fig_cake", "benjamin"],
   ["Ephraim", "twenty thousand eight hundred, mighty men of valor (12:30)", "#2a7a3a", "raisins", "ephraim"],
-  ["Manasseh", "eighteen thousand, mentioned by name, to come and make David king (12:31)", "#6a4a8a", "wineskin", "manasseh"],
+  ["Manasseh", "eighteen thousand, mentioned by name, to come and make David king (12:31)", "#6a4a8a", "hb_wine", "manasseh"],
   ["Issachar", "men who had understanding of the times, to know what Israel ought to do (12:32)", "#2a2a2a", "bread", "issachar"],
   ["Zebulun", "fifty thousand, not of double heart (12:33)", "#d07a20", "fig_cake", "zebulun"],
   ["Naphtali", "a thousand captains, and thirty-seven thousand with shield and spear (12:34)", "#a8a040", "raisins", "naphtali"],
-  ["Dan", "twenty-eight thousand six hundred (12:35)", "#7a5030", "grain_sack", "dan"],
-  ["Asher", "forty thousand (12:36)", "#4aa0a0", "gift_oil", "asher"],
-  ["Reuben and Gad", "from the other side of the Jordan: one hundred twenty thousand (12:37)", "#a04a70", "wineskin", "reuben", "gad"],
+  ["Dan", "twenty-eight thousand six hundred (12:35)", "#7a5030", "hb_flour", "dan"],
+  ["Asher", "forty thousand (12:36)", "#4aa0a0", "hb_oil", "asher"],
+  ["Reuben and Gad", "from the other side of the Jordan: one hundred twenty thousand (12:37)", "#a04a70", "hb_wine", "reuben", "gad"],
 ];
 
 const HEB = {
@@ -127,7 +127,7 @@ const HEB = {
   draw: camX => hbDraw(camX), drawFront: camX => hbDrawFront(camX), drawOver: () => hbDrawOver(),
 };
 
-const hb = { told: {}, people: [], follow: [], tribes: [], foods: [], cine: null, lament: null, abner: null, carry: null, table: [], fast: null, grave: null, elder: null };
+const hb = { told: {}, people: [], follow: [], tribes: [], foods: [], cine: null, crown: false, lament: null, abner: null, carry: null, table: [], fast: null, grave: null, elder: null };
 const hbHas = id => typeof region !== "undefined" && region.save && region.save.taken.includes(id);
 function hbTell(k, text) { if (!hb.told[k]) { hb.told[k] = true; toast(text); } }
 const HB_SAY = (who, text) => ({ say: [who, text] });
@@ -140,7 +140,7 @@ const hbAsahel = () => { const r = region.room; return !!r && (r.id === "gibeon"
 // ---------------------------------------------------------------------------------------------------------------------
 function hbBuild(R) {
   for (const k of ["people", "follow", "tribes", "foods", "table"]) hb[k].length = 0;
-  hb.cine = null; hb.lament = null; hb.carry = null; hb.grave = null;
+  hb.cine = null; hb.lament = null; hb.carry = null; hb.grave = null; hb.crown = false;
   const P = hbPerson;
 
   // -- Ziklag by day (2 Samuel 1): the messenger, the lament, "Shall I go up?"
@@ -290,10 +290,11 @@ function hbZiklag() {
     HB_SAY("The messenger", "“I have escaped out of the camp of Israel.” (2 Samuel 1:3)"),
     HB_SAY("David", "“How did it go? Please tell me.” (2 Samuel 1:4)"),
     HB_SAY("The messenger", "“The people have fled from the battle, and many of the people also have fallen and are dead. Saul and Jonathan his son are dead also.” (2 Samuel 1:4)"),
+    { fn() { hb.crown = true; } },   // (Glen's crown and bracelet, held out: set down at David's feet)
     HB_SAY("", "He held out the crown that was on Saul's head and the bracelet that was on his arm. (2 Samuel 1:10)"),
     { fn() { hb.weep = { t0: performance.now() / 1000 }; } },
     HB_SAY("", "Then David took hold of his clothes and tore them; and all the men who were with him did likewise. They mourned, wept, and fasted until evening for Saul and for Jonathan his son, and for the people of the LORD, and for the house of Israel. (2 Samuel 1:11-12)"),
-    { fn() { hb.weep = null; hb.msgOn = false; hb.harp = true; } },
+    { fn() { hb.weep = null; hb.msgOn = false; hb.harp = true; hb.crown = false; } },
     ...hbLament(),
     { fn() { hb.harp = false; regionAdd("taken", "hb_lament"); } }, { jscene: "hs_lament" },
     { fn() { hb.abiathar.x = david.x - 110; hb.abiathar.spr = "abiathar_ephod"; } },
@@ -488,7 +489,7 @@ function hbFeast(dt, r, free) {
   if (!hb.carry) { const f = hb.foods.find(o => !o.got && Math.abs(o.x - d.x) < 40); if (f) { f.got = true; hb.carry = f.name; toast(`${hbFoodName(f.name)[0].toUpperCase() + hbFoodName(f.name).slice(1)}. To the table (left), and Up.`); } }
   if (free && hb.table.length >= HB_TRIBES.length && !hb.feasting) { hb.feasting = true; hbFeasted(); }
 }
-const hbFoodName = n => ({ bread: "bread", grain_sack: "a sack of flour", gift_oil: "a jar of oil", fig_cake: "cakes of figs", raisins: "clusters of raisins", wineskin: "wine" }[n] || n);
+const hbFoodName = n => ({ bread: "bread", hb_flour: "a sack of flour", hb_oil: "a jar of oil", fig_cake: "cakes of figs", raisins: "clusters of raisins", hb_wine: "a jar of wine" }[n] || n);
 function hbFeasted() {
   rPlay([
     HB_SAY("", "All these were men of war who could order the battle array, and came with a perfect heart to Hebron to make David king over all Israel; and all the rest also of Israel were of one heart to make David king. (1 Chronicles 12:38)"),
@@ -596,6 +597,9 @@ function hbDraw(camX) {
 }
 function hbDrawFront(camX) {
   const r = region.room; if (!r) return;
+  // (in front of Ziklag's pots) Saul's crown and bracelet, laid down between the messenger and David (2 Samuel 1:10)
+  if (hb.crown && r.id === "ziklag" && hb.msg) { const x = (hb.msg.x + david.x) / 2 - camX;
+    drawItem("hb_crown", x - 50, FOOT + 4, HB.CROWN_H / 120); drawItem("hb_bracelet", x + 62, FOOT + 4, HB.CROWN_H * 1.1 / 160); }
   if (hb.carry && r.id === "feast") drawItem(hb.carry, david.x - camX, david.y - 118, 30 / ((ITEM[hb.carry] && ITEM[hb.carry].naturalHeight) || 30));   // (carried over his head)
   if (r.id === "feast" && hbHas("hb_tribes") && !hbHas("hb_feasted")) {
     const n = hb.tribes.filter(o => o.st === "leave" || o.st === "home").length, all = HB_TRIBES.length;

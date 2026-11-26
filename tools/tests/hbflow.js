@@ -12,7 +12,7 @@ const drain = () => until(() => false);
 const snap = { keys: [], n: 2, snap: true };
 const jDone = [{ keys: [], n: 3 }, { n: 1, fn() { if (region.jscene) region.jscene.t = region.jscene.done + 0.1; } }, { keys: [], n: 3 }, snap,
   { n: 1, fn() { log("journal " + (region.jscene ? "page " + (region.jscene.view + 1) + " of " + region.jscene.pages.length : "none")); region.jscene = null; } }];
-const steps = [{ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^hb_/.test(k)); region.save.jSp = []; region.script.length = 0; hb.cine = hb.lament = hb.weep = null; hb.harp = hb.kneel = false; } }, snap];
+const steps = [{ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(hb|jr)_/.test(k)); region.save.jSp = []; region.script.length = 0; hb.cine = hb.lament = hb.weep = null; hb.harp = hb.kneel = false; } }, snap];
 // 1 Ziklag
 steps.push({ n: 1, fn() { at("ziklag", 5); } }, { keys: [], n: 30 }, snap, { n: 1, fn() { log("cine " + !!hb.cine + " " + where()); } },
   until(() => hb.msgOn), { keys: [], n: 50 }, until(() => hb.weep), { keys: [], n: 4 }, snap,
@@ -53,5 +53,5 @@ steps.push({ n: 1, fn() { at("gate", 16); } }, run(5), { keys: ["ArrowRight"], n
   until(() => region.jscene), { keys: [], n: 3 }, { n: 1, fn() { if (region.jscene) region.jscene.t = region.jscene.done + 0.1; } }, { keys: [], n: 3 }, snap,
   { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, { keys: ["ArrowLeft"], n: 1 }, { keys: [], n: 3 }, snap,
   { n: 1, fn() { log("end " + hbHas("hb_end") + " journal " + (region.jscene ? "page " + (region.jscene.view + 1) + " of " + region.jscene.pages.length : "none")); region.jscene = null; } });
-steps.push({ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^hb_/.test(k)); region.save.jSp = []; regionWrite(); } });   // (leave the test save as found)
+steps.push({ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(hb|jr)_/.test(k)); region.save.jSp = []; regionWrite(); } });   // (leave the test save as found)
 testRun(steps);
