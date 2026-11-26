@@ -81,7 +81,7 @@ const HEB = {
   rooms: [
     { id: "ziklag", name: "Ziklag", w: 60, bg: "w4_1", mx: 0, my: 1, mw: 2,
       get right() { return hbHas("hb_ask") ? "road" : null; },
-      far: "keilah/town/far", mid: "keilah/town/mid.png", midY: 0, near: "w8/hebron/ziklag_near.png", nearK: 0.55 },   // (stand-in: Keilah's town by day; Glen's own near ground, 11-24: "way too big", zoomed out)
+      far: "w8/hebron/ziklag/far", mid: "w8/hebron/ziklag/mid.png", midY: 112, near: "w8/hebron/ziklag_near.png", nearK: 0.55 },   // (Glen's Ziklag half rebuilt, 11-25: tools/key_ziklag.py; his own near ground, 11-24: "way too big", zoomed out)
     { id: "road", name: "The Road Up to Hebron", w: 120, bg: "w4_1", mx: 2, my: 1, mw: 4, left: "ziklag", right: "hebron",
       far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },   // (stand-in: Keilah's road, by day)
     { id: "hebron", name: "Hebron", w: 90, bg: "w4_1", mx: 6, my: 1, mw: 3, left: "road",
