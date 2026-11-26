@@ -83,20 +83,20 @@ const HEB = {
       get right() { return hbHas("hb_ask") ? "road" : null; },
       far: "w8/hebron/ziklag/far", mid: "w8/hebron/ziklag/mid.png", midY: 112, near: "w8/hebron/ziklag_near.png", nearK: 0.55 },   // (Glen's Ziklag half rebuilt, 11-25: tools/key_ziklag.py; his own near ground, 11-24: "way too big", zoomed out)
     { id: "road", name: "The Road Up to Hebron", w: 120, bg: "w4_1", mx: 2, my: 1, mw: 4, left: "ziklag", right: "hebron",
-      far: "keilah/road/far", mid: "keilah/road/mid.png", midY: 0, near: "keilah/road/near.png" },   // (stand-in: Keilah's road, by day)
+      far: "w8/hebron/road/far", mid: "w8/hebron/road/mid.png", midY: 158, near: "w8/hebron/road/near.png" },   // (Glen's hill country of Judah, 11-25, Gemini: tools/key_hebron.py)
     { id: "hebron", name: "Hebron", w: 90, bg: "w4_1", mx: 6, my: 1, mw: 3, left: "road",
       get right() { return hbHas("hb_judah") && !hbHas("hb_chase") ? "gibeon" : null; },
-      far: "w3/nob/far", mid: "w3/nob/mid.png", midP: 0.6, near: "w3/nob/near.png", nearY: 606, floor: "w3/nob/floor.png" },   // (stand-in: Nob)
+      far: "w8/hebron/hebron/far", mid: "w8/hebron/hebron/mid.png", midY: 228, near: "w8/hebron/hebron/near.png", nearK: 0.4 },   // (Glen's Hebron, 11-25, Gemini: the town on its hill; the square, the oak and the tomb)
     { id: "gibeon", name: "The Pool of Gibeon", w: 60, bg: "w4_1", mx: 9, my: 2, mw: 2,
       get right() { return hbHas("hb_pool") ? "chase" : null; },
-      far: "engedi/spring/far", mid: "engedi/spring/mid.png", midY: 0 },   // (stand-in: En-Gedi's spring)
+      far: "w8/hebron/gibeon/far", mid: "w8/hebron/gibeon/mid.png", midY: 6 },   // (Glen's pool of Gibeon, 11-25, Gemini: tools/key_hebron.py)
     { id: "chase", name: "The Hill of Ammah", w: 170, bg: "w4_1", mx: 11, my: 2, mw: 5, left: "gibeon",
-      far: "ziph/mountain/far", mid: "ziph/mountain/mid.png", midY: 0, near: "ziph/mountain/near.png" },   // (stand-in: Ziph's mountain, at sunset)
+      far: "w8/hebron/chase/far", mid: "w8/hebron/chase/mid.png", midY: 201, near: "w8/hebron/chase/near.png" },   // (Glen's hills of Benjamin at sunset, 11-25, Gemini)
     { id: "feast", name: "Hebron: the Tribes Come", w: 110, bg: "w4_1", mx: 6, my: 0, mw: 3,
       get right() { return hbHas("hb_feasted") ? "gate" : null; },
-      far: "carmel/camp/far", mid: "carmel/camp/mid.png", midY: 224, near: "carmel/camp/near.png", nearK: 0.4 },   // (stand-in: Carmel's camp)
+      far: "w8/hebron/feast/far", mid: "w8/hebron/feast/mid.png", midY: 174 },   // (Glen's tribes' camp, 11-25, Gemini)
     { id: "gate", name: "The Gate of Hebron", w: 60, bg: "w4_1", mx: 9, my: 0, mw: 2, left: "feast",
-      far: "w3/gath/far", mid: "w3/gath/mid.png", midP: 1, midX: 170, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (stand-in: Gath's gate)
+      far: "w8/hebron/hebron/far", mid: "w8/hebron/gate/mid.png", midP: 1, midX: -120, midY: 162 },   // (Glen's gate of Hebron, 11-25, Gemini: the tribes' banners; its arch at column 26)
   ],
   steps: [], entries: [], ownPage: false,   // (the Journal: a page at a time, below; no page of its own)
   // (Glen: "I am using all of the same song") the song on the last page: Verse 4 till Glen's next verse
