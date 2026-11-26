@@ -14,7 +14,17 @@ def wrap(im, o=180):   # (RGB, or RGBA once keyed)   # (Gemini's aren't made to 
     out = a[:, :w - o].copy(); out[:, :o] = a[:, w - o:] * (1 - t) + a[:, :o] * t
     if a.shape[2] == 4: out[..., :3] /= np.maximum(out[..., 3:], 1) / 255
     return Image.fromarray(out.clip(0, 255).astype(np.uint8))
-def up(im): im = im.resize((round(im.width * 720 / im.height), 720), Image.LANCZOS); return im.filter(ImageFilter.UnsharpMask(2, 60, 2))
+def up(im, k=None):   # (k: the scale; by default to 720 high)
+    k = k or 720 / im.height; im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS); return im.filter(ImageFilter.UnsharpMask(2, 60, 2))
+def join(a, b, o=120):   # (Glen 11-25: a second, wider picture of the same place, on after the first so the room repeats less:
+    #  the same scale as the first, its foot on the same line, crossfaded where they meet, premultiplied as wrap())
+    b = np.asarray(b).astype(np.float32); a = np.asarray(a).astype(np.float32)
+    if b.shape[0] < a.shape[0]: b = np.concatenate([np.zeros((a.shape[0] - b.shape[0], b.shape[1], 4), np.float32), b])
+    for x in (a, b): x[..., :3] *= x[..., 3:] / 255
+    t = np.linspace(0, 1, o)[None, :, None]
+    out = np.concatenate([a[:, :-o], a[:, -o:] * (1 - t) + b[:, :o] * t, b[:, o:]], 1)
+    out[..., :3] /= np.maximum(out[..., 3:], 1) / 255
+    return Image.fromarray(out.clip(0, 255).astype(np.uint8))
 ROOMS = { "road": ["far", "mid", "near"], "hebron": ["far", "mid", "near"], "gate": ["mid"], "gibeon": ["far", "mid"],
           "chase": ["far", "mid", "near"], "feast": ["far", "mid"] }
 for room, lays in ROOMS.items():
@@ -23,7 +33,10 @@ for room, lays in ROOMS.items():
         im = up(Image.open(os.path.join(ART, f"{room} {lay}.jpg")).convert("RGB"))
         if lay == "far": wrap(im).save(os.path.join(d, "far.jpg"), quality=88); continue
         k = key(im)
-        if room != "gate": k = wrap(k, 120)   # (after the keying, so no green is mixed into the seam)
+        two = os.path.join(ART, f"{room} {lay} 2.jpg")
+        if os.path.exists(two):
+            im2 = Image.open(two).convert("RGB"); k = join(k, key(up(im2)), 260)   # (to 720 high too: its hills then stand as high as the first one's)
+        if room != "gate": k = wrap(k, 260 if os.path.exists(two) else 120)   # (after the keying, so no green is mixed into the seam)
         if room == "feast":   # (the thin flagpoles key away with the green: the flags left floating are taken out)
             from scipy import ndimage
             a = np.asarray(k).copy(); lab, n = ndimage.label(a[..., 3] > 40); sz = ndimage.sum(np.ones_like(lab), lab, range(1, n + 1))

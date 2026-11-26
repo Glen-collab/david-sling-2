@@ -92,7 +92,7 @@ const HEB = {
       get right() { return hbHas("hb_pool") ? "chase" : null; },
       far: "w8/hebron/gibeon/far", mid: "w8/hebron/gibeon/mid.png", midY: 6 },   // (Glen's pool of Gibeon, 11-25, Gemini: tools/key_hebron.py)
     { id: "chase", name: "The Hill of Ammah", w: 170, bg: "w4_1", mx: 11, my: 2, mw: 5, left: "gibeon",
-      far: "w8/hebron/chase/far", mid: "w8/hebron/chase/mid.png", midY: 201, near: "w8/hebron/chase/near.png" },   // (Glen's hills of Benjamin at sunset, 11-25, Gemini)
+      far: "w8/hebron/chase/far", mid: "w8/hebron/chase/mid.png", midY: 174, near: "w8/hebron/chase/near.png" },   // (Glen's hills of Benjamin at sunset, 11-25, Gemini)
     { id: "feast", name: "Hebron: the Tribes Come", w: 110, bg: "w4_1", mx: 6, my: 0, mw: 3,
       get right() { return hbHas("hb_feasted") ? "gate" : null; },
       far: "w8/hebron/feast/far", mid: "w8/hebron/feast/mid.png", midY: 174 },   // (Glen's tribes' camp, 11-25, Gemini)
