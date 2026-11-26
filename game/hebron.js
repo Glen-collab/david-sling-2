@@ -33,7 +33,8 @@ const HB = {
   //  Asahel goes up by himself, Abner turns, warns him (2:22), and strikes with the back end of the spear (2:23)
   BLOW: { FILM_HIT: 4.05, REACH: 170, FROM: 117, HOP: 0.55, RUN: 620, STOP: 150, GAP: 100, FLASH: 0.3, HIT_FPS: 22, HIT_HOLD: 6, BACK: 110, SPEAR: 230 },
   LAMENT_SECS: 6,                             // (each line of the lament on screen; A for the next)
-  TRIBE_SPEED: 140, TABLE: 19, TABLE_K: 0.42, TABLE_TOP: 0.4, TABLE_ITEM: 34,   // (Glen 11-25: his table, carmel/kit/12_tribes_table.png: its scale, where the top is (x its height from the top), each gift's height)
+  TRIBE_SPEED: 140, GRAVE_W: 300, GRAVE_SINK: 10,   // (Abner's grave: drawn this wide, its foot this far into the ground)
+   TABLE: 19, TABLE_K: 0.42, TABLE_TOP: 0.4, TABLE_ITEM: 34,   // (Glen 11-25: his table, carmel/kit/12_tribes_table.png: its scale, where the top is (x its height from the top), each gift's height)
                  // (the tribes walking in; the feast table's column in the Feast)
   REACH: 110,                                 // (px: Up by a tribe's leader to welcome them; by the table to set down)
   TINT: { chase: [150, 60, 20, 0.2] },
@@ -171,7 +172,7 @@ function hbBuild(R) {
     hb.judah = [P(rm, "villager_man_stand", X(44), -1), P(rm, "elder_scroll_stand", X(48), -1, null, 1.08), P(rm, "staffman_idle", X(58), -1, null, HB.STAFFMAN_K)];
     // (Glen's anointing elder, 11-24: holding the horn of oil; he pours it over David as he kneels: hbAnointNow)
     hb.elder = P(rm, "elder_anoint_idle", X(53), -1, () => !hbHas("hb_chase"), HB.ANOINT.K);
-    hb.grave = { room: rm, x: X(70) };
+    hb.grave = { room: rm, x: X(70) }; roomImg("w8/hebron/grave.png");   // (Glen's mound, loaded ahead)
   }
   // -- The Pool of Gibeon (2:12-17): Joab's men on one side, Abner's on the other
   c = R("gibeon");
@@ -553,9 +554,8 @@ function hbDraw(camX) {
     if (SPR[p.spr]) drawSprite(p.spr, p.once ? Math.min(SPR[p.spr].frames - 1, Math.floor(p.t * 1000 / SPR[p.spr].ms)) : frameOf(p.spr, p.t), p.x - camX, p.y, p.dir, p.k);
   }
   // Abner's grave (after the chase)
-  if (r.id === "hebron" && hbHas("hb_chase") && hb.grave) { const x = hb.grave.x - camX;
-    ctx.save(); ctx.fillStyle = "#7a6248"; ctx.beginPath(); ctx.ellipse(x, FOOT + 2, 70, 22, 0, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = "#9a8a70"; for (const [dx, s] of [[-40, 12], [-12, 15], [18, 13], [44, 11]]) { ctx.beginPath(); ctx.arc(x + dx, FOOT - 8, s, 0, 7); ctx.fill(); } ctx.restore(); }
+  if (r.id === "hebron" && hbHas("hb_chase") && hb.grave) { const x = hb.grave.x - camX, im = roomImg("w8/hebron/grave.png");   // (Glen's, 11-25: tools/cut_grave.py)
+    if (im && im.naturalWidth) { const w = HB.GRAVE_W, h = im.naturalHeight * w / im.naturalWidth; ctx.drawImage(im, x - w / 2, FOOT + HB.GRAVE_SINK - h, w, h); } }
   // the families on the road
   if (hb.followOn) for (const f of hb.follow) { const n = f.moving ? f.spr : f.still; if (SPR[n]) drawSprite(n, frameOf(n, f.t), f.x - camX, FOOT, f.dir, f.k); }
   // Abner in the chase
