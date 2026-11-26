@@ -10,7 +10,11 @@
 
 const JR = {
   WALL_Y: 236,                 // (px above the ground line: where the Jebusites stand on the wall's battlements)
-  GORGE: [24, 22],             // (the gorge: its first column, how wide; the hidden bridge spans all of it)
+  GORGE: [24, 22],
+  WALL: { AT: 20, BOT: 30, ON: 16 },   // (Glen's wall: its left end's column, its bottom below the ground line (px), how far down from its top edge the Jebusites stand)
+  CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
+  SHAFT_ART: { far: "w8/jerusalem/shaft/far.jpg", pillar: "w8/jerusalem/shaft/pillar.png", near: "w8/jerusalem/shaft/near.png" },
+  SHAFT: { PILLAR_K: 0.8, PILLAR_IN: 90, DIM: 0.22 },   // (the pillars' scale, how far in from the room's sides; the cave dimmed so the ledges stand out)             // (the gorge: its first column, how wide; the hidden bridge spans all of it)
   SLAB_H: 26,                  // (how thick the bridge stones are drawn, once the sand has shown them)
   REVEAL_IN: 6,                // (px: a stone is there only once his middle is this far out over it, and only to a WALK)
   FALL_FADE: 0.9,              // (s: the dark after a fall)
@@ -27,14 +31,14 @@ const JR_ROOMS = ["jvalley", "gorge", "shaft", "zion"];
 HEB.rooms.push(
   { id: "jvalley", name: "Below Jerusalem", w: 70, bg: "w4_1", mx: 0, my: 4, mw: 2,
     get right() { return jrHas("jr_taunt") ? "gorge" : null; },
-    far: "ziph/horesh/far", mid: "w3/gath/mid.png", midP: 1, midX: 900, midY: -44, near: "w3/gath/near.png", nearY: 606, floor: "w3/gath/floor.png" },   // (stand-in: Gath's wall and gate, before Ziph's hills)
+    far: "w8/jerusalem/jvalley/far", near: "w8/jerusalem/jvalley/near.png", wall: "w8/jerusalem/jvalley/wall.png" },   // (Glen 11-26, Gemini; the wall drawn once: jrAfterMid)
   { id: "gorge", name: "The Gorge Below the City", w: 80, bg: "w4_1", mx: 2, my: 4, mw: 2, left: "jvalley",
     get right() { return jr.ended || jrHas("jr_leap") ? "shaft" : null; },
-    far: "engedi/rocks/far", mid: "engedi/rocks/mid.png", midY: 0 },   // (stand-in: En-Gedi's rocks)
+    far: "w8/jerusalem/gorge/far", floor: "w8/jerusalem/gorge/near.png" },   // (Glen 11-26: his rocky edge as the floor (the gorge cut out of it), his two cliffs at its edges: jrCliffs)
   { id: "shaft", name: "The Watercourse", w: 36, up: 44, bg: "w4_1", mx: 4, my: 2, mw: 1, mh: 3, left: "gorge",
-    pic: "w4/tall_well", k: 0.6, fog: 0.4, tall: true, rock: "pale", ground: "pebbles" },   // (stand-in: World 4's sunlit Old Well Shaft)
+    shaft: true, ground: "pebbles" },   // (Glen 11-26: his cave looking up, stone pillars at its sides, roots at its foot: jrShaftBack)
   { id: "zion", name: "The Stronghold of Zion", w: 60, bg: "w4_1", mx: 5, my: 2, mw: 2,
-    far: "keilah/town/far", mid: "keilah/town/mid.png", midY: 0, near: "keilah/town/near.png" },   // (stand-in: Keilah's town by day)
+    far: "w8/jerusalem/zion/far", mid: "w8/jerusalem/zion/mid.png", midY: 386, near: "w8/jerusalem/zion/near.png", nearK: 0.8 },   // (Glen 11-26, Gemini)
 );
 HEB.spreads.push(
   { id: "js_zion", when: "jr_end", title: "Jerusalem",
@@ -55,7 +59,8 @@ Object.assign(HEB, {
   draw: camX => { hbDraw(camX); jrDraw(camX); },
   drawFront: camX => { hbDrawFront(camX); jrDrawFront(camX); },
   drawOver: () => { jrDrawOver(); hbDrawOver(); },
-  backdrop: (r, camX) => !!r.pic && r4Backdrop(r, camX),   // (the watercourse: adullam.js's tall pictures)
+  backdrop: (r, camX) => !!r.shaft && jrShaftBack(r, camX),   // (the watercourse: Glen's tall cave)
+  afterMid: (r, camX) => jrAfterMid(r, camX),
   floor: (r, camX) => !!r.ground && r4Floor(r, camX),
   pitFall: () => jrPitFall(),
 });
@@ -64,6 +69,7 @@ Object.assign(HEB, {
 function jrBuild(R) {
   jr.found = {}; jr.stand = null; jr.shown = null; jr.ended = false; jr.water = null; jr.cp = null; jr.jeb.length = 0;
   const P = hbPerson;
+  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
   // -- Below Jerusalem: the walls, the Jebusites on them
   let c = R("jvalley");
   { const rm = "jvalley", X = k => (c + k) * T;
@@ -77,6 +83,7 @@ function jrBuild(R) {
   { const rm = "gorge", [g0, gw] = JR.GORGE;
     ground(c, c + 79);
     rHole(rm, c + g0, gw);
+    region.props = region.props.filter(p => !(p.room === rm && /^p_(left|right)$/.test(p.n)));   // (Glen 11-26: his cliffs are its edges, not the pit kit)
     jr.g0 = c + g0; jr.g1 = c + g0 + gw - 1;
     if (jrHas("jr_leap")) for (let k = jr.g0; k <= jr.g1; k++) jrStone(k, true);   // (crossed before: the sand still shows it)
   }
@@ -84,7 +91,7 @@ function jrBuild(R) {
   c = R("shaft");
   { const rm = "shaft"; Object.assign(KIT, R4_KIT);   // (World 4's ledges: adullam.js adds them only in its own build)
     ground(c, c + 35);
-    ["w4/tall_well", "w4/floor_pebbles.png", "w4/near_pale.png", "w4/ceil_pale.png"].forEach(roomImg);
+    ["w4/floor_pebbles.png", ...Object.values(JR.SHAFT_ART)].forEach(roomImg);
     const z = r4Zig(rm, "pale", 500, JR.SHAFT_TOP, false, 2);
     jr.top = z[z.length - 1]; jr.mid = z[Math.floor(z.length / 2)];
   }
@@ -225,6 +232,7 @@ function jrArk() {
 // drawing
 function jrDraw(camX) {
   const r = region.room; if (!r || r.id !== "gorge") return;
+  jrCliffs(camX);
   // the bridge, once the sand has shown it (the color of the cliffs)
   const y = GR * T, h = JR.SLAB_H;
   for (let c = jr.g0; c <= jr.g1; c++) {
@@ -245,6 +253,39 @@ function jrDraw(camX) {
     }
     ctx.restore();
   }
+}
+// (Glen 11-26) his wall, once (the Jebusites on its top edge), and his two cliffs at the gorge's edges
+let jrWallTop = null;   // (the wall's top edge down each column, once it's loaded)
+function jrAfterMid(r, camX) {
+  if (r.id === "jvalley") {
+    const im = roomImg(r.wall); if (!im || !im.naturalWidth) return;
+    const x0 = (r.c0 + JR.WALL.AT) * T, y0 = GR * T + JR.WALL.BOT - im.naturalHeight;
+    ctx.drawImage(im, Math.round(x0 - camX), y0);
+    if (!jrWallTop) { const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; const g = c.getContext("2d"); g.drawImage(im, 0, 0);
+      const a = g.getImageData(0, 0, c.width, c.height).data; jrWallTop = [];
+      for (let x = 0; x < c.width; x++) { let y = 0; while (y < c.height && a[(y * c.width + x) * 4 + 3] < 128) y++; jrWallTop.push(y); } }
+    for (const p of jr.jeb) { const k = Math.round(p.x - x0); let t = 1e9; for (let i = k - 20; i <= k + 20; i++) if (jrWallTop[i] !== undefined) t = Math.min(t, jrWallTop[i]);
+      if (t < 1e9) p.y = y0 + t + JR.WALL.ON; }
+  }
+}
+function jrCliffs(camX) {   // (over the ground's tiles and the dark of the gorge, under the bridge)
+  {
+    const C = JR.CLIFF, L = roomImg("w8/jerusalem/gorge/cliff_l.png"), R = roomImg("w8/jerusalem/gorge/cliff_r.png"), y = GR * T - C.TOP * C.K;
+    if (L && L.naturalWidth) ctx.drawImage(L, Math.round(jr.g0 * T - C.LIP_L * C.K - camX), Math.round(y), L.naturalWidth * C.K, L.naturalHeight * C.K);
+    if (R && R.naturalWidth) ctx.drawImage(R, Math.round((jr.g1 + 1) * T - C.LIP_R * C.K - camX), Math.round(y), R.naturalWidth * C.K, R.naturalHeight * C.K);
+  }
+}
+// the watercourse: his cave looking up (the room's whole height), his stone pillars up its sides, his roots at its foot
+function jrShaftBack(r, camX) {
+  const A = JR.SHAFT_ART, S = JR.SHAFT, rx = r.c0 * T - camX, rw = r.w * T, top = -(r.up || 0) * T;
+  ctx.fillStyle = "#0b0907"; ctx.fillRect(0, camY, W, H);
+  const far = roomImg(A.far); if (far && far.naturalWidth) ctx.drawImage(far, Math.round(rx), top, rw, H - top);
+  const pi = roomImg(A.pillar);
+  if (pi && pi.naturalWidth) { const w = pi.naturalWidth * S.PILLAR_K, h = pi.naturalHeight * S.PILLAR_K;
+    for (const x of [rx + S.PILLAR_IN - w / 2, rx + rw - S.PILLAR_IN - w / 2]) for (let y = H - h; y > top - h; y -= h - 2) ctx.drawImage(pi, Math.round(x), Math.round(y), w, h); }
+  const ne = roomImg(A.near); if (ne && ne.naturalWidth) ctx.drawImage(ne, Math.round(rx), H - ne.naturalHeight * rw / ne.naturalWidth, rw, ne.naturalHeight * rw / ne.naturalWidth);
+  ctx.fillStyle = `rgba(8,6,4,${S.DIM})`; ctx.fillRect(0, camY, W, H);
+  return true;
 }
 function jrDrawFront(camX) {
   const r = region.room, w = jr.water; if (!r || r.id !== "shaft" || !w || jrHas("jr_end")) return;

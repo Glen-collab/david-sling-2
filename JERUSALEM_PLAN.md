@@ -26,5 +26,7 @@ height on the wall `WALL_Y`). Test: `tools/tests/jerusalem.js`.
 - **The valley of Rephaim (5:17-25), the final boss.** Ask the LORD; "You shall not go up. Circle around behind them";
   wait for "the sound of marching in the tops of the mulberry trees", then attack. Attacking early is the mistake.
 - The ark ending is in (Glen's films). The Rephaim boss goes between Zion and `jrArk()`.
-- Art (when Glen has room again): Jerusalem's walls and gate, Jebusites, the gorge, the watercourse, Zion, the
-  mulberry trees, the ark.
+- Art: Glen's rooms are in (11-26, `tools/key_jerusalem.py` -> `assets/rooms/w8/jerusalem/`): the wall drawn once with
+  the Jebusites on its top edge (`JR.WALL`), the gorge's two cliffs at its edges (`JR.CLIFF`) with his rocky edge as
+  its floor, the watercourse's cave, pillars and roots (`jrShaftBack`, `JR.SHAFT`), Zion's city. The valley of
+  Rephaim's far/mid (the mulberry trees)/near are keyed, ready for the boss. Still to come: Jebusite people, the ark.
