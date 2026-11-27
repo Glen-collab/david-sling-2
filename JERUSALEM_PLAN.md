@@ -30,3 +30,12 @@ height on the wall `WALL_Y`). Test: `tools/tests/jerusalem.js`.
   the Jebusites on its top edge (`JR.WALL`), the gorge's two cliffs at its edges (`JR.CLIFF`) with his rocky edge as
   its floor, the watercourse's cave, pillars and roots (`jrShaftBack`, `JR.SHAFT`), Zion's city. The valley of
   Rephaim's far/mid (the mulberry trees)/near are keyed, ready for the boss. Still to come: Jebusite people, the ark.
+
+## Glen's playtest (11-27)
+- "Too fast and too easy." The watercourse has too many ledges: he stayed in the middle and double jumped the whole
+  way. He never used his sling. "Isn't there a battle or something when we get to Zion?"
+- Proposed (not built yet): a thinner watercourse that needs wall climb and the rope, Jebusites dropping stones from
+  above (sling them), the water faster; a battle for the stronghold (Joab goes up first, 1 Chronicles 11:6): archers
+  on the roofs (shield), spearmen (sword), slingers (sling); then the Rephaim boss.
+- Later, after the art: look back over the skills he's earned and make each one needed (the shield against arrows,
+  the bow much more). Maybe hunting for food in the wilderness with the bow. "Just think about that."
