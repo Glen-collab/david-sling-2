@@ -214,7 +214,7 @@ function jrUpdate(dt, r) {
   if (r.id === "shaft") jrShaft(dt, d, free);
   // (Glen 11-27: "what do I do at this room? I killed everyone?") back at Zion's olive press, the battle not won: it
   //  starts again (it only started coming up out of the watercourse, so the archers stayed down and it couldn't be won)
-  if (r.id === "zion" && !jr.won && !jr.battleOn && free && !hb.cine && !region.script.length) jrZionBattle();
+  if (r.id === "zion" && !jr.won && !jr.battleOn && !jr.battle && !region.trans && free && !hb.cine && !region.script.length) jrZionBattle();
   if (r.id === "zion" && !jr.won) jrBattle(dt, d);
 }
 
@@ -374,6 +374,7 @@ function jrStoneHits(s) {
 
 // ---- the battle for the stronghold (1 Chronicles 11:6; 2 Samuel 5:8) --------------------------------------------------
 function jrZionBattle() {
+  if (jr.battleOn) return;   // (once: coming up out of the watercourse, or back at the press)
   jr.battleOn = true;
   rPlay([
     hbCine("The Stronghold of Zion", "The Jebusites' last stand"),

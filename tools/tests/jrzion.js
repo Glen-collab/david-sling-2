@@ -6,7 +6,7 @@ const rx = () => roomById("zion").c0 * T;
 const until = test => ({ n: 1, fn() { let i = 0; while (region.script.length && !test() && i++ < 80) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } });
 const st = () => "foes " + jr.foes.map(f => f.kind + ":" + f.hp + ":" + f.st + ":" + (f.y === null ? "?" : Math.round(f.y))).join(" ") + " spears " + jrSpears().length + " shots " + jr.shots.length + " hearts " + david.hearts;
 testRun([
-  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_leap"].forEach(k => regionAdd("taken", k)); learnSkill("wallClimb"); REGION.sword = () => true; jrZionFoes(roomById("zion").c0); } },   // (a real save has Jonathan's sword and shield by now)
+  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_leap"].forEach(k => regionAdd("taken", k)); learnSkill("wallClimb"); REGION.sword = () => true; jrZionFoes(roomById("zion").c0); region.script.length = 0; hb.cine = null; } },   // (a real save has Jonathan's sword and shield by now)
   { n: 1, fn() { regionGo(rx() + 8 * T, 1, () => { david.y = GR * T; snapCamera(); jrZionBattle(); }); } }, { keys: [], n: 30 }, snap,
   until(() => jr.battle), { keys: [], n: 4 }, { n: 1, fn() { log("battle " + jr.battle + " " + st()); } },
   // the spearmen first: in their charge (then gone, for the rest)
