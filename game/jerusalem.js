@@ -238,7 +238,7 @@ function jrGorge(dt, d, free) {
   // walking out: the next stone is there (unseen) once his middle is over it; running or leaping finds nothing
   const c = Math.floor((d.x - d.facing * JR.REVEAL_IN) / T);
   const walking = Math.abs(d.vx) > 20 && Math.abs(d.vx) <= TUNE.WALK_SPEED + 5 && Math.sign(d.vx) === d.facing;
-  if (walking && c >= jr.g0 && c <= jr.g1 && jr.found[c] === undefined && jrGround(c - d.facing)) { jrStone(c); sfx("stone_hit", c * T, 0.25, 0.6); }
+  if (walking && c >= jr.g0 && c <= jr.g1 && jr.found[c] === undefined && jrGround(c - d.facing)) { jrStone(c); chime(Math.abs(c - (d.facing > 0 ? jr.g0 : jr.g1))); }   // (Glen 11-27: the stone clunk on each unseen step "sounds weird": a soft bell instead, a note higher each step out)
   // across: Glen's sand toss shows the whole bridge
   if (!jr.ended && d.x > (jr.g1 + JR.END_AT) * T) {
     jr.ended = true; d.vx = 0;
