@@ -186,7 +186,7 @@ function jrZionFoes(c) {
   if (!jrHas("jr_end")) for (const [k, range] of Z.SPEAR) beast("phil", rm, c + k, { y: GR * T, hy: GR * T, range: range * T, state: "wait", hp: Z.SPEAR_HP, alpha: 1, k: Z.SPEAR_K,
     sk: { wait: "gath_guard_walk", charge: "gath_guard_lunge", run: "gath_guard_walk", drop: "gath_guard_waveoff", flee: "gath_guard_walk", noGear: true,
           tell: "Jebusite spearmen! Three stones (or one charged, or the sword) and he runs." } });
-  jr.foes = []; jr.shots = []; jr.battle = false; jr.won = jrHas("jr_end");
+  jr.foes = []; jr.shots = []; jr.battle = false; jr.battleOn = false; jr.won = jrHas("jr_end");
   if (jr.won) return;
   for (const k of Z.ARCHERS) jr.foes.push({ kind: "arch", x: X(k) + T / 2, y: FOOT - KIT.t_house.h + 14, hp: Z.ARCH_HP, st: "hide", t: Math.random(), flash: 0, gone: 0 });
   for (const k of Z.SLINGERS) jr.foes.push({ kind: "sling", x: X(k), y: null, hp: Z.SLING_HP, st: "hide", t: Math.random() * 1.5, flash: 0, gone: 0 });
@@ -212,6 +212,9 @@ function jrUpdate(dt, r) {
   if (r.id === "jcourse" && !jrHas("jr_course") && !jr.coursing && free && !hb.cine && d.x > (r.c0 + JR.COURSE_AT - 4) * T) jrCourse();
   if (r.id === "gorge") jrGorge(dt, d, free);
   if (r.id === "shaft") jrShaft(dt, d, free);
+  // (Glen 11-27: "what do I do at this room? I killed everyone?") back at Zion's olive press, the battle not won: it
+  //  starts again (it only started coming up out of the watercourse, so the archers stayed down and it couldn't be won)
+  if (r.id === "zion" && !jr.won && !jr.battleOn && free && !hb.cine && !region.script.length) jrZionBattle();
   if (r.id === "zion" && !jr.won) jrBattle(dt, d);
 }
 
@@ -371,6 +374,7 @@ function jrStoneHits(s) {
 
 // ---- the battle for the stronghold (1 Chronicles 11:6; 2 Samuel 5:8) --------------------------------------------------
 function jrZionBattle() {
+  jr.battleOn = true;
   rPlay([
     hbCine("The Stronghold of Zion", "The Jebusites' last stand"),
     { fn() { david.vx = 0; david.facing = 1; } }, { wait: 1.5 },
