@@ -63,13 +63,14 @@ Object.assign(HEB, {
   afterMid: (r, camX) => jrAfterMid(r, camX),
   floor: (r, camX) => !!r.ground && r4Floor(r, camX),
   pitFall: () => jrPitFall(),
+  pitPic: "w8/jerusalem/gorge_pit.png",   // (Glen 11-27: his dark pit, down every pit on this stage: region.js drawPitPic)
 });
 
 // ---------------------------------------------------------------------------------------------------------------------
 function jrBuild(R) {
   jr.found = {}; jr.stand = null; jr.shown = null; jr.ended = false; jr.water = null; jr.cp = null; jr.jeb.length = 0;
   const P = hbPerson;
-  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
+  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png", "w8/jerusalem/gorge_pit.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
   // -- Below Jerusalem: the walls, the Jebusites on them
   let c = R("jvalley");
   { const rm = "jvalley", X = k => (c + k) * T;

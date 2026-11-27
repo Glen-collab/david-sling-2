@@ -1405,6 +1405,23 @@ function drawLedges(camX) {
   for (const l of region.ledges) { const x0 = l.c * T, x1 = (l.c + l.w) * T; if (x1 < camX - 50 || x0 > camX + W + 50 || l.y < camY - 100 || l.y > camY + H + 100) continue; drawLedgeRun(x0, x1, l.y - 4); }
   ctx.restore();
 }
+// (Glen 11-27: his dark gorge picture down a pit, not a black box) the piece of it the pit's width, its top at the
+//  ground line: a wide pit takes its middle (his lit far rocks), a narrow one a piece from along it (each pit its own)
+const PIT_FADE = 44;   // (px: Glen 11-27 "it is squared off": its top fades in, so what's behind melts down into the dark)
+const pitFaded = new Map();
+function drawPitPic(im, h, x) {
+  if (!im || !im.naturalWidth) return false;
+  if (!pitFaded.has(im)) { const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; const g = c.getContext("2d");
+    g.drawImage(im, 0, 0); g.globalCompositeOperation = "destination-in"; const f = g.createLinearGradient(0, 0, 0, PIT_FADE);
+    f.addColorStop(0, "rgba(0,0,0,0)"); f.addColorStop(1, "rgba(0,0,0,1)"); g.fillStyle = f; g.fillRect(0, 0, c.width, c.height); pitFaded.set(im, c); }
+  const src = im; im = pitFaded.get(src); im.naturalWidth = src.naturalWidth; im.naturalHeight = src.naturalHeight;
+  const w = h.x1 - h.x0, iw = im.naturalWidth, ih = im.naturalHeight, y = GR * T - 2;
+  ctx.fillStyle = "#000"; ctx.fillRect(Math.round(x), y + ih - 1, w, Math.max(0, H + 400 - ih));
+  if (w >= iw) { for (let o = 0; o < w; o += iw) ctx.drawImage(im, 0, 0, Math.min(iw, w - o), ih, Math.round(x + o), y, Math.min(iw, w - o), ih); return true; }
+  const sx = w > iw * 0.3 ? (iw - w) / 2 : ((h.c * 157) % (iw - w));
+  ctx.drawImage(im, Math.round(sx), 0, w, ih, Math.round(x), y, w, ih);
+  return true;
+}
 function drawRegion(camX) {
   if (!REGION_ON) return;
   const d = david, now = performance.now() / 1000;
@@ -1441,6 +1458,7 @@ function drawRegion(camX) {
   }
   if (!REGION.softHoles) for (const h of region.holes) {   // the dark down a hole (softHoles: the region draws its own, adullam.js)
     const x = h.x0 - camX; if (x > W || x + (h.x1 - h.x0) < 0) continue;
+    if (REGION.pitPic && drawPitPic(roomImg(REGION.pitPic), h, x)) continue;
     const g = ctx.createLinearGradient(0, GR * T, 0, H); g.addColorStop(0, "#1a120c"); g.addColorStop(0.35, "#050302"); g.addColorStop(1, "#000");
     ctx.fillStyle = g; ctx.fillRect(Math.round(x), GR * T - 2, h.x1 - h.x0, H - GR * T + 2);
   }
