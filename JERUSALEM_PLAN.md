@@ -41,3 +41,13 @@ height on the wall `WALL_Y`). Test: `tools/tests/jerusalem.js`.
   on the roofs (shield), spearmen (sword), slingers (sling); then the Rephaim boss.
 - Later, after the art: look back over the skills he's earned and make each one needed (the shield against arrows,
   the bow much more). Maybe hunting for food in the wilderness with the bow. "Just think about that."
+
+## 11-27: its own world, and the gate
+
+- Jerusalem is World 9 now: its own stage ("#9-15"), its own save, its own stop on the land map after Hebron. Hebron
+  starts in Hebron (Ziklag's lament and the road up are told in Hebron's crawl).
+- Zion is the street fight (spearmen, archers over the roofs). Then "The Gate of the Stronghold": Glen's fortress wall
+  up close, slingers on its wall-walk, spearmen on the ground; when they've all run, Up at the gate plays the end
+  (5:7-10, the ark). The far citadel wall at Zion's end is gone.
+- To come: the ending (Glen: a King David picture with the words scrolling over it, like the end of Conan), better
+  houses for Zion's street (Glen: the kit's look "fake and tacky" here).

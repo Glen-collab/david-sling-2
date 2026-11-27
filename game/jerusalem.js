@@ -59,8 +59,13 @@ const JR = {
     SPEAR: [[16, 4], [23, 3], [30, 3]], SPEAR_HP: 3, SPEAR_K: 0.8,
     HOUSES: [12, 19, 26],              // (a house (the town kit's) at each; an archer behind the 1st and 3rd one's roof)
     ARCHERS: [12, 26], ARCH_HP: 2, ARCH_K: 0.9, ARCH_Y: 14,  // (his clip (waist-up): its foot this far under the roof line)
-    WALL: { AT: 32, K: 0.8, FOOT: 290 },   // (FOOT: the row of his picture on the ground line: Glen 11-27 ran its left side on down, under the ground)          // (the citadel's wall: his wall from below the city again, smaller, at the room's end)
-    SLINGERS: [41, 52], SLING_HP: 2, SLING_K: 0.9, SLING_Y: 14, DOWN: 92,   // (DOWN: px they sink behind cover between shots)
+    // (Glen 11-27: "After the stronghold of Zion the wall is mid range so the guys on top look large ... then we go to the
+    //  wall which looks like the 'below jerusalem' wall again and fight guys on the ground and on the wall there, then at
+    //  the gate David hits the up arrow and it goes to the cut scene") the gate of the stronghold: his fortress wall up
+    //  close; slingers on its wall-walk (waist-up over the cornice at COVER), spearmen in front of it; GATE: its doors'
+    //  columns, where Up goes in
+    CITADEL: { SPEAR: [[17, 4], [32, 4]], SLINGERS: [12, 24, 36], COVER: 152, GATE: [46, 56] },
+    SLING_HP: 2, SLING_K: 0.9, SLING_Y: 14, DOWN: 92,   // (DOWN: px they sink behind cover between shots)
     HIDE: [1.6, 2.6], RISE: 1.1, NEAR: 15,   // (s down behind cover between shots; s up drawing/whirling (hit him then); tiles: in range)
     SHOT: { ARROW: 620, STONE: 520, GRAV_A: 420, GRAV_S: 700, BLOCK: 46 },
   },
@@ -68,7 +73,7 @@ const JR = {
 const jr = { found: {}, stand: null, fade: 0, falls: 0, shown: null, ended: false, film: false, water: null, cp: null, top: null, mid: null, jeb: [],
   ledges: [], rocks: [], throwers: [], rockT: 0, rockSide: 0, foes: [], shots: [], battle: false, won: false };
 const jrHas = id => hbHas(id);
-const JR_ROOMS = ["jvalley", "jcourse", "gorge", "shaft", "zion"];
+const JR_ROOMS = ["jvalley", "jcourse", "gorge", "shaft", "zion", "citadel"];
 
 // (Glen 11-27: "Let's start Hebron in only Hebron levels, and start Jerusalem in only Jerusalem levels"; "make these
 //  their own individual worlds") World 9, its own stage ("#9-15") and its own save: the walls to the ark
@@ -92,7 +97,10 @@ const JER = {
   { id: "shaft", name: "The Watercourse", w: 36, up: 44, inL: 7, bg: "w4_1", mx: 5, my: 2, mw: 1, mh: 3, left: "gorge",
     shaft: true, ground: "pebbles" },   // (Glen 11-26: his cave looking up, stone pillars at its sides, roots at its foot: jrShaftBack)
   { id: "zion", name: "The Stronghold of Zion", w: 60, bg: "w4_1", mx: 6, my: 2, mw: 2,
+    get right() { return jrHas("jr_street") ? "citadel" : null; },   // (the street fight first)
     far: "w8/jerusalem/zion/far", mid: "w8/jerusalem/zion/mid.png", midY: 386, near: "w8/jerusalem/zion/near.png", nearK: 0.8 },   // (Glen 11-26, Gemini)
+  { id: "citadel", name: "The Gate of the Stronghold", w: 64, bg: "w4_1", mx: 8, my: 2, mw: 2, left: "zion",
+    far: "w8/jerusalem/zion/far", fort: "w8/jerusalem/jvalley/fortress_wall.png" },   // (his fortress wall up close, its gate: jrValleyWall)
   ],
   spreads: [
   { id: "js_zion", when: "jx_zion", title: "Jerusalem",
@@ -177,6 +185,8 @@ function jrBuild(R) {
     jr.throwers = [-1, 1].map((dir, i) => ({ x: x0 + M.X + dir * M.OUT, y: M.Y - M.DROP, hp: 1, flash: 0, t: i * 0.7, throwT: 0, gone: 0, dir, unseen: true }));   // (out of the mouth, each way in turn)
     jr.rocks = []; jr.rockT = C.ROCK.FIRST;
   }
+  // -- The Gate of the Stronghold: his wall up close (its foes: jrZionFoes)
+  ground(R("citadel"), R("citadel") + 63);
   // -- The Stronghold of Zion
   c = R("zion");
   { const rm = "zion", X = k => (c + k) * T;
@@ -190,16 +200,21 @@ function jrBuild(R) {
 }
 // the battle's men (not once the stronghold's been taken): the spearmen (region.js's skirmishers), the archers, the slingers
 function jrZionFoes(c) {
-  const rm = "zion", X = k => (c + k) * T, Z = JR.ZION;
-  region.beasts = region.beasts.filter(b => !(b.room === rm && b.kind === "phil"));
+  const X = k => (c + k) * T, Z = JR.ZION, C = Z.CITADEL, cc = roomById("citadel").c0, XC = k => (cc + k) * T;
+  region.beasts = region.beasts.filter(b => !((b.room === "zion" || b.room === "citadel") && b.kind === "phil"));
   region.philTold = region.philFled = true;   // (not the Philistines' words)
-  if (!jrHas("jr_end")) for (const [k, range] of Z.SPEAR) beast("phil", rm, c + k, { y: GR * T, hy: GR * T, range: range * T, state: "wait", hp: Z.SPEAR_HP, alpha: 1, k: Z.SPEAR_K,
+  const spear = (rm, col, range) => beast("phil", rm, col, { y: GR * T, hy: GR * T, range: range * T, state: "wait", hp: Z.SPEAR_HP, alpha: 1, k: Z.SPEAR_K,
     sk: { wait: "gath_guard_walk", charge: "gath_guard_lunge", run: "gath_guard_walk", drop: "gath_guard_waveoff", flee: "gath_guard_walk", noGear: true,
           tell: "Jebusite spearmen! Three stones (or one charged, or the sword) and he runs." } });
-  jr.foes = []; jr.shots = []; jr.battle = false; jr.battleOn = false; jr.won = jrHas("jr_end");
+  jr.foes = []; jr.shots = []; jr.battle = false; jr.battleOn = false; jr.won = jrHas("jr_end"); jr.inGate = false;
   if (jr.won) return;
-  for (const k of Z.ARCHERS) jr.foes.push({ kind: "arch", x: X(k) + T / 2, y: FOOT - KIT.t_house.h + 14, hp: Z.ARCH_HP, st: "hide", t: Math.random(), flash: 0, gone: 0 });
-  for (const k of Z.SLINGERS) jr.foes.push({ kind: "sling", x: X(k), y: null, hp: Z.SLING_HP, st: "hide", t: Math.random() * 1.5, flash: 0, gone: 0 });
+  if (!jrHas("jr_street")) {   // the street: spearmen, archers over the roofs
+    for (const [k, range] of Z.SPEAR) spear("zion", c + k, range);
+    for (const k of Z.ARCHERS) jr.foes.push({ room: "zion", kind: "arch", x: X(k) + T / 2, y: FOOT - KIT.t_house.h + 14, hp: Z.ARCH_HP, st: "hide", t: Math.random(), flash: 0, gone: 0 });
+  }
+  // the gate: spearmen in front of the wall, slingers on it
+  for (const [k, range] of C.SPEAR) spear("citadel", cc + k, range);
+  for (const k of C.SLINGERS) jr.foes.push({ room: "citadel", kind: "sling", x: XC(k), y: C.COVER, hp: Z.SLING_HP, st: "hide", t: Math.random() * 1.5, flash: 0, gone: 0 });
 }
 // a stone of the bridge: there to stand on (seen: the sand has shown it)
 function jrStone(c, seen = false) {
@@ -224,8 +239,16 @@ function jrUpdate(dt, r) {
   if (r.id === "shaft") jrShaft(dt, d, free);
   // (Glen 11-27: "what do I do at this room? I killed everyone?") back at Zion's olive press, the battle not won: it
   //  starts again (it only started coming up out of the watercourse, so the archers stayed down and it couldn't be won)
-  if (r.id === "zion" && !jr.won && !jr.battleOn && !jr.battle && !region.trans && free && !hb.cine && !region.script.length) jrZionBattle();
-  if (r.id === "zion" && !jr.won) jrBattle(dt, d);
+  if (r.id === "zion" && !jrHas("jr_street") && !jr.won && !jr.battleOn && !jr.battle && !region.trans && free && !hb.cine && !region.script.length) jrZionBattle();
+  if (r.id === "citadel" && !jr.won && !jr.battle && !region.trans && free) { jr.battle = jr.battleOn = true;
+    hbTell("citadel", "Slingers on the wall! Your shield (G) toward them; hit them as they rise. Then the gate."); }
+  if ((r.id === "zion" || r.id === "citadel") && !jr.won) jrBattle(dt, d);
+  // the gate, once they've all run: Up at it, and in (5:7)
+  if (r.id === "citadel" && jr.won && !jrHas("jr_end") && !jr.inGate && free && d.onGround) {
+    const [g0, g1] = JR.ZION.CITADEL.GATE, at = d.x > (r.c0 + g0) * T && d.x < (r.c0 + g1) * T;
+    if (at && !jr.gateTold) { jr.gateTold = true; toast("The gate! Up to go in."); }
+    if (at && pressed("up")) { jr.inGate = true; jrZion(); }
+  }
 }
 
 function jrTaunt() {
@@ -394,14 +417,15 @@ function jrZionBattle() {
       toast("Take the stronghold! Archers on the roofs: hold your shield (G) toward them. Hit them as they rise."); } },
   ]);
 }
-const jrSpears = () => region.beasts.filter(b => b.room === "zion" && b.kind === "phil" && !b.dead && b.state !== "flee" && b.state !== "drop");
+const jrSpears = (rm = region.room && region.room.id) => region.beasts.filter(b => b.room === rm && b.kind === "phil" && !b.dead && b.state !== "flee" && b.state !== "drop");
 function jrBattle(dt, d) {
   const Z = JR.ZION, S = Z.SHOT;
   if (jr.joab && jr.joab.spr === "soldier_run") { jr.joab.x = Math.min(jr.joab.x + 160 * dt, d.x - 70); jr.joab.dir = 1; if (jr.joab.x >= d.x - 72) jr.joab.spr = "soldier_talk"; }   // (Joab, up with him)
   // (one at a time: only the nearest of them shoots, so he's never shot from behind while he holds his shield to another)
+  const rm = region.room.id, foes = jr.foes.filter(f => f.room === rm);   // (this room's: the street's, or the gate's)
   let first = null;
-  for (const f of jr.foes) if (f.hp > 0 && f.y !== null && Math.abs(f.x - d.x) < Z.NEAR * T && (!first || Math.abs(f.x - d.x) < Math.abs(first.x - d.x))) first = f;
-  for (const f of jr.foes) {
+  for (const f of foes) if (f.hp > 0 && f.y !== null && Math.abs(f.x - d.x) < Z.NEAR * T && (!first || Math.abs(f.x - d.x) < Math.abs(first.x - d.x))) first = f;
+  for (const f of foes) {
     f.t += dt; f.flash = Math.max(0, f.flash - dt);
     if (f.hp <= 0) { f.gone += dt; continue; }
     if (f.kind === "sling" && f.y === null) continue;   // (till the wall's drawn: where its top is)
@@ -428,15 +452,18 @@ function jrBattle(dt, d) {
     if (Math.abs(a.x - d.x) < 18 && a.y > d.y - d.h && a.y < d.y) { hurtDavid(a.x - a.vx * 0.05); jr.shots.splice(i, 1); continue; }
     if (a.y > FOOT || a.t > 4) jr.shots.splice(i, 1);
   }
-  // all of them run: the stronghold is David's
-  if (jr.battle && !jr.won && jr.foes.every(f => f.hp <= 0) && !jrSpears().length) {
-    jr.won = true; jr.battle = false; jr.shots.length = 0;
-    rPlay([{ wait: 1 }, HB_SAY("Joab", "“They’ve run! The stronghold is ours!”"), { fn() { jrZion(); } }]);
+  // all of them run: the street, then the gate
+  if (jr.battle && foes.every(f => f.hp <= 0) && !jrSpears(rm).length) {
+    if (rm === "zion" && !jrHas("jr_street")) { regionAdd("taken", "jr_street"); jr.battle = jr.battleOn = false; jr.shots.length = 0;
+      rPlay([{ wait: 1 }, HB_SAY("Joab", "“They’re running for the citadel! After them!”"), { fn() { toast("On to the gate of the stronghold (right)."); } }]); }
+    if (rm === "citadel" && !jr.won) { jr.won = true; jr.battle = false; jr.shots.length = 0;
+      rPlay([{ wait: 1 }, HB_SAY("Joab", "“They’ve run! The stronghold is ours! The gate, David!”")]); }
   }
 }
 function jrFoeHit(s) {
-  const r = region.room; if (!r || r.id !== "zion") return false;
+  const r = region.room; if (!r || (r.id !== "zion" && r.id !== "citadel")) return false;
   for (const f of jr.foes) {
+    if (f.room !== r.id) continue;
     if (f.hp <= 0 || f.y === null || Math.abs(s.x - f.x) > 30 || s.y > f.y + 6 || s.y < f.y - 120) continue;
     if (f.st !== "up") { stoneHit(s, 0.4); if (!jr.coverTold) { jr.coverTold = true; toast("He's down behind cover. Hit him as he rises!"); } return true; }
     f.hp--; f.flash = 0.3; f.st = "hide"; f.t = 0; f.wait = JR.ZION.HIDE[1]; stoneHit(s); sfx("lion_hit", f.x, 0.5, 1.4);
@@ -477,7 +504,7 @@ function jrArk() {
 // drawing
 function jrDraw(camX) {
   const r = region.room; if (r && r.id === "shaft") { jrDrawShaft(camX); return; }
-  if (r && r.id === "zion") { jrDrawBattle(camX); return; }
+  if (r && (r.id === "zion" || r.id === "citadel")) { jrDrawBattle(camX); return; }
   if (r && r.id === "jcourse") { jrCourseGround(r, camX); return; }
   if (!r || r.id !== "gorge") return;
   // the bridge, once the sand has shown it: Glen's own rock (gorge/bridge.png), each stone its slice of it, so the
@@ -572,19 +599,7 @@ function jrWallTops(im) {
   const a = g.getImageData(0, 0, c.width, c.height).data; jrWallTop = [];
   for (let x = 0; x < c.width; x++) { let y = 0; while (y < c.height && a[(y * c.width + x) * 4 + 3] < 128) y++; jrWallTop.push(y); }
 }
-function jrAfterMid(r, camX) {
-  if (r.id === "zion") {   // the citadel's wall at the room's end, the slingers on its top edge
-    const im = roomImg("w8/jerusalem/jvalley/wall.png"); if (!im || !im.naturalWidth) return;
-    const Z = JR.ZION, k = Z.WALL.K, x0 = (r.c0 + Z.WALL.AT) * T, y0 = GR * T + JR.WALL.BOT * k - Z.WALL.FOOT * k;
-    ctx.drawImage(im, Math.round(x0 - camX), Math.round(y0), im.naturalWidth * k, im.naturalHeight * k);
-    jrWallTops(im);
-    for (const f of jr.foes) if (f.kind === "sling" && f.y === null) {
-      const i = Math.round((f.x - x0) / k); let t = 1e9; for (let q = i - 30; q <= i + 30; q++) if (jrWallTop[q] !== undefined) t = Math.min(t, jrWallTop[q]);
-      f.y = y0 + (t < 1e9 ? t : 0) * k + 6;
-    }
-    return;
-  }
-}
+function jrAfterMid(r, camX) {}   // (Glen 11-27: no far citadel wall at Zion's end now: the gate is its own room)
 // (Glen 11-27) Below Jerusalem: his fortress wall and its gate, its dirt road the floor (over the ground's tiles,
 //  under the Jebusites and David); the sky behind it the far picture
 function jrValleyWall(r, camX) {
