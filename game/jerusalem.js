@@ -11,6 +11,7 @@
 const JR = {
   WALL_Y: 236,                 // (px above the ground line: where the Jebusites stand on the wall's battlements)
   GORGE: [24, 22],
+  COURSE_GROUND: { IMG: "w8/hebron/chase/near.png", K: 0.62 },        // (Glen 11-27: "have the ground still ... it will look like he is floating": its bottom at the screen's)
   COURSE_AT: 21,               // (Under the Stronghold: the column of the watercourse's mouth in Glen's painting, where David sees it)
   WALL: { AT: 20, BOT: 30, ON: 16 },   // (Glen's wall: its left end's column, its bottom below the ground line (px), how far down from its top edge the Jebusites stand)
   CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56, PAD: 70 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
@@ -64,7 +65,7 @@ HEB.rooms.push(
   //  one painting of the stronghold from below, the watercourse's mouth in the rock under it: not repeated
   { id: "jcourse", name: "Under the Stronghold", w: 60, bg: "w4_1", mx: 2, my: 4, mw: 1, left: "jvalley",
     get right() { return jrHas("jr_course") ? "gorge" : null; },
-    art: "w8/jerusalem/course.jpg" },
+    art: "w8/jerusalem/course.jpg", ground: null },   // (his ground strip from below the walls laid over its foot: jrCourseGround)
   { id: "gorge", name: "The Gorge Below the City", w: 80, bg: "w4_1", mx: 3, my: 4, mw: 2, left: "jcourse",
     get right() { return jr.ended || jrHas("jr_leap") ? "shaft" : null; },
     far: "w8/jerusalem/gorge/far", floor: "w8/jerusalem/gorge/near.png" },   // (Glen 11-26: his rocky edge as the floor (the gorge cut out of it), his two cliffs at its edges: jrCliffs)
@@ -424,6 +425,7 @@ function jrArk() {
 function jrDraw(camX) {
   const r = region.room; if (r && r.id === "shaft") { jrDrawShaft(camX); return; }
   if (r && r.id === "zion") { jrDrawBattle(camX); return; }
+  if (r && r.id === "jcourse") { jrCourseGround(r, camX); return; }
   if (!r || r.id !== "gorge") return;
   // the bridge, once the sand has shown it: Glen's own rock (gorge/bridge.png), each stone its slice of it, so the
   //  stones join into one span; gold along its top as the film ends
@@ -480,6 +482,14 @@ function jrDrawBattle(camX) {
       ctx.fillStyle = "#e8dcc4"; ctx.fillRect(-24, -4, 7, 3); ctx.fillRect(-24, 1, 7, 3); ctx.restore();
     } else { ctx.fillStyle = "#6e665c"; ctx.beginPath(); ctx.arc(x, s_.y, 6, 0, Math.PI * 2); ctx.fill(); }
   }
+}
+// Under the Stronghold: real ground over the painting's foot, so he walks on it, not on the picture
+function jrCourseGround(r, camX) {
+  const G = JR.COURSE_GROUND, im = roomImg(G.IMG); if (!im || !im.naturalWidth) return;
+  const w = im.naturalWidth * G.K, h = im.naturalHeight * G.K, x0 = r.c0 * T - camX, x1 = x0 + r.w * T;
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, 0, x1 - x0, H); ctx.clip();
+  for (let x = x0; x < x1; x += w - 1) if (x + w > 0 && x < W) ctx.drawImage(im, Math.round(x), H - h, Math.ceil(w), h);
+  ctx.restore();
 }
 // the watercourse: the Jebusites at the top (Gath's guards stand in), and their rocks
 function jrDrawShaft(camX) {
