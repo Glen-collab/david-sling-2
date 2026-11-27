@@ -32,7 +32,15 @@ for room, lays in {"jvalley": ["far", "mid", "near"], "gorge": ["far", "near"], 
 d = out("gorge"); k = key(up(open_("gorge", "mid", " wide"))); a = np.asarray(k)
 cols = np.where(a[..., 3].max(0) > 40)[0]; gap = np.where(np.diff(cols) > 20)[0][0]; xl, xr = cols[gap] + 1, cols[gap + 1]
 for nm, box in (("cliff_l", (0, 0, xl + 4, k.height)), ("cliff_r", (xr - 4, 0, k.width, k.height))):
-    c, top = crop(k.crop(box)); c.save(os.path.join(d, nm + ".png"), optimize=True); print("gorge", nm, "top", top, "size", c.size)
+    c, top = crop(k.crop(box))
+    # (Glen 11-27: "fade the cliff edge to melt into the regular road") its outer end fades out over the floor, and its
+    #  top (the flat ledge behind, a hard block) fades in
+    a = np.asarray(c).astype(np.float32).copy(); w = a.shape[1]; S, F = 170, 70
+    ramp = np.clip(np.arange(w) / S, 0, 1) if nm == "cliff_l" else np.clip((w - 1 - np.arange(w)) / S, 0, 1)
+    a[..., 3] *= (ramp ** 1.3)[None, :]
+    a[:F, :, 3] *= (np.linspace(0, 1, F) ** 1.5)[:, None]
+    c = Image.fromarray(a.clip(0, 255).astype(np.uint8))
+    c.save(os.path.join(d, nm + ".png"), optimize=True); print("gorge", nm, "top", top, "size", c.size)
 # the watercourse
 d = out("shaft")
 up(open_("shaft", "far"), 1296 / 576).save(os.path.join(d, "far.jpg"), quality=86)

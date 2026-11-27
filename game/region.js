@@ -1415,7 +1415,8 @@ function drawPitPic(im, h, x) {
     g.drawImage(im, 0, 0); g.globalCompositeOperation = "destination-in"; const f = g.createLinearGradient(0, 0, 0, PIT_FADE);
     f.addColorStop(0, "rgba(0,0,0,0)"); f.addColorStop(1, "rgba(0,0,0,1)"); g.fillStyle = f; g.fillRect(0, 0, c.width, c.height); pitFaded.set(im, c); }
   const src = im; im = pitFaded.get(src); im.naturalWidth = src.naturalWidth; im.naturalHeight = src.naturalHeight;
-  const w = h.x1 - h.x0, iw = im.naturalWidth, ih = im.naturalHeight, y = GR * T - 2;
+  const p = h.pad || 0; x -= p;   // (h.pad: px wider each side, its ends under a stage's own cliffs: the gorge, Glen 11-27)
+  const w = h.x1 - h.x0 + 2 * p, iw = im.naturalWidth, ih = im.naturalHeight, y = GR * T - 2;
   ctx.fillStyle = "#000"; ctx.fillRect(Math.round(x), y + ih - 1, w, Math.max(0, H + 400 - ih));
   if (w >= iw) { for (let o = 0; o < w; o += iw) ctx.drawImage(im, 0, 0, Math.min(iw, w - o), ih, Math.round(x + o), y, Math.min(iw, w - o), ih); return true; }
   const sx = w > iw * 0.3 ? (iw - w) / 2 : ((h.c * 157) % (iw - w));

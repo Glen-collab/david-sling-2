@@ -12,7 +12,7 @@ const JR = {
   WALL_Y: 236,                 // (px above the ground line: where the Jebusites stand on the wall's battlements)
   GORGE: [24, 22],
   WALL: { AT: 20, BOT: 30, ON: 16 },   // (Glen's wall: its left end's column, its bottom below the ground line (px), how far down from its top edge the Jebusites stand)
-  CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
+  CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56, PAD: 70 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
   SHAFT_ART: { far: "w8/jerusalem/shaft/far.jpg", pillar: "w8/jerusalem/shaft/pillar.png", near: "w8/jerusalem/shaft/near.png" },
   SHAFT: { PILLAR_K: 0.8, PILLAR_IN: 90, DIM: 0.22 },   // (the pillars' scale, how far in from the room's sides; the cave dimmed so the ledges stand out)             // (the gorge: its first column, how wide; the hidden bridge spans all of it)
   SLAB_H: 26,                  // (how thick the bridge stones are drawn, once the sand has shown them)
@@ -83,7 +83,7 @@ function jrBuild(R) {
   c = R("gorge");
   { const rm = "gorge", [g0, gw] = JR.GORGE;
     ground(c, c + 79);
-    rHole(rm, c + g0, gw);
+    rHole(rm, c + g0, gw).pad = JR.CLIFF.PAD;   // (his dark drawn wider, its ends under the cliffs: no hard stop)
     region.props = region.props.filter(p => !(p.room === rm && /^p_(left|right)$/.test(p.n)));   // (Glen 11-26: his cliffs are its edges, not the pit kit)
     jr.g0 = c + g0; jr.g1 = c + g0 + gw - 1;
     if (jrHas("jr_leap")) for (let k = jr.g0; k <= jr.g1; k++) jrStone(k, true);   // (crossed before: the sand still shows it)
