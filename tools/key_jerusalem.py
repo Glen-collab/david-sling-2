@@ -51,3 +51,9 @@ k.save(os.path.join(d, "pillar.png"), optimize=True); print("shaft pillar", k.si
 k = key(up(open_("shaft", "near", " 2"), 1296 / 576)); k, top = crop(k)
 a = np.asarray(k).astype(np.int16).copy(); e = a[..., 3] < 250   # (the thin roots' edges keyed purple: no more blue or red than a brown root has)
 a[..., 2][e] = np.minimum(a[..., 2], a[..., 1])[e]; a[..., 0][e] = np.minimum(a[..., 0], (a[..., 1] * 1.35).astype(np.int16))[e]; k = Image.fromarray(a.clip(0, 255).astype(np.uint8)); k.save(os.path.join(d, "near.png"), optimize=True); print("shaft near top", top, "size", k.size)
+# (Glen 11-27: the bridge "looks too fake") his rocky edge's flat top and cracked blocks, no loose rocks on top: the
+#  bridge, once the sand shows it (jerusalem.js jrDraw draws each stone's own slice of it, so they join up)
+k = key(up(open_("gorge", "near", " wide"))); al = np.asarray(k)[..., 3]; r0 = int(np.where(al.mean(1) > 200)[0][0]) - 30
+b = k.crop((0, r0 + 45, k.width, k.height)); b = wrap(b, 120)
+a = np.asarray(b).astype(np.float32).copy(); F = 26; a[-F:, :, 3] *= np.linspace(1, 0, F)[:, None] ** 0.8; a[:3, :, 3] *= np.array([0.5, 0.8, 0.95])[:, None]
+Image.fromarray(a.clip(0, 255).astype(np.uint8)).save(os.path.join(out("gorge"), "bridge.png"), optimize=True); print("gorge bridge", b.size)

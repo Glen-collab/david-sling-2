@@ -15,7 +15,7 @@ const JR = {
   CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56, PAD: 70 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
   SHAFT_ART: { far: "w8/jerusalem/shaft/far.jpg", pillar: "w8/jerusalem/shaft/pillar.png", near: "w8/jerusalem/shaft/near.png" },
   SHAFT: { PILLAR_K: 0.8, PILLAR_IN: 90, DIM: 0.22 },   // (the pillars' scale, how far in from the room's sides; the cave dimmed so the ledges stand out)             // (the gorge: its first column, how wide; the hidden bridge spans all of it)
-  SLAB_H: 26,                  // (how thick the bridge stones are drawn, once the sand has shown them)
+  BRIDGE: { K: 0.5, UP: 6 },   // (the bridge (Glen's rock): its scale, and how far its top stands above the ground line, px)
   REVEAL_IN: 6,                // (px: a stone is there only once his middle is this far out over it, and only to a WALK)
   FALL_FADE: 0.9,              // (s: the dark after a fall)
   END_AT: 4,                   // (columns past the bridge: Glen's sand toss plays)
@@ -70,7 +70,7 @@ Object.assign(HEB, {
 function jrBuild(R) {
   jr.found = {}; jr.stand = null; jr.shown = null; jr.ended = false; jr.water = null; jr.cp = null; jr.jeb.length = 0;
   const P = hbPerson;
-  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png", "w8/jerusalem/gorge_pit.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
+  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/gorge/bridge.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png", "w8/jerusalem/gorge_pit.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
   // -- Below Jerusalem: the walls, the Jebusites on them
   let c = R("jvalley");
   { const rm = "jvalley", X = k => (c + k) * T;
@@ -234,25 +234,20 @@ function jrArk() {
 function jrDraw(camX) {
   const r = region.room; if (!r || r.id !== "gorge") return;
   jrCliffs(camX);
-  // the bridge, once the sand has shown it (the color of the cliffs)
-  const y = GR * T, h = JR.SLAB_H;
+  // the bridge, once the sand has shown it: Glen's own rock (gorge/bridge.png), each stone its slice of it, so the
+  //  stones join into one span; gold along its top as the film ends
+  const im = roomImg("w8/jerusalem/gorge/bridge.png"); if (!im || !im.naturalWidth) return;
+  const k = JR.BRIDGE.K, y = GR * T - JR.BRIDGE.UP, h = im.naturalHeight * k, sw = T / k, iw = im.naturalWidth;
   for (let c = jr.g0; c <= jr.g1; c++) {
     const age = jr.found[c]; if (age === undefined || age < 0) continue;
     const x = c * T - camX; if (x < -T || x > W + T) continue;
-    ctx.save();
-    const g = ctx.createLinearGradient(0, y, 0, y + h);
-    g.addColorStop(0, "#d8b07a"); g.addColorStop(0.35, "#c09060"); g.addColorStop(1, "#8a6440");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x + 1, y, T - 2, h, 4); ctx.fill();
-    ctx.fillStyle = "rgba(255,236,200,0.45)"; ctx.fillRect(x + 3, y + 1, T - 6, 3);
-    ctx.fillStyle = "rgba(70,45,25,0.35)";
-    if (c % 3 === 0) ctx.fillRect(x + 8, y + 12, 9, 2);
-    if (c % 4 === 1) ctx.fillRect(x + 20, y + 8, 2, 10);
+    const sx = (c * sw) % (iw - sw);
+    ctx.drawImage(im, sx, 0, sw, im.naturalHeight, Math.round(x), y, T + 1, h);
     if (age < JR.GLOW_T) {   // the golden edge, as in Glen's film
-      const k = 1 - age / JR.GLOW_T;
-      ctx.globalAlpha = k; ctx.strokeStyle = "#ffc45a"; ctx.lineWidth = 3; ctx.shadowColor = "#ffb030"; ctx.shadowBlur = 16;
-      ctx.beginPath(); ctx.roundRect(x + 1, y, T - 2, h, 4); ctx.stroke();
+      const g = 1 - age / JR.GLOW_T; ctx.save(); ctx.globalAlpha = g;
+      ctx.shadowColor = "#ffb030"; ctx.shadowBlur = 16; ctx.fillStyle = "#ffc45a"; ctx.fillRect(Math.round(x), y + 2, T + 1, 3);
+      ctx.globalAlpha = g * 0.3; ctx.shadowBlur = 0; ctx.fillRect(Math.round(x), y + 2, T + 1, h * 0.6); ctx.restore();
     }
-    ctx.restore();
   }
 }
 // (Glen 11-26) his wall, once (the Jebusites on its top edge), and his two cliffs at the gorge's edges
