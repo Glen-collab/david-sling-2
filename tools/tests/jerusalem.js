@@ -12,7 +12,7 @@ const clean = () => { region.save.taken = region.save.taken.filter(k => !/^(jr|h
 const steps = n => Array.from({ length: n }, (_, i) => i % 2 ? { keys: [], n: 4 } : { keys: ["ArrowRight"], n: 12 });
 const found = () => Object.keys(jr.found).length;
 testRun([
-  { n: 1, fn() { clean(); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end"].forEach(k => regionAdd("taken", k)); region.jscene = null;
+  { n: 1, fn() { clean(); learnSkill("wallClimb"); jrZionFoes(roomById("zion").c0); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end"].forEach(k => regionAdd("taken", k)); region.jscene = null;
     for (let k = jr.g0; k <= jr.g1; k++) oneway[GR][k] = false; jr.found = {}; jr.ended = false; jr.film = false; jr.falls = 0;   // (a save from an earlier run built the bridge)
     at("jvalley", 6); } },
   { keys: [], n: 40 }, snap, { n: 1, fn() { log("taunt cine " + !!hb.cine + " script " + region.script.length + " " + where()); } },
@@ -33,8 +33,10 @@ testRun([
   { n: 1, fn() { atXY((jr.mid.x + jr.mid.x1) / 2, jr.mid.y); } }, { keys: [], n: 120 }, snap,
   { n: 1, fn() { log("shaft: " + where() + " water " + (jr.water && Math.round(jr.water.y)) + " on " + (jr.water && jr.water.on) + " cp " + !!jr.cp); } },
   { keys: [], n: 1200 }, { n: 1, fn() { log("caught? " + where() + " water " + Math.round(jr.water.y)); } }, snap,
-  { n: 1, fn() { atXY((jr.top.x + jr.top.x1) / 2, jr.top.y); } }, { keys: [], n: 30 }, { keys: [], n: 60 }, snap,
-  { n: 1, fn() { log("zion: " + where() + " cine " + !!hb.cine); } }, until(() => region.jscene), { keys: [], n: 3 },
+  { n: 1, fn() { for (const t of jr.throwers) t.hp = 0; atXY((jr.top.x + jr.top.x1) / 2, jr.top.y); } }, { keys: [], n: 30 }, { keys: [], n: 60 }, snap,
+  { n: 1, fn() { log("zion: " + where() + " cine " + !!hb.cine); } }, until(() => jr.battle), { keys: [], n: 3 },
+  { n: 1, fn() { log("battle " + jr.battle + " foes " + jr.foes.length + " spears " + jrSpears().length); for (const f of jr.foes) f.hp = 0; for (const b of jrSpears()) { b.state = "drop"; b.t = 0; } } },
+  { keys: [], n: 90 }, { n: 1, fn() { log("won " + jr.won); } }, until(() => region.jscene), { keys: [], n: 3 },
   { n: 1, fn() { if (region.jscene) region.jscene.t = region.jscene.done + 0.1; } }, { keys: [], n: 3 }, snap,
   { n: 1, fn() { log("end " + hbHas("jr_end") + " journal " + (region.jscene ? "page " + (region.jscene.view + 1) + " of " + region.jscene.pages.length : "none")); region.jscene = null; clean(); } },
 ]);
