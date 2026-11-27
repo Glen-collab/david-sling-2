@@ -118,7 +118,9 @@ Object.assign(JER, {
   backdrop: (r, camX) => !!r.shaft && jrShaftBack(r, camX),   // (the watercourse: Glen's tall cave)
   afterMid: (r, camX) => jrAfterMid(r, camX),
   stoneHits: s => jrStoneHits(s) || jrFoeHit(s),
-  floor: (r, camX) => r.fort ? jrValleyWall(r, camX) : !!r.ground && r4Floor(r, camX),
+  // (Glen 11-27: "I see sediment on the floor of the watercourse": the ground's tiles showed where his floor's end fades)
+  //  the watercourse's floor laid a few tiles wider than the room, its ends off past the pillars
+  floor: (r, camX) => r.fort ? jrValleyWall(r, camX) : r.shaft ? r4Floor(Object.assign(Object.create(r), { c0: r.c0 - 4, w: r.w + 8 }), camX) : !!r.ground && r4Floor(r, camX),
   pitFall: () => jrPitFall(),
   pitPic: "w8/jerusalem/gorge_pit.png",   // (Glen 11-27: his dark pit: region.js drawPitPic)
 });
