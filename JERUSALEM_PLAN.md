@@ -13,7 +13,8 @@ Its own crawl: `CRAWLS.jerusalem` in region.js (why the city wasn't Israel's: Jo
 ## Built (first pass, 11-25)
 | Room | What happens | Bible |
 |---|---|---|
-| Below Jerusalem (`jvalley`) | Cut scene: the Jebusites laugh from the walls; David: "let him go up to the watercourse…" | 2 Sam 5:6, 8 |
+| Below Jerusalem (`jvalley`) | Cut scene: the Jebusites laugh from the walls; then on (right) | 2 Sam 5:6 |
+| Under the Stronghold (`jcourse`) | (11-27) Glen's one painting of the stronghold from below (`course.jpg`, not repeated): David walks up to the watercourse's mouth in the rock and sees it; "let him go up to the watercourse..." (moved here from the taunt) | 5:8 |
 | The Gorge (`gorge`) | Glen's leap film at the edge. A bridge no one can see: walking finds each stone, running or jumping falls through (no heart lost, back to where he stood). Across: the sand-toss film shows the bridge | Psalm 18:36 |
 | The Watercourse (`shaft`) | (11-27, Donkey Kong) three sheer climbs up the pillars (the wall climb; each too tall to double jump), short ledge runs between; Jebusites at the top throw rocks that roll down the ledges and drop off their ends (a stone breaks one); drive the two off with the sling to get out. The water rises behind; caught: back down (halfway, once he's passed it), no heart lost. `JR.CLIMB` | 5:8 |
 | The battle for Zion (`zion`) | (11-27) "Whoever strikes the Jebusites first..."; Jebusite spearmen in the street (the wall's guards: sling or sword, they run), archers over the rooftops (the shield, G, turns arrows; hit them as they rise), slingers on the citadel wall. One shoots at a time (the nearest). All driven off: Joab, "The stronghold is ours!" `JR.ZION` | 1 Chr 11:6 |

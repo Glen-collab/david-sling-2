@@ -11,6 +11,7 @@
 const JR = {
   WALL_Y: 236,                 // (px above the ground line: where the Jebusites stand on the wall's battlements)
   GORGE: [24, 22],
+  COURSE_AT: 21,               // (Under the Stronghold: the column of the watercourse's mouth in Glen's painting, where David sees it)
   WALL: { AT: 20, BOT: 30, ON: 16 },   // (Glen's wall: its left end's column, its bottom below the ground line (px), how far down from its top edge the Jebusites stand)
   CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56, PAD: 70 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
   SHAFT_ART: { far: "w8/jerusalem/shaft/far.jpg", pillar: "w8/jerusalem/shaft/pillar.png", near: "w8/jerusalem/shaft/near.png" },
@@ -53,18 +54,23 @@ const JR = {
 const jr = { found: {}, stand: null, fade: 0, falls: 0, shown: null, ended: false, film: false, water: null, cp: null, top: null, mid: null, jeb: [],
   ledges: [], rocks: [], throwers: [], rockT: 0, rockSide: 0, foes: [], shots: [], battle: false, won: false };
 const jrHas = id => hbHas(id);
-const JR_ROOMS = ["jvalley", "gorge", "shaft", "zion"];
+const JR_ROOMS = ["jvalley", "jcourse", "gorge", "shaft", "zion"];
 
 HEB.rooms.push(
   { id: "jvalley", name: "Below Jerusalem", w: 70, bg: "w4_1", mx: 0, my: 4, mw: 2,
-    get right() { return jrHas("jr_taunt") ? "gorge" : null; },
+    get right() { return jrHas("jr_taunt") ? "jcourse" : null; },
     far: "w8/jerusalem/jvalley/far", near: "w8/jerusalem/jvalley/near.png", wall: "w8/jerusalem/jvalley/wall.png" },   // (Glen 11-26, Gemini; the wall drawn once: jrAfterMid)
-  { id: "gorge", name: "The Gorge Below the City", w: 80, bg: "w4_1", mx: 2, my: 4, mw: 2, left: "jvalley",
+  // (Glen 11-27: "I like this pic because we can see the watercourse in there ... David noticing the water course") his
+  //  one painting of the stronghold from below, the watercourse's mouth in the rock under it: not repeated
+  { id: "jcourse", name: "Under the Stronghold", w: 60, bg: "w4_1", mx: 2, my: 4, mw: 1, left: "jvalley",
+    get right() { return jrHas("jr_course") ? "gorge" : null; },
+    art: "w8/jerusalem/course.jpg" },
+  { id: "gorge", name: "The Gorge Below the City", w: 80, bg: "w4_1", mx: 3, my: 4, mw: 2, left: "jcourse",
     get right() { return jr.ended || jrHas("jr_leap") ? "shaft" : null; },
     far: "w8/jerusalem/gorge/far", floor: "w8/jerusalem/gorge/near.png" },   // (Glen 11-26: his rocky edge as the floor (the gorge cut out of it), his two cliffs at its edges: jrCliffs)
-  { id: "shaft", name: "The Watercourse", w: 36, up: 44, bg: "w4_1", mx: 4, my: 2, mw: 1, mh: 3, left: "gorge",
+  { id: "shaft", name: "The Watercourse", w: 36, up: 44, bg: "w4_1", mx: 5, my: 2, mw: 1, mh: 3, left: "gorge",
     shaft: true, ground: "pebbles" },   // (Glen 11-26: his cave looking up, stone pillars at its sides, roots at its foot: jrShaftBack)
-  { id: "zion", name: "The Stronghold of Zion", w: 60, bg: "w4_1", mx: 5, my: 2, mw: 2,
+  { id: "zion", name: "The Stronghold of Zion", w: 60, bg: "w4_1", mx: 6, my: 2, mw: 2,
     far: "w8/jerusalem/zion/far", mid: "w8/jerusalem/zion/mid.png", midY: 386, near: "w8/jerusalem/zion/near.png", nearK: 0.8 },   // (Glen 11-26, Gemini)
 );
 HEB.spreads.push(
@@ -107,6 +113,9 @@ function jrBuild(R) {
       const p = P(rm, spr, X(k), dir, null, 0.8); p.y = FOOT - JR.WALL_Y; jr.jeb.push(p);
     }
   }
+  // -- Under the Stronghold: his painting; David sees the watercourse
+  c = R("jcourse");
+  ground(c, c + 59);
   // -- The Gorge: the Leap of Faith. No bridge you can see
   c = R("gorge");
   { const rm = "gorge", [g0, gw] = JR.GORGE;
@@ -173,6 +182,7 @@ function jrUpdate(dt, r) {
   if (jr.fade > 0) jr.fade = Math.max(0, jr.fade - dt);
   // Below Jerusalem: the Jebusites laugh (5:6); David: the watercourse (5:8)
   if (r.id === "jvalley" && !jrHas("jr_taunt") && free && !hb.cine) jrTaunt();
+  if (r.id === "jcourse" && !jrHas("jr_course") && !jr.coursing && free && !hb.cine && d.x > (r.c0 + JR.COURSE_AT - 4) * T) jrCourse();
   if (r.id === "gorge") jrGorge(dt, d, free);
   if (r.id === "shaft") jrShaft(dt, d, free);
   if (r.id === "zion" && !jr.won) jrBattle(dt, d);
@@ -184,8 +194,18 @@ function jrTaunt() {
     { fn() { david.vx = 0; david.facing = 1; } }, { wait: 2 },
     HB_SAY("", "The king and his men went to Jerusalem against the Jebusites, the inhabitants of the land, who spoke to David, saying, “The blind and the lame will keep you out of here,” thinking, “David can’t come in here.” (2 Samuel 5:6)"),
     { fn() { for (const p of jr.jeb) if (p.spr === "gath_guard_idle") p.spr = "gath_guard_laugh"; } }, { wait: 1.2 },
+    { fn() { regionAdd("taken", "jr_taunt"); hb.cine = null; toast("The gate is shut. There must be another way in (right)."); } },
+  ]);
+}
+
+// Under the Stronghold: David sees the water coming out of the rock under the walls (2 Samuel 5:8)
+function jrCourse() {
+  jr.coursing = true;
+  rPlay([
+    { fn() { david.vx = 0; david.facing = 1; } }, { wait: 1 },
+    HB_SAY("", "Under the walls of the stronghold, water runs out of the rock: the watercourse, the city's way down to its spring."),
     HB_SAY("David", "“Whoever strikes the Jebusites, let him go up to the watercourse…” (2 Samuel 5:8)"),
-    { fn() { regionAdd("taken", "jr_taunt"); hb.cine = null; toast("The gate is shut. Find the watercourse: down into the gorge (right)."); } },
+    { fn() { regionAdd("taken", "jr_course"); toast("Up the watercourse, into the city! The way to it is down through the gorge (right)."); } },
   ]);
 }
 
