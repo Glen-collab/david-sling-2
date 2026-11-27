@@ -1,5 +1,0 @@
-// (11-24) Abiathar beside David in Hebron's Ziklag room (Glen: "Is the priest this mini everywhere")
-startSetup = () => {}; setup.active = false; helpT = 0;
-const clean = () => { region.save.taken = region.save.taken.filter(k => !/^hb_/.test(k)); regionWrite(); };
-testRun([{ n: 1, fn() { clean(); ["hb_ask"].forEach(k => regionAdd("taken", k)); const r = roomById("ziklag"); moveParty((r.c0 + 21) * T, GR * T); snapCamera(); region.jscene = null; } },
-  { keys: [], n: 10 }, { n: 1, fn() { region.script.length = 0; dialog.t = 0; region.wait = 0; region.jscene = null; hb.cine = null; const r = roomById("ziklag"); moveParty(hb.abiathar.x + 160, GR * T); david.facing = -1; snapCamera(); } }, { keys: [], n: 10 }, { n: 1, fn() { region.script.length = 0; hb.cine = null; moveParty(hb.abiathar.x + 160, GR * T); david.facing = -1; snapCamera(); } }, { keys: [], n: 2, snap: true }, { n: 1, fn() { TEST_ERRORS.push("INFO room " + region.room.id + " d " + Math.round(david.x) + " abi " + (hb.abiathar && Math.round(hb.abiathar.x)) + " camX " + Math.round(typeof camX !== "undefined" ? camX : -1)); } }, { n: 1, fn: clean }]);

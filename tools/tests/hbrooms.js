@@ -5,7 +5,7 @@ const hush = { n: 1, fn() { region.script = []; dialog.t = 0; hb.cine = null; re
 const at = (id, k) => ({ n: 1, fn() { const r = roomById(id); regionGo((r.c0 + k) * T, 1, () => { david.y = GR * T; snapCamera(); }); } });
 testRun([
   { n: 1, fn() { ["hb_lament", "hb_ask"].forEach(k => region.save.taken.includes(k) || region.save.taken.push(k)); } },
-  at("road", 30), { keys: [], n: 60 }, hush, { keys: [], n: 10 }, snap,
+  at("hebron", 30), { keys: [], n: 60 }, hush, { keys: [], n: 10 }, snap,
   at("hebron", 20), { keys: [], n: 60 }, hush, { keys: [], n: 10 }, snap,
   at("hebron", 70), { keys: [], n: 60 }, hush, { keys: [], n: 10 }, snap,
   at("gate", 24), { keys: [], n: 60 }, hush, { keys: [], n: 10 }, snap,

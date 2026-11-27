@@ -2248,8 +2248,14 @@ const CRAWLS = {
     "“So Saul died with his three sons,", "his armor bearer, and all his men", "that same day together.”", "(1 Samuel 31:6)", "",
     "Jonathan, David's best friend, is gone.", "And Saul, the king who hunted him for years,", "the LORD's anointed, is gone too.", "",
     "Many men would cheer.", "The throne is empty at last.", "David does not cheer. He weeps.", "",
+    // (Glen 11-27: Hebron starts in Hebron now: Ziklag's cut scene told here)
+    "Three days after the battle,", "a man runs into Ziklag", "with his clothes torn and earth on his head.", "He brings Saul's crown.", "",
+    "David tears his clothes.", "He and his men weep and fast until evening,", "and David sings a lament", "for Saul and for Jonathan:", "",
+    "“How the mighty have fallen!”", "(2 Samuel 1:19)", "",
     "Before that last battle, Saul asked the LORD,", "but heard nothing.", "“The LORD didn't answer him", "by dreams, by Urim, or by prophets.”", "(1 Samuel 28:6)", "",
-    "After all the years of running,", "before he takes a single step,", "David still asks the LORD first,", "with Abiathar the priest and the ephod.", "And the LORD answers."],
+    "After all the years of running,", "before he takes a single step,", "David still asks the LORD first,", "with Abiathar the priest and the ephod.", "And the LORD answers.", "",
+    "“Shall I go up into any of the cities of Judah?”", "“Go up.”", "“Where shall I go up?”", "“To Hebron.”", "(2 Samuel 2:1)", "",
+    "So David goes up to Hebron,", "with his wives and his men,", "every man with his household."],
   jerusalem: ["# World 9: Jerusalem", "",   // (draft, 11-25: Glen, "why won't jerusalem let david in? they don't trust him yet?")
     "David is king over all Israel now.", "", "In the middle of the land, on a high ridge,", "stands a city that has never belonged to Israel:",
     "Jebus, the city of the Jebusites.", "", "Four hundred years before,", "when Joshua brought Israel into the land,", "the Jebusites held on to their fortress.", "",

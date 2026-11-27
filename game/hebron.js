@@ -77,26 +77,21 @@ const HB_TRIBES = [
 ];
 
 const HEB = {
-  key: "hebron", name: "Hebron", start: "ziklag", strCap: 10,
+  key: "hebron", name: "Hebron", start: "hebron", strCap: 10,   // (Glen 11-27: "start Hebron in only Hebron levels": Ziklag's lament and the road up are in its crawl now)
   carry: ["gibeah", "ramah", "nobgath", "adullam", "keilah", "ziph", "engedi", "carmel", "w7"],
   rooms: [
-    { id: "ziklag", name: "Ziklag", w: 60, bg: "w4_1", mx: 0, my: 1, mw: 2,
-      get right() { return hbHas("hb_ask") ? "road" : null; },
-      far: "w8/hebron/ziklag/far", mid: "w8/hebron/ziklag/mid.png", midY: 112, near: "w8/hebron/ziklag_near.png", nearK: 0.55 },   // (Glen's Ziklag half rebuilt, 11-25: tools/key_ziklag.py; his own near ground, 11-24: "way too big", zoomed out)
-    { id: "road", name: "The Road Up to Hebron", w: 120, bg: "w4_1", mx: 2, my: 1, mw: 4, left: "ziklag", right: "hebron",
-      far: "w8/hebron/road/far", mid: "w8/hebron/road/mid.png", midY: 158, near: "w8/hebron/road/near.png" },   // (Glen's hill country of Judah, 11-25, Gemini: tools/key_hebron.py)
-    { id: "hebron", name: "Hebron", w: 90, bg: "w4_1", mx: 6, my: 1, mw: 3, left: "road",
+    { id: "hebron", name: "Hebron", w: 90, bg: "w4_1", mx: 0, my: 1, mw: 3,
       get right() { return hbHas("hb_judah") && !hbHas("hb_chase") ? "gibeon" : null; },
       far: "w8/hebron/hebron/far", mid: "w8/hebron/hebron/mid.png", midY: 228, near: "w8/hebron/hebron/near.png", nearK: 0.4 },   // (Glen's Hebron, 11-25, Gemini: the town on its hill; the square, the oak and the tomb)
-    { id: "gibeon", name: "The Pool of Gibeon", w: 60, bg: "w4_1", mx: 9, my: 2, mw: 2,
+    { id: "gibeon", name: "The Pool of Gibeon", w: 60, bg: "w4_1", mx: 3, my: 2, mw: 2,
       get right() { return hbHas("hb_pool") ? "chase" : null; },
       far: "w8/hebron/gibeon/far", mid: "w8/hebron/gibeon/mid.png", midY: 6 },   // (Glen's pool of Gibeon, 11-25, Gemini: tools/key_hebron.py)
-    { id: "chase", name: "The Hill of Ammah", w: 170, bg: "w4_1", mx: 11, my: 2, mw: 5, left: "gibeon",
+    { id: "chase", name: "The Hill of Ammah", w: 170, bg: "w4_1", mx: 5, my: 2, mw: 5, left: "gibeon",
       far: "w8/hebron/chase/far", mid: "w8/hebron/chase/mid.png", midY: 174, near: "w8/hebron/chase/near.png" },   // (Glen's hills of Benjamin at sunset, 11-25, Gemini)
-    { id: "feast", name: "Hebron: the Tribes Come", w: 110, bg: "w4_1", mx: 6, my: 0, mw: 3,
+    { id: "feast", name: "Hebron: the Tribes Come", w: 110, bg: "w4_1", mx: 0, my: 0, mw: 3,
       get right() { return hbHas("hb_feasted") ? "gate" : null; },
       far: "w8/hebron/feast/far", mid: "w8/hebron/feast/mid.png", midY: 174 },   // (Glen's tribes' camp, 11-25, Gemini)
-    { id: "gate", name: "The Gate of Hebron", w: 60, bg: "w4_1", mx: 9, my: 0, mw: 2, left: "feast",
+    { id: "gate", name: "The Gate of Hebron", w: 60, bg: "w4_1", mx: 3, my: 0, mw: 2, left: "feast",
       far: "w8/hebron/hebron/far", mid: "w8/hebron/gate/mid.png", midP: 1, midX: -120, midY: 162 },   // (Glen's gate of Hebron, 11-25, Gemini: the tribes' banners; its arch at column 26)
   ],
   steps: [], entries: [], ownPage: false,   // (the Journal: a page at a time, below; no page of its own)
@@ -143,28 +138,17 @@ function hbBuild(R) {
   hb.cine = null; hb.lament = null; hb.carry = null; hb.grave = null; hb.crown = false;
   const P = hbPerson;
 
-  // -- Ziklag by day (2 Samuel 1): the messenger, the lament, "Shall I go up?"
-  let c = R("ziklag");
-  { const rm = "ziklag", X = k => (c + k) * T;
-    ground(c, c + 59);
-    for (const [k, img, dir] of [[8, "men_day_sit_beard", 1], [12, "men_day_sit_stripes", 1]]) hb.people.push({ room: rm, img, x: X(k), dir, still: true });
-    hb.abiathar = P(rm, "abiathar_stand", X(18), 1);
-    hb.msg = P(rm, "villager_man_run", X(64), -1, () => !!hb.msgOn);   // (stand-in: the messenger, running in)
-  }
-  // -- The Road Up to Hebron (2:2-3): every man with his household
-  c = R("road");
-  { const rm = "road";
-    ground(c, c + 119);
-    critter("scorpion", c + 22, GR - 1, 2); rHole(rm, c + 34, 3); rWild("viper", rm, c + 48);
-    rBoulder(rm, c + 62); rHole(rm, c + 78, 3); critter("scorpion", c + 92, GR - 1, 2); rWild("wildass", rm, c + 104, { range: 3 });
-  }
+  // (Glen 11-27) no Ziklag or road on this stage now: the lament, "Shall I go up?" and the road are told in the crawl,
+  //  so they're done; the families come in behind him at Hebron
+  for (const k of ["hb_lament", "hb_ask", "hb_road"]) if (!hbHas(k)) region.save.taken.push(k);
+  hb.msg = null; hb.abiathar = null;
   // the families behind David (Abigail, Ahinoam, the men's wives and children)
   hb.follow.push({ spr: "abigail_walk", still: "abigail_idle", k: 1 }, { spr: "villager_woman_run", still: "villager_woman_stand", k: HB.NPC_K },
                  { spr: "villager_braidgirl_run", still: "villager_braidgirl_stand", k: 1 }, { spr: "villager_scarfwoman_run", still: "villager_woman_stand", k: HB.NPC_K });
-  hb.follow.forEach((f, i) => Object.assign(f, { x: hbRoomX("road", 2) - i * HB.FOLLOW_GAP, t: i * 0.3, moving: false, dir: 1 }));
+  hb.follow.forEach((f, i) => Object.assign(f, { x: hbRoomX("hebron", 2) - i * HB.FOLLOW_GAP, t: i * 0.3, moving: false, dir: 1 }));
 
   // -- Hebron (2:4): the men of Judah; the elder with the horn of oil
-  c = R("hebron");
+  let c = R("hebron");
   { const rm = "hebron", X = k => (c + k) * T;
     ground(c, c + 89);
     // (Glen 11-24: "We are still using Samuel as anointing David ... two of the same people here": no one twice on a

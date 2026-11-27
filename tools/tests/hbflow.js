@@ -12,16 +12,7 @@ const drain = () => until(() => false);
 const snap = { keys: [], n: 2, snap: true };
 const jDone = [{ keys: [], n: 3 }, { n: 1, fn() { if (region.jscene) region.jscene.t = region.jscene.done + 0.1; } }, { keys: [], n: 3 }, snap,
   { n: 1, fn() { log("journal " + (region.jscene ? "page " + (region.jscene.view + 1) + " of " + region.jscene.pages.length : "none")); region.jscene = null; } }];
-const steps = [{ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(hb|jr)_/.test(k)); region.save.jSp = []; region.script.length = 0; hb.cine = hb.lament = hb.weep = null; hb.harp = hb.kneel = false; } }, snap];
-// 1 Ziklag
-steps.push({ n: 1, fn() { at("ziklag", 5); } }, { keys: [], n: 30 }, snap, { n: 1, fn() { log("cine " + !!hb.cine + " " + where()); } },
-  until(() => hb.msgOn), { keys: [], n: 50 }, until(() => hb.weep), { keys: [], n: 4 }, snap,
-  until(() => hb.lament && hb.lament.i >= 3), { keys: [], n: 30 }, snap,
-  until(() => region.jscene), ...jDone, until(() => hb.abiathar.spr === "abiathar_ephod"), { keys: [], n: 3 }, snap, drain(),
-  { n: 1, fn() { log("ask " + hbHas("hb_ask") + " right " + roomById("ziklag").right); } });
-// 2 the road
-steps.push({ n: 1, fn() { at("road", 6); } }, run(10), drain(), { keys: ["ArrowRight"], n: 60 }, { keys: [], n: 20 }, snap,
-  { n: 1, fn() { log("followers " + hb.follow.map(f => Math.round((f.x - david.x) / T)).join(",") + " on " + hb.followOn); } });
+const steps = [{ n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(hb|jr)_/.test(k)); region.save.taken.push("hb_lament", "hb_ask", "hb_road"); region.save.jSp = []; region.script.length = 0; hb.cine = hb.lament = hb.weep = null; hb.harp = hb.kneel = false; } }, snap];
 // 3 Hebron
 steps.push({ n: 1, fn() { at("hebron", 34); } }, run(5), { keys: ["ArrowRight"], n: 25 }, { n: 1, fn() { log("judah script " + region.script.length); } },
   until(() => hb.kneel), { keys: [], n: 20 }, snap, until(() => region.jscene), ...jDone, drain(), { keys: [], n: 90 },
