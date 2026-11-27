@@ -9,6 +9,7 @@
 //   Rephaim (5:17-25) and the ark (6). Stand-in art throughout.
 
 const JR = {
+  WALK: 150,                   // (Glen's fortress wall: the wall-walk behind its battlements, px down from its top; the Jebusites stand there)
   WALL_Y: 236,                 // (px above the ground line: where the Jebusites stand on the wall's battlements)
   GORGE: [24, 22],
   COURSE_GROUND: { IMG: "w8/hebron/chase/near.png", K: 0.62 },        // (Glen 11-27: "have the ground still ... it will look like he is floating": its bottom at the screen's)
@@ -58,9 +59,10 @@ const jrHas = id => hbHas(id);
 const JR_ROOMS = ["jvalley", "jcourse", "gorge", "shaft", "zion"];
 
 HEB.rooms.push(
-  { id: "jvalley", name: "Below Jerusalem", w: 70, bg: "w4_1", mx: 0, my: 4, mw: 2,
+  // (Glen 11-27: "fortress_wall" with the door, its floor painted in for David to run on) the room his wall's width
+  { id: "jvalley", name: "Below Jerusalem", w: 64, bg: "w4_1", mx: 0, my: 4, mw: 2,
     get right() { return jrHas("jr_taunt") ? "jcourse" : null; },
-    far: "w8/jerusalem/jvalley/far", near: "w8/jerusalem/jvalley/near.png", wall: "w8/jerusalem/jvalley/wall.png" },   // (Glen 11-26, Gemini; the wall drawn once: jrAfterMid)
+    far: "w8/jerusalem/jvalley/far", fort: "w8/jerusalem/jvalley/fortress_wall.png" },   // (drawn at the ground line: jrValleyWall)
   // (Glen 11-27: "I like this pic because we can see the watercourse in there ... David noticing the water course") his
   //  one painting of the stronghold from below, the watercourse's mouth in the rock under it: not repeated
   { id: "jcourse", name: "Under the Stronghold", w: 60, bg: "w4_1", mx: 2, my: 4, mw: 1, left: "jvalley",
@@ -96,7 +98,7 @@ Object.assign(HEB, {
   backdrop: (r, camX) => !!r.shaft && jrShaftBack(r, camX),   // (the watercourse: Glen's tall cave)
   afterMid: (r, camX) => jrAfterMid(r, camX),
   stoneHits: s => jrStoneHits(s) || jrFoeHit(s),
-  floor: (r, camX) => !!r.ground && r4Floor(r, camX),
+  floor: (r, camX) => r.fort ? jrValleyWall(r, camX) : !!r.ground && r4Floor(r, camX),
   pitFall: () => jrPitFall(),
   pitPic: "w8/jerusalem/gorge_pit.png",   // (Glen 11-27: his dark pit, down every pit on this stage: region.js drawPitPic)
 });
@@ -105,13 +107,13 @@ Object.assign(HEB, {
 function jrBuild(R) {
   jr.found = {}; jr.stand = null; jr.shown = null; jr.ended = false; jr.water = null; jr.cp = null; jr.jeb.length = 0;
   const P = hbPerson;
-  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/gorge/bridge.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png", "w8/jerusalem/gorge_pit.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
+  ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/jvalley/fortress_wall.png", "w8/jerusalem/gorge/bridge.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png", "w8/jerusalem/gorge_pit.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
   // -- Below Jerusalem: the walls, the Jebusites on them
   let c = R("jvalley");
   { const rm = "jvalley", X = k => (c + k) * T;
-    ground(c, c + 69);
+    ground(c, c + 63);
     for (const [k, spr, dir] of [[30, "gath_guard_laugh", -1], [36, "gath_guard_point", -1], [44, "gath_guard_laugh", -1], [52, "gath_guard_idle", -1]]) {
-      const p = P(rm, spr, X(k), dir, null, 0.8); p.y = FOOT - JR.WALL_Y; jr.jeb.push(p);
+      const p = P(rm, spr, X(k), dir, null, 0.8); p.y = JR.WALK; jr.jeb.push(p);
     }
   }
   // -- Under the Stronghold: his painting; David sees the watercourse
@@ -529,14 +531,13 @@ function jrAfterMid(r, camX) {
     }
     return;
   }
-  if (r.id === "jvalley") {
-    const im = roomImg(r.wall); if (!im || !im.naturalWidth) return;
-    const x0 = (r.c0 + JR.WALL.AT) * T, y0 = GR * T + JR.WALL.BOT - im.naturalHeight;
-    ctx.drawImage(im, Math.round(x0 - camX), y0);
-    jrWallTops(im);
-    for (const p of jr.jeb) { const k = Math.round(p.x - x0); let t = 1e9; for (let i = k - 20; i <= k + 20; i++) if (jrWallTop[i] !== undefined) t = Math.min(t, jrWallTop[i]);
-      if (t < 1e9) p.y = y0 + t + JR.WALL.ON; }
-  }
+}
+// (Glen 11-27) Below Jerusalem: his fortress wall and its gate, its dirt road the floor (over the ground's tiles,
+//  under the Jebusites and David); the sky behind it the far picture
+function jrValleyWall(r, camX) {
+  const im = roomImg(r.fort); if (!im || !im.naturalWidth) return false;
+  ctx.drawImage(im, Math.round(r.c0 * T - camX), 0, im.naturalWidth, H);
+  return true;
 }
 function jrCliffs(camX) {   // (over the ground's tiles and the dark of the gorge, under the bridge)
   {

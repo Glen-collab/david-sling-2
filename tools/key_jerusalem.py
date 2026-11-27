@@ -64,3 +64,9 @@ k = key(up(open_("gorge", "near", " wide"))); al = np.asarray(k)[..., 3]; r0 = i
 b = despill(k).crop((0, r0 + 45, k.width, k.height)); b = wrap(b, 120)
 a = np.asarray(b).astype(np.float32).copy(); F = 26; a[-F:, :, 3] *= np.linspace(1, 0, F)[:, None] ** 0.8; a[:3, :, 3] *= np.array([0.5, 0.8, 0.95])[:, None]
 Image.fromarray(a.clip(0, 255).astype(np.uint8)).save(os.path.join(out("gorge"), "bridge.png"), optimize=True); print("gorge bridge", b.size)
+# (Glen 11-27: "tileable_wall" and "fortress_wall" with the door, the floor in them for David to run on) Below
+#  Jerusalem is his fortress wall, its gate at the right: drawn at the ground line (its dirt's top is y 612, the
+#  game's ground line). The faint haze in the sky off (not the flag)
+for nm in ("fortress_wall", "tileable_wall"):
+    a = np.asarray(Image.open(os.path.join(ART, nm + ".png")).convert("RGBA")).copy(); s = a[:150, :, 3]; s[s < 90] = 0
+    Image.fromarray(a).save(os.path.join(out("jvalley"), nm + ".png"), optimize=True); print("jvalley", nm, a.shape[1], "x", a.shape[0])
