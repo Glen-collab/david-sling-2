@@ -17,6 +17,10 @@ def open_(room, lay, alt=""):   # (Glen's wide ones, 11-26, when he sent one: lo
     return Image.open(f).convert("RGB")
 WIDE = {("jvalley", "near"), ("gorge", "mid"), ("gorge", "near"), ("zion", "mid"), ("zion", "near"), ("rephaim", "mid"), ("rephaim", "near")}
 # (not the wall's wide one: its wall is far off and low, and the Jebusites stand on the near one)
+def despill(k):   # (the green screen leaves a green line along the edges: the outer 4px no greener than red)
+    from scipy import ndimage
+    a = np.asarray(k).astype(np.float32).copy(); e = ndimage.minimum_filter(a[..., 3], size=9) < 250
+    a[..., 1][e] = np.minimum(a[..., 1], np.maximum(a[..., 0], a[..., 2]) * 0.95)[e]; return Image.fromarray(a.clip(0, 255).astype(np.uint8))
 def out(room): d = os.path.join(OUT, room); os.makedirs(d, exist_ok=True); return d
 for room, lays in {"jvalley": ["far", "mid", "near"], "gorge": ["far", "near"], "zion": ["far", "mid", "near"], "rephaim": ["far", "mid", "near"]}.items():
     d = out(room)
@@ -24,8 +28,8 @@ for room, lays in {"jvalley": ["far", "mid", "near"], "gorge": ["far", "near"], 
         im = up(open_(room, lay, " wide" if (room, lay) in WIDE else ""))
         if lay == "far": wrap(im).save(os.path.join(d, "far.jpg"), quality=88); continue
         if (room, lay) == ("jvalley", "mid"):   # (the wall: drawn once, not repeated: its right end goes off into the distance)
-            k, top = crop(key(im)); k.save(os.path.join(d, "wall.png"), optimize=True); print(room, "wall top", top, "size", k.size); continue
-        k, top = crop(wrap(key(im), 120))
+            k, top = crop(despill(key(im))); k.save(os.path.join(d, "wall.png"), optimize=True); print(room, "wall top", top, "size", k.size); continue
+        k, top = crop(wrap(key(im) if room == "rephaim" else despill(key(im)), 120))   # (not his green trees and grass)
         if lay == "near" and room != "zion": k = fadeTop(k)
         k.save(os.path.join(d, f"{lay}.png"), optimize=True); print(room, lay, "top", top, "size", k.size)
 # the gorge's cliffs, apart
@@ -39,6 +43,9 @@ for nm, box in (("cliff_l", (0, 0, xl + 4, k.height)), ("cliff_r", (xr - 4, 0, k
     ramp = np.clip(np.arange(w) / S, 0, 1) if nm == "cliff_l" else np.clip((w - 1 - np.arange(w)) / S, 0, 1)
     a[..., 3] *= (ramp ** 1.3)[None, :]
     a[:F, :, 3] *= (np.linspace(0, 1, F) ** 1.5)[:, None]
+    from scipy import ndimage   # (the green screen left a green line on its edges: the outer 4px no greener than the rock is)
+    e = ndimage.minimum_filter(a[..., 3], size=9) < 250
+    a[..., 1][e] = np.minimum(a[..., 1], a[..., 0] * 0.86)[e]
     c = Image.fromarray(a.clip(0, 255).astype(np.uint8))
     c.save(os.path.join(d, nm + ".png"), optimize=True); print("gorge", nm, "top", top, "size", c.size)
 # the watercourse
@@ -54,6 +61,6 @@ a[..., 2][e] = np.minimum(a[..., 2], a[..., 1])[e]; a[..., 0][e] = np.minimum(a[
 # (Glen 11-27: the bridge "looks too fake") his rocky edge's flat top and cracked blocks, no loose rocks on top: the
 #  bridge, once the sand shows it (jerusalem.js jrDraw draws each stone's own slice of it, so they join up)
 k = key(up(open_("gorge", "near", " wide"))); al = np.asarray(k)[..., 3]; r0 = int(np.where(al.mean(1) > 200)[0][0]) - 30
-b = k.crop((0, r0 + 45, k.width, k.height)); b = wrap(b, 120)
+b = despill(k).crop((0, r0 + 45, k.width, k.height)); b = wrap(b, 120)
 a = np.asarray(b).astype(np.float32).copy(); F = 26; a[-F:, :, 3] *= np.linspace(1, 0, F)[:, None] ** 0.8; a[:3, :, 3] *= np.array([0.5, 0.8, 0.95])[:, None]
 Image.fromarray(a.clip(0, 255).astype(np.uint8)).save(os.path.join(out("gorge"), "bridge.png"), optimize=True); print("gorge bridge", b.size)

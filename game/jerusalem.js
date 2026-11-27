@@ -15,7 +15,7 @@ const JR = {
   CLIFF: { K: 0.7, LIP_L: 520, LIP_R: 60, TOP: 56, PAD: 70 },   // (his two cliffs: their scale, where each one's lip is in its picture (px), how far down the top is the ground)
   SHAFT_ART: { far: "w8/jerusalem/shaft/far.jpg", pillar: "w8/jerusalem/shaft/pillar.png", near: "w8/jerusalem/shaft/near.png" },
   SHAFT: { PILLAR_K: 0.8, PILLAR_IN: 90, DIM: 0.22 },   // (the pillars' scale, how far in from the room's sides; the cave dimmed so the ledges stand out)             // (the gorge: its first column, how wide; the hidden bridge spans all of it)
-  BRIDGE: { K: 0.5, UP: 6 },   // (the bridge (Glen's rock): its scale, and how far its top stands above the ground line, px)
+  BRIDGE: { K: 0.5, UP: 6, IN: 90 },   // (the bridge (Glen's rock): its scale, and how far its top stands above the ground line, px)
   REVEAL_IN: 6,                // (px: a stone is there only once his middle is this far out over it, and only to a WALK)
   FALL_FADE: 0.9,              // (s: the dark after a fall)
   END_AT: 4,                   // (columns past the bridge: Glen's sand toss plays)
@@ -233,15 +233,25 @@ function jrArk() {
 // drawing
 function jrDraw(camX) {
   const r = region.room; if (!r || r.id !== "gorge") return;
-  jrCliffs(camX);
   // the bridge, once the sand has shown it: Glen's own rock (gorge/bridge.png), each stone its slice of it, so the
   //  stones join into one span; gold along its top as the film ends
-  const im = roomImg("w8/jerusalem/gorge/bridge.png"); if (!im || !im.naturalWidth) return;
-  const k = JR.BRIDGE.K, y = GR * T - JR.BRIDGE.UP, h = im.naturalHeight * k, sw = T / k, iw = im.naturalWidth;
+  //  (Glen 11-27: "longer and behind the cliff edge ... fade at the edges so it melts into the cliff") each end, once
+  //  found, runs on IN px under its cliff, fading out; the cliffs drawn after it, over it
+  const im = roomImg("w8/jerusalem/gorge/bridge.png"); if (!im || !im.naturalWidth) { jrCliffs(camX); return; }
+  const k = JR.BRIDGE.K, y = GR * T - JR.BRIDGE.UP, h = im.naturalHeight * k, sw = T / k, iw = im.naturalWidth, IN = JR.BRIDGE.IN, S = 6;
+  const shown = c => jr.found[c] !== undefined && jr.found[c] >= 0;
+  for (const [c, dir] of [[jr.g0, -1], [jr.g1, 1]]) if (shown(c)) {
+    const x0 = dir < 0 ? c * T : (c + 1) * T;
+    for (let i = 0; i < IN; i += S) {
+      const x = dir < 0 ? x0 - i - S : x0 + i; ctx.globalAlpha = 1 - (i + S / 2) / IN;
+      const sx = ((((x / k) % iw) + iw) % iw); ctx.drawImage(im, Math.min(sx, iw - S / k), 0, S / k, im.naturalHeight, Math.round(x - camX), y, S + 0.5, h);
+    }
+    ctx.globalAlpha = 1;
+  }
   for (let c = jr.g0; c <= jr.g1; c++) {
     const age = jr.found[c]; if (age === undefined || age < 0) continue;
     const x = c * T - camX; if (x < -T || x > W + T) continue;
-    const sx = (c * sw) % (iw - sw);
+    const sx = Math.min((c * sw) % iw, iw - sw);   // (the same place along his rock as the ends under the cliffs)
     ctx.drawImage(im, sx, 0, sw, im.naturalHeight, Math.round(x), y, T + 1, h);
     if (age < JR.GLOW_T) {   // the golden edge, as in Glen's film
       const g = 1 - age / JR.GLOW_T; ctx.save(); ctx.globalAlpha = g;
@@ -249,6 +259,7 @@ function jrDraw(camX) {
       ctx.globalAlpha = g * 0.3; ctx.shadowBlur = 0; ctx.fillRect(Math.round(x), y + 2, T + 1, h * 0.6); ctx.restore();
     }
   }
+  jrCliffs(camX);
 }
 // (Glen 11-26) his wall, once (the Jebusites on its top edge), and his two cliffs at the gorge's edges
 let jrWallTop = null;   // (the wall's top edge down each column, once it's loaded)
