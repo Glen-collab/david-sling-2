@@ -5,7 +5,7 @@ const snap = { keys: [], n: 2, snap: true };
 const rx = () => roomById("jvalley").c0 * T;
 const at = k => ({ n: 1, fn() { david.x = rx() + k * T; david.y = GR * T; snapCamera(); } });
 testRun([
-  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt"].forEach(k => regionAdd("taken", k));
+  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt"].forEach(k => regionAdd("taken", k)); region.script.length = 0; hb.cine = null; dialog.t = 0; region.wait = 0;
     regionGo(rx() + 6 * T, 1, () => { david.y = GR * T; snapCamera(); }); } }, { keys: [], n: 40 }, snap,
   at(36), { keys: ["ArrowRight"], n: 12 }, { keys: [], n: 20 }, snap,
   at(56), { keys: [], n: 20 }, snap,

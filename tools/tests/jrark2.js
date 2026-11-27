@@ -7,7 +7,7 @@ window.JR_FILMS = true;
 const still = (src, t, dur) => { const im = new Image(); im.src = src; Object.assign(im, { videoWidth: 1280, videoHeight: 720, readyState: 4, currentTime: t, duration: dur, ended: false, play: () => Promise.resolve(), pause() {} }); return im; };
 let f1, f2;
 testRun([
-  { n: 1, fn() { f1 = still("_f1.png", 3, 6); f2 = still("_f2.png", 3, 10); clean(); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_leap", "jr_end"].forEach(k => regionAdd("taken", k)); region.jscene = null;
+  { n: 1, fn() { f1 = still("_f1.png", 3, 6); f2 = still("_f2.png", 3, 10); clean(); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_leap", "jr_end"].forEach(k => regionAdd("taken", k)); region.script.length = 0; hb.cine = null; dialog.t = 0; region.wait = 0; region.jscene = null;
     const r = roomById("zion"); regionGo((r.c0 + 8) * T, 1, () => { snapCamera(); jrArk(); }); } },
   { keys: [], n: 150 }, { n: 1, fn() { let i = 0; while (region.script.length && !preFilm.active && i++ < 20) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; preFilm.clip = f1; } },
   { keys: [], n: 120 }, snap,

@@ -1,6 +1,6 @@
-// World 8, stop 2: Jerusalem (2 Samuel 5:6-10; Joshua 15:63). The same stage as Hebron (hebron.js, "#9-14", saved as
-// "hebron"); loaded after hebron.js and before region.js, it adds its rooms to HEB and hooks in beside Hebron's, as
-// zk7.js does Ziklag's on Hachilah's.
+// World 9: Jerusalem (2 Samuel 5:6-10; Joshua 15:63). Its own stage ("#9-15", saved as "jerusalem", Glen 11-27: "make these
+// their own individual worlds"); loaded after hebron.js and before region.js, which takes JER as its REGION. It borrows
+// Hebron's helpers (hbPerson, HB_SAY, hbCine) for its people and cut scenes, none of its rooms.
 //   Below Jerusalem (the Jebusites laugh from the walls, 5:6; "let him go up to the watercourse", 5:8) -> the Gorge (the
 //   Leap of Faith, leap.js's test stage brought in: a bridge no one can see, found only by walking out on it; Glen 11-25:
 //   "let's have it not show up and then after he throws sand on it and it shows up in the cut scene, then we see it")
@@ -70,7 +70,13 @@ const jr = { found: {}, stand: null, fade: 0, falls: 0, shown: null, ended: fals
 const jrHas = id => hbHas(id);
 const JR_ROOMS = ["jvalley", "jcourse", "gorge", "shaft", "zion"];
 
-HEB.rooms.push(
+// (Glen 11-27: "Let's start Hebron in only Hebron levels, and start Jerusalem in only Jerusalem levels"; "make these
+//  their own individual worlds") World 9, its own stage ("#9-15") and its own save: the walls to the ark
+const JER = {
+  key: "jerusalem", name: "Jerusalem", start: "jvalley", strCap: HEB.strCap,
+  carry: [...HEB.carry, "hebron"],   // (what he earned before, Hebron's too)
+  steps: [], entries: [], ownPage: false, verse: HEB.verse,
+  rooms: [
   // (Glen 11-27: "fortress_wall" with the door, its floor painted in for David to run on) the room his wall's width
   { id: "jvalley", name: "Below Jerusalem", w: 64, bg: "w4_1", mx: 0, my: 4, mw: 2,
     get right() { return jrHas("jr_taunt") ? "jcourse" : null; },
@@ -87,8 +93,8 @@ HEB.rooms.push(
     shaft: true, ground: "pebbles" },   // (Glen 11-26: his cave looking up, stone pillars at its sides, roots at its foot: jrShaftBack)
   { id: "zion", name: "The Stronghold of Zion", w: 60, bg: "w4_1", mx: 6, my: 2, mw: 2,
     far: "w8/jerusalem/zion/far", mid: "w8/jerusalem/zion/mid.png", midY: 386, near: "w8/jerusalem/zion/near.png", nearK: 0.8 },   // (Glen 11-26, Gemini)
-);
-HEB.spreads.push(
+  ],
+  spreads: [
   { id: "js_zion", when: "jx_zion", title: "Jerusalem",
     entry: ["The Jebusites laughed at us from their walls: even the blind and the lame could keep us out. The way in was hidden, under the ground, and I could only find it one step at a time. Now the stronghold of Zion is the LORD's city, and mine to keep for Him.", "2 Samuel 5:6-10"],
     psalm: { ref: "Psalm 122", text: "I was glad when they said to me, “Let’s go to the LORD’s house!” Our feet are standing within your gates, Jerusalem! (122:1-2)" } },
@@ -96,12 +102,14 @@ HEB.spreads.push(
   { id: "js_ark", when: "jx_ark", title: "The Ark Comes Home", final: true,
     entry: ["The ark of the LORD has come into Jerusalem, with shouting and the sound of the trumpet, and I danced before the LORD with all my might. Through the caves and the long years of running, He kept every promise. My heart is steadfast.", "2 Samuel 6:12-15"],
     psalm: { ref: "Psalm 24", text: "Lift up your heads, you gates! Be lifted up, you everlasting doors, and the King of glory will come in. (24:7)" } },
-);
-// (region.js CRAWLS.jerusalem) its own crawl, once, the first time you're in one of its rooms
-HEB.crawlKey = () => { const c = david.x / T, r = HEB.rooms.find(o => c >= o.c0 && c < o.c0 + o.w); return r && JR_ROOMS.includes(r.id) ? "jerusalem" : null; };
-// Hebron's hooks, then Jerusalem's
-Object.assign(HEB, {
-  build: R => { hbBuild(R); jrBuild(R); },
+  ],
+};
+HEB.pitPic = "w8/jerusalem/gorge_pit.png";   // (Glen 11-27: his dark pit down Hebron's pits too)
+
+// Jerusalem's hooks (Hebron's helpers for its people, cut scenes and words; none of its rooms)
+Object.assign(JER, {
+  build: R => { for (const k of ["people", "follow", "tribes", "foods", "table"]) hb[k].length = 0; hb.cine = null; hb.lament = null; hb.carry = null; hb.grave = null; hb.crown = false; jrBuild(R); },
+  holdDavid: d => hbHold(d), drawDavid: (d, x, y) => hbDrawDavid(d, x, y),
   enter: r => { hbEnter(r); jrEnter(r); },
   update: (dt, r) => { hbUpdate(dt, r); jrUpdate(dt, r); },
   draw: camX => { hbDraw(camX); jrDraw(camX); },
@@ -112,7 +120,7 @@ Object.assign(HEB, {
   stoneHits: s => jrStoneHits(s) || jrFoeHit(s),
   floor: (r, camX) => r.fort ? jrValleyWall(r, camX) : !!r.ground && r4Floor(r, camX),
   pitFall: () => jrPitFall(),
-  pitPic: "w8/jerusalem/gorge_pit.png",   // (Glen 11-27: his dark pit, down every pit on this stage: region.js drawPitPic)
+  pitPic: "w8/jerusalem/gorge_pit.png",   // (Glen 11-27: his dark pit: region.js drawPitPic)
 });
 
 // ---------------------------------------------------------------------------------------------------------------------

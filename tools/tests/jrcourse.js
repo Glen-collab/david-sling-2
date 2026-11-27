@@ -5,7 +5,7 @@ const snap = { keys: [], n: 2, snap: true };
 const until = test => ({ n: 1, fn() { let i = 0; while (region.script.length && !test() && i++ < 80) { const s = region.script.shift(); if (s.fn) s.fn(); } dialog.t = 0; region.wait = 0; } });
 const rx = () => roomById("jcourse").c0 * T;
 testRun([
-  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt"].forEach(k => regionAdd("taken", k)); jr.coursing = false; } },
+  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt"].forEach(k => regionAdd("taken", k)); region.script.length = 0; hb.cine = null; dialog.t = 0; region.wait = 0; jr.coursing = false; } },
   { n: 1, fn() { log("valley right " + roomById("jvalley").right); regionGo(rx() + 4 * T, 1, () => { david.y = GR * T; snapCamera(); }); } }, { keys: [], n: 40 }, snap,
   { n: 1, fn() { log("right before " + roomById("jcourse").right); } },
   { keys: ["ArrowRight"], n: 100 }, { keys: [], n: 20 }, snap, { n: 1, fn() { log("at " + Math.round((david.x - rx()) / T) + " script " + region.script.length); } },

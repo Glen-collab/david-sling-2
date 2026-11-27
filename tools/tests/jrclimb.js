@@ -6,7 +6,7 @@ const hush = { n: 1, fn() { region.script = []; dialog.t = 0; hb.cine = null; re
 const rx = () => roomById("shaft").c0 * T;
 const where = () => "x " + Math.round(david.x - rx()) + " y " + Math.round(david.y) + " climb " + (region.climb ? region.climb.kind : "-");
 testRun([
-  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_leap"].forEach(k => regionAdd("taken", k)); learnSkill("wallClimb"); learnSkill("leap"); } },
+  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_leap"].forEach(k => regionAdd("taken", k)); region.script.length = 0; hb.cine = null; dialog.t = 0; region.wait = 0; learnSkill("wallClimb"); learnSkill("leap"); } },
   { n: 1, fn() { regionGo(rx() + 300, 1, () => { david.y = GR * T; snapCamera(); }); } }, { keys: [], n: 40 }, hush,
   { keys: ["ArrowLeft"], n: 14 }, { keys: [], n: 4 }, { n: 1, fn() { log("at face: " + where()); } },
   { keys: ["ArrowUp"], n: 8 }, { n: 1, fn() { log("grab: " + where()); } }, snap,

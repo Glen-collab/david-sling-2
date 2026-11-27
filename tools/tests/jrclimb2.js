@@ -9,7 +9,7 @@ const where = () => "x " + Math.round(david.x - rx()) + " y " + Math.round(david
 const noWater = { n: 1, fn() { if (jr.water) { jr.water.y = david.y + 900; jr.water.t = -99; } jr.rocks.length = 0; jr.rockT = 99; } };
 const hold = (k, n) => [...Array(Math.ceil(n / 10))].flatMap(() => [{ keys: k, n: 10 }, noWater]);
 testRun([
-  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_course", "jr_leap"].forEach(k => regionAdd("taken", k)); learnSkill("wallClimb"); learnSkill("leap"); } },
+  { n: 1, fn() { region.save.taken = region.save.taken.filter(k => !/^(jr|hb)_/.test(k)); ["hb_ask", "hb_judah", "hb_pool", "hb_chase", "hb_grave", "hb_feasted", "hb_end", "jr_taunt", "jr_course", "jr_leap"].forEach(k => regionAdd("taken", k)); region.script.length = 0; hb.cine = null; dialog.t = 0; region.wait = 0; learnSkill("wallClimb"); learnSkill("leap"); } },
   { n: 1, fn() { const g = roomById("gorge"); regionGo((g.c0 + g.w - 3) * T, 1, () => { david.y = GR * T; snapCamera(); }); } }, { keys: [], n: 40 }, hush,
   ...hold(["ArrowRight"], 20), { keys: [], n: 30 }, hush, { n: 1, fn() { log("in: " + where()); } }, snap,
   ...hold(["ArrowLeft"], 60), { keys: [], n: 4 }, ...hold(["ArrowUp"], 220), { keys: [], n: 20 }, { n: 1, fn() { log("pillar 1: " + where()); } },
