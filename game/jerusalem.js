@@ -39,6 +39,16 @@ const JR = {
     MID: 6, TOP: 9, JEB: 10,   // (which ledge: halfway (where the water starts you again), the way out, the Jebusites')
     FACES: [[0, 216, 140], [1080, 1296, -540, 0, -70], [0, 216, -1170, 140, -720]],   // (on the tiles: the pillars solid down by the floor)
     JEB_AT: [40, 210], JEB_HP: 3, JEB_K: 0.8,   // (the two Jebusites on their ledge (px in from its left), stones each, their size)
+    // (Glen 11-27: "These guys look mini ... the mouth of the tunnel as another layer so it looks like rocks are being
+    //  thrown down the hole? We don't need to see people there ... David will go behind the new mouth hole and to the
+    //  next room") the Jebusites unseen: their rocks come out of his tunnel mouth (drawn in front of David), and from
+    //  either top ledge he walks in behind it, into the city. X: its middle (px from the room's left), Y: its foot line,
+    //  SPAN: how near its middle he goes in, OUT: where along it the rocks come out (px from its middle, to each side),
+    //  DROP: how high over the top ledges they come out (behind his rim). IMG: his "shaft far mouth_overlay", the cave's
+    //  top with the opening cut out: drawn over the far picture, in front of David
+    MOUTH: { IMG: "w8/jerusalem/shaft/mouth.png", X: 710, Y: -1240, SPAN: 110, OUT: 30, DROP: 110, CUT: [-1410, -1345] },
+    // (CUT: only his rim's top is in front, fading out between these y's: over David's head on the top ledges; its sides,
+    //  down over the third pillar and its ledge, stay behind, as in the far picture)
     ROCK: { EVERY: 2.3, FIRST: 1.2, R: 17, ROLL: 210, GRAV: 1500, THROW_VX: 130, THROW_VY: -260 },
   },
   // (Glen 11-27: "Isn't there a battle or something when we get to Zion?") the stronghold taken (1 Chronicles 11:6):
@@ -49,7 +59,7 @@ const JR = {
     SPEAR: [[16, 4], [23, 3], [30, 3]], SPEAR_HP: 3, SPEAR_K: 0.8,
     HOUSES: [12, 19, 26],              // (a house (the town kit's) at each; an archer behind the 1st and 3rd one's roof)
     ARCHERS: [12, 26], ARCH_HP: 2, ARCH_K: 0.9, ARCH_Y: 14,  // (his clip (waist-up): its foot this far under the roof line)
-    WALL: { AT: 32, K: 0.8 },          // (the citadel's wall: his wall from below the city again, smaller, at the room's end)
+    WALL: { AT: 32, K: 0.8, FOOT: 290 },   // (FOOT: the row of his picture on the ground line: Glen 11-27 ran its left side on down, under the ground)          // (the citadel's wall: his wall from below the city again, smaller, at the room's end)
     SLINGERS: [41, 52], SLING_HP: 2, SLING_K: 0.9, SLING_Y: 14, DOWN: 92,   // (DOWN: px they sink behind cover between shots)
     HIDE: [1.6, 2.6], RISE: 1.1, NEAR: 15,   // (s down behind cover between shots; s up drawing/whirling (hit him then); tiles: in range)
     SHOT: { ARROW: 620, STONE: 520, GRAV_A: 420, GRAV_S: 700, BLOCK: 46 },
@@ -153,7 +163,8 @@ function jrBuild(R) {
     const solid = (k, w, r0) => { block(c + k, r0, w, GR - r0, 6); for (let i = 0; i < w; i++) for (let q = r0; q < GR; q++) artSolid.add((c + k + i) + "," + q); };
     solid(0, 6, Math.ceil(C.FACES[0][2] / T)); solid(30, 6, 0);   // (the pillars, solid where they stand on the floor)
     const jl = jr.ledges[C.JEB];
-    jr.throwers = C.JEB_AT.map((k, i) => ({ x: jl.x + k, y: jl.y, hp: C.JEB_HP, flash: 0, t: i * 0.7, throwT: 0, gone: 0, dir: i ? 1 : -1 }));
+    const M = C.MOUTH; roomImg(M.IMG);
+    jr.throwers = [-1, 1].map((dir, i) => ({ x: x0 + M.X + dir * M.OUT, y: M.Y - M.DROP, hp: 1, flash: 0, t: i * 0.7, throwT: 0, gone: 0, dir, unseen: true }));   // (out of the mouth, each way in turn)
     jr.rocks = []; jr.rockT = C.ROCK.FIRST;
   }
   // -- The Stronghold of Zion
@@ -273,7 +284,7 @@ function jrPillars(d) {
   if (region.climb) return;
   const x0 = region.room.c0 * T, hw = BODY_W / 2; let at = false;
   for (const [a, b, top, bot] of JR.CLIMB.FACES) {
-    if (bot === undefined || d.y <= top + 2 || d.y > bot + 2) continue;
+    if (d.y <= top + 2 || d.y > (bot === undefined ? GR * T : bot) + 2) continue;   // (no bottom: down to the floor)
     if (a === 0) { if (d.x < x0 + b + hw) { d.x = x0 + b + hw; if (d.vx < 0) d.vx = 0; at = true; } }
     else if (d.x > x0 + a - hw) { d.x = x0 + a - hw; if (d.vx > 0) d.vx = 0; at = true; }
   }
@@ -299,12 +310,9 @@ function jrShaft(dt, d, free) {
     jr.fade = W_.FADE; toast(jr.cp ? "The water caught you! From halfway up again." : "The water caught you! Up again, quickly.");
     return;
   }
-  // the top: into the city, once the Jebusites up there have run
-  const left = jr.throwers.filter(t => t.hp > 0).length;
-  if (free && d.onGround && jr.top && d.y <= jr.top.y + 2 && Math.abs(d.x - (jr.top.x + jr.top.x1) / 2) < 200 && left) {
-    if (!jr.topTold) { jr.topTold = true; toast("Drive off the Jebusites first: your sling!"); }
-  }
-  if (free && d.onGround && jr.top && d.y <= jr.top.y + 2 && Math.abs(d.x - (jr.top.x + jr.top.x1) / 2) < 200 && !left) {
+  // the top: in behind his tunnel mouth, from either top ledge, into the city
+  const M = JR.CLIMB.MOUTH;
+  if (free && d.onGround && d.y <= M.Y + 2 && Math.abs(d.x - (region.room.c0 * T + M.X)) < M.SPAN) {
     w.on = false;
     rPlay([{ fn() { regionGo(hbRoomX("zion", 8), 1, () => jrZionBattle()); } }]);
   }
@@ -351,6 +359,7 @@ function jrStoneHits(s) {
   const i = jr.rocks.findIndex(k => Math.hypot(s.x - k.x, s.y - (k.y - R.R)) < R.R + 10);
   if (i >= 0) { jrRockBreak(i); stoneHit(s, 0.8); return true; }
   for (const t of jr.throwers) {
+    if (t.unseen) continue;
     if (t.hp <= 0 || Math.abs(s.x - t.x) > 26 || s.y > t.y || s.y < t.y - 130) continue;
     t.hp--; t.flash = 0.3; stoneHit(s); sfx("lion_hit", t.x, 0.5, 1.4);
     const left = jr.throwers.filter(q => q.hp > 0).length;
@@ -525,6 +534,7 @@ function jrCourseGround(r, camX) {
 function jrDrawShaft(camX) {
   const C = JR.CLIMB, R = C.ROCK;
   for (const t of jr.throwers) {
+    if (t.unseen) continue;
     const a = t.hp > 0 ? 1 : Math.max(0, 1 - t.gone / 1.2); if (a <= 0) continue;
     const spr = t.hp <= 0 ? "gath_guard_walk" : t.throwT > 0 ? "gath_guard_point" : "gath_guard_idle", S = SPR[spr];
     const f = S ? Math.floor(t.t * 10) % S.frames : 0, x = t.x - camX + (t.hp <= 0 ? t.dir * t.gone * 160 : 0);
@@ -550,7 +560,7 @@ function jrWallTops(im) {
 function jrAfterMid(r, camX) {
   if (r.id === "zion") {   // the citadel's wall at the room's end, the slingers on its top edge
     const im = roomImg("w8/jerusalem/jvalley/wall.png"); if (!im || !im.naturalWidth) return;
-    const Z = JR.ZION, k = Z.WALL.K, x0 = (r.c0 + Z.WALL.AT) * T, y0 = GR * T + JR.WALL.BOT * k - im.naturalHeight * k;
+    const Z = JR.ZION, k = Z.WALL.K, x0 = (r.c0 + Z.WALL.AT) * T, y0 = GR * T + JR.WALL.BOT * k - Z.WALL.FOOT * k;
     ctx.drawImage(im, Math.round(x0 - camX), Math.round(y0), im.naturalWidth * k, im.naturalHeight * k);
     jrWallTops(im);
     for (const f of jr.foes) if (f.kind === "sling" && f.y === null) {
@@ -587,7 +597,8 @@ function jrShaftBack(r, camX) {
   return true;
 }
 function jrDrawFront(camX) {
-  const r = region.room, w = jr.water; if (!r || r.id !== "shaft" || !w || jrHas("jr_end")) return;
+  const r = region.room; if (r && r.id === "shaft") jrMouth(r, camX);
+  const w = jr.water; if (!r || r.id !== "shaft" || !w || jrHas("jr_end")) return;
   const now = performance.now() / 1000, top = w.y;
   if (top > camY + H + 20) return;
   ctx.save();
@@ -595,6 +606,15 @@ function jrDrawFront(camX) {
   ctx.strokeStyle = "rgba(190,225,235,0.75)"; ctx.lineWidth = 3; ctx.beginPath();
   for (let x = 0; x <= W; x += 12) { const yy = top + Math.sin(x / 40 + now * 3) * 4; x ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy); }
   ctx.stroke(); ctx.restore();
+}
+function jrMouth(r, camX) {   // Glen's tunnel mouth at the top of the shaft, over David (he goes in behind it)
+  const M = JR.CLIMB.MOUTH, im = roomImg(M.IMG); if (!im || !im.naturalWidth) return;
+  const rw = r.w * T, k = rw / im.naturalWidth, x = Math.round(r.c0 * T - camX), top = -(r.up || 0) * T;   // (on the far picture: the same place and scale (jrShaftBack))
+  const [a, b] = M.CUT, S = 5, row = y => (y - top) / k;
+  ctx.drawImage(im, 0, 0, im.naturalWidth, row(a), x, top, rw, a - top);
+  ctx.save();
+  for (let y = a; y < b; y += S) { ctx.globalAlpha = 1 - (y - a + S / 2) / (b - a); ctx.drawImage(im, 0, row(y), im.naturalWidth, S / k, x, y, rw, S); }
+  ctx.restore();
 }
 function jrDrawOver() {
   if (jr.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(1, jr.fade / JR.FALL_FADE * 1.4)})`; ctx.fillRect(0, 0, W, H); }
