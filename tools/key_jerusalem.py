@@ -87,4 +87,6 @@ k, top = crop(keyWhite(im)); k.save(os.path.join(out("jvalley"), "wall.png"), op
 #  off; drawn at its own size (JR.BRIDGE.K 1), one span from under the left cliff (overrides the bridge above)
 b = np.asarray(Image.open(os.path.join(ART, "gorge_bridge.png")).convert("RGBA")).astype(np.float32); ys = np.where(b[..., 3].max(1) > 24)[0]; b = b[ys.min():ys.max() + 1]
 b[..., 1] = np.minimum(b[..., 1], np.maximum(b[..., 0], b[..., 2]) * 0.97)
+# (Glen 11-27: "make it brighter so it looks like the ground") each channel lifted so its stone matches the cliffs' ground
+op = b[..., 3] > 200; gain = np.array([178, 138, 104]) / b[..., :3][op].mean(0); b[..., :3] *= gain; print("bridge gain", gain.round(2))
 Image.fromarray(b.clip(0, 255).astype(np.uint8)).save(os.path.join(out("gorge"), "bridge.png"), optimize=True); print("gorge bridge (Glen's)", b.shape[1], "x", b.shape[0])
