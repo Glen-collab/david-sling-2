@@ -887,7 +887,7 @@ function updateRegion(dt) {
   if (low && r.outL && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.outL[0]); regionGo((n.c0 + r.outL[1]) * T, -1); return; }
   if (low && r.outR && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.outR[0]); regionGo((n.c0 + r.outR[1]) * T, 1); return; }
   if (low && r.left && r.left !== "@road" && d.x < left + RTUNE.EDGE + BODY_W / 2 && held("left")) { const n = roomById(r.left); regionGo((n.c0 + n.w - 2) * T, -1); return; }
-  if (low && r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + 2) * T, 1); return; }
+  if (low && r.right && d.x > right - RTUNE.EDGE - BODY_W / 2 && held("right")) { const n = roomById(r.right); regionGo((n.c0 + (n.inL || 2)) * T, 1); return; }   // (inL: a room whose left end isn't floor: the watercourse's pillar)
   // (Glen 11-17) a path into the picture: Up, he turns his back and walks off along it
   if (region.pathWalk) { const w = region.pathWalk; w.t += dt;
     if (!w.gone && w.t >= PATH.TURN + PATH.WALK) { w.gone = true; const n = roomById(w.p.to); regionGo((n.c0 + w.p.at) * T, 1, () => { region.pathWalk = null; }); }
@@ -941,7 +941,7 @@ function regionClimbStart(d) {   // Up on the ground: by the well, the rope in t
     if (o.kind === "rope") { region.climb = { kind: "rope", x: o.x, dist: 0, o }; d.x = o.x; d.vx = d.vy = 0; return true; }
   }
   for (const w of region.walls) {
-    if (w.room !== r.id) continue;
+    if (w.room !== r.id || (w.from !== undefined && d.y > w.from + 8)) continue;   // (from: no lower than this does a climb start: the watercourse)
     const face = Math.abs(d.x - w.x0) < RTUNE.FACE_REACH && d.x < w.x0 + 4 ? { x: w.x0, f: 1 }
                : Math.abs(d.x - w.x1) < RTUNE.FACE_REACH && d.x > w.x1 - 4 ? { x: w.x1, f: -1 } : null;
     if (!face) continue;
@@ -956,7 +956,7 @@ function regionClimbGrab(d) {
   if ((region.grabT || 0) > performance.now() / 1000) return false;   // (just pushed off: not straight back on)
   const r = roomAt(d.x); if (!r) return false;
   for (const w of region.walls) {
-    if (w.room !== r.id || !hasSkill(w.need) || d.y <= w.top + 10 || d.y >= GR * T - 4) continue;
+    if (w.room !== r.id || !hasSkill(w.need) || d.y <= w.top + 10 || d.y >= GR * T - 4 || (w.from !== undefined && d.y > w.from + 8)) continue;
     const reach = RTUNE.FACE_REACH + 14;
     const face = Math.abs(d.x - w.x0) < reach && d.x < w.x0 + 10 ? { x: w.x0, f: 1 }
                : Math.abs(d.x - w.x1) < reach && d.x > w.x1 - 10 ? { x: w.x1, f: -1 } : null;

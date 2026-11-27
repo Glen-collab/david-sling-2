@@ -29,13 +29,15 @@ const JR = {
   //  rocks idea. Reminds me of Donkey Kong") the watercourse: three sheer climbs up the pillars (each too tall to jump),
   //  short runs of ledges between them; Jebusites at the top throw rocks that roll down the ledges and drop off their ends
   //  (a stone breaks one); drive them off with the sling to get out at the top. LEDGES: [size, x (px from the room's
-  //  left), surface y]; FACES: [x0, x1, top] (px): the climbs (the pillars' inner faces)
+  //  left), surface y]; FACES: [x0, x1, top, bottom] (px): the climbs (the pillars' inner faces; bottom: down to where
+  //  the pillar stops him as a wall (jrPillars), none where the tiles are solid; from: no lower than this does its climb
+  //  start, its own ledge: not straight up a pillar from the floor or the first ledge, past the rest)
   CLIMB: {
     LEDGES: [["l", 0, 140], ["m", 360, 70], ["m", 630, 0], ["m", 884, -70],
              ["l", 1025, -540], ["m", 760, -600], ["m", 480, -660], ["m", 216, -720],
              ["l", 0, -1170], ["l", 360, -1240], ["l", 790, -1240]],
     MID: 6, TOP: 9, JEB: 10,   // (which ledge: halfway (where the water starts you again), the way out, the Jebusites')
-    FACES: [[0, 216, 140], [1080, 1296, -540], [0, 216, -1170]],   // (on the tiles: the pillars solid down by the floor)
+    FACES: [[0, 216, 140], [1080, 1296, -540, 0, -70], [0, 216, -1170, 140, -720]],   // (on the tiles: the pillars solid down by the floor)
     JEB_AT: [40, 210], JEB_HP: 3, JEB_K: 0.8,   // (the two Jebusites on their ledge (px in from its left), stones each, their size)
     ROCK: { EVERY: 2.3, FIRST: 1.2, R: 17, ROLL: 210, GRAV: 1500, THROW_VX: 130, THROW_VY: -260 },
   },
@@ -71,7 +73,7 @@ HEB.rooms.push(
   { id: "gorge", name: "The Gorge Below the City", w: 80, bg: "w4_1", mx: 3, my: 4, mw: 2, left: "jcourse",
     get right() { return jr.ended || jrHas("jr_leap") ? "shaft" : null; },
     far: "w8/jerusalem/gorge/far", floor: "w8/jerusalem/gorge/near.png" },   // (Glen 11-26: his rocky edge as the floor (the gorge cut out of it), his two cliffs at its edges: jrCliffs)
-  { id: "shaft", name: "The Watercourse", w: 36, up: 44, bg: "w4_1", mx: 5, my: 2, mw: 1, mh: 3, left: "gorge",
+  { id: "shaft", name: "The Watercourse", w: 36, up: 44, inL: 7, bg: "w4_1", mx: 5, my: 2, mw: 1, mh: 3, left: "gorge",
     shaft: true, ground: "pebbles" },   // (Glen 11-26: his cave looking up, stone pillars at its sides, roots at its foot: jrShaftBack)
   { id: "zion", name: "The Stronghold of Zion", w: 60, bg: "w4_1", mx: 6, my: 2, mw: 2,
     far: "w8/jerusalem/zion/far", mid: "w8/jerusalem/zion/mid.png", midY: 386, near: "w8/jerusalem/zion/near.png", nearK: 0.8 },   // (Glen 11-26, Gemini)
@@ -146,7 +148,8 @@ function jrBuild(R) {
     const C = JR.CLIMB, x0 = c * T;
     jr.ledges = C.LEDGES.map(([size, x, y]) => r4L(rm, "pale", size, x0 + x, y));
     jr.mid = jr.ledges[C.MID]; jr.top = jr.ledges[C.TOP];
-    for (const [a, b, top] of C.FACES) region.walls.push({ room: rm, x0: x0 + a, x1: x0 + b, top, need: "wallClimb" });
+    platAt(c + 29, jr.ledges[3].y, 1); platAt(c + 6, jr.ledges[7].y, 1);   // (their ends right up to the faces: he stands at the pillar, not off the end)
+    for (const [a, b, top, , from] of C.FACES) region.walls.push({ room: rm, x0: x0 + a, x1: x0 + b, top, from, need: "wallClimb" });
     const solid = (k, w, r0) => { block(c + k, r0, w, GR - r0, 6); for (let i = 0; i < w; i++) for (let q = r0; q < GR; q++) artSolid.add((c + k + i) + "," + q); };
     solid(0, 6, Math.ceil(C.FACES[0][2] / T)); solid(30, 6, 0);   // (the pillars, solid where they stand on the floor)
     const jl = jr.ledges[C.JEB];
@@ -264,7 +267,21 @@ function jrPitFall() {
 }
 
 // ---- the Watercourse: the water rises ---------------------------------------------------------------------------------
+// (Glen 11-27: "I climb those four and I can't go any higher") the pillars above the floor's tiles stop him like a wall,
+//  so he's at the face to climb it (walking on, he'd step off the ledge into the pillar, past the face)
+function jrPillars(d) {
+  if (region.climb) return;
+  const x0 = region.room.c0 * T, hw = BODY_W / 2; let at = false;
+  for (const [a, b, top, bot] of JR.CLIMB.FACES) {
+    if (bot === undefined || d.y <= top + 2 || d.y > bot + 2) continue;
+    if (a === 0) { if (d.x < x0 + b + hw) { d.x = x0 + b + hw; if (d.vx < 0) d.vx = 0; at = true; } }
+    else if (d.x > x0 + a - hw) { d.x = x0 + a - hw; if (d.vx > 0) d.vx = 0; at = true; }
+  }
+  if (at && d.onGround && !jr.faceTold) { jr.faceTold = true;
+    toast(hasSkill("wallClimb") ? "Press Up at the pillar to climb it." : "Too sheer to climb without the wall climb (Ein Gedi's ibex)."); }
+}
 function jrShaft(dt, d, free) {
+  jrPillars(d);
   if (jrHas("jr_end")) return;
   const W_ = JR.WATER;
   if (!jr.water) jr.water = { y: FOOT + W_.START, on: false, t: 0 };
