@@ -85,7 +85,10 @@ im = Image.open(os.path.join(ART, "jvalley mid.jpg")).convert("RGB"); im = im.re
 k, top = crop(keyWhite(im)); k.save(os.path.join(out("jvalley"), "wall.png"), optimize=True); print("jvalley wall (white key) top", top, "size", k.size)
 # (Glen 11-27: "gorge_bridge" resaved "so it looks more like a bridge", already clear around it) cropped, its green line
 #  off; drawn at its own size (JR.BRIDGE.K 1), one span from under the left cliff (overrides the bridge above)
-b = np.asarray(Image.open(os.path.join(ART, "gorge_bridge.png")).convert("RGBA")).astype(np.float32); ys = np.where(b[..., 3].max(1) > 24)[0]; b = b[ys.min():ys.max() + 1]
+# (Glen 11-27: "gorge_bridge2", "a better perspective for the bridge": wider in front, its ends to points) cropped to it
+#  both ways: its width the gap and its two ends under the cliffs
+b = np.asarray(Image.open(os.path.join(ART, "gorge_bridge2.png")).convert("RGBA")).astype(np.float32); m = b[..., 3] > 24; ys = np.where(m.any(1))[0]; xs = np.where(m.any(0))[0]
+b = b[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
 b[..., 1] = np.minimum(b[..., 1], np.maximum(b[..., 0], b[..., 2]) * 0.97)
 # (Glen 11-27: "make it brighter so it looks like the ground") each channel lifted so its stone matches the cliffs' ground
 op = b[..., 3] > 200; gain = np.array([178, 138, 104]) / b[..., :3][op].mean(0); b[..., :3] *= gain; print("bridge gain", gain.round(2))
