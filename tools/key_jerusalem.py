@@ -83,3 +83,8 @@ def keyWhite(im):
     return Image.fromarray(a4.clip(0, 255).astype(np.uint8))
 im = Image.open(os.path.join(ART, "jvalley mid.jpg")).convert("RGB"); im = im.resize((round(im.width * 720 / im.height), 720), Image.LANCZOS)
 k, top = crop(keyWhite(im)); k.save(os.path.join(out("jvalley"), "wall.png"), optimize=True); print("jvalley wall (white key) top", top, "size", k.size)
+# (Glen 11-27: "gorge_bridge" resaved "so it looks more like a bridge", already clear around it) cropped, its green line
+#  off; drawn at its own size (JR.BRIDGE.K 1), one span from under the left cliff (overrides the bridge above)
+b = np.asarray(Image.open(os.path.join(ART, "gorge_bridge.png")).convert("RGBA")).astype(np.float32); ys = np.where(b[..., 3].max(1) > 24)[0]; b = b[ys.min():ys.max() + 1]
+b[..., 1] = np.minimum(b[..., 1], np.maximum(b[..., 0], b[..., 2]) * 0.97)
+Image.fromarray(b.clip(0, 255).astype(np.uint8)).save(os.path.join(out("gorge"), "bridge.png"), optimize=True); print("gorge bridge (Glen's)", b.shape[1], "x", b.shape[0])
