@@ -70,3 +70,16 @@ Image.fromarray(a.clip(0, 255).astype(np.uint8)).save(os.path.join(out("gorge"),
 for nm in ("fortress_wall", "tileable_wall"):
     a = np.asarray(Image.open(os.path.join(ART, nm + ".png")).convert("RGBA")).copy(); s = a[:150, :, 3]; s[s < 90] = 0
     Image.fromarray(a).save(os.path.join(out("jvalley"), nm + ".png"), optimize=True); print("jvalley", nm, a.shape[1], "x", a.shape[0])
+# (Glen 11-27: "jvalley mid" resaved on white, a side put on the wall's left end) keyed off its white, not green:
+#  py "<scratchpad>/wallkey.py" logic, kept here
+def keyWhite(im):
+    from scipy import ndimage
+    a = np.asarray(im).astype(np.float32); d = 255 - a.min(2); bg = d < 40
+    lab, n = ndimage.label(bg); edge = set(np.unique(np.r_[lab[0], lab[-1], lab[:, 0], lab[:, -1]])) - {0}
+    bg = np.isin(lab, list(edge)); dist = ndimage.distance_transform_edt(~bg)   # (only the white that reaches the picture's edge)
+    al = np.clip(dist / 2.5, 0, 1) * np.clip((d - 12) / 40, 0, 1) ** 0.5; al[dist > 3] = 1
+    a4 = np.dstack([a, al * 255]); inner = ndimage.grey_erosion(a4[..., :3], size=(5, 5, 1)); e = (dist > 0) & (dist < 4)
+    a4[..., :3][e] = np.minimum(a4[..., :3][e], inner[e] * 1.05); a4[:, :6, 3] = 0
+    return Image.fromarray(a4.clip(0, 255).astype(np.uint8))
+im = Image.open(os.path.join(ART, "jvalley mid.jpg")).convert("RGB"); im = im.resize((round(im.width * 720 / im.height), 720), Image.LANCZOS)
+k, top = crop(keyWhite(im)); k.save(os.path.join(out("jvalley"), "wall.png"), optimize=True); print("jvalley wall (white key) top", top, "size", k.size)

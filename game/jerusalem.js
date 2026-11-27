@@ -77,11 +77,11 @@ HEB.rooms.push(
     far: "w8/jerusalem/zion/far", mid: "w8/jerusalem/zion/mid.png", midY: 386, near: "w8/jerusalem/zion/near.png", nearK: 0.8 },   // (Glen 11-26, Gemini)
 );
 HEB.spreads.push(
-  { id: "js_zion", when: "jr_end", title: "Jerusalem",
+  { id: "js_zion", when: "jx_zion", title: "Jerusalem",
     entry: ["The Jebusites laughed at us from their walls: even the blind and the lame could keep us out. The way in was hidden, under the ground, and I could only find it one step at a time. Now the stronghold of Zion is the LORD's city, and mine to keep for Him.", "2 Samuel 5:6-10"],
     psalm: { ref: "Psalm 122", text: "I was glad when they said to me, “Let’s go to the LORD’s house!” Our feet are standing within your gates, Jerusalem! (122:1-2)" } },
   // (Glen 11-25: his two clips "for the end of the game") the ark comes into the city: his last page
-  { id: "js_ark", when: "jr_ark", title: "The Ark Comes Home", final: true,
+  { id: "js_ark", when: "jx_ark", title: "The Ark Comes Home", final: true,
     entry: ["The ark of the LORD has come into Jerusalem, with shouting and the sound of the trumpet, and I danced before the LORD with all my might. Through the caves and the long years of running, He kept every promise. My heart is steadfast.", "2 Samuel 6:12-15"],
     psalm: { ref: "Psalm 24", text: "Lift up your heads, you gates! Be lifted up, you everlasting doors, and the King of glory will come in. (24:7)" } },
 );
@@ -105,6 +105,16 @@ Object.assign(HEB, {
 
 // ---------------------------------------------------------------------------------------------------------------------
 function jrBuild(R) {
+  // (Glen 11-27: back in after the end "it just ends ... nothing to do. David is just there with another guy") once the
+  //  stronghold is won, Jerusalem plays again from the walls: its story flags off (jx_: what stays won, the map's tick
+  //  and the Journal's pages), back to the valley
+  { const S = region.save;
+    if ((S.taken || []).includes("jr_end")) {   // (the stronghold won: from the ark films on, or left partway through them)
+      for (const [a, b] of [["jr_end", "jx_zion"], ["jr_ark", "jx_ark"]]) if (S.taken.includes(a) && !S.taken.includes(b)) S.taken.push(b);
+      S.taken = S.taken.filter(k => !/^jr_/.test(k));
+      if (!S.atRoom || JR_ROOMS.includes(S.atRoom)) { S.atRoom = "jvalley"; S.atOff = 3; S.at = 0; }
+      regionWrite();
+    } }
   jr.found = {}; jr.stand = null; jr.shown = null; jr.ended = false; jr.water = null; jr.cp = null; jr.jeb.length = 0;
   const P = hbPerson;
   ["w8/jerusalem/jvalley/wall.png", "w8/jerusalem/jvalley/fortress_wall.png", "w8/jerusalem/gorge/bridge.png", "w8/jerusalem/gorge/cliff_l.png", "w8/jerusalem/gorge/cliff_r.png", "w8/jerusalem/gorge_pit.png"].forEach(roomImg);   // (drawn by jrAfterMid, not as a room layer)
@@ -402,7 +412,7 @@ function jrZion() {
     { fn() { david.vx = 0; david.facing = 1; } }, { wait: 2 },
     HB_SAY("", "Nevertheless David took the stronghold of Zion. This is David’s city. (2 Samuel 5:7)"),
     HB_SAY("", "David lived in the stronghold, and called it David’s city. David built around from Millo and inward. David grew greater and greater, for the LORD, the God of Armies, was with him. (2 Samuel 5:9-10)"),
-    { fn() { regionAdd("taken", "jr_end"); regionAdd("taken", "g_exit_open"); hb.cine = null; } }, { wait: 1.2 },
+    { fn() { regionAdd("taken", "jr_end"); regionAdd("taken", "jx_zion"); regionAdd("taken", "g_exit_open"); hb.cine = null; } }, { wait: 1.2 },
     { fn() { jrArk(); } },
   ]);
 }
@@ -413,7 +423,7 @@ function jrArk() {
     HB_SAY("", "David went and brought up God’s ark from the house of Obed-Edom into David’s city with joy. (2 Samuel 6:12)"),
     { fn() {
       region.wait = 99;   // (held here till the films are done)
-      const last = () => { regionAdd("taken", "jr_ark"); region.wait = 0; jsceneOpen(true, "js_ark"); };   // (his last page; then the card, and the road)
+      const last = () => { regionAdd("taken", "jr_ark"); regionAdd("taken", "jx_ark"); region.wait = 0; jsceneOpen(true, "js_ark"); };   // (his last page; then the card, and the road)
       if (/simgame/.test(location.pathname) && !window.JR_FILMS) return last();
       songToggle(true);
       preFilm.start({ src: "../assets/video/ark_enter.mp4", words: [[0.6, 5.4, "The ark comes to Jerusalem", "“…with shouting and with the sound of the trumpet.” (2 Samuel 6:15)"]] }, () =>

@@ -20,7 +20,7 @@ const LAND_PLACES = [   // (11-06 draft: placed so the road never crosses itself
   { id: "hachilah", name: "Hachilah", world: "World 7", x: 868, y: 582, stage: "9-13", key: "w7", done: ["h7_end"], room: "wild", after: "carmel" },   // (11-21: w7.js)
   { id: "ziklag", name: "Ziklag", world: "World 7", x: 656, y: 512, stage: "9-13", key: "w7", done: ["z7_end"], room: "aphek", after: "hachilah" },   // (11-23: zk7.js)
   { id: "hebron", name: "Hebron", world: "World 8", x: 887, y: 168, stage: "9-14", key: "hebron", done: ["hb_end"], after: "ziklag" },   // (11-24: hebron.js)
-  { id: "jerusalem", name: "Jerusalem", world: "World 8", x: 688, y: 34, stage: "9-14", key: "hebron", done: ["jr_end"], room: "jvalley", after: "hebron" },   // (11-25: jerusalem.js, a second stop on Hebron's stage)
+  { id: "jerusalem", name: "Jerusalem", world: "World 8", x: 688, y: 34, stage: "9-14", key: "hebron", done: ["jx_zion"], room: "jvalley", after: "hebron" },   // (11-25: jerusalem.js, a second stop on Hebron's stage)
 ];
 // (testing: "?landall" shows every place and road, numbered in story order, to see the whole land at once)
 const LAND_ALL = new URLSearchParams(location.search).has("landall");
