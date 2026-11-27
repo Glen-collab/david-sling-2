@@ -186,6 +186,7 @@ function hbBuild(R) {
     HB_TRIBES.forEach(([name, line, color, food, art, art2], i) => hb.tribes.push({ room: rm, name, line, color, food, art, art2, i, wave: i,   // (Glen 11-24: "two people at once ... gets confusing": one tribe at a time)
       slot: hbRoomX("feast", 56), x: hbRoomX("feast", 116), st: done ? "home" : "wait", t: 0 }));
     if (done) for (const t of HB_TRIBES) hb.table.push(t[3]);
+    hb.quick = HB_FEAST_SEEN(); hb.quickT = 0; hb.feasting = false;
   }
   // -- The Gate (5:1-5): the elders of all Israel
   c = R("gate");
@@ -207,9 +208,9 @@ function hbEnter(r) {
   if (r.id === "gibeon" && !hbHas("hb_pool")) hbPool();
   if (r.id === "chase" && !hbHas("hb_chase")) hbTell("chase", "After Abner (right), up the ledges and over the hill! Don't fall behind, or he gets away.");
   if (r.id === "feast" && !hbHas("hb_tribes")) {
-    regionAdd("taken", "hb_tribes");
+    regionAdd("taken", "hb_tribes"); hb.quick = HB_FEAST_SEEN(); hb.quickT = 0;
     rPlay([HB_SAY("", "Then all the tribes of Israel came to David at Hebron. (2 Samuel 5:1)"),
-      { fn() { toast("Welcome each tribe at the gate of the camp (Up by its leader). Carry what they bring to the table (left)."); } }]);
+      { fn() { toast(hb.quick ? "The tribes come in, and their gifts go to the table. (Up: skip)" : "Welcome each tribe at the gate of the camp (Up by its leader). Carry what they bring to the table (left)."); } }]);
   }
 }
 
@@ -453,17 +454,29 @@ function hbGrave() {
 
 // the feast (1 Chronicles 12:23-40): the tribes come two by two; welcome each (Up by its leader); it unloads one food;
 //  carry each to the table. All twelve home and the table full: three days of feasting
+// (Glen 11-27: "The receiving 12 items from the tribes is cool but after you've done it a couple times it takes
+//  forever") once he's held the feast in this save slot, it's quick: all twelve come in one after another, welcomed as
+//  they arrive, their gifts straight onto the table (about 20 s); Up skips it
+const HB_FEAST_SEEN = () => { try { return localStorage.getItem(slotKey("david2FeastSeen")) === "1"; } catch (e) { return false; } };
+const HB_QUICK = { SPEED: 420, EVERY: 1.2 };
 function hbFeast(dt, r, free) {
   if (r.id !== "feast" || hbHas("hb_feasted")) return;
-  const d = david;
+  const d = david, quick = hb.quick;
+  if (quick && hbHas("hb_tribes") && free) {
+    hb.quickT = (hb.quickT || 0) + dt;
+    const all = () => { for (const t of hb.tribes) { if (!t.tabled) { t.tabled = true; hb.table.push(t.food); } t.st = "home"; } };
+    if (pressed("up")) all();   // (Start pauses; in the quick feast no one waits to be welcomed, so Up skips)
+  }
   for (const t of hb.tribes) {
     t.t += dt;
-    const ready = t.wave === 0 || hb.tribes.filter(o => o.wave === t.wave - 1).every(o => o.st === "leave" || o.st === "home");
+    const ready = quick ? (hb.quickT || 0) > t.wave * HB_QUICK.EVERY : t.wave === 0 || hb.tribes.filter(o => o.wave === t.wave - 1).every(o => o.st === "leave" || o.st === "home");
+    const sp = quick ? HB_QUICK.SPEED : HB.TRIBE_SPEED;
     if (t.st === "wait" && ready && hbHas("hb_tribes") && free) { t.st = "come"; }
-    if (t.st === "come") { t.x -= HB.TRIBE_SPEED * dt; if (t.x <= t.slot) { t.x = t.slot; t.st = "here"; } }
-    if (t.st === "leave") { t.x += HB.TRIBE_SPEED * dt; if (t.x > hbRoomX("feast", 116)) t.st = "home"; }   // (welcomed: on into the camp)
+    if (t.st === "come") { t.x -= sp * dt; if (t.x <= t.slot) { t.x = t.slot; t.st = "here";
+      if (quick) { t.st = "leave"; if (!t.tabled) { t.tabled = true; hb.table.push(t.food); } } } }   // (welcomed as he comes: his gift onto the table)
+    if (t.st === "leave") { t.x += sp * dt; if (t.x > hbRoomX("feast", 116)) t.st = "home"; }   // (welcomed: on into the camp)
   }
-  if (free && d.onGround && pressed("up")) {
+  if (free && d.onGround && pressed("up") && !quick) {
     const t = hb.tribes.find(o => o.st === "here" && Math.abs(o.x - d.x) < HB.REACH);
     const atTable = Math.abs(d.x - hbRoomX("feast", HB.TABLE)) < hbTableHalf() + 20;
     if (t) { t.st = "leave"; hb.foods.push({ name: t.food, x: t.x + 60, y: FOOT, t: 0 }); toast(`Welcome, ${t.name}! ${t.line[0].toUpperCase() + t.line.slice(1)}. They brought ${hbFoodName(t.food)}.`);
@@ -478,7 +491,7 @@ function hbFeasted() {
   rPlay([
     HB_SAY("", "All these were men of war who could order the battle array, and came with a perfect heart to Hebron to make David king over all Israel; and all the rest also of Israel were of one heart to make David king. (1 Chronicles 12:38)"),
     HB_SAY("", "They were there with David three days, eating and drinking. Those who were near to them brought bread on donkeys, on camels, on mules, and on oxen: supplies of flour, cakes of figs, clusters of raisins, wine, oil, cattle, and sheep in abundance; for there was joy in Israel. (1 Chronicles 12:39-40)"),
-    { fn() { regionAdd("taken", "hb_feasted"); } },
+    { fn() { regionAdd("taken", "hb_feasted"); try { localStorage.setItem(slotKey("david2FeastSeen"), "1"); } catch (e) {} } },
     { fn() { jsceneOpen(false, "hs_tribes"); } },
     { fn() { toast("The elders of Israel wait at the gate (right)."); } },
   ]);
